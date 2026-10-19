@@ -1,0 +1,6 @@
+Immagine di esempio della Carta di Identità Elettronica, riutilizzata senza modifiche.
+Origine: italia/cie-middleware-macos, CIE ID/Assets.xcassets/cie.imageset/
+Copie 1x, 2x e 3x dal fork gezza-dev/cie-id-macos-universal.
+Copyright (c) 2017, Istituto Poligrafico e Zecca dello Stato.
+Licenza BSD-3-Clause; testo completo in native-LICENSE.txt nella stessa cartella.
+La grafica è un esempio e non riproduce i dati della carta abbinata.

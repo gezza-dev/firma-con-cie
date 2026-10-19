@@ -1,0 +1,429 @@
+{
+  "schema_version": 1,
+  "verified_on": "2026-10-15",
+  "upstream_commit": "43da456fb3002e34beccda73b9bc4b149acae534",
+  "dependencies": {
+    "openssl": {
+      "version": "3.5.9",
+      "url": "https://github.com/openssl/openssl/releases/download/openssl-3.5.9/openssl-3.5.9.tar.gz",
+      "sha256": "603f5602e2eef00d77fbd429d34dcd5822bb301757a1bc9cdb24c670f1eb859a",
+      "archive": "openssl-3.5.9.tar.gz"
+    },
+    "cryptopp": {
+      "version": "8.9.0",
+      "url": "https://codeload.github.com/weidai11/cryptopp/tar.gz/refs/tags/CRYPTOPP_8_9_0",
+      "sha256": "ab5174b9b5c6236588e15a1aa1aaecb6658cdbe09501c7981ac8db276a24d9ab",
+      "archive": "cryptopp-8.9.0.tar.gz"
+    },
+    "podofo": {
+      "version": "1.1.2",
+      "url": "https://codeload.github.com/podofo/podofo/tar.gz/refs/tags/1.1.2",
+      "sha256": "d6ffe6fc173ac6d6e5b00f5cb9db01990cab1bdf7cc03bdeffce3013bc9ec63a",
+      "archive": "podofo-1.1.2.tar.gz"
+    },
+    "zlib": {
+      "version": "1.3.2",
+      "url": "https://github.com/madler/zlib/releases/download/v1.3.2/zlib-1.3.2.tar.gz",
+      "sha256": "bb329a0a2cd0274d05519d61c667c062e06990d72e125ee2dfa8de64f0119d16",
+      "archive": "zlib-1.3.2.tar.gz"
+    },
+    "libpng": {
+      "version": "1.6.59",
+      "url": "https://codeload.github.com/pnggroup/libpng/tar.gz/refs/tags/v1.6.59",
+      "sha256": "2540302a1844ad2b2b501977abecfa850f265f97b78f065a712ab4074a89f5b5",
+      "archive": "libpng-1.6.59.tar.gz"
+    },
+    "freetype": {
+      "version": "2.14.3",
+      "url": "https://codeload.github.com/freetype/freetype/tar.gz/refs/tags/VER-2-14-3",
+      "sha256": "dc49de6b01a266eef4876a4dd34d9842c475d3e28ff2eff63bd2fb760ab56261",
+      "archive": "freetype-2.14.3.tar.gz"
+    },
+    "expat": {
+      "version": "2.9.0",
+      "url": "https://github.com/libexpat/libexpat/releases/download/R_2_9_0/expat-2.9.0.tar.gz",
+      "sha256": "16afbb9cefead2aa278105cf27d9f597bde7fbf3dbb85015857ca7ca6a4e89ba",
+      "archive": "expat-2.9.0.tar.gz"
+    },
+    "fontconfig": {
+      "version": "2.18.3",
+      "url": "https://gitlab.freedesktop.org/api/v4/projects/890/packages/generic/fontconfig/2.18.3/fontconfig-2.18.3.tar.xz",
+      "sha256": "4f7b554a38cdf78c033f666c8871f3749e14a094f65a07f630c91ed0b43d35e3",
+      "archive": "fontconfig-2.18.3.tar.xz"
+    },
+    "libiconv": {
+      "version": "1.19",
+      "url": "https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.19.tar.gz",
+      "sha256": "88dd96a8c0464eca144fc791ae60cd31cd8ee78321e67397e25fc095c4a19aa6",
+      "archive": "libiconv-1.19.tar.gz"
+    },
+    "libxml2": {
+      "version": "2.15.4",
+      "url": "https://download.gnome.org/sources/libxml2/2.15/libxml2-2.15.4.tar.xz",
+      "sha256": "98087fd181d9070724f3fbc65c7377db03038eb92bd882374daff44940138821",
+      "archive": "libxml2-2.15.4.tar.xz"
+    },
+    "libcurl": {
+      "version": "8.23.0",
+      "url": "https://curl.se/download/curl-8.23.0.tar.xz",
+      "sha256": "8dadd7d2536a314f982ad05a651b713f426bf7d02cc2c76cffb9796f2218e6c5",
+      "archive": "curl-8.23.0.tar.xz"
+    },
+    "bzip2": {
+      "version": "1.0.8",
+      "url": "https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz",
+      "sha256": "ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269",
+      "archive": "bzip2-1.0.8.tar.gz"
+    }
+  },
+  "app_dependencies": {
+    "ssziparchive": {
+      "version": "2.6.0",
+      "url": "https://codeload.github.com/ZipArchive/ZipArchive/tar.gz/refs/tags/2.6.0",
+      "sha256": "adb8acd48286b5fa50d49ad06336427fdf0649a486cb23122c156ebf20cc4b58",
+      "archive": "ssziparchive-2.6.0.tar.gz"
+    }
+  },
+  "license_files": [
+    {
+      "path": "LICENSES/allura/COPYRIGHT.txt",
+      "sha256": "406372d84a5b982727c0f7db20033ae861d4c9cdc32623f864689686a8550637",
+      "source": "CIE ID/Fonts/Allura-Regular.ttf:name-table"
+    },
+    {
+      "path": "LICENSES/allura/OFL-1.1.txt",
+      "sha256": "fba7fe59c0b0498318014001ccb3fb0cbcc8d8402bfc09af7100cbe7d352f6ac",
+      "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/allura/OFL.txt:standard-license-text"
+    },
+    {
+      "path": "LICENSES/bigint/README.txt",
+      "sha256": "32759d1397d8f7b9e15ece146e4038b22b90e93b4935b5a840bcef4d2ba5ea55",
+      "source": "https://mattmccutchen.net/bigint/bigint-2010.04.30.tar.bz2:README"
+    },
+    {
+      "path": "LICENSES/bzip2/LICENSE",
+      "sha256": "c6dbbf828498be844a89eaa3b84adbab3199e342eb5cb2ed2f0d4ba7ec0f38a3",
+      "source": ".build/dependencies/arm64/sources/bzip2/bzip2-1.0.8/LICENSE"
+    },
+    {
+      "path": "LICENSES/cryptopp-legacy-7.0/License.txt",
+      "sha256": "fe5f5f187e6e38ac2f833956fc5c4cab2df08797cff07f540e4ee74f12f7ee5b",
+      "source": "https://raw.githubusercontent.com/weidai11/cryptopp/CRYPTOPP_7_0_0/License.txt"
+    },
+    {
+      "path": "LICENSES/cryptopp/License.txt",
+      "sha256": "78e4010b682cb94187fe0b57e50116d0ba271ef81104d1ddb35c80c3d81e3169",
+      "source": ".build/security-1.5.1/sources/cryptopp/cryptopp-CRYPTOPP_8_9_0/License.txt"
+    },
+    {
+      "path": "LICENSES/embedded-sdk/base64-notice.txt",
+      "sha256": "c634d1d36d8f848e47a07b4c309255d2a43249397bd24e06f6ee28bddb4c0c41",
+      "source": "cie_sign_sdk/src/Base64.cpp:first-comment"
+    },
+    {
+      "path": "LICENSES/embedded-sdk/pkcs11-notice.txt",
+      "sha256": "e97556efa6723c3a8c3ff0613606168c022e7c3f2740016213fa89fa61f24db5",
+      "source": "cie-pkcs11/PKCS11/pkcs11.h:preamble"
+    },
+    {
+      "path": "LICENSES/embedded-sdk/rc2.c-notice.txt",
+      "sha256": "a2f88ab87062cd2fca80e637d2d524c14cbee557fbb5f0436450f3863db07fec",
+      "source": "cie_sign_sdk/src/RSA/rc2.c:first-comment;Latin-1-to-UTF-8"
+    },
+    {
+      "path": "LICENSES/expat/COPYING",
+      "sha256": "31b15de82aa19a845156169a17a5488bf597e561b2c318d159ed583139b25e87",
+      "source": ".build/security-1.5.1/sources/expat/expat-2.9.0/COPYING"
+    },
+    {
+      "path": "LICENSES/expat/expat--COPYING",
+      "sha256": "31b15de82aa19a845156169a17a5488bf597e561b2c318d159ed583139b25e87",
+      "source": ".build/security-1.5.1/sources/expat/expat-2.9.0/COPYING"
+    },
+    {
+      "path": "LICENSES/fontconfig/COPYING",
+      "sha256": "51a51aa9823704fd90bccc616cdd17ebabb5b2b3e9cbde886ca02c7002288067",
+      "source": ".build/security-1.5.1/sources/fontconfig/fontconfig-2.18.3/COPYING"
+    },
+    {
+      "path": "LICENSES/freetype/LICENSE.TXT",
+      "sha256": "bd36c8b474855fa294c2ec5c184544478ef3720aad37d65a6296a4f264fd2d3b",
+      "source": ".build/security-1.5.1/sources/freetype/freetype-VER-2-14-3/LICENSE.TXT"
+    },
+    {
+      "path": "LICENSES/freetype/docs--FTL.TXT",
+      "sha256": "5a5ee54c5001bbad1cdc1a57cc3dd4c42199b2da09d39c7ee41fab002d02967f",
+      "source": ".build/security-1.5.1/sources/freetype/freetype-VER-2-14-3/docs/FTL.TXT"
+    },
+    {
+      "path": "LICENSES/freetype/docs--GPLv2.TXT",
+      "sha256": "c4120c6752c910c299e3bd9cb3a46ff262c268303ca2069b61f92f10a5656c18",
+      "source": ".build/security-1.5.1/sources/freetype/freetype-VER-2-14-3/docs/GPLv2.TXT"
+    },
+    {
+      "path": "LICENSES/freetype/ft-hb.c-notice.txt",
+      "sha256": "09e4a05cd6a32658e605bfb1fa98474bfde8a614470f7fbdf32d191ec918093b",
+      "source": ".build/security-1.5.1/sources/freetype/freetype-VER-2-14-3/src/autofit/ft-hb.c:licence-comment"
+    },
+    {
+      "path": "LICENSES/freetype/fthash-notice.txt",
+      "sha256": "5285d96f6aa3188193d5fbefd8710ed6a46af185e0a43817c17acee5f4b1ab3d",
+      "source": ".build/security-1.5.1/sources/freetype/freetype-VER-2-14-3/src/base/fthash.c:licence-comment"
+    },
+    {
+      "path": "LICENSES/freetype/src--bdf--README",
+      "sha256": "7984455e7e5a9faba3797c8bf095fbe10cc846316b7320aff8c58402e22b82fe",
+      "source": ".build/security-1.5.1/sources/freetype/freetype-VER-2-14-3/src/bdf/README"
+    },
+    {
+      "path": "LICENSES/freetype/src--pcf--README",
+      "sha256": "18d9782898d9eac04476e2f744678137b2a889689ed3e923e052fc396a86f86b",
+      "source": ".build/security-1.5.1/sources/freetype/freetype-VER-2-14-3/src/pcf/README"
+    },
+    {
+      "path": "LICENSES/gnu/COPYING",
+      "sha256": "204d8eff92f95aac4df6c8122bc1505f468f3a901e5a4cc08940e0ede1938994",
+      "source": "https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt (unchanged canonical licence text retained from initial source import)"
+    },
+    {
+      "path": "LICENSES/gnu/COPYING.LIB",
+      "sha256": "c340cbee4974bb96019e782f2279df016c92fb1e7f5299347e779d9acedbb991",
+      "source": "https://www.gnu.org/licenses/old-licenses/lgpl-2.0.txt (unchanged canonical licence text retained from initial source import)"
+    },
+    {
+      "path": "LICENSES/libcurl/COPYING",
+      "sha256": "82f2f4427d6545ee5aaac4f0b80428da6cc8ba41c2cf5da3a03680ec327b9681",
+      "source": ".build/security-1.5.1/sources/libcurl/curl-8.23.0/COPYING"
+    },
+    {
+      "path": "LICENSES/libiconv/COPYING.LIB",
+      "sha256": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+      "source": ".build/security-1.5.1/sources/libiconv/libiconv-1.19/COPYING.LIB"
+    },
+    {
+      "path": "LICENSES/libiconv/libcharset--COPYING.LIB",
+      "sha256": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+      "source": ".build/security-1.5.1/sources/libiconv/libiconv-1.19/libcharset/COPYING.LIB"
+    },
+    {
+      "path": "LICENSES/libpng/LICENSE",
+      "sha256": "bdb0a645ea18c60507d0368379b1ac5474b92255fcc2d115e07486a7672ba526",
+      "source": ".build/security-1.5.1/sources/libpng/libpng-1.6.59/LICENSE"
+    },
+    {
+      "path": "LICENSES/libxml2/COPYING",
+      "sha256": "5d4873884a890122a4b9b20ad56ac6f7da1d796a5bfcf04a427970ac96217626",
+      "source": ".build/security-1.5.1/sources/libxml2/libxml2-2.15.4/Copyright"
+    },
+    {
+      "path": "LICENSES/libxml2/Copyright",
+      "sha256": "5d4873884a890122a4b9b20ad56ac6f7da1d796a5bfcf04a427970ac96217626",
+      "source": ".build/security-1.5.1/sources/libxml2/libxml2-2.15.4/Copyright"
+    },
+    {
+      "path": "LICENSES/libxml2/dict.c-notice.txt",
+      "sha256": "ea9e97f88bf4ef8ad1142e12d0e6da003968420aa38094f74b9b51206675438a",
+      "source": ".build/security-1.5.1/sources/libxml2/libxml2-2.15.4/dict.c:licence-comment"
+    },
+    {
+      "path": "LICENSES/libxml2/hash.c-notice.txt",
+      "sha256": "d04eee5d4c24aaa45620c47210a305c3eaffce4928c2432d4df43060d196edad",
+      "source": ".build/security-1.5.1/sources/libxml2/libxml2-2.15.4/hash.c:licence-comment"
+    },
+    {
+      "path": "LICENSES/libxml2/list.c-notice.txt",
+      "sha256": "2fdb83809864852d236c64fffa74054699e61887b736e18724d4a8ac0e9684f8",
+      "source": ".build/security-1.5.1/sources/libxml2/libxml2-2.15.4/list.c:licence-comment"
+    },
+    {
+      "path": "LICENSES/openssl/AUTHORS.md",
+      "sha256": "b9f638dfc06b59c2d3b808186c3b30f713805a5db390f5b77b1703ac58acb83e",
+      "source": ".build/dependencies/arm64/sources/openssl/openssl-3.5.9/AUTHORS.md"
+    },
+    {
+      "path": "LICENSES/openssl/LICENSE.txt",
+      "sha256": "7d5450cb2d142651b8afa315b5f238efc805dad827d91ba367d8516bc9d49e7a",
+      "source": ".build/dependencies/arm64/sources/openssl/openssl-3.5.9/LICENSE.txt"
+    },
+    {
+      "path": "LICENSES/podofo/3rdparty--adobe--afdko--LICENSE",
+      "sha256": "cb1d44d4a3f5ce48922bf4307a012b5fd4ff220b895b8cee5c1e5adc80d41612",
+      "source": ".build/security-1.5.1/sources/podofo/podofo-1.1.2/3rdparty/adobe/afdko/LICENSE"
+    },
+    {
+      "path": "LICENSES/podofo/3rdparty--chromium--numerics--LICENSE",
+      "sha256": "c7e67a125a4b8c77b3cb7c982401857109d5f3c551c10d4db30c9e7ed7cc333c",
+      "source": ".build/security-1.5.1/sources/podofo/podofo-1.1.2/3rdparty/chromium/numerics/LICENSE"
+    },
+    {
+      "path": "LICENSES/podofo/3rdparty--chromium--pdfium--LICENSE",
+      "sha256": "1fe9dea718fbd75cf149adaf4d8a22a4335604d964ddb76d1b45383dec8668c9",
+      "source": ".build/security-1.5.1/sources/podofo/podofo-1.1.2/3rdparty/chromium/pdfium/LICENSE"
+    },
+    {
+      "path": "LICENSES/podofo/Boost-LICENSE-1.0.txt",
+      "sha256": "c9bff75738922193e67fa726fa225535870d2aa1059f91452c411736284ad566",
+      "source": "https://www.boost.org/LICENSE_1_0.txt"
+    },
+    {
+      "path": "LICENSES/podofo/COPYING.LGPL",
+      "sha256": "cd758abe2acf45f96d7802f4bc864fc955f548fbe8d6d9b41446b303daca1005",
+      "source": ".build/security-1.5.1/sources/podofo/podofo-1.1.2/COPYING.LGPL"
+    },
+    {
+      "path": "LICENSES/podofo/COPYING.MPL",
+      "sha256": "fab3dd6bdab226f1c08630b1dd917e11fcb4ec5e1e020e2c16f83a0a13863e85",
+      "source": ".build/security-1.5.1/sources/podofo/podofo-1.1.2/COPYING.MPL"
+    },
+    {
+      "path": "LICENSES/podofo/NOTICE",
+      "sha256": "18fda2455924a246c1e1d159246e7de5c75ebc564e527b5dad3af3554f7033ca",
+      "source": ".build/security-1.5.1/sources/podofo/podofo-1.1.2/NOTICE"
+    },
+    {
+      "path": "LICENSES/podofo/SASLprep-notice.txt",
+      "sha256": "cf1d15127fc3e8064e3c3f4bd9b3f7ce255a7a097f4275339c0c0a714b28667c",
+      "source": ".build/security-1.5.1/sources/podofo/podofo-1.1.2/src/podofo/private/SASLprep.cpp:licence-comment"
+    },
+    {
+      "path": "LICENSES/podofo/date-notice.txt",
+      "sha256": "2570d3618c4421ca79ef36e03d2a998867b3e5235adb7c1d7cff46a8aa90d37c",
+      "source": ".build/security-1.5.1/sources/podofo/podofo-1.1.2/3rdparty/date/date/date.h:licence-preamble"
+    },
+    {
+      "path": "LICENSES/podofo/fast-float-notice.txt",
+      "sha256": "29fa189162619bd670bd78dee79241d8166e5489cfc22bb913df349e5075f4ce",
+      "source": ".build/security-1.5.1/sources/podofo/podofo-1.1.2/3rdparty/fastfloat/fast_float/fast_float.h:licence-preamble"
+    },
+    {
+      "path": "LICENSES/podofo/fmt-notice.txt",
+      "sha256": "f33ca5dbab2c71bb6d736c0bc61e57be1e5510ae67f076133f61bdbbf99ded7e",
+      "source": ".build/security-1.5.1/sources/podofo/podofo-1.1.2/3rdparty/fmtlib/fmt/format.h:licence-comment"
+    },
+    {
+      "path": "LICENSES/podofo/span-notice.txt",
+      "sha256": "4dd8be173fa20f8311e589fe97ec3e0b10495a3d6f036c3f587d749c491dbd7f",
+      "source": ".build/security-1.5.1/sources/podofo/podofo-1.1.2/src/podofo/3rdparty/span.hpp:licence-preamble"
+    },
+    {
+      "path": "LICENSES/podofo/src--podofo--private--FoxitFonts--COPYING.txt",
+      "sha256": "fda5758046282a46e78e519b1c8aa4cc986072e9ce8e91d52a2ad61946abda4f",
+      "source": ".build/security-1.5.1/sources/podofo/podofo-1.1.2/src/podofo/private/FoxitFonts/COPYING.txt"
+    },
+    {
+      "path": "LICENSES/podofo/src--podofo--private--LiberaLean--LICENSE.txt",
+      "sha256": "bccafaa2299349adf986cf073b47708a88a27840a3332b91c23da40a48a448d0",
+      "source": ".build/security-1.5.1/sources/podofo/podofo-1.1.2/src/podofo/private/LiberaLean/LICENSE.txt"
+    },
+    {
+      "path": "LICENSES/podofo/utf8cpp-notice.txt",
+      "sha256": "1b45829b2934a146274162752708e2f3355aae05e13d78a2cf3a656540a553c1",
+      "source": ".build/security-1.5.1/sources/podofo/podofo-1.1.2/3rdparty/utf8cpp/utf8cpp/utf8/core.h:licence-preamble"
+    },
+    {
+      "path": "LICENSES/podofo/utf8proc-notice.txt",
+      "sha256": "6d1135b2b76fd280cbc303665bd852dd7af96f540783428d95d57c36e3335254",
+      "source": ".build/security-1.5.1/sources/podofo/podofo-1.1.2/3rdparty/utf8proc/utf8proc.h:licence-comment"
+    },
+    {
+      "path": "LICENSES/rxi-log/LICENSE",
+      "sha256": "a7286cd27e7d0e4d466f195a581b07bcd5bd795eed474af1972497b45e360816",
+      "source": "cie-pkcs11/LOGGER/LICENSE"
+    },
+    {
+      "path": "LICENSES/ssziparchive/LICENSE.txt",
+      "sha256": "d02a57f131864af6c4c29de50f26d01098bed336277bbf1ae7b5d3d3c56d9f2d",
+      "source": ".build/security-1.5.1/sources/ssziparchive/ZipArchive-2.6.0/LICENSE.txt"
+    },
+    {
+      "path": "LICENSES/ssziparchive/SSZipArchive--minizip--LICENSE",
+      "sha256": "675181c03fc1302a1c8554c00f7be9bb420c5dbc9dcc2013433cec144413de03",
+      "source": ".build/security-1.5.1/sources/ssziparchive/ZipArchive-2.6.0/SSZipArchive/minizip/LICENSE"
+    },
+    {
+      "path": "LICENSES/ssziparchive/minizip-copyrights.txt",
+      "sha256": "6e2f59002302a71afebcf3c366adbfdbc5f8cdadeaebb51cf66ee3f46e1b0958",
+      "source": ".build/security-1.5.1/sources/ssziparchive/ZipArchive-2.6.0/SSZipArchive/minizip/mz_zip.h:licence-comment"
+    },
+    {
+      "path": "LICENSES/unicode/CaseFolding-17.0.0-notice.txt",
+      "sha256": "017eda9d5882988ed725cb828039d548b7dc5b3887702beff1e862a0092b22e5",
+      "source": ".build/security-1.5.1/sources/fontconfig/fontconfig-2.18.3/fc-case/CaseFolding.txt:header"
+    },
+    {
+      "path": "LICENSES/unicode/Unicode-LICENSE-V3.txt",
+      "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96",
+      "source": "https://www.unicode.org/license.txt"
+    },
+    {
+      "path": "LICENSES/upstream/LICENSE.txt",
+      "sha256": "715ec9cd9df03e1e960b31e590f9c64e48352b92f83942274f946ad08c2a4523",
+      "source": "LICENSE.txt"
+    },
+    {
+      "path": "LICENSES/zlib/LICENSE",
+      "sha256": "e32ff4e00d9d94930537635291da39e7e612703334bf6fde8c7f1686fe8a45a2",
+      "source": ".build/security-1.5.1/sources/zlib/zlib-1.3.2/LICENSE"
+    }
+  ],
+  "publication_status": "clean-snapshot-prepared",
+  "binary_release_status": "requires-matching-source-package",
+  "issues": [
+    {
+      "id": "A01",
+      "status": "resolved",
+      "scopes": [
+        "binary"
+      ],
+      "summary": "GPL SDK code linked with OpenSSL 1.1.1; no applicable exception verified",
+      "resolution": "GPL production SDK implementations removed; native OpenSSL digest and RSA adapters plus BSD standard-library reader, exceptions and shared property table replace them. TestCIE GPL remains a separate test tool outside CIE ID.app. See scripts/replaced-legacy-sources.json and SDK replacement tests. OpenSSL is now 3.5.9 LTS under Apache-2.0; provider RSA import/recovery, static default/legacy providers, explicit ENGINE callback compatibility and TLS interoperability are tested."
+    },
+    {
+      "id": "A02",
+      "status": "resolved",
+      "scopes": [
+        "source",
+        "binary"
+      ],
+      "summary": "RSAEURO permission terms for the embedded copy require verification or replacement",
+      "resolution": "All ten RSAEURO source files removed from the current snapshot and build. RSA PKCS#1 recovery uses OpenSSL EVP_PKEY_verify_recover. Original hashes recorded in scripts/replaced-legacy-sources.json; publish a clean snapshot without old Git history."
+    },
+    {
+      "id": "A03",
+      "status": "resolved",
+      "scopes": [
+        "source",
+        "binary"
+      ],
+      "summary": "Paul E. Jones SHA-1 permission for this embedded version requires verification or replacement",
+      "resolution": "Paul E. Jones sha1.c and sha1.h removed. All SDK SHA-1 callers use the new BSD EVP digest adapter; SHA-224/256 PolarSSL implementation removed as well. Known-vector and CMS tests verify compatibility."
+    },
+    {
+      "id": "A04",
+      "status": "resolved",
+      "scopes": [
+        "binary"
+      ],
+      "summary": "Corresponding source/relinking materials and the FreeType alternative licence selection must be prepared for the released build",
+      "resolution": "FreeType FTL selected. scripts/prepare-source-package.py collects exact corresponding application/library source, all 13 locked upstream source archives, build recipes and unsigned application fingerprints. Each binary distribution must carry its matching package and pass check-publication.py --release."
+    }
+  ],
+  "assets": [
+    {
+      "path": "CIE ID/Fonts/Allura-Regular.ttf",
+      "sha256": "c70712358a4689043eb90740fe1e65273fec07df4ac384163721c047d206abad",
+      "license": "OFL-1.1",
+      "version": "1.005",
+      "notice": "LICENSES/allura/COPYRIGHT.txt"
+    }
+  ],
+  "freetype_license_choice": "FTL",
+  "replacement_manifest": "scripts/replaced-legacy-sources.json",
+  "openssl_support": {
+    "series": "3.5 LTS",
+    "supported_until": "2030-04-08",
+    "verified_version": "3.5.9",
+    "source": "https://openssl-library.org/source/"
+  },
+  "podofo_license_choice": "MPL-2.0"
+}

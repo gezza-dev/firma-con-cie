@@ -1,0 +1,1357 @@
+{
+  "reason": "Prevent obsolete Crypto++ 7.0/8.2 headers from shadowing the pinned 8.9 dependency and corrupting the C++ ABI",
+  "files": [
+    {
+      "path": "cie_sign_sdk/src/cryptopp/3way.h",
+      "sha256": "3aaac95e6daad92761ce39af53816359e50b1c3f175470bb55e1a24f1bcbc06c"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/adler32.h",
+      "sha256": "51bdbee0478f008f3cf794695ec1987d139283a48d6532b94b51107897ed4aab"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/adv_simd.h",
+      "sha256": "bfb30c85101f5e7da5f91c7a1448fc3d23da974546c30ba5802815a4e2e50dad"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/aes.h",
+      "sha256": "4c49b05d27ecd4db6f8134096130291ece5421ca6a85fc315b04b09c39590629"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/aes_armv4.h",
+      "sha256": "64192d4fcb883aa18600863d503e691b20a0d2efc949af753fb743a01bcfba99"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/algebra.h",
+      "sha256": "3d66c30450eed9d14fb85ab1e1d1c8f003ba1eeb5a265b3899c8edc0dff7e7c3"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/algparam.h",
+      "sha256": "e0fc76a1a5c9028c181683b5e7c3a69e44ed68129a257c11e1a5111e86e611ac"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/arc4.h",
+      "sha256": "b3ec10ca7c054c15d96e0b3b1e5d1e8c9e7109d40be6c6a8f2ec233e4b6422c9"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/argnames.h",
+      "sha256": "4fa6995e67001c2b744d64e2f7f36629cf489be21f1ff242fbc13da43df59769"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/aria.h",
+      "sha256": "b1424bd2e63bcd053b1d198f4328079ea6b58fe90fba45b3ae3c37f9eddd16d8"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/arm_simd.h",
+      "sha256": "e2142f3e4114b44ae2d25a9dd492bc2555c320204721a9096d1339c2ef253dd4"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/asn.h",
+      "sha256": "df91d2912fff7519e340f1ed4574922de9b91bfb8de193a7d17e47ea4844f5f1"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/authenc.h",
+      "sha256": "4bada51b1be71e453bff1da0e59e6511e2d73d36093591729b44fa4c5acf5f33"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/base32.h",
+      "sha256": "0e3bbf43ab9fa0967062679dd9e8ce1a60ddb884188133cdd5e0a6c82ad22463"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/base64.h",
+      "sha256": "3a3a539c8f3ba7d6d8fdec4a2fb6fa9bb7cc4d4e735d25c527cf21dcfd64bafa"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/basecode.h",
+      "sha256": "ed5bb2bc9401cf7af678f2431921bb2d2a836c7fc445cfeb9c3edb5cb0cad2dc"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/bench.h",
+      "sha256": "2ce935bbca68d46018dc65616145eb054eb74ef3aab3fc06320739e5e76a1e90"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/blake2.h",
+      "sha256": "39b282b0605cc5c20f0c77209ca1db45677251ece31fea375dc8de0634bb0e21"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/blowfish.h",
+      "sha256": "f46768a1572caa2dce8543598c77347e0c9bba06a60fd114bbd9be57b79d1a74"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/blumshub.h",
+      "sha256": "7fe87393819ade4353adb150677299a2c84a5a224336a4a31765d69616fc5f3e"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/camellia.h",
+      "sha256": "8be9e9dede172afb6aaccfd85a20a380dd622da6b13e2e6d4f81c54dd627ebc1"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/cast.h",
+      "sha256": "f83ecb524635e8c8d9fce3cd6fabc800eaf8859895f1a0a3551364a645be5e47"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/cbcmac.h",
+      "sha256": "d916288a3857687bf14fd8e80874cb2f918da96c975cd39f4aa6fa1ae1b43b7a"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/ccm.h",
+      "sha256": "941f749d7b55a2d4a8eb38c4f8b29131a541a5898c9e55a262e166988db54d54"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/chacha.h",
+      "sha256": "6a6389cfa6ff7ea01eacfc2044cd53b4252fbc681680f419bcf67c7f8c39c66b"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/chachapoly.h",
+      "sha256": "2067911342578c4da50db71aa311f81c45b39adba5b9e833a0941ed1f471410a"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/cham.h",
+      "sha256": "38e7f57aeaae220a1bb3c174d46006a20d85c5a58743eb49b62a3a66c9c13e1e"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/channels.h",
+      "sha256": "490b946d47884497404834fccbef521d3b8778249d31a94b21b787e1e3bdd616"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/cmac.h",
+      "sha256": "a8ab2351a344504e5e0093442040b5d80b5fbe0e4321a21df0d109b8dc8c4d85"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/config.h",
+      "sha256": "c9004931ad78512582e16239bb4f426fbe4291c9326e78ad6e0d3c77cbf7681c"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/cpu.h",
+      "sha256": "005076f13fd5709e54e200e9c1e521c4354b434151aed889fefd38c39861b01d"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/crc.h",
+      "sha256": "449c4fcfb0af30250811e88460b960a766df9ac31ac5a28d028b5f41a047460a"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/cryptlib.h",
+      "sha256": "78f5e5cc0092e7acbda3508889efd1a89f6890068054f48d842ad85557ace82d"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/darn.h",
+      "sha256": "2e35387e846beb4b3e8314aa4c0f2ba378769380d1f651b2af8b6ffadf39b6d5"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/default.h",
+      "sha256": "ae226dc2f7ee72409ec0ffdbb376afca5410f51451aa7e8de178a484f356f740"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/des.h",
+      "sha256": "8817b65797a372ea80b84478b4f70bd6368d69fdeedaa3cf18ea45072c3e25e8"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/dh.h",
+      "sha256": "78dfba43ffdb7ca8d88a813bcebcfe9826d7b33a3c686ead784361d010794dc9"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/dh2.h",
+      "sha256": "3ba72b26fafa33411e18eccefb7ef2cddbca708cdacd717fa13dffc35068247a"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/dll.h",
+      "sha256": "d7e9b85de027c4286ab4d4e37627e6d365ca7f734ae06c9942eebf05a26b7841"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/dmac.h",
+      "sha256": "7618782955b1ddead0ec62b3f1fb5252a0b99e80a174fa785b8a9ebd613effd6"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/donna.h",
+      "sha256": "c5a373b8f03ed691be3017070efdc099734f6c3771b03c672c9690e0b15afd8b"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/donna_32.h",
+      "sha256": "184a5c82f3bf0d24e56dad6b19a9f59d13330af17424ca8f594f1ed225a74a4e"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/donna_64.h",
+      "sha256": "7ba6eb88b66946cd03dd8ba781a173c249e1699e88c41bc718fd73631600e78d"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/donna_sse.h",
+      "sha256": "a0c93d1e752ed51618707188e5e8e7b973d2ee0423223f78534d3b9c5a84adbb"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/drbg.h",
+      "sha256": "6cff8332ef9c6539077594e81733b5010895c54ccb8295be4e74c21435302d3e"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/dsa.h",
+      "sha256": "5da0386a2c862bd35e56632f12b7218be8ef43b4e7c00296fab310adfade59a0"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/eax.h",
+      "sha256": "3726989bd2763cc5230fc858252729e7b2e3f34d29f99dc9866af6c0ecbcd18b"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/ec2n.h",
+      "sha256": "32fbe3d5aa4ad59ed32859674f8bac1179f9664bd856b154e299960947bd0f81"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/eccrypto.h",
+      "sha256": "678de2a339e453143fd0e80b939842f5bfa884a7b18e6021b8de6eae75cec37c"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/ecp.h",
+      "sha256": "d745ddb55129cdb064b79099a51e6103dc3b74803344b1996422abf9d47c10b3"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/ecpoint.h",
+      "sha256": "35ad7db34f58b1d8bbe3e1868814e1492ea3477d91b6bbfdc83953f5377bd747"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/elgamal.h",
+      "sha256": "5f0cb7074269dda41fb3a06ced10aea9787a7fb6f097b6a39bf7e5c82185977f"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/emsa2.h",
+      "sha256": "d6fad095beaa915b7fc655394fcf80eb7cb5ad143b6a54d5d3adbd2d91557f04"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/eprecomp.h",
+      "sha256": "a9d230d8eb727abba9508ea2c3791679208cfb6a8dbbc20969743dce2b2a526d"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/esign.h",
+      "sha256": "6a6c1ed9804cff1ef77b439bf36b1ff44d7269258247a35c011a068c59876b26"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/factory.h",
+      "sha256": "db03524ab5fe084736a9a7353b4831b3df072e3b06872eb777975170220884a8"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/fhmqv.h",
+      "sha256": "a400a18f82e0c6f520320c136d23a83aa9a98df5ec76fdbb5712cf32c32acad2"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/files.h",
+      "sha256": "7ca21efeaf4fccdc2dee1223385e1503680434b8af4e2769e540095e07290d02"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/filters.h",
+      "sha256": "10db610d0036b0d892a5b9be26fc313fa38c264597558427ba891f43a5fdd19f"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/fips140.h",
+      "sha256": "604a43722b6398ba70ce716f8c20a836f228ac9e730459f4aa12cd52cec8f06f"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/fltrimpl.h",
+      "sha256": "fa048ff39522725d1cb35b84386c056d50bebd62ad4f9b372a000488679b80f4"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/gcm.h",
+      "sha256": "8d0ffdd323475799dfa029ef8b8af4ed556e06194ee4162a5b34ca3b38335cf2"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/gf256.h",
+      "sha256": "5802332c695788d09e19c0070ad34d0059e716c9cf0559ca41cf34f62a1d7b81"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/gf2_32.h",
+      "sha256": "c0076464597ca949be1bf38f84ff787b9b8683d30cc9d12c19d9e89319d42dec"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/gf2n.h",
+      "sha256": "fda9ba60e3b0ef31abed99dbfbe72c7eddd966715a637b917aca542de319644d"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/gfpcrypt.h",
+      "sha256": "989f01ed59b9fa8adc0df78a0634fbdfd3a653fd8499ef93f9adcee6a976f51a"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/gost.h",
+      "sha256": "24c5a7be88608b61220b207c9f001f46dd125e9a749e0cce9d063af490cccaa8"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/gzip.h",
+      "sha256": "90e7962529aca3f55a931843a5bfbbafefcf3dd266a01e51761a73f700e1e76e"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/hashfwd.h",
+      "sha256": "4f9435013967091b562b5b70b0e3ce9aba7266303ec01d4d7ac61fdf08ff3272"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/hc128.h",
+      "sha256": "afe41553e699b61256df8998457440050a435482c22d32d3586c69a4f1453f2a"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/hc256.h",
+      "sha256": "43703a55941d038e81c8677c6f0c8c23efef6412bf0121394abe3a9acfebe981"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/hex.h",
+      "sha256": "c2d77dcba2ae606bfbe05375435a43e2172b3b036290424d57cf310d12d5d7d1"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/hight.h",
+      "sha256": "7a19cc601ddd53f1203dff34e06ce47efa31fee89cab5457062bc2f0de55f08d"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/hkdf.h",
+      "sha256": "d98592e1f2e30d53f75d9737fbf2f33cc2a6f5f8013432b74723b984817fe60e"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/hmac.h",
+      "sha256": "740525bbc4f589f095a3f8b8a59117b6b22a59d21ae45933c7ef316b5e47d727"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/hmqv.h",
+      "sha256": "7d320391c1bad75da86092ef61ac74f99adc779a2eb5d1bab328089dafec9bd1"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/hrtimer.h",
+      "sha256": "f56a46502430247e1ea7f10c9effb20b7fcfdaaed4bbaa9c4e98a965be65031f"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/ida.h",
+      "sha256": "28b9c57524d910343e83cf7dca2be687801158dd04ec7509e2ec7e52de66d79c"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/idea.h",
+      "sha256": "a90a911df449766c7c54f53fae500175650169be64a80f32030eb0b059681158"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/integer.h",
+      "sha256": "e67029477147c24412d25cdaaebfc113f67367bb638518d98558ead85258df2d"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/iterhash.h",
+      "sha256": "03573788f5383338dd7d7706452938b26b1402628a325baccf96668118f63602"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/kalyna.h",
+      "sha256": "5d6b193f8bcd34057722fe2bf986148e312aa8b46b8ecc55945c071d9f451770"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/keccak.h",
+      "sha256": "f6c7508298074aedbcb28d4b9efc918776e6ecfefef48bfc1040452ce51ecc2a"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/lea.h",
+      "sha256": "2978f82f331eae6f2983abcef613840ddabdfadb0f5181cc064245d01f63872b"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/lubyrack.h",
+      "sha256": "23ff45500dac5752284da3ce70eb5c82cf20a0bb3a4dc32d1cf11e090300b734"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/luc.h",
+      "sha256": "27fa6d8678ea7b5645a3dfae90a09ccd2976ab2ce0793340271d3a9dd3781230"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/mars.h",
+      "sha256": "446094ab5a35051ca32cda9af496b2968736c7c15d15520037a70304bf6ad382"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/md2.h",
+      "sha256": "2a851d41ce20f09accd9aab14c077eaade6c1efa37125d37bf6c32ccb144bbbb"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/md4.h",
+      "sha256": "6e6fcd3e93f5ee257b13649e24751b3d8286da4df85bdbe7dbbd9855e32db13a"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/md5.h",
+      "sha256": "f7b01aa448c8f94d7712ac4a0cc2f1f66601e82018e1544c03031bc6190b4111"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/mdc.h",
+      "sha256": "8cc71aecafe6d5257ee1991dcd924d22e7ea6aa7e0f46ad2cb255fdba938cd50"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/mersenne.h",
+      "sha256": "7e632d342b9a0d745be026ca4bbade2d31d5dc82c5ab07c5e35061018efa961e"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/misc.h",
+      "sha256": "77ac74d0ae9a6a08fabc52410b2bd84d89259414c1a0f28d9188492a213474b3"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/modarith.h",
+      "sha256": "652cd84209b36d66b7361380d35a3539f9e5515cd3566da36fc113def24da528"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/modes.h",
+      "sha256": "25bfa6b625fb4cfe8851e8dd7d1dc958d57901b618ebdec3b4df9e068a3ed2a2"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/modexppc.h",
+      "sha256": "e5e670383b1ccf6d9a50b7dc9a3db4169ed7a11e7f7efb75097000cad5d50010"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/mqueue.h",
+      "sha256": "8801667807193e748a9f996f914c93aee68d0a92725fbfecdd539fc5faf2483d"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/mqv.h",
+      "sha256": "9b72dbfbc002ddc8ef9eb496e00c70076012a969ce4ecfd1f279460fc9c3e871"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/naclite.h",
+      "sha256": "99ea83ebfd6aabcd648ec961de5683203f76dfab940092ed5a7055fcd301a596"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/nbtheory.h",
+      "sha256": "a4f7281986a8cbffb52c3c4c2ef8295c6aed7d3f8e341812606d61d4f0cbebd8"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/nr.h",
+      "sha256": "43cc12e0d20593d5e18ae38554129e10da2c0f18eb97ca760fc3a9dda9274389"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/oaep.h",
+      "sha256": "649e1487e1e4ed6a05e4d0e38dc45ae97309d988d9bfbbcde3ffc1d6f4c70d83"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/oids.h",
+      "sha256": "2a4df8ea768562565e3af92eb88f4d1bbda92fc4436caaf30dca863e71ba7478"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/osrng.h",
+      "sha256": "a31f63bf1f0ee91da9f609125ab5cf029c37a35586ce162c1f1ea239e942ea1d"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/ossig.h",
+      "sha256": "8f0158dfdb21e410bcbe096ec64a46cced8c8efe666b1b043db4fe0a54b5b07f"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/padlkrng.h",
+      "sha256": "e9bd495ebd6647e1924e229c4cfcf0d679a7d78c9d6811327a6bca46ec0e4a46"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/panama.h",
+      "sha256": "f031dd8e94b2622ae3388a2211978392c8c45f2fb5e0a535e2e990a903fcc052"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/pch.h",
+      "sha256": "d629cfec26c9317f637137f137550f6f8138292acfd677baf0a986a1db80056b"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/pkcspad.h",
+      "sha256": "7a5dd58c5e1139d9ed06113a5a162d33033ffc9ad3770602eb45a3f65c7b3cc3"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/poly1305.h",
+      "sha256": "d6d998b10e5e9610270929ba37786536572679bde8415a8029ffab2548382dc9"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/polynomi.h",
+      "sha256": "f049a0f741dbeb8b9d226ff1e6fb2285e821621f2bba63f2ee998789b1a79749"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/ppc_simd.h",
+      "sha256": "c704eb1f30dcdd7d6f3c7c2163a957a8e6d7713927e2424fe11f1c526babdf24"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/pssr.h",
+      "sha256": "19d1546a449e6facf36540991324b77aa5cf1607853b55e082000d2a6368112f"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/pubkey.h",
+      "sha256": "279f56bcb926ca12a036fd1cd84f24a98d20523adec449c1f0f9f21b18655a86"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/pwdbased.h",
+      "sha256": "b2b268ca157ea05b5fc3d66d869755539f8563a94ebbc4f27eb7ade28f96b8c8"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/queue.h",
+      "sha256": "c3152793c1876adc794577e591bf8abdc2e220b7c82d5f1f53c31852e51299e8"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/rabbit.h",
+      "sha256": "7c997b5eaaff522a8974feee293e78d8ea902cc5bc3b0f12e769ad0605ced576"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/rabin.h",
+      "sha256": "bee7deae016366b830af6e1b16b3b322d00949bcc12e6785249b12d6148f1e7c"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/randpool.h",
+      "sha256": "815973f320742f262303bf9a0eed8f7a2aabb4eadfe24222fc73d28e5d29b64e"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/rc2.h",
+      "sha256": "24f99a90139c4cab53c3fbf01abc698e781ebaaeee54d071ccf6307350c7fec8"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/rc5.h",
+      "sha256": "24b9c5cbb6c53a555de3818685bb64536a7cd0b159aa00d27a19afae75c86843"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/rc6.h",
+      "sha256": "5ba46ae7ee816f086a6c5b3137dcc3c0de463820984afd7996c3736665413b86"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/rdrand.h",
+      "sha256": "cc17a29a3ad676e3c1b0be3f3f93f6c0bcf56a9053d2449e90651b1bf679aed6"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/resource.h",
+      "sha256": "b0b742a57b5f70e66b8f3b10ab0f38b294844161cbdb9e46d7aa2ad7d07b1547"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/rijndael.h",
+      "sha256": "df4112d553118de7b600b3b9da7e0e98f4804b4650efad9de53e7cd2d60b6a94"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/ripemd.h",
+      "sha256": "a67caf739d0a921d13ebca20f8d5c2c81fa9239f3298c8e61f6b1f473493bc92"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/rng.h",
+      "sha256": "d899b547f95c59fb32068ead64772997ada414f5f1be69e1a39ff0d4327f288d"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/rsa.h",
+      "sha256": "1f874bc2c384052a48dd2f9bf7baa1680cde56cfaa1100b201329f66f8bb2548"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/rw.h",
+      "sha256": "1943c2c2b9d7762359a41c278c39fa56fff82dcd78cfdce169a7ab0a217fb788"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/safer.h",
+      "sha256": "d063649760f216c8aeacad4d1887b522f13a1a857c7721c55b779930be5ff51d"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/salsa.h",
+      "sha256": "5770e01e67943a89f94bec7042add8894136993b58a4a6b948cab2748d75f2d9"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/scrypt.h",
+      "sha256": "1657b48ef67579bd9dd22c385f0b0d503d71baa9fc5e3edfef7743f690e631ad"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/seal.h",
+      "sha256": "e5a3127f74f7b88afaba90476b7827c2b43a9a99d1b592b63e86eb81ab1a9b20"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/secblock.h",
+      "sha256": "6d77032f210d130c8f91f3395008ad01f3325209cad58a0a52812b7afe5704cd"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/seckey.h",
+      "sha256": "be50fa0057592845557d1b947f0999163a37fdce42b75fa9e262c4178282d8e0"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/seed.h",
+      "sha256": "e9860c2e73708327ad079a3308948ef6e1b3ec47a43ce0bb0e2e886d12de8711"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/serpent.h",
+      "sha256": "dcbf254dbbc70a2d2d882ba178c6dd084880eb0073c39a15f21d56caca7d3959"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/serpentp.h",
+      "sha256": "8287431edd55b40fd92e54d65cb5cb0f95a1bb627eec39f1e93530d091a2ad85"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/sha.h",
+      "sha256": "f688cd693a4784182f238ab18108c35a86d308ef972a477df4ed30a47f1b65fe"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/sha3.h",
+      "sha256": "9c831608dbc4ccffa42a04d339b548641f7433b4bfbb5f745f30591d46455c11"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/shacal2.h",
+      "sha256": "57a321786e83f6723260511ce703579ad2d6974873a52e3f4fdaa9f2c8daa680"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/shake.h",
+      "sha256": "29cfe1e822e25d9f180bb3e0c6665294f9e7050312da529b762abe13cb106ebd"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/shark.h",
+      "sha256": "918cf1d24fc2a1d022e98c7db61d789612c9f68d3816c0e54a2f8c0056cd2a50"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/simeck.h",
+      "sha256": "791ef980e2b6657b66bc4d12651b177bb97f46d92320a7bfe49e02d0d5d76a32"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/simon.h",
+      "sha256": "3414bad28bb08b934328901f513c58fd202bc4aef350935add46a07ec31cd3ae"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/simple.h",
+      "sha256": "8afc061e0877f23dc570d6bf2a36f8ca99f56d57729e0d2ab0a2257ef20373ad"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/siphash.h",
+      "sha256": "929e5f6785d24d02f9649c206020af4d50876e4cd68683dddb6f105269adfecd"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/skipjack.h",
+      "sha256": "6d96ae5297082f9b5a3a520b177a3c17ceff95b34d4a2507ea7430f07a355c1d"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/sm3.h",
+      "sha256": "6a16e8d7cff46d62fadb3de82ccbd514d607138d4665952bfe0a0249f2157445"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/sm4.h",
+      "sha256": "9acc871d399a428b09e00be6d1fa034c25ae111da88e0b19671121e09dc65d0e"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/smartptr.h",
+      "sha256": "d709ed999d1142c32688b0f1b579c0fbffdbe725068e2fd6eb0058dfd485156e"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/sosemanuk.h",
+      "sha256": "5eaa8173fa4f31adc550f8c3acec1a62e4d636a773da8dc48cce8e5c21b2392d"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/speck.h",
+      "sha256": "b570c4810a122e2de2332eed5ea1c3e92dc323163ff6067f5b59ee9e7a621ae1"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/square.h",
+      "sha256": "aa8bdc637649497f38a7fddcdab48fc2145dbc5d21c9859acf984d87f1d7f717"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/stdcpp.h",
+      "sha256": "a0faf04cd12765546a535ee264b4799e315dc34ce87892e2d700bd77aa7760d4"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/strciphr.h",
+      "sha256": "8e68a839053a9912d88aab4b319bac2a9c4e2c3067bf4f4fc23cd0db9d2441fc"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/tea.h",
+      "sha256": "479ced173ee359f40a0cb2b6dffe481a2649a3b7b00d632b08a98e13f43d85ad"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/threefish.h",
+      "sha256": "abb97079b24288153da2b1279f65ac2fd19c7a671b8828f14747ffa0b03c59b1"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/tiger.h",
+      "sha256": "6192b159ba8009eb8fb2ca4a02471c813cce59629d8e73b3aa075073a0ce8b3b"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/trap.h",
+      "sha256": "0dc15abd7857e8bf433b7cbdd51e57bb21031ee9baa8e481f97dff2a9950fd7d"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/trunhash.h",
+      "sha256": "8ff143732cd481e35b047c50a46c531d4000b2c59cbdf9a3ebd52ebba2953c52"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/ttmac.h",
+      "sha256": "167f906bdda89dc09b0140ee48ce5323c1004e9dc72309aa85e35c3c3e3fcda1"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/tweetnacl.h",
+      "sha256": "b6284b2474b0dabfc5d3163b12c0b9673f67c1a9d1eb939460cfdb35523f4c6a"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/twofish.h",
+      "sha256": "889e90bb4a2bd042655c770ccce81acf8078a628a87a315506384109b1743bf1"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/validate.h",
+      "sha256": "7157ecfc41f537c57a906a30fdf02c690a1406900f24413e7fbc408d7f7580fd"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/vmac.h",
+      "sha256": "7cd69d35fab1bfd6ffcdf2c94072924c772e87d835b5db7b7d3c83a9d94e6f25"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/wake.h",
+      "sha256": "dcfd5c541eb29830215ab08e4716ecf9f18aab41c031ee1178d3628ed0319e6d"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/whrlpool.h",
+      "sha256": "7ef54e4eef73d1612d3ce2cc7b5b39eb4fc1b984ad2bbd4b1c59fe965b68f5fb"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/words.h",
+      "sha256": "3b1ad2c31a517ae2d614a49643e3fcb228e2fc253ccd225c75ecd0add1aae46c"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/xed25519.h",
+      "sha256": "a0e55d82446e803c5924882998e1f8d7d40428208779a90e9316df6306d7a72f"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/xtr.h",
+      "sha256": "fc0401bb87f04010fa78dd1cbc39c69ad0de0ee3427f4b01a55a9ab250f10676"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/xtrcrypt.h",
+      "sha256": "57bfad4f3dfe3f313911ff13c87b43908ca8d56edc4d1781276f5cff3e84be16"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/zdeflate.h",
+      "sha256": "7625f63fdfef8d133f2da178f3d6377e4045f6e6ce9db08f5980233d9d03e9be"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/zinflate.h",
+      "sha256": "7c3fc45341cbe2055900141b40216c3661b455e74d1c112ee87ed0a68364824b"
+    },
+    {
+      "path": "cie_sign_sdk/src/cryptopp/zlib.h",
+      "sha256": "94116b4a424a1c416956acc8667125a37761d5edf1e0af6904881e342504dd8f"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/3way.h",
+      "sha256": "3aaac95e6daad92761ce39af53816359e50b1c3f175470bb55e1a24f1bcbc06c"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/adler32.h",
+      "sha256": "51bdbee0478f008f3cf794695ec1987d139283a48d6532b94b51107897ed4aab"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/adv-simd.h",
+      "sha256": "ab2f2879f4b408a8766e9291dba6e92c8152ec250736f2099c21a9026d16ac63"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/aes.h",
+      "sha256": "4c49b05d27ecd4db6f8134096130291ece5421ca6a85fc315b04b09c39590629"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/algebra.h",
+      "sha256": "3d66c30450eed9d14fb85ab1e1d1c8f003ba1eeb5a265b3899c8edc0dff7e7c3"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/algparam.h",
+      "sha256": "5ec79c6a36f9b4a2b4679714c8442cc73a2150b967f1d9a0356f3b953fe9b614"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/arc4.h",
+      "sha256": "b3ec10ca7c054c15d96e0b3b1e5d1e8c9e7109d40be6c6a8f2ec233e4b6422c9"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/argnames.h",
+      "sha256": "4fa6995e67001c2b744d64e2f7f36629cf489be21f1ff242fbc13da43df59769"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/aria.h",
+      "sha256": "b1424bd2e63bcd053b1d198f4328079ea6b58fe90fba45b3ae3c37f9eddd16d8"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/asn.h",
+      "sha256": "18b012e21b2d0a986abedd00b3e4dd61208662c5ad2802dd17f00f0b45f3a563"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/authenc.h",
+      "sha256": "1b913a217bd6e36291789583ee9180041cca3d20b9ac599ec531b02e19c57cb4"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/base32.h",
+      "sha256": "0e3bbf43ab9fa0967062679dd9e8ce1a60ddb884188133cdd5e0a6c82ad22463"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/base64.h",
+      "sha256": "3a3a539c8f3ba7d6d8fdec4a2fb6fa9bb7cc4d4e735d25c527cf21dcfd64bafa"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/basecode.h",
+      "sha256": "4babbcda710f7ad19e18cb0a233f67f500ca508d004b1a5af237ae0224f2fcfd"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/bench.h",
+      "sha256": "3e47a8ea48457eb6bfe44f6cb85416b892bbdcf9e69968c3815cd8b8ab432060"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/blake2.h",
+      "sha256": "29d263c2ef13959ed2ec9c2c6156a344926c7cc436f25059dbb838321ab4c47a"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/blowfish.h",
+      "sha256": "f46768a1572caa2dce8543598c77347e0c9bba06a60fd114bbd9be57b79d1a74"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/blumshub.h",
+      "sha256": "7fe87393819ade4353adb150677299a2c84a5a224336a4a31765d69616fc5f3e"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/camellia.h",
+      "sha256": "8be9e9dede172afb6aaccfd85a20a380dd622da6b13e2e6d4f81c54dd627ebc1"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/cast.h",
+      "sha256": "f83ecb524635e8c8d9fce3cd6fabc800eaf8859895f1a0a3551364a645be5e47"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/cbcmac.h",
+      "sha256": "d916288a3857687bf14fd8e80874cb2f918da96c975cd39f4aa6fa1ae1b43b7a"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/ccm.h",
+      "sha256": "862cf233178d3b78eec62a75598706dcba0bd59b67224194898516342e839669"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/chacha.h",
+      "sha256": "b170079aaee658ff4824fd7a90f70b9d44b669bdb02cfb7f93fb27f094af8030"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/channels.h",
+      "sha256": "490b946d47884497404834fccbef521d3b8778249d31a94b21b787e1e3bdd616"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/cmac.h",
+      "sha256": "d1134ad64cc5c266e842215375effa15bbbbe571f7c5d5b1a12d4496e53e98bb"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/config.h",
+      "sha256": "aec75e35df8547dc67d6121b4ca8cfb0736e6fcc4928886a5467f597c6e4e874"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/cpu.h",
+      "sha256": "04d8036bcf16675587222fd211553aa5e8af9b9086cff07ccb427ae723531356"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/crc.h",
+      "sha256": "7132f5ad747a8bb7e8104708dffc869bc4d2c9df66aee1dd7e31858f1bd8fd98"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/cryptlib.h",
+      "sha256": "86497c9c694d35e10a502b2747170689d144b5d5c893b276f4710d26652652a2"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/default.h",
+      "sha256": "d1365282053dc1507bc0ae241bdafc342da8ccd850c8ee9bf1a7091a67eba1eb"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/des.h",
+      "sha256": "8817b65797a372ea80b84478b4f70bd6368d69fdeedaa3cf18ea45072c3e25e8"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/dh.h",
+      "sha256": "78dfba43ffdb7ca8d88a813bcebcfe9826d7b33a3c686ead784361d010794dc9"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/dh2.h",
+      "sha256": "3ba72b26fafa33411e18eccefb7ef2cddbca708cdacd717fa13dffc35068247a"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/dll.h",
+      "sha256": "94012bf1196df123b357995a26411ce83fd362f6a61960e2d6de473d6d897f90"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/dmac.h",
+      "sha256": "37c071709176abba7e9e7cb3d914470a3f39cc8c5254f2009369a7f845a7da26"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/drbg.h",
+      "sha256": "df41e09f1d4c6febee3e45bdfb9cccc4cd49762091924c4a8fdbb3d4e5b30cd2"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/dsa.h",
+      "sha256": "5da0386a2c862bd35e56632f12b7218be8ef43b4e7c00296fab310adfade59a0"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/eax.h",
+      "sha256": "595f200fc4bc6df7d6364a6fd277f67ee36c75a144a7e5a8347e4483841cb64e"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/ec2n.h",
+      "sha256": "32fbe3d5aa4ad59ed32859674f8bac1179f9664bd856b154e299960947bd0f81"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/eccrypto.h",
+      "sha256": "678de2a339e453143fd0e80b939842f5bfa884a7b18e6021b8de6eae75cec37c"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/ecp.h",
+      "sha256": "d745ddb55129cdb064b79099a51e6103dc3b74803344b1996422abf9d47c10b3"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/ecpoint.h",
+      "sha256": "35ad7db34f58b1d8bbe3e1868814e1492ea3477d91b6bbfdc83953f5377bd747"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/elgamal.h",
+      "sha256": "5f0cb7074269dda41fb3a06ced10aea9787a7fb6f097b6a39bf7e5c82185977f"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/emsa2.h",
+      "sha256": "d6fad095beaa915b7fc655394fcf80eb7cb5ad143b6a54d5d3adbd2d91557f04"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/eprecomp.h",
+      "sha256": "a9d230d8eb727abba9508ea2c3791679208cfb6a8dbbc20969743dce2b2a526d"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/esign.h",
+      "sha256": "6a6c1ed9804cff1ef77b439bf36b1ff44d7269258247a35c011a068c59876b26"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/factory.h",
+      "sha256": "db03524ab5fe084736a9a7353b4831b3df072e3b06872eb777975170220884a8"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/fhmqv.h",
+      "sha256": "7090e7e8f8616a5a33a83600f861b6a3577eb281ac6befe3828784cf32b81bde"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/files.h",
+      "sha256": "7ca21efeaf4fccdc2dee1223385e1503680434b8af4e2769e540095e07290d02"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/filters.h",
+      "sha256": "92780c9cc159d5672e97073b90338b9ae4160a1575d76a188400f6922824bc80"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/fips140.h",
+      "sha256": "604a43722b6398ba70ce716f8c20a836f228ac9e730459f4aa12cd52cec8f06f"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/fltrimpl.h",
+      "sha256": "fa048ff39522725d1cb35b84386c056d50bebd62ad4f9b372a000488679b80f4"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/gcm.h",
+      "sha256": "196256f0da0a4f401600a202590e05aa2f389b2dba3a774939fcb5815d0f349e"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/gf256.h",
+      "sha256": "5802332c695788d09e19c0070ad34d0059e716c9cf0559ca41cf34f62a1d7b81"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/gf2_32.h",
+      "sha256": "c0076464597ca949be1bf38f84ff787b9b8683d30cc9d12c19d9e89319d42dec"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/gf2n.h",
+      "sha256": "186591f67ce8cfa27fbbbb4b7ced33549603ff5b37c7bc01aefa79bb9c39047d"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/gfpcrypt.h",
+      "sha256": "989f01ed59b9fa8adc0df78a0634fbdfd3a653fd8499ef93f9adcee6a976f51a"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/gost.h",
+      "sha256": "24c5a7be88608b61220b207c9f001f46dd125e9a749e0cce9d063af490cccaa8"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/gzip.h",
+      "sha256": "90e7962529aca3f55a931843a5bfbbafefcf3dd266a01e51761a73f700e1e76e"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/hashfwd.h",
+      "sha256": "0da99ccab66c37e84723776f5e403b24600bcf0a1b63fb49f8efca567a298346"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/hex.h",
+      "sha256": "c2d77dcba2ae606bfbe05375435a43e2172b3b036290424d57cf310d12d5d7d1"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/hkdf.h",
+      "sha256": "d40d1d190286b3904d456a08a4bb59bc30d36dbef5ad8a1153beea6aa3d07422"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/hmac.h",
+      "sha256": "7383aa181b9330899a179dd6e85e19b4be27401a17225c18150d5ea86c9937de"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/hmqv.h",
+      "sha256": "81387f540add778f9ccc88b10090142dfe23e237f4becc65d5a32001e25d62fa"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/hrtimer.h",
+      "sha256": "f56a46502430247e1ea7f10c9effb20b7fcfdaaed4bbaa9c4e98a965be65031f"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/ida.h",
+      "sha256": "4a39714cb95b7fd44c59edbcfb010c7974ab4d44c04b2e7e66b10ff8e3707127"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/idea.h",
+      "sha256": "a90a911df449766c7c54f53fae500175650169be64a80f32030eb0b059681158"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/integer.h",
+      "sha256": "e67029477147c24412d25cdaaebfc113f67367bb638518d98558ead85258df2d"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/iterhash.h",
+      "sha256": "e55254fb08d81a594024e39640d050b80f8583f6442befad460e2993a0c95485"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/kalyna.h",
+      "sha256": "60f3d3122de23f18bd40c53351b5810adf2f074069c1491d9a1c13cda23e2229"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/keccak.h",
+      "sha256": "cfe235f4b1c90128aa3b3f07c0cc7c981d405f7a1672d653120b79f0fbb910e3"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/lubyrack.h",
+      "sha256": "23ff45500dac5752284da3ce70eb5c82cf20a0bb3a4dc32d1cf11e090300b734"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/luc.h",
+      "sha256": "27fa6d8678ea7b5645a3dfae90a09ccd2976ab2ce0793340271d3a9dd3781230"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/mars.h",
+      "sha256": "446094ab5a35051ca32cda9af496b2968736c7c15d15520037a70304bf6ad382"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/md2.h",
+      "sha256": "2a851d41ce20f09accd9aab14c077eaade6c1efa37125d37bf6c32ccb144bbbb"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/md4.h",
+      "sha256": "6e6fcd3e93f5ee257b13649e24751b3d8286da4df85bdbe7dbbd9855e32db13a"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/md5.h",
+      "sha256": "f7b01aa448c8f94d7712ac4a0cc2f1f66601e82018e1544c03031bc6190b4111"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/mdc.h",
+      "sha256": "8cc71aecafe6d5257ee1991dcd924d22e7ea6aa7e0f46ad2cb255fdba938cd50"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/mersenne.h",
+      "sha256": "7e632d342b9a0d745be026ca4bbade2d31d5dc82c5ab07c5e35061018efa961e"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/misc.h",
+      "sha256": "035ccb0f4528fc373532c950cafdbf324b55e0906741ef5c14c293dc10b7f036"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/modarith.h",
+      "sha256": "134621dd89bc4d8bb005ca40d5357bb21693118b40a6e502f31956cc064c2665"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/modes.h",
+      "sha256": "cf069a55151c1d0fc11b259c14be28682b7cfef143a3c147dc8182a8f0cb2fc8"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/modexppc.h",
+      "sha256": "e5e670383b1ccf6d9a50b7dc9a3db4169ed7a11e7f7efb75097000cad5d50010"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/mqueue.h",
+      "sha256": "8801667807193e748a9f996f914c93aee68d0a92725fbfecdd539fc5faf2483d"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/mqv.h",
+      "sha256": "9b72dbfbc002ddc8ef9eb496e00c70076012a969ce4ecfd1f279460fc9c3e871"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/naclite.h",
+      "sha256": "52da9753e582f007717c40596557f99bf1525c706acada24e8f6ba5d93627d22"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/nbtheory.h",
+      "sha256": "a4f7281986a8cbffb52c3c4c2ef8295c6aed7d3f8e341812606d61d4f0cbebd8"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/network.h",
+      "sha256": "d03f0a6f197611eb808db5c05515d0f2120c662ce5ac63e6ff290d3c0da26d9a"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/nr.h",
+      "sha256": "43cc12e0d20593d5e18ae38554129e10da2c0f18eb97ca760fc3a9dda9274389"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/oaep.h",
+      "sha256": "649e1487e1e4ed6a05e4d0e38dc45ae97309d988d9bfbbcde3ffc1d6f4c70d83"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/oids.h",
+      "sha256": "7a14f0a171ad0b2d2d5a1da0f9da99591aeafce0c017d4391f4fd79dbcdf5029"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/osrng.h",
+      "sha256": "2a04211efeac57e509fe9b2f8d9f99f9487919f9278ab41d0938be5f3c31c77f"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/ossig.h",
+      "sha256": "8f0158dfdb21e410bcbe096ec64a46cced8c8efe666b1b043db4fe0a54b5b07f"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/padlkrng.h",
+      "sha256": "6167c21f91de5acc25555257619b64494a66e7ad53d344beafa73c38fea14016"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/panama.h",
+      "sha256": "624d2ce8f320a9f72d7a908cc326e386ee494d7b5e82eee6be611a38663d7252"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/pch.h",
+      "sha256": "d629cfec26c9317f637137f137550f6f8138292acfd677baf0a986a1db80056b"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/pkcspad.h",
+      "sha256": "7a5dd58c5e1139d9ed06113a5a162d33033ffc9ad3770602eb45a3f65c7b3cc3"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/poly1305.h",
+      "sha256": "2481e140de622fc387b16a6af6cf03736f922ce66c3fbf12f8d29a3a9456c589"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/polynomi.h",
+      "sha256": "f049a0f741dbeb8b9d226ff1e6fb2285e821621f2bba63f2ee998789b1a79749"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/ppc-simd.h",
+      "sha256": "f3f44c00b1528b1e62e3bdd6e0ec1fb16459bf98e556c62aa7b7b474884991a4"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/pssr.h",
+      "sha256": "19d1546a449e6facf36540991324b77aa5cf1607853b55e082000d2a6368112f"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/pubkey.h",
+      "sha256": "caec592235919a237863f14adb9e9c030de19f2e1e6a6510ad529019fc752304"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/pwdbased.h",
+      "sha256": "892c302d9b178268bccb4373cdb888c46e9243c68781a7f9c2c35019e6c87bd4"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/queue.h",
+      "sha256": "c3152793c1876adc794577e591bf8abdc2e220b7c82d5f1f53c31852e51299e8"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/rabin.h",
+      "sha256": "bee7deae016366b830af6e1b16b3b322d00949bcc12e6785249b12d6148f1e7c"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/randpool.h",
+      "sha256": "815973f320742f262303bf9a0eed8f7a2aabb4eadfe24222fc73d28e5d29b64e"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/rc2.h",
+      "sha256": "24f99a90139c4cab53c3fbf01abc698e781ebaaeee54d071ccf6307350c7fec8"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/rc5.h",
+      "sha256": "24b9c5cbb6c53a555de3818685bb64536a7cd0b159aa00d27a19afae75c86843"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/rc6.h",
+      "sha256": "5ba46ae7ee816f086a6c5b3137dcc3c0de463820984afd7996c3736665413b86"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/rdrand.h",
+      "sha256": "c9d10978d06086441961e3a64af2894e6aa39bd30fb65cb06c6b42a181317372"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/resource.h",
+      "sha256": "b0b742a57b5f70e66b8f3b10ab0f38b294844161cbdb9e46d7aa2ad7d07b1547"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/rijndael.h",
+      "sha256": "6965b82f97af3f823a94b945d56857727d2519d59c42cdbd57d2afb3abab31c9"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/ripemd.h",
+      "sha256": "a67caf739d0a921d13ebca20f8d5c2c81fa9239f3298c8e61f6b1f473493bc92"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/rng.h",
+      "sha256": "d899b547f95c59fb32068ead64772997ada414f5f1be69e1a39ff0d4327f288d"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/rsa.h",
+      "sha256": "1f874bc2c384052a48dd2f9bf7baa1680cde56cfaa1100b201329f66f8bb2548"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/rw.h",
+      "sha256": "1943c2c2b9d7762359a41c278c39fa56fff82dcd78cfdce169a7ab0a217fb788"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/safer.h",
+      "sha256": "d063649760f216c8aeacad4d1887b522f13a1a857c7721c55b779930be5ff51d"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/salsa.h",
+      "sha256": "6e358838413a3996aa76d2192599e01831d83c49f63fbbb81344aba759b44e7d"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/scrypt.h",
+      "sha256": "52c18aa77c6ca02335797e2c9183abe205c9f03fbdb83804d9d650dc2588ce03"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/seal.h",
+      "sha256": "e5a3127f74f7b88afaba90476b7827c2b43a9a99d1b592b63e86eb81ab1a9b20"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/secblock.h",
+      "sha256": "bf782072862cd5acbd5c43e2f563ffc2cc1fd2711ce48f344b96597c29e18d25"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/seckey.h",
+      "sha256": "598b97281bfcfb66418247598f3a75c51bc785741674b5e080784470caa5c4d1"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/seed.h",
+      "sha256": "e9860c2e73708327ad079a3308948ef6e1b3ec47a43ce0bb0e2e886d12de8711"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/serpent.h",
+      "sha256": "dcbf254dbbc70a2d2d882ba178c6dd084880eb0073c39a15f21d56caca7d3959"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/serpentp.h",
+      "sha256": "8287431edd55b40fd92e54d65cb5cb0f95a1bb627eec39f1e93530d091a2ad85"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/sha.h",
+      "sha256": "4dda1ea473b78f65e6ae626353c82687daf33ef54166b380e7c06a78c2f87f11"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/sha3.h",
+      "sha256": "92580923c2d9beb864f85258a517798172663713ca7ce323700048afc24b7b3d"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/shacal2.h",
+      "sha256": "b724ece78ab2e6f58b7a93af1e83d3df2c9558157ec5ecd773b04e8e3ec8c71c"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/shark.h",
+      "sha256": "918cf1d24fc2a1d022e98c7db61d789612c9f68d3816c0e54a2f8c0056cd2a50"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/simon.h",
+      "sha256": "fa0743c87d6bca090fbf0ee4e40a0cc8204bbb70be6cd597f58460a95d71af26"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/simple.h",
+      "sha256": "8afc061e0877f23dc570d6bf2a36f8ca99f56d57729e0d2ab0a2257ef20373ad"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/siphash.h",
+      "sha256": "929e5f6785d24d02f9649c206020af4d50876e4cd68683dddb6f105269adfecd"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/skipjack.h",
+      "sha256": "64a8a77e1971532c6d4f38844b3574db5d130531a8936ed4f4218b0cc9dd07ba"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/sm3.h",
+      "sha256": "6a16e8d7cff46d62fadb3de82ccbd514d607138d4665952bfe0a0249f2157445"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/sm4.h",
+      "sha256": "81ccb985acd52506b8b2322cba7e0327743948921d29c1d64050a09b1c163ba1"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/smartptr.h",
+      "sha256": "d709ed999d1142c32688b0f1b579c0fbffdbe725068e2fd6eb0058dfd485156e"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/socketft.h",
+      "sha256": "30f13e439666c2b9ad4c71bd2514a07378c680d3ac2be5bbdab6b21c5bc445a6"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/sosemanuk.h",
+      "sha256": "de2c1c30c8e7d8e169f69d10a26db2659a97154912eea950a338787d160a1817"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/speck.h",
+      "sha256": "28c22eef7898e22ffe5b1d9d0b35d2f04bb4476050e25409043aa60a40a65360"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/square.h",
+      "sha256": "aa8bdc637649497f38a7fddcdab48fc2145dbc5d21c9859acf984d87f1d7f717"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/stdcpp.h",
+      "sha256": "f6f57551460bf98166f691a26f1d664d458411c9dc5178c8b26d5d76c51a5cfc"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/strciphr.h",
+      "sha256": "50fc8f6f274a8cb85ec47bdc1160150c64b6748b702efa76fa163ba97dbd1bcb"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/tea.h",
+      "sha256": "816c682dc19884b71cd782b348b5e973ad9f0ad8541e44d78e4f619c5417abf1"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/threefish.h",
+      "sha256": "a39ce10a6b2cba0f5b2083a65768eb3c59f2d682db4005f15504a30a9b5d769a"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/tiger.h",
+      "sha256": "6b7907b7729273c842ac784a2e2fd68978dff6d4714c2357a607247f2d3c9d7e"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/trap.h",
+      "sha256": "a114be10e94aefcf28d53b61a0ba16fe6a3d0ce6f26d266b9522e63188c53989"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/trdlocal.h",
+      "sha256": "92fff4014bfe216596e5b58db426d6cf15a443bed9a873c966201ca2938e1de9"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/trunhash.h",
+      "sha256": "8ff143732cd481e35b047c50a46c531d4000b2c59cbdf9a3ebd52ebba2953c52"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/ttmac.h",
+      "sha256": "167f906bdda89dc09b0140ee48ce5323c1004e9dc72309aa85e35c3c3e3fcda1"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/tweetnacl.h",
+      "sha256": "b6284b2474b0dabfc5d3163b12c0b9673f67c1a9d1eb939460cfdb35523f4c6a"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/twofish.h",
+      "sha256": "889e90bb4a2bd042655c770ccce81acf8078a628a87a315506384109b1743bf1"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/validate.h",
+      "sha256": "b9530bbb129ce2749e9bdadd22dde1bcaf656e3c9bbfcd3a4f6bbff93048aa11"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/vmac.h",
+      "sha256": "8aeb92ab5553205d782b7b103ca993011ffd3c9d5f37b94e588555089f54e86e"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/wait.h",
+      "sha256": "ca6a05121f2092975e9f95eb43e7dfea15a33a8a7b33fe3bca59c24705f68b9f"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/wake.h",
+      "sha256": "0449a198fd18a1daa2714fee6d62fd76cb0e61c734a238872dbff06098e97384"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/whrlpool.h",
+      "sha256": "fa6e72b867853e86679593efc3cc94e2c8f59c4305e0f5e232f56008503f15c2"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/winpipes.h",
+      "sha256": "3e20eb1d5036d0be236dbd5afff7faf8df9fe8e1493131a095cdeffbc7dfd831"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/words.h",
+      "sha256": "3b1ad2c31a517ae2d614a49643e3fcb228e2fc253ccd225c75ecd0add1aae46c"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/xtr.h",
+      "sha256": "fc0401bb87f04010fa78dd1cbc39c69ad0de0ee3427f4b01a55a9ab250f10676"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/xtrcrypt.h",
+      "sha256": "57bfad4f3dfe3f313911ff13c87b43908ca8d56edc4d1781276f5cff3e84be16"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/zdeflate.h",
+      "sha256": "7625f63fdfef8d133f2da178f3d6377e4045f6e6ce9db08f5980233d9d03e9be"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/zinflate.h",
+      "sha256": "7c3fc45341cbe2055900141b40216c3661b455e74d1c112ee87ed0a68364824b"
+    },
+    {
+      "path": "cie-pkcs11/Cryptopp/zlib.h",
+      "sha256": "94116b4a424a1c416956acc8667125a37761d5edf1e0af6904881e342504dd8f"
+    }
+  ]
+}

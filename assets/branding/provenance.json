@@ -1,0 +1,33 @@
+{
+  "reference_project": "gezza-dev/cie-id-macos-universal",
+  "reference_asset": "CIE ID/Assets.xcassets/AppIcon.appiconset/icon_512@2x.png",
+  "reference_sha256": "2a42c0ee3a769b1b861fab8a7c771fbc3ea5238f276a36687511fa30888118b4",
+  "edit": "Two deterministic SVG/native appearance variants matching Flutter scaffold backgrounds: light #F7F8FC, dark #121318. Base and circular border share each theme color; CIE logo source artwork preserved; centered circle scale 0.73.",
+  "date": "2026-10-19",
+  "composition_reference": "Screenshot 2026-10-19 alle 11.55.49.png",
+  "composition_reference_sha256": "c9129b0257f4d2b7b64216946ae2dded384af7ca0888d0ce2bb07a4409badd68",
+  "native_source": "macos/Runner/AppIcon.icon",
+  "svg_source": "assets/branding/source/CIE-ID.svg",
+  "composition": {
+    "canvas": 1024,
+    "circle_scale": 0.73,
+    "background_alpha": 255,
+    "svg_corner_radius": 224,
+    "theme_colors": {
+      "light": "#F7F8FC",
+      "dark": "#121318"
+    },
+    "circle_content_radius": 492
+  },
+  "circle_source_sha256": "19faa9dd6371463b518b9f1e898acb9c1838f3615ad8f5a1e89552a0f2e3f99a",
+  "master_sha256": "1e0b05d18d6a35ded5963d8a77af42e8be7aa5322f190c23f4bcf0253c101c99",
+  "previous_generated_composite_sha256": "88184c24c8d24d871749e66556c1265c92ff50dd2cbde28b5d877cd97137bbb7",
+  "native_background_layers": [
+    "appearance-specific full-bleed solid fills",
+    "opaque Base-light.svg/Base-dark.svg; no glass"
+  ],
+  "theme_master_sha256": {
+    "light": "1e0b05d18d6a35ded5963d8a77af42e8be7aa5322f190c23f4bcf0253c101c99",
+    "dark": "c6d4b5e8cd28ef7ea5dec5677ca47f346d7902be3f8256230c902a286f567f6c"
+  }
+}

@@ -1,0 +1,45 @@
+name: CIE ID Desktop checks
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15
+            target: macos
+          - os: windows-2022
+            target: windows
+          - os: ubuntu-24.04
+            target: linux
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Linux desktop and PC/SC build requirements
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y ninja-build pkg-config libgtk-3-dev libpcsclite-dev liblzma-dev
+      - name: Install the pinned Flutter SDK from its official repository
+        run: |
+          git clone --depth 1 --branch 3.47.7 https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          test "$(git -C "$RUNNER_TEMP/flutter" rev-parse HEAD)" = abaf9c523780a608bd46686fd5e53740a07077f8
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+      - name: Analyze and test the shared UI
+        run: |
+          flutter --suppress-analytics pub get --enforce-lockfile
+          flutter --suppress-analytics analyze
+          flutter --suppress-analytics test
+      - name: Compile and test the portable C bridge with synthetic backends
+        run: |
+          cmake -S native -B build/bridge-ci -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build/bridge-ci --config Debug
+          ctest --test-dir build/bridge-ci -C Debug --output-on-failure
+      - name: Compile the platform app shell
+        run: flutter --suppress-analytics build ${{ matrix.target }} --release
+      # These jobs validate compilation and ABI boundaries only. No card/PIN,
+      # production signing identity or assumption of a Windows/Linux CIE backend.

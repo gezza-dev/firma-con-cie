@@ -1,0 +1,486 @@
+{
+  "schema_version": 1,
+  "scope": "Explicit licence notices found in retained upstream source; not an exhaustive ownership certificate",
+  "files": [
+    {
+      "path": "TestCIE/main.cpp",
+      "license": "GPL-2.0-or-later"
+    },
+    {
+      "path": "cie-pkcs11/Util/UUCByteArray.cpp",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie-pkcs11/Util/UUCByteArray.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie-pkcs11/Util/UUCHashtable.hpp",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie-pkcs11/Util/UUCProperties.cpp",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie-pkcs11/Util/UUCProperties.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie-pkcs11/Util/UUCTextFileReader.cpp",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie-pkcs11/Util/UUCTextFileReader.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie-pkcs11/Util/UUCTextFileWriter.cpp",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie-pkcs11/Util/UUCTextFileWriter.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/libiconv/include/libcharset.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/libiconv/include/localcharset.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfArray.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfCanvas.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfColor.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfContentsTokenizer.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfData.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfDataType.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfDate.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfDefines.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfDictionary.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfEncoding.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfEncodingFactory.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfEncrypt.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfError.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfExtension.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfFileStream.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfFilter.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfFiltersPrivate.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfImmediateWriter.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfInputDevice.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfInputStream.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfMemStream.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfMemoryManagement.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfName.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfObject.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfObjectStreamParserObject.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfOutputDevice.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfOutputStream.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfParser.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfParserObject.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfRect.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfRefCountedBuffer.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfRefCountedInputDevice.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfReference.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfStream.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfString.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfTokenizer.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfVariant.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfVecObjects.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfWriter.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfXRef.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfXRefStream.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/PdfXRefStreamParserObject.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/util/PdfMutex.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/util/PdfMutexImpl_noop.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/util/PdfMutexImpl_pthread.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/util/PdfMutexImpl_win32.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/base/util/PdfMutexWrapper.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfAcroForm.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfAction.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfAnnotation.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfCMapEncoding.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfContents.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfDestination.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfDifferenceEncoding.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfDocument.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfElement.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfEncodingObjectFactory.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfField.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfFileSpec.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfFont.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfFontCID.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfFontCache.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfFontConfigWrapper.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfFontFactory.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfFontFactoryBase14Data.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfFontMetrics.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfFontMetricsBase14.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfFontMetricsFreetype.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfFontMetricsObject.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfFontSimple.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfFontTTFSubset.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfFontTrueType.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfFontType1.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfFontType1Base14.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfFontType3.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfFunction.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfHintStream.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfIdentityEncoding.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfImage.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfInfo.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfMemDocument.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfNamesTree.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfOutlines.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfPage.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfPagesTree.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfPagesTreeCache.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfPainter.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfPainterMM.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfShadingPattern.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfSignOutputDevice.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfSignatureField.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfSignatureFieldEx.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfStreamedDocument.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfTTFWriter.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfTable.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfTilingPattern.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/doc/PdfXObject.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/podofo-base.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/include/podofo/podofo.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/src/RSA/rc2.c",
+      "license": "BSD-3-Clause-KTH"
+    },
+    {
+      "path": "cie_sign_sdk/src/RSA/rc2.h",
+      "license": "BSD-3-Clause-KTH"
+    },
+    {
+      "path": "cie_sign_sdk/src/Util/UUCByteArray.cpp",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/src/Util/UUCByteArray.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/src/Util/UUCHashtable.hpp",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/src/Util/UUCProperties.cpp",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/src/Util/UUCProperties.h",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/src/Util/UUCTextFileReader.cpp",
+      "license": "LGPL-2.0-or-later"
+    },
+    {
+      "path": "cie_sign_sdk/src/Util/UUCTextFileReader.h",
+      "license": "LGPL-2.0-or-later"
+    }
+  ]
+}

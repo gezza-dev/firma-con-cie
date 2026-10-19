@@ -1,0 +1,29 @@
+{
+  "source": "https://www.cartaidentita.interno.gov.it/pa-e-imprese/certification-autority-2/",
+  "retrieved": "2026-10-16",
+  "policy": "Only root.pem is an application trust anchor. The SubCAs are untrusted issuer candidates; paths must validate to an approved anchor. No system trust stores are modified. Root changes require explicit source review.",
+  "archives": {
+    "root.zip": {
+      "url": "https://www.cartaidentita.interno.gov.it/downloads/2021/12/NationalrootCAfortheItalianElectronicIdentityCard.zip",
+      "sha256": "a8954f39a727da7c95f4da0804a786f1a90dc500171dc6dfa1f7efcc0dc87d25"
+    },
+    "sub1.zip": {
+      "url": "https://www.cartaidentita.interno.gov.it/downloads/2021/12/IssuingsubCAfortheItalianElectronicIdentityCardSUBCA1.zip",
+      "sha256": "85ce208522bfa735dbf19410b80d3542c66389e17acfb03ff7bc4cb4722cf900"
+    },
+    "sub2.zip": {
+      "url": "https://www.cartaidentita.interno.gov.it/downloads/2021/12/IssuingsubCAfortheItalianElectronicIdentityCardSUBCA002.zip",
+      "sha256": "8dfa9e9653002c4ca1bf16b87e896c76e6729d6590a6d66d07c979f63c2eeaa2"
+    },
+    "sub3.zip": {
+      "url": "https://www.cartaidentita.interno.gov.it/downloads/2024/05/IssuingsubCAfortheItalianElectronicIdentityCardSUBCA003.zip",
+      "sha256": "dc95c272e1d29ee0e10a4b02c69690fcb945e71d721654f9604bd8cff61b3752"
+    }
+  },
+  "pemSha256": {
+    "root.pem": "44b9310d3ef7aa88b734b27e319dadea8cf9dd3c858296cd1328f9a3ee6f83f8",
+    "subca1.pem": "4dc3bf54438c640244a9151fc5291f5d979bbd7f33aa58306770af212de7a914",
+    "subca002.pem": "b666dd918c20bd5e7606c3093a133ddd0c4360f6de64d2b8d4695e76d28f1dd5",
+    "subca003.pem": "9a3d87324b8088c640bbaabfa53f8583c17d1134aa8ef30fe0ca52fe1c065855"
+  }
+}

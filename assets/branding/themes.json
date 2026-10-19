@@ -1,0 +1,13 @@
+{
+  "canvas": 1024,
+  "circleScale": 0.73,
+  "cornerRadius": 224,
+  "circleContentRadius": 492,
+  "default": "light",
+  "themes": {
+    "light": "#F7F8FC",
+    "dark": "#121318"
+  },
+  "colorSource": "lib/app_theme.dart: light scaffoldBackgroundColor; dark ColorScheme.fromSeed(seedColor: 0xff4c65ad, brightness: dark).surface",
+  "colorSourceVerified": "2026-10-19"
+}

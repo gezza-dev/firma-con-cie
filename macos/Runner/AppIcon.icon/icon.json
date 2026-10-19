@@ -1,0 +1,86 @@
+{
+  "fill-specializations": [
+    {
+      "value": {
+        "solid": "srgb:0.96862745,0.97254902,0.98823529,1.00000000"
+      }
+    },
+    {
+      "appearance": "dark",
+      "value": {
+        "solid": "srgb:0.07058824,0.07450980,0.09411765,1.00000000"
+      }
+    },
+    {
+      "appearance": "tinted",
+      "value": {
+        "solid": "srgb:0.07058824,0.07450980,0.09411765,1.00000000"
+      }
+    }
+  ],
+  "groups": [
+    {
+      "name": "CIE ID",
+      "layers": [
+        {
+          "image-name-specializations": [
+            {
+              "value": "Circle-light.svg"
+            },
+            {
+              "appearance": "dark",
+              "value": "Circle-dark.svg"
+            },
+            {
+              "appearance": "tinted",
+              "value": "Circle-dark.svg"
+            }
+          ],
+          "name": "Logo CIE ID",
+          "glass": false,
+          "opacity": 1,
+          "position": {
+            "scale": 0.73,
+            "translation-in-points": [
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "image-name-specializations": [
+            {
+              "value": "Base-light.svg"
+            },
+            {
+              "appearance": "dark",
+              "value": "Base-dark.svg"
+            },
+            {
+              "appearance": "tinted",
+              "value": "Base-dark.svg"
+            }
+          ],
+          "name": "Base opaca del tema",
+          "glass": false,
+          "opacity": 1
+        }
+      ],
+      "specular": false,
+      "blur-material": 0,
+      "shadow": {
+        "kind": "none",
+        "opacity": 0
+      },
+      "translucency": {
+        "enabled": false,
+        "value": 0
+      }
+    }
+  ],
+  "supported-platforms": {
+    "squares": [
+      "macOS"
+    ]
+  }
+}

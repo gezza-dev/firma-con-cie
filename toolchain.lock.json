@@ -1,0 +1,21 @@
+{
+  "flutter": {
+    "manifest": "https://storage.googleapis.com/flutter_infra_release/releases/releases_macos.json",
+    "base_url": "https://storage.googleapis.com/flutter_infra_release/releases",
+    "hash": "abaf9c523780a608bd46686fd5e53740a07077f8",
+    "channel": "stable",
+    "version": "3.47.7",
+    "dart_sdk_version": "3.13.5",
+    "dart_sdk_arch": "arm64",
+    "release_date": "2026-10-08T23:21:43.136712Z",
+    "archive": "stable/macos/flutter_macos_arm64_3.47.7-stable.zip",
+    "sha256": "dd9da574c3168460550117eb0e8dd0313ae934fabf64a82a6d557fff5fd1422e"
+  },
+  "backend": {
+    "repository": "https://github.com/gezza-dev/cie-id-macos-universal.git",
+    "ref": "v1.5.2",
+    "commit": "355c9b742268af80466404d80287ad9ce3f8c9b4",
+    "macos_middleware_sha256": "daf64ac3975af04c708e164aa6ae8887fcc9f6d18bdc11ba789d59a35cd871ff"
+  },
+  "prototype_abi": 1
+}

@@ -1,0 +1,8 @@
+/*
+ * hash.c: hash tables
+ *
+ * Hash table with open addressing, linear probing and
+ * Robin Hood reordering.
+ *
+ * See Copyright for the status of this software.
+ */

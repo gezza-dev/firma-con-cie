@@ -1,0 +1,149 @@
+{
+  "schema_version": 1,
+  "files": [
+    {
+      "path": "cie_sign_sdk/src/RSA/nn.c",
+      "sha256": "df56ff57ac1fa531433a3cb3f7c92851962f21963434548612974b692f38f880",
+      "reason": "Replaced by OpenSSL/std-library implementation or unused legacy implementation removed",
+      "action": "removed"
+    },
+    {
+      "path": "cie_sign_sdk/src/RSA/sha2.c",
+      "sha256": "880c7356547fc9afc893b8e52f864ffb5e927e620d24fb5b13da4e66a18c5767",
+      "reason": "Replaced by OpenSSL/std-library implementation or unused legacy implementation removed",
+      "action": "removed"
+    },
+    {
+      "path": "cie_sign_sdk/src/RSA/r_stdlib.c",
+      "sha256": "268f3793e87ed2d04a209154a59c3b749d892722287394ebc6024b573f3ec73f",
+      "reason": "Replaced by OpenSSL/std-library implementation or unused legacy implementation removed",
+      "action": "removed"
+    },
+    {
+      "path": "cie_sign_sdk/src/RSA/global.h",
+      "sha256": "3faaac4d1e38f7b1f55e388fbf2735c46d5b7a87419dcb8216687dc05d82226f",
+      "reason": "Replaced by OpenSSL/std-library implementation or unused legacy implementation removed",
+      "action": "removed"
+    },
+    {
+      "path": "cie_sign_sdk/src/RSA/rsa.c",
+      "sha256": "e8892a1c9331e58d9626e6fff925e826ef75683cc476bb7ef814694bda075b3d",
+      "reason": "Replaced by OpenSSL/std-library implementation or unused legacy implementation removed",
+      "action": "removed"
+    },
+    {
+      "path": "cie_sign_sdk/src/RSA/sha1.c",
+      "sha256": "c5c9413a7367ce99f0ce8aa11d2fd0ad844767380586babacb1fa32da82626c1",
+      "reason": "Replaced by OpenSSL/std-library implementation or unused legacy implementation removed",
+      "action": "removed"
+    },
+    {
+      "path": "cie_sign_sdk/src/RSA/sha2.h",
+      "sha256": "f08ae7261429a3f61bf919e9f8b7ebe98798ceb692557695494a2d74a831b229",
+      "reason": "Replaced by OpenSSL/std-library implementation or unused legacy implementation removed",
+      "action": "removed"
+    },
+    {
+      "path": "cie_sign_sdk/src/RSA/nn.h",
+      "sha256": "b1a04d70086a3349ba1e9b36de3341a23d3ea015db7730fd1260ede5f8418849",
+      "reason": "Replaced by OpenSSL/std-library implementation or unused legacy implementation removed",
+      "action": "removed"
+    },
+    {
+      "path": "cie_sign_sdk/src/RSA/desc.c",
+      "sha256": "c6177869d4b10b00d1a812d5fd1745d01a447c57d2e22527a5ec1c47af5e0bdc",
+      "reason": "Replaced by OpenSSL/std-library implementation or unused legacy implementation removed",
+      "action": "removed"
+    },
+    {
+      "path": "cie_sign_sdk/src/RSA/des.h",
+      "sha256": "5a53fff48e20e370ffb3168455ca8346db426d43254f3f71ef7a47506547bdb0",
+      "reason": "Replaced by OpenSSL/std-library implementation or unused legacy implementation removed",
+      "action": "removed"
+    },
+    {
+      "path": "cie_sign_sdk/src/RSA/sha1.h",
+      "sha256": "b15c6f35401a58fb4648cf65b428251b1cbe442f796e55728e52d719dd721f0f",
+      "reason": "Replaced by OpenSSL/std-library implementation or unused legacy implementation removed",
+      "action": "removed"
+    },
+    {
+      "path": "cie_sign_sdk/src/RSA/rsa.h",
+      "sha256": "a989729ddb8ac8396ed3ad89e172222a3c249167d719a1f538241b591c907cc2",
+      "reason": "Replaced by OpenSSL/std-library implementation or unused legacy implementation removed",
+      "action": "removed"
+    },
+    {
+      "path": "cie_sign_sdk/src/RSA/rsaeuro.h",
+      "sha256": "627ddf8c73ad63ff9e6df4dd662fef67d5f00306230b25ffef05fbc12f457276",
+      "reason": "Replaced by OpenSSL/std-library implementation or unused legacy implementation removed",
+      "action": "removed"
+    },
+    {
+      "path": "cie_sign_sdk/src/RSA/r_encode.c",
+      "sha256": "312646308a24d29281772f5c720750a98674f4ab4028e752f6440a6f713a045a",
+      "reason": "Replaced by OpenSSL/std-library implementation or unused legacy implementation removed",
+      "action": "removed"
+    },
+    {
+      "path": "cie_sign_sdk/include/UUCHashtable.h",
+      "sha256": "424916ad449ff25291917b8a16eae41a34dbf1b83dbc98a4082114e6ff8a1e5d",
+      "reason": "Replaced by OpenSSL/std-library implementation or unused legacy implementation removed",
+      "action": "removed"
+    },
+    {
+      "path": "cie_sign_sdk/src/ASN1/ASN1Exception.h",
+      "sha256": "6bff82b82b5d9e00a65094c550fac77f8af08f2bf467f8e0b663b4e41e96d342",
+      "reason": "Replaced by OpenSSL/std-library implementation or unused legacy implementation removed",
+      "action": "removed"
+    },
+    {
+      "path": "cie_sign_sdk/src/ASN1/UUCBufferedReader.h",
+      "sha256": "e1b1278b4987802bb12f7db2a39cfe7a5e2dcf43e8cfa90001ff05a1de515a2b",
+      "reason": "Replaced by OpenSSL/std-library implementation or unused legacy implementation removed",
+      "action": "removed"
+    },
+    {
+      "path": "cie_sign_sdk/src/ASN1/UUCBufferedReader.cpp",
+      "sha256": "d750a2a493796f6c77890163615bd1cd9bd376042e226785ca5de2bdd6c439bb",
+      "reason": "Replaced by OpenSSL/std-library implementation or unused legacy implementation removed",
+      "action": "removed"
+    },
+    {
+      "path": "cie_sign_sdk/include/UUCStringTable.h",
+      "sha256": "9c448f0463d4b6cf314cf42f8098fed384d510c91732cac9bf06cd68bdce762c",
+      "action": "reimplemented",
+      "reason": "Shared BSD std::map implementation; original hashtable dependency removed"
+    },
+    {
+      "path": "cie_sign_sdk/src/UUCStringTable.cpp",
+      "sha256": "99d5b7bcc95909d8c0f16e8ab770a4fb4056423ad1f4f40b8e927a523af89e87",
+      "action": "reimplemented",
+      "reason": "Shared BSD std::map implementation; original hashtable dependency removed"
+    },
+    {
+      "path": "cie_sign_sdk/src/Util/UUCStringTable.h",
+      "sha256": "6787ce0e5ffc9c8bf5e96cc450fab4efd5f7396cf2dba211c27d69fb2e2ebf87",
+      "action": "reimplemented",
+      "reason": "Shared BSD std::map implementation; original hashtable dependency removed"
+    },
+    {
+      "path": "cie_sign_sdk/src/Util/UUCStringTable.cpp",
+      "sha256": "99d5b7bcc95909d8c0f16e8ab770a4fb4056423ad1f4f40b8e927a523af89e87",
+      "action": "reimplemented",
+      "reason": "Shared BSD std::map implementation; original hashtable dependency removed"
+    },
+    {
+      "path": "cie-pkcs11/Util/UUCStringTable.h",
+      "sha256": "af5ed35d8d52e65c9b50037d993605c53ae063001f93af34d4713af377bf5e2d",
+      "action": "reimplemented",
+      "reason": "Shared BSD std::map implementation; original hashtable dependency removed"
+    },
+    {
+      "path": "cie-pkcs11/Util/UUCStringTable.cpp",
+      "sha256": "4621b9b082322a1a350df2bced0350557f147d5d9a9ced2611c896544ec832cf",
+      "action": "reimplemented",
+      "reason": "Shared BSD std::map implementation; original hashtable dependency removed"
+    }
+  ]
+}

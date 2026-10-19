@@ -1,0 +1,74 @@
+{
+  "openssl": {
+    "version": "3.5.9",
+    "url": "https://github.com/openssl/openssl/releases/download/openssl-3.5.9/openssl-3.5.9.tar.gz",
+    "sha256": "603f5602e2eef00d77fbd429d34dcd5822bb301757a1bc9cdb24c670f1eb859a",
+    "archive": "openssl-3.5.9.tar.gz"
+  },
+  "cryptopp": {
+    "version": "8.9.0",
+    "url": "https://codeload.github.com/weidai11/cryptopp/tar.gz/refs/tags/CRYPTOPP_8_9_0",
+    "sha256": "ab5174b9b5c6236588e15a1aa1aaecb6658cdbe09501c7981ac8db276a24d9ab",
+    "archive": "cryptopp-8.9.0.tar.gz"
+  },
+  "podofo": {
+    "version": "1.1.2",
+    "url": "https://codeload.github.com/podofo/podofo/tar.gz/refs/tags/1.1.2",
+    "sha256": "d6ffe6fc173ac6d6e5b00f5cb9db01990cab1bdf7cc03bdeffce3013bc9ec63a",
+    "archive": "podofo-1.1.2.tar.gz"
+  },
+  "zlib": {
+    "version": "1.3.2",
+    "url": "https://github.com/madler/zlib/releases/download/v1.3.2/zlib-1.3.2.tar.gz",
+    "sha256": "bb329a0a2cd0274d05519d61c667c062e06990d72e125ee2dfa8de64f0119d16",
+    "archive": "zlib-1.3.2.tar.gz"
+  },
+  "libpng": {
+    "version": "1.6.59",
+    "url": "https://codeload.github.com/pnggroup/libpng/tar.gz/refs/tags/v1.6.59",
+    "sha256": "2540302a1844ad2b2b501977abecfa850f265f97b78f065a712ab4074a89f5b5",
+    "archive": "libpng-1.6.59.tar.gz"
+  },
+  "freetype": {
+    "version": "2.14.3",
+    "url": "https://codeload.github.com/freetype/freetype/tar.gz/refs/tags/VER-2-14-3",
+    "sha256": "dc49de6b01a266eef4876a4dd34d9842c475d3e28ff2eff63bd2fb760ab56261",
+    "archive": "freetype-2.14.3.tar.gz"
+  },
+  "expat": {
+    "version": "2.9.0",
+    "url": "https://github.com/libexpat/libexpat/releases/download/R_2_9_0/expat-2.9.0.tar.gz",
+    "sha256": "16afbb9cefead2aa278105cf27d9f597bde7fbf3dbb85015857ca7ca6a4e89ba",
+    "archive": "expat-2.9.0.tar.gz"
+  },
+  "fontconfig": {
+    "version": "2.18.3",
+    "url": "https://gitlab.freedesktop.org/api/v4/projects/890/packages/generic/fontconfig/2.18.3/fontconfig-2.18.3.tar.xz",
+    "sha256": "4f7b554a38cdf78c033f666c8871f3749e14a094f65a07f630c91ed0b43d35e3",
+    "archive": "fontconfig-2.18.3.tar.xz"
+  },
+  "libiconv": {
+    "version": "1.19",
+    "url": "https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.19.tar.gz",
+    "sha256": "88dd96a8c0464eca144fc791ae60cd31cd8ee78321e67397e25fc095c4a19aa6",
+    "archive": "libiconv-1.19.tar.gz"
+  },
+  "libxml2": {
+    "version": "2.15.4",
+    "url": "https://download.gnome.org/sources/libxml2/2.15/libxml2-2.15.4.tar.xz",
+    "sha256": "98087fd181d9070724f3fbc65c7377db03038eb92bd882374daff44940138821",
+    "archive": "libxml2-2.15.4.tar.xz"
+  },
+  "libcurl": {
+    "version": "8.23.0",
+    "url": "https://curl.se/download/curl-8.23.0.tar.xz",
+    "sha256": "8dadd7d2536a314f982ad05a651b713f426bf7d02cc2c76cffb9796f2218e6c5",
+    "archive": "curl-8.23.0.tar.xz"
+  },
+  "bzip2": {
+    "version": "1.0.8",
+    "url": "https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz",
+    "sha256": "ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269",
+    "archive": "bzip2-1.0.8.tar.gz"
+  }
+}

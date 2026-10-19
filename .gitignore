@@ -1,0 +1,97 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Widget Preview related
+.widget_preview/
+
+# Local runtime, personal documents and validation artifacts
+/native/runtime/
+/dist/
+/reports/
+/output/
+/local-backend.json
+
+/LOCAL_SETUP.md
+
+__pycache__/
+*.py[cod]
+
+# Machine-specific tools, signing material and private configuration
+/.tools/
+/.transfer/
+/.codex/
+/.venv/
+.env
+.env.*
+*.p12
+*.pfx
+*.key
+*.keychain
+*.keychain-db
+*.mobileprovision
+*.provisionprofile
+*.app/
+*.appex/
+*.dmg
+*.exe
+*.dll
+*.dylib
+*.so
+*.a
+*.jar
+*.zip
+*.tar.gz
+*.tgz
+**/install_manifest.txt
+
+# Only the deliberately synthetic, versioned PDF belongs in the source tree.
+*.pdf
+!/assets/prova.pdf
+*.p7m
+*.p7s
+*.tsr
+*.tst
+*.crl

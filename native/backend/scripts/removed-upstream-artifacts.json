@@ -1,0 +1,1250 @@
+{
+  "scope": "Current working-tree snapshot only; upstream Git history is not rewritten",
+  "artifacts": [
+    {
+      "path": "cie-pkcs11/libcryptopp.a",
+      "sha256": "c26cd72d3010ef144b6478acb481301af6ca7dbda1ef61efb90f8e7d1a492a72",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeCache.txt",
+      "sha256": "a240f8d18fdd231feb68da47bdf5a623d4ecca73b2090319fb5fe4fe2faae883",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/3.28.0/CMakeCCompiler.cmake",
+      "sha256": "6401b58f466d184e157f3eaa3da4fd20487986607a799e920488a9aba3c33fcc",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/3.28.0/CMakeCXXCompiler.cmake",
+      "sha256": "3f90c4e0b0b5143b070174a1a42966ea425bf597f1a143f9d5fc039353d54b41",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/3.28.0/CMakeDetermineCompilerABI_C.bin",
+      "sha256": "2d1514ce9150e4ac477cc743b4a920e36390751d30bca19411df8925d7b2994f",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/3.28.0/CMakeDetermineCompilerABI_CXX.bin",
+      "sha256": "f8e1a151c30072b8d5b8c67e3fe989d09188a5b29b752af33bc3584ab9d657e7",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/3.28.0/CMakeSystem.cmake",
+      "sha256": "307a7f13cfb654ffa618788de5d795bc4d82ad3a245b3fd3d920de1ca543b7ad",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/3.28.0/CompilerIdC/CMakeCCompilerId.c",
+      "sha256": "9a95913d134b6c5dca36f23acb80765b86313bcfd8da754e5ceb2e259e954074",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/3.28.0/CompilerIdC/CMakeCCompilerId.o",
+      "sha256": "2f8c1340583eb38b6a5b0235ba2b0ed472e25867e43dedc308673322155c1ddd",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/3.28.0/CompilerIdCXX/CMakeCXXCompilerId.cpp",
+      "sha256": "9b1ebe4919c111011dba043f743e42ada0f1e3804b211e42191d773e7043282c",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/3.28.0/CompilerIdCXX/CMakeCXXCompilerId.o",
+      "sha256": "fc177104c482657759df4320b7584bae4ab67e09ca2584dbf911c2110405d0d9",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/CMakeConfigureLog.yaml",
+      "sha256": "4501034ba9908b67b670a23d0942bc9826327db60eb57587469bea76e4f4110a",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/CMakeDirectoryInformation.cmake",
+      "sha256": "63fd7d83bb23dc8948659aa4c32c340c43638d3e18e38f0763463df56e4549b1",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/Makefile.cmake",
+      "sha256": "1d68bab33c7d87722a1b69a6d8b3ffab0b8badc935f20ccd4b910cb75016ab58",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/Makefile2",
+      "sha256": "32d3e7619797a6776670c53205c34c3a63ba70e757773634e05acfcace789fbd",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/TargetDirectories.txt",
+      "sha256": "b69ed13a1c6a7fd411da2e543c9a0fc74764ad08d1860871380cddb2e43c5475",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/DependInfo.cmake",
+      "sha256": "712b715c0dce202f5c1862f6f8769f6ae93ac5adee832bdfeb60337a95235bd9",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/build.make",
+      "sha256": "3126f4baf06578b2b4fe33e29f1fafb52325fb8a2635864995eb902fb7eb1a3b",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/cmake_clean.cmake",
+      "sha256": "fefb526be84997a3473658a29abdb18e35b16edf43eb800a57969f7b1322505f",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/cmake_clean_target.cmake",
+      "sha256": "4841e716138de2d4af1b3d119f98325184a8902012799a9ba019a20a2d0e537d",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/compiler_depend.make",
+      "sha256": "d71af75ec1beb980f6982b54a574895269cc122758d0e9c17a241695d0138800",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/compiler_depend.ts",
+      "sha256": "c2da2b5b748a86bc657b4271a97be566975a41f339ebd3bafe24e5df1b94c86a",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/depend.make",
+      "sha256": "0b2fc54579e9f92cfba483d0b8e2797de07395cc285a7733d680a597ac130fd0",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/flags.make",
+      "sha256": "738fd9d0a2e301771de2cefab3ada15bb4aa698f613f9458a7c13f91441dafbc",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/link.txt",
+      "sha256": "16ec77de7d1ba1f6877a9dcae3eb9c4c76d1c342493e8aab2f99d3665ab67d78",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/progress.make",
+      "sha256": "802448af24d65e4cfd97c47cf23fa007058e0cd0b1daf07e3be98a23982b24e2",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/ASN1BitString.cpp.o",
+      "sha256": "28b6000e7fbae4627ddbc8f3b4a4dcd105499188dfe2dfba8906a4819a23f885",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/ASN1BitString.cpp.o.d",
+      "sha256": "77fe7ae68a29b48e30f181b0e7b95f188815ef3cf2fd87fb0ec55439e1e4d3fd",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/ASN1Boolean.cpp.o",
+      "sha256": "630f0011605c38e256738fcce5fda535c4c4bcdb32a14bd86689ef7b9f14dc83",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/ASN1Boolean.cpp.o.d",
+      "sha256": "7032b1d9010e25e406f0efb3a5e06612b106d88f042f32eacbd57ffe2d630d0f",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/ASN1GenericSequence.cpp.o",
+      "sha256": "ecd2a80434f5ed91011cc0f5b4c4e72d6825821e8643173b7c71a69f579fca2a",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/ASN1GenericSequence.cpp.o.d",
+      "sha256": "3a0fda2062de2cd76a02b9b3f7c456b08873de337b8064582ae4f414894dfe67",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/ASN1Integer.cpp.o",
+      "sha256": "7b56b8a33c041564c88e6c61a397efd93b8e8801e23b117e15e3b22ff78b4153",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/ASN1Integer.cpp.o.d",
+      "sha256": "930a55d1ea99d1d0bef53d9c036c48e189d446fe412ca4461a49416e5929de80",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/ASN1Null.cpp.o",
+      "sha256": "fb154a23873f06fa7b503e3e293fb869b7ad92f12db4649b70af4dd15100995d",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/ASN1Null.cpp.o.d",
+      "sha256": "7fd2d4de25d4106cdf86ba436a78b5cb99f575f47f7d99f84f1cdf8162f3298f",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/ASN1Object.cpp.o",
+      "sha256": "aef0e55b5d80adb8a8251dec608ce35ffa51af29c085ec72939a41885b7a7a27",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/ASN1Object.cpp.o.d",
+      "sha256": "b707d81c4ee9b52c8746765e25f04940c6c74ed3f70f6ad22a1050cdc941dfe9",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/ASN1ObjectIdentifier.cpp.o",
+      "sha256": "2112911020d32233b45aa5aee786243b2ffc3e695e2e736eeb3e741135bb34bd",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/ASN1ObjectIdentifier.cpp.o.d",
+      "sha256": "0c5772a1613f30bc4a189324d6514385dc6d12867213417ffee30da37ff789a4",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/ASN1Octetstring.cpp.o",
+      "sha256": "3ee092dfa765a8ffabe3fb78333d23c96021cb8c6af329b84cf524cfc60f6446",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/ASN1Octetstring.cpp.o.d",
+      "sha256": "85c888f09bb9419a2d1d3f0c538f1184a18aa253a78be1ac537bbc984fe28b7a",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/ASN1OptionalField.cpp.o",
+      "sha256": "1d6d7d8902510ce81cf23d1404577490b642785f055c90b101164d16adfde554",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/ASN1OptionalField.cpp.o.d",
+      "sha256": "9a1bdcf3f36b4f23a36fc270a825993fc075ad98d897c4600008e7d93356674a",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/ASN1Sequence.cpp.o",
+      "sha256": "d5e7c795c5d4ee9c989d5be098a370d91c0308b172742e2eed85668ccaac8aa1",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/ASN1Sequence.cpp.o.d",
+      "sha256": "e119be88d182cc853700cf763b9237f3792cacd69da8afb58d2559c52c3cb3f4",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/ASN1Setof.cpp.o",
+      "sha256": "70a6355fa786b79a2849c0de86509209575ce9e4c36ddc801ce1eff7ca8b7952",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/ASN1Setof.cpp.o.d",
+      "sha256": "960665fcf878788af1d7e975165c83b5302a527489171a9c0ac890c5610dda1d",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/ASN1UTCTime.cpp.o",
+      "sha256": "e4dab55b45361ee2e704b7f1bdc0e34b279fbad0e59fbc297592b7aacfcedbb7",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/ASN1UTCTime.cpp.o.d",
+      "sha256": "b55690aba869519d823a1670ef000fd934051ade6eda0496e966c3806bb9643d",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/AlgorithmIdentifier.cpp.o",
+      "sha256": "26be814420cc71cfa44d787e060b5705ce979c3912f597613cb03d92a24157b1",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/AlgorithmIdentifier.cpp.o.d",
+      "sha256": "285799a548027070161a9a24735d1c7ed2560408e6eeddb661fee8835608abe8",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/Certificate.cpp.o",
+      "sha256": "e4573e5a22ae25eb53e8ca80ef703307c72072cc42af3e0d8a54bdf6a05765a1",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/Certificate.cpp.o.d",
+      "sha256": "5f4fd7b41c2d83b4226a4d6c96b8f27170eb959a5fbd12d9d46a09d50dc99077",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/CertificateInfo.cpp.o",
+      "sha256": "f93440750c57fe6093727a43b1c367c65c16f7861f170d0f76d9a7e4472dc2b4",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/CertificateInfo.cpp.o.d",
+      "sha256": "58f6c2d0b3dcf89487edf7c9def9588521a96b8229ba08c103534bf4f9065bb9",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/ContentInfo.cpp.o",
+      "sha256": "e05737c5b59f31f5217a4386882d818c53912d270db888b5892a3aaec25cdfdb",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/ContentInfo.cpp.o.d",
+      "sha256": "89f1011492c8251f76e79e5a75c8998d122a08633bbe1f4ad5ee679ac393de90",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/ContentType.cpp.o",
+      "sha256": "ab1ca70d88a1b1ef2888aeb8d7d819a9e6b41cd4c07efa783b92ab45b6b87148",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/ContentType.cpp.o.d",
+      "sha256": "abcc6b8c4132a3541267c60a45a0ef2fa90bacd24af289bf49f80219fdd668b5",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/Crl.cpp.o",
+      "sha256": "1501e73cde67cceab3e99c95241cae3a19b994dc2b9d20ccaf6ebc3b941b269f",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/Crl.cpp.o.d",
+      "sha256": "d071c482c6aa90c898820796342c9e439a3330f6c7293655a993b6570141a748",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/DigestInfo.cpp.o",
+      "sha256": "5a7b8ab43609b05367d7307065bed06ec62e23e854ff4b9cf0e3f8a5c7b61265",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/DigestInfo.cpp.o.d",
+      "sha256": "19f45928952150dce8fb38f10a36d5e0530344705b4f02156a01d268d715c61e",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/IssuerAndSerialNumber.cpp.o",
+      "sha256": "e1edfc748cf9fcab3ab38cc7006ac3f5d13851f14192886be6c57aac395ea185",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/IssuerAndSerialNumber.cpp.o.d",
+      "sha256": "488d41296d303cf17cc6029bc2a7d7821471f125d6a3ee4fc642f1d1f4cca735",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/Name.cpp.o",
+      "sha256": "630c77de69b68a02555c33805f76554286542ea6f187269a187b4e5daaeba10c",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/Name.cpp.o.d",
+      "sha256": "ec12341dadef5a532c4196f889ce5a8d3714b59127e8f8b172aa3435c24bd451",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/OCSPRequest.cpp.o",
+      "sha256": "7911330faed97358cb9822688f972431d112f93a135db8bd79e4b349280da047",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/OCSPRequest.cpp.o.d",
+      "sha256": "e1ef3ad94d064173b34607059b8ea5beea055a0dc85cdb02db4e816b92303482",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/PKIStatusInfo.cpp.o",
+      "sha256": "6f984c4cc97c4602cfdcf447608b737cce60f7cb37009fdc6c9e58ce05a0dd4c",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/PKIStatusInfo.cpp.o.d",
+      "sha256": "2f782886281fbf25761639dff090af83c09d50e6a0217d53ba9b841506ed3457",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/RSAPrivateKey.cpp.o",
+      "sha256": "5143b8ddfbbafe8af33e3b487c769a53d04a853adfdbaeef2a5f4486b446849b",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/RSAPrivateKey.cpp.o.d",
+      "sha256": "1bbc1f7025d8ca3ce3ad7aab72a8ef8367e7e0de5599e4c49e06702506607ae6",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/RSAPublicKey.cpp.o",
+      "sha256": "9f2abb85e7f13f9be6517b82fb7575b52324302a676ee31a2b4c6b41ab486f54",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/RSAPublicKey.cpp.o.d",
+      "sha256": "5a1b06e2aa3960d26826a9d4220b100c8efcd98a1063e37aae904255b067b0bb",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/RelativeDistinguishedName.cpp.o",
+      "sha256": "9fb46ab69a42f2b9813e8adecc39355e04077619f867b6d9d4db1a2d17d89a45",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/RelativeDistinguishedName.cpp.o.d",
+      "sha256": "9b9ef3142b8c149fdb5f581a16b354cbc71c9c48fe1ab9ff90947262450a6f43",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/SignedData.cpp.o",
+      "sha256": "bde641710bfc6b22b88e88f5f23e2b5d848bf3fb18c23e1baf02e50c7ff01f49",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/SignedData.cpp.o.d",
+      "sha256": "9f837f1d791e9c28a698eb05acfc1865eeb2418a3502e17d98c97ebfe4c84663",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/SignerInfo.cpp.o",
+      "sha256": "e656541af517705bc4ec0e18cacca245924c5ce0ee35c439f3d43447f2265860",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/SignerInfo.cpp.o.d",
+      "sha256": "2aea8d415672ef617fedfba549bd7f2ea05c6f3c3bf0df6cd0d832a2958f696d",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/SubjectPublicKeyInfo.cpp.o",
+      "sha256": "5bcd00f1ce50b3b0831a2f92c53857aa26b20219a87427c6217e5ce6107b5d9e",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/SubjectPublicKeyInfo.cpp.o.d",
+      "sha256": "a7fe58c0d63c0d8c79fc63b1169558db5f971aeffa35fb37a43abc47f5ba4330",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/TSTInfo.cpp.o",
+      "sha256": "b47132eb72c520b6ba4624b1f883d7663a1c87b0c0cef3e6ffc4fb16a5b3530a",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/TSTInfo.cpp.o.d",
+      "sha256": "86ec557bc4d953f4c61aab35e5d13aa47d60824615c3398444fa52e08675796f",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/TimeStampData.cpp.o",
+      "sha256": "51ead382c667393b1725c28ab0e24342918c4993dbb286d7a5acfc34b03d0c18",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/TimeStampData.cpp.o.d",
+      "sha256": "1ba26e501ebab527c4f20c07657df62ea82d1a8822281694896be6abb076cc1d",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/TimeStampRequest.cpp.o",
+      "sha256": "1e7c3c65566e10837316167013e18339b243911f0b6e5a72643c4133c221fe17",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/TimeStampRequest.cpp.o.d",
+      "sha256": "0fc5863ac0be75282953ed6dc06bec787fd192b891180dccfe2dc2f9c90bc93d",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/TimeStampResponse.cpp.o",
+      "sha256": "56e0167a738f0fbe226174bd50543d41bec34333188264ab013fe2619eb12994",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/TimeStampResponse.cpp.o.d",
+      "sha256": "fd24db80955810e38b25e31d03eace2436ea5cf90d0e138d96e5567066998aea",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/TimeStampToken.cpp.o",
+      "sha256": "0898fa7e149d3c09ec977e1fe8a2e0033eb839595bb2df3ef93afe2ab1362cf3",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/TimeStampToken.cpp.o.d",
+      "sha256": "33b17ab21ac591c6b3cce8af511b72a2acfce1121c8d49bac5734ee7381d0e0c",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/UUCBufferedReader.cpp.o",
+      "sha256": "a24f799b35e7df1d6fa10cf228fae3113d0ab71b6bce08bba36c7a8f07020d8b",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/ASN1/UUCBufferedReader.cpp.o.d",
+      "sha256": "9528a9cbf2eef61b21f974c58cbd4dd7c1b97dfdf85469616ae011fd8a81756b",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Base64.cpp.o",
+      "sha256": "739ff9388486d61f8ad99b69bb7c392413b8c7e40218c1b9beec583cf914c41b",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Base64.cpp.o.d",
+      "sha256": "0770406f8cb3981c904643d045231f09acb75ced6078a278eb2ba354adcd0eb9",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/BigInteger.cpp.o",
+      "sha256": "70280a1f34c7ef0a4c26af9689871354e73cb99b3bee63ed25f0fa65656dabcd",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/BigInteger.cpp.o.d",
+      "sha256": "4dc795b695afdfacba2db199108a7ddfcdabd092f6e9753caffbb082610b45c9",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/BigIntegerAlgorithms.cpp.o",
+      "sha256": "3255912181337181f1b6ad96d74ba5086045114fde083396af476146abc9b468",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/BigIntegerAlgorithms.cpp.o.d",
+      "sha256": "273d04600668d405709b5a374dcf5ab1cf52ecda7ad2a2876d4c83e005180a80",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/BigIntegerUtils.cpp.o",
+      "sha256": "d5471459b19cd94566b88124018ebca70ef4b6f493ee46b4123f935d1fca006d",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/BigIntegerUtils.cpp.o.d",
+      "sha256": "cf9ad47666edeb8b44df714a0166aadfbb567c72254fa2d0a378a1a5f0822cb8",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/BigUnsigned.cpp.o",
+      "sha256": "4959ef7aeebd8b45972b251bf960dcec2dd33344140559f606a33390d5ac2c81",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/BigUnsigned.cpp.o.d",
+      "sha256": "77f7ac8d26d64eb90f71754b6707cff9980a8818ecb18a74ab7d83be2077eb23",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/BigUnsignedInABase.cpp.o",
+      "sha256": "e8c4dfc8d40fdf8eeada70622ae6a16cae31c612d6c50eeb748fdc39f083dd7f",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/BigUnsignedInABase.cpp.o.d",
+      "sha256": "aff5cc7ab53b6e7dc7d8a21d8fde19aef76a9e6fc4c0955575a527caf55787cd",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/CIEEngine.c.o",
+      "sha256": "ac296cdef59b5e4fd71de393350d64b4b64368aabdd5a8efadfa5c7f5b849cb3",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/CIEEngine.c.o.d",
+      "sha256": "ea447cb7b5e37025ccabcbf1ec4cd2951f8bcfb7b523d4dcc65b162acebdda0c",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/CIEEngineHelper.c.o",
+      "sha256": "c358d73b787e06b37729b1633d6fef9e0d9166b7a4e09880a2ee2d95c3f80691",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/CIEEngineHelper.c.o.d",
+      "sha256": "1a4f6f22fd28e03333d91bd20e527670daca3b9e4acf755554b7535acbcc7c30",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/CIESigner.cpp.o",
+      "sha256": "30dc6de9054eca1d61001cbc89db5d492c2760fa5853507784959ead28779e44",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/CIESigner.cpp.o.d",
+      "sha256": "8c1bf33233879a395ccf9a4dcd853039d0e4d9af39a685ddb1819bef911cbda4",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/CSP/ATR.cpp.o",
+      "sha256": "76d4382a834317fe63ab8edd5f6acaf0395872c6ada893b4fbe80b8ee26642f7",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/CSP/ATR.cpp.o.d",
+      "sha256": "cc1382ec7d62949b501403f80811c0c08a0b59a5f1edbda2f4c5790fe2a464e8",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/CSP/ExtAuthKey.cpp.o",
+      "sha256": "3ccaa4e301bba03ca187150ae2fdd0bb1df5b2479dff632444b56393f3714c0a",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/CSP/ExtAuthKey.cpp.o.d",
+      "sha256": "f639740e176c82d59905d6d82fd4ad7d3dd01b7a5002f31f8e141f81917ce82c",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/CSP/IAS.cpp.o",
+      "sha256": "cee9f4c93a4fbd0787f720fa8d1f22915d7916a6b68e018842a4229a391d41ef",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/CSP/IAS.cpp.o.d",
+      "sha256": "17873aaceb188c8d31819c7858e942faeef6854e457511c5aa2e2f309c1ccdaa",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/CertStore.cpp.o",
+      "sha256": "c211f36154bf940d5ef94fd135856298924e50762f68b99c973e990e6338cb7e",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/CertStore.cpp.o.d",
+      "sha256": "91c67e980bfa550a7312a0e722163353ef2356651461db2827e952e50f87d81b",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/CounterSignatureGenerator.cpp.o",
+      "sha256": "4e13fa8252cbda2c6d81d162eee77cad1b0122a46cac4397d4d0efc18302d27c",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/CounterSignatureGenerator.cpp.o.d",
+      "sha256": "473e075ded2b84de1f1935c02bffd64fdcc7676bffc0bc7cf292845ba906ed65",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Crypto/AES.cpp.o",
+      "sha256": "283a00e8195e54d14f2c8c049e3f9229b01ee6de0d42ae87ab34436afee0ffbd",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Crypto/AES.cpp.o.d",
+      "sha256": "c81c4cf231ea670295e10b80b9483151d222ca2fb6a48e679f25c6ca73b78590",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Crypto/ASNParser.cpp.o",
+      "sha256": "dee6df75b229c8593b9148b4097d39ce69e168a1839711e5865b66f05e1dda99",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Crypto/ASNParser.cpp.o.d",
+      "sha256": "645a068d7b59c068658576ae4f6722f080070bdd074948efce87c3e08ebf561d",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Crypto/Base64.cpp.o",
+      "sha256": "e09b5750adeaaaf1e6d57039af120f468e832161b3abfd73809576fdca8df9b3",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Crypto/Base64.cpp.o.d",
+      "sha256": "79ac9fb2d1f5ba3e55f0a3177b77cb0ace55c299584f1484d9da195a38813e9b",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Crypto/DES3.cpp.o",
+      "sha256": "5e2142409ccbfee9531b0a87a09a0822d3da299c27677a363bd18c635790b5bb",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Crypto/DES3.cpp.o.d",
+      "sha256": "6992e8d60329012bb5f3299449f9f2aeccd2e8cb2fd830ea1542c8f23ce743e4",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Crypto/MAC.cpp.o",
+      "sha256": "0b67550e815a76075d2969d647afd49bdb174669e9a4a4e5115528a07172448d",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Crypto/MAC.cpp.o.d",
+      "sha256": "561998c9adf1bf26ff2f4265beb2a901d842dddbd465c9b2353c13afd8603d51",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Crypto/MD5.cpp.o",
+      "sha256": "7e20ebacd53606c9ffc8e0aacc2e70efa58ac293ed96557ee575be6d0cc0af2a",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Crypto/MD5.cpp.o.d",
+      "sha256": "c21b43f93c2500d33afc905e986889942cc5903846bbb7c0d7660964dd6afb63",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Crypto/RSA.cpp.o",
+      "sha256": "f354610cf4ab0ef20e822d0976b3b1d1ee9eccd326a53f308b19456342529a05",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Crypto/RSA.cpp.o.d",
+      "sha256": "c757593fe303b04cae56287348f35a371f992f1be83370fa466b477ad5e15ac9",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Crypto/SHA1.cpp.o",
+      "sha256": "6b80c37e13fe3654cf2408eee67f929b94bce71c4e99d960ed8490b929038bc5",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Crypto/SHA1.cpp.o.d",
+      "sha256": "756b8bf393a5893f486fd5d3c1aed6a8db7a50e7a83d643fad565bab0ecef48f",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Crypto/SHA256.cpp.o",
+      "sha256": "1ddac1cd71efa23fa329075143c92402c3fd206e8d725d9ef0c8cc2f86d2f71b",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Crypto/SHA256.cpp.o.d",
+      "sha256": "1b4c353a6f745a04d9ac365fd6d41a041c2417022f26ce8f4a5bed2d38f62253",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Crypto/SHA512.cpp.o",
+      "sha256": "2f25b26ffe04a486c68156da1184bf00d768b72150273d81ab2145867a0db987",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Crypto/SHA512.cpp.o.d",
+      "sha256": "ef0bdf0f86c2548ef2330cf53c81ae37170a28a20a78519dca9b0be0f80998c2",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/LdapCrl.cpp.o",
+      "sha256": "751ef4a89631012f1e1284ecbb56b1d69064fa9a0583f95d4b5278653596d873",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/LdapCrl.cpp.o.d",
+      "sha256": "75afe3970a6eeaa6f38186ae288d38a3998b041583f3d30d155c6def74c5c5c1",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/M7MParser.cpp.o",
+      "sha256": "3314b716b09181ef8f507845c49efc40927a197ba5978fe8f2725d79830786d2",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/M7MParser.cpp.o.d",
+      "sha256": "d56be5ce3aa959f24a3300cbc59618b3a9821795d79d78a072abd99141e4eddc",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/PCSC/APDU.cpp.o",
+      "sha256": "cd1ddbd9fb929a89c8a50e2b900da3c0492d10ea2c76df4a61b3597e2bb84308",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/PCSC/APDU.cpp.o.d",
+      "sha256": "c9f3627093031def482901fffdc958a868d2e7f8d84c6f57f858f6ada8abff71",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/PCSC/CardLocker.cpp.o",
+      "sha256": "8f7bd0f8e9a1e204515d53e8ea7c23a31e664377accb752deaf241aacddd45f9",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/PCSC/CardLocker.cpp.o.d",
+      "sha256": "e3709bda476a1556a4c498f979e2537eb94c4b5103a6d722407c5e16da774661",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/PCSC/PCSC.cpp.o",
+      "sha256": "228e1af4d2fcadbdcd9b7d4bc9c006729b84c643873a97e78c215bdef6230eb8",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/PCSC/PCSC.cpp.o.d",
+      "sha256": "f3ff475635410a21c9b81adb257e1f5a26466e5d4e5bcb0256d773b0d9830c49",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/PCSC/Token.cpp.o",
+      "sha256": "2b006bf9ba5e7fc68bfe688e121dc2156d11bca0f76622d1d4a659a0706e54b9",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/PCSC/Token.cpp.o.d",
+      "sha256": "b768a5c3efd23755ad2dd06379e9a29d8c8a0e604ff1ad441052f5a26778d661",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/PdfSignatureGenerator.cpp.o",
+      "sha256": "dbddcb2d604820056c5db1df99786b89cba5101517cc9077c1d4223c9b9c1855",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/PdfSignatureGenerator.cpp.o.d",
+      "sha256": "d949a0f7380b23ea1479ce7ec2d29fcbae77f8d9bc8dfa6a194fd6ba175cc00e",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/PdfVerifier.cpp.o",
+      "sha256": "9c040545be7fcd495ee2e0fac59df0cbd32a26458caea0cff1f41f7b0555d967",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/PdfVerifier.cpp.o.d",
+      "sha256": "5b1f8a4a8fa50ef51647217a76b3341221751a520262e529b1e2fce7ab56ce38",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/RSA/desc.c.o",
+      "sha256": "c320d0317983b1cec58132432359daea7fc057eb36f719f7f6bc1c61e29b3c7f",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/RSA/desc.c.o.d",
+      "sha256": "9023a1a8d6cae8aafe183a03619170c6ed14a821a78249bad48a98976f4c1949",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/RSA/nn.c.o",
+      "sha256": "a645c393b1a363a33148d3ba772af964fe2eef3be4bdab8b08dd188f4e2ee5a1",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/RSA/nn.c.o.d",
+      "sha256": "74faf5b3699174fe9e5845f75b60654b1cbf6d134618048c094a56734896738a",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/RSA/r_encode.c.o",
+      "sha256": "09bc33917cdcd2fa514c821732965eb6735ccaa676c5b4c138b366c78179a56c",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/RSA/r_encode.c.o.d",
+      "sha256": "3eccaeeb2b79ead7f99959d85fbea09dc360358f99339f5821c45bba801a985d",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/RSA/r_stdlib.c.o",
+      "sha256": "161fe86a88165cc55952c311d860d5af10353c4568523b52b7d448ff36147032",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/RSA/r_stdlib.c.o.d",
+      "sha256": "a71d0f91924be797aa3b29766e65db38afa380eaf86b23b3929a68795e7f4fba",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/RSA/rc2.c.o",
+      "sha256": "0f5572233300df4592d6f7173faf7f5d218c7020ffed7a9d4f2aa2b678c12f50",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/RSA/rc2.c.o.d",
+      "sha256": "51b15916009d990b3eb6e7918a28b25b4c29b813131f3bad8d5ce9afc9b25642",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/RSA/rsa.c.o",
+      "sha256": "7975f8a92fbb1a489922de615386a4f520b713fff30e28a407f66c5219efba70",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/RSA/rsa.c.o.d",
+      "sha256": "5934593e8e83a51d7c8dc77985ab4d10e125c654b0e659d44c3caad836f2b2f5",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/RSA/sha1.c.o",
+      "sha256": "410c93cf65f7fd29d2724f6b4909b47d3125ce0b39ed5f6ea1e59647812c123b",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/RSA/sha1.c.o.d",
+      "sha256": "5a6d30e56dc7a4626ba89adf36c51c5775fff64a8d506c5cc210711f305088ba",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/RSA/sha2.c.o",
+      "sha256": "0486126a33779284f41796581cb34663a372fa8524c599cc00e574213a644f6f",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/RSA/sha2.c.o.d",
+      "sha256": "f4cf7da0ef828b8ea8cbc7d112035579ce49afe0adf83694c69ac16a30561249",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/SignatureGenerator.cpp.o",
+      "sha256": "adb128fcbcd0dd55fd0fd6132d009df2cbc55efc4273519dd2f9040c61a15d4b",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/SignatureGenerator.cpp.o.d",
+      "sha256": "0e9690fc7433a84c1fa67b804b3393f798acfebc3225c1444538f810a357845c",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/SignedDataGeneratorEx.cpp.o",
+      "sha256": "dca440831be05b2724eb2ce2179168e1bd41ffe2e65e6d1652c807c01cc160cd",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/SignedDataGeneratorEx.cpp.o.d",
+      "sha256": "b7e4f52638502ab3b5d166c26121dcf696b9828d7a8acd86dee10372442f1865",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/SignedDocument.cpp.o",
+      "sha256": "363dbf63724a9aa2c0cf0d27df53f7a1b1bda92c2962bceae0249d71d86a25a6",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/SignedDocument.cpp.o.d",
+      "sha256": "464e235f6378f9b4b1a04f7307c5f458f2e2cdb4015b3ccf9389dd5bf5b96381",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/SignerInfoGenerator.cpp.o",
+      "sha256": "66701502cede4b8e2b35db920533f9d87c6d4e7a82ada581fef87b299a6bbc8f",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/SignerInfoGenerator.cpp.o.d",
+      "sha256": "ee32399e63c32ea56ee789f47e6614211499796c22ae1de363f39810ff5b391b",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/TSAClient.cpp.o",
+      "sha256": "5843acbf489ce73047feadcffce1641448c11d96b4528ef8f7d98d35eb81127b",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/TSAClient.cpp.o.d",
+      "sha256": "a18150ebcdfbed77da2bf21c50c53c67bd572aef8ca70e2f26293ec67fe9aeaf",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/UUCLogger.cpp.o",
+      "sha256": "fee67397bf498ecf74f2fcffcc58cbb6c1cbff8e877d98d2c298140f9dc542e6",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/UUCLogger.cpp.o.d",
+      "sha256": "3bc1de946a6ecd0149157aaa9266a2d2ade4d493fa5f9dcf9aa04e34f9f6f390",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/UUCStringTable.cpp.o",
+      "sha256": "d97113c44c4fbc4332a5b1181f83fd12694bdf99628b15934d5f72f2de4e9768",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/UUCStringTable.cpp.o.d",
+      "sha256": "1c2ba86b43dfe90e0b7c386bc8e0c25e7cd9aa08ee49901d3aff5ad7583b6ac7",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/UUCTextFileReader.cpp.o",
+      "sha256": "2d269d6e55d81c27e9025e6857f65f10ea441b68576538cd8e2ec73292a6a3e8",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/UUCTextFileReader.cpp.o.d",
+      "sha256": "6ee8047d44d9a41c91d11912fb4ddc099cf35aa36212468a9fe63a0c88e9049e",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/UUCTextFileWriter.cpp.o",
+      "sha256": "d68fe08a512f9b6b5bd29f017d4f148cb78a2fc7398f5582e36af28d3cd19677",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/UUCTextFileWriter.cpp.o.d",
+      "sha256": "aae475a5b52d26719b78d7541ff06bff4385526a2433f10be4de83a046af1cff",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Util/Array.cpp.o",
+      "sha256": "98259b4458e84684651c528a83897ab363352d7704bc71cf2fc394de8f4afa5d",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Util/Array.cpp.o.d",
+      "sha256": "9e54f647972b63436abeaaf9d294961289f3bbf3dc57fc9b5eb27d054e326b96",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Util/CacheLib.cpp.o",
+      "sha256": "87c2f8ae0bb3d2c2671f57681767b776d59121df32c1d0bb64040c74573932e8",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Util/CacheLib.cpp.o.d",
+      "sha256": "dfc4d147fd1063393d3a07afad035aae9b714611e6fbf3a2925579b035dc384f",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Util/CryptoppUtils.cpp.o",
+      "sha256": "fa93264d9536255065ef73d827bf6856b9215d145876bc5634cf376e949a95df",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Util/CryptoppUtils.cpp.o.d",
+      "sha256": "fc06f81c758796026661865cd5090e0b7ee08e30f0414b968a03a2b8b333f2f9",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Util/IniSettings.cpp.o",
+      "sha256": "0f22ed1e63353e472d4afd4fc6e1bf7bf2bf4d55aa8ed35863e83bb3e9d00b92",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Util/IniSettings.cpp.o.d",
+      "sha256": "510431f880f15159911b83423d9135c304982a1692d874ebca128677ba1b4642",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Util/ModuleInfo.cpp.o",
+      "sha256": "670a7d6be30b8883854b559e001c7d6c37355f36d99804b2d88706fd08d4395b",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Util/ModuleInfo.cpp.o.d",
+      "sha256": "86e024944329da04c58e719ea7259dd516bcf5b7edb5d851a2dc1a9f21da7b85",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Util/SyncroMutex.cpp.o",
+      "sha256": "15f4d33027267e5d89fc9993f44c311031e1f1d6e7180f9a711595de67affa51",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Util/SyncroMutex.cpp.o.d",
+      "sha256": "7e789d7d12fe9f4918c059994effd58fa26701f38c81b5f86f8d8b90ef8ca0a1",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Util/TLV.cpp.o",
+      "sha256": "b8a0717838047b081f9955ccd7db0f14aa38bb94a3970186e1d1a1a43eff4332",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Util/TLV.cpp.o.d",
+      "sha256": "d7a39ac713317a14caf300a43eef6cbeb6bdb0432a554e81d28e36ee86fe3296",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Util/UUCByteArray.cpp.o",
+      "sha256": "bbac8a41fd977fcf6190b8048810e141ff40f6b114a54e0424db1765abddab79",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Util/UUCByteArray.cpp.o.d",
+      "sha256": "52d8bd4e36aaad9c4b6c122d3a5e1f21c51308de99bef8baac4c3d07424c5919",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Util/UUCProperties.cpp.o",
+      "sha256": "9ad50a4f8f880318908a17a5fbbd1d6f674b862789c227610101d77b3b5a45d7",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Util/UUCProperties.cpp.o.d",
+      "sha256": "7edce3c91f6b6426e8d35a7ae64d196c2d1b236e109c670f948f27ee51a77c0f",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Util/UUCTextFileReader.cpp.o",
+      "sha256": "90dc805da850eaa40563ba035f06d64efac76cd4acbdfbf37f0df5534b3e6d2e",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Util/UUCTextFileReader.cpp.o.d",
+      "sha256": "655b31eaacc22ae1126226b9e3cde18297cf503c8aab6a59731cc857a39230ce",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Util/UtilException.cpp.o",
+      "sha256": "13a1519fa903bddceb187353eb17ae59758b86b19b59895721b7cf66a0284414",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Util/UtilException.cpp.o.d",
+      "sha256": "315159842f73f5c46307889ef50565e98f4b8389c1598a8f3e74237ebb54c6ce",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Util/funccallinfo.cpp.o",
+      "sha256": "3bc0af4718863de6c90096422eb22c2b12738cadb0afc43f9ee8806d904adbbd",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Util/funccallinfo.cpp.o.d",
+      "sha256": "ce427e52b863c56666732aef06a39fec71f2968bb7b5289fd91739dd68674ece",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Util/log.cpp.o",
+      "sha256": "248c6c334cb1926007a0aa2f2c45833bf90e19546d921dacc0592391fe5835cb",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Util/log.cpp.o.d",
+      "sha256": "297830007390143b46ac7d6412a51a8bd1a2044d789ddc43b3d06e592c67dbc9",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Util/util.cpp.o",
+      "sha256": "9e60fe25672942ee7de8bde13c9e6723c171d51ec955a7a0845a7beaf8dc9bd9",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/Util/util.cpp.o.d",
+      "sha256": "379892efb95ef8d2fe6030bff5f286e89e2b59969ffc6799003c33b16fb55c51",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/XAdESGenerator.cpp.o",
+      "sha256": "5e93f559c2c4fa6f58781049736feba531d57a5aef284b704e0fbda928a0cc98",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/XAdESGenerator.cpp.o.d",
+      "sha256": "872242ac4175207072e41ed0e59cac1045364bb2bd7bcf1372686bf030fbd5ef",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/XAdESVerifier.cpp.o",
+      "sha256": "ef9ca519cf0144a128e6ef3cfce3c829e2a0e247ee5dd65129ebab3799d2cf5f",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/XAdESVerifier.cpp.o.d",
+      "sha256": "1a56fba90b3f08e219327c8ded32164c62b854ad89e4bf4f9a1397cd97dde555",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/definitions.cpp.o",
+      "sha256": "9dcc5e9d7119088bd08130cdd5696e84efbf6c5ae8ec37d010e8d8fde208147c",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/definitions.cpp.o.d",
+      "sha256": "49834c3bc91328ceb049c5ae08344d040a86cad626eb2e8fc8c064d014fc6a38",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/disigonsdk.cpp.o",
+      "sha256": "3fb88e6e3922e4197b89c427e684a72c31110482ba1bc48f0dc9cfdcce3ddae6",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cie_sign_sdk.dir/src/disigonsdk.cpp.o.d",
+      "sha256": "8a67744b7bd255129c834138e2a62109adc78564be3bf4e17dec9a3e0aa1d77f",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/cmake.check_cache",
+      "sha256": "a26189e394421da57f45706a07713c5720acd200a41711b0c0c590c3c63371c4",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/CMakeFiles/progress.marks",
+      "sha256": "eea8254c7500ba3de996aa8ad6af399183f04e17d4a8102fde539dbc93a90012",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/bzip2/libbz2.a",
+      "sha256": "c4463b2e3dc8f799d4d76f27cef77335f9b52c91a2b3a673774fb94b433fd0ef",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/expat/libexpat.a",
+      "sha256": "198c7d566403c92d121a6ec35fb1f3b75f1f48c28302a3895d8b62cd43a48ffd",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/fontconfig/libfontconfig.a",
+      "sha256": "d1c92951497afad12629aee40280dce318089507e534cd2c3a67d5d480579412",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/freetype/libfreetype.a",
+      "sha256": "85d0bdde8ab0c0049abe6bb33aa71b3888164828f66aee79f37e2f462050e4c1",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/libcrypto2.a",
+      "sha256": "b54a4d14199ed0e582efc846b98bb137f2e2750771463a11e3191a21ddf6815e",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/libcurl/libcurl.a",
+      "sha256": "a130a7ae7141d90fa16e3628e5ed42df10ead0c5ad8fd3167dbc2c4457c30844",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/libiconv/libcharset.a",
+      "sha256": "c7bf8540825d53fffd99fa2a445d782ffb4f67ef71ad7a2f40d031279b313f88",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/libiconv/libiconv.a",
+      "sha256": "0c34888cb1223e0764361a8450e765773a6dba1b6b53c9cf0798a095c783bd8a",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/libpng/libpng16.a",
+      "sha256": "c3128fb6ce6a4cd20b1c86733ec55cba3be3a82443ddd2f624c97be7d36c221c",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/libssl.a",
+      "sha256": "9367cbf6b37ed3cf2a586d7f260b5b4c31b77549277c7e5aa0a521dae0955355",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/libxml2/libxml2.a",
+      "sha256": "78403b0d10b8dc3af22a9ea66960ab4f3782786ead334b8907b54076d6db2818",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/libcrypto2.a",
+      "sha256": "b54a4d14199ed0e582efc846b98bb137f2e2750771463a11e3191a21ddf6815e",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/libssl.a",
+      "sha256": "9367cbf6b37ed3cf2a586d7f260b5b4c31b77549277c7e5aa0a521dae0955355",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/podofo/libpodofo.a",
+      "sha256": "2f2043e9b4a303c0881532f93c2a833150c86f0e72f387034d7b649c6e787cb3",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/zlib/libz.a",
+      "sha256": "1f0ab8993bea843dd3b4b6bcfc3d15adffaf8bdf4f8bcbbf30f8d9c646d01ba2",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/Makefile",
+      "sha256": "a1a19c8c58e8d7efb1f1275a4966f8648728d079a103c1f97a430ad8c32beeba",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    },
+    {
+      "path": "cie_sign_sdk/cmake_install.cmake",
+      "sha256": "89b53387b3bc2c378c4c3d68e2b5a022251f87e20dda052481686db99b1b4bda",
+      "reason": "Unused compiled/generated upstream artefact; not an input of the native build"
+    }
+  ]
+}

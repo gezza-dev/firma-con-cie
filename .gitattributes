@@ -1,0 +1,14 @@
+* text=auto eol=lf
+*.pdf binary
+*.png binary
+*.ico binary
+*.icns binary
+# Preserve third-party license texts byte for byte, including original spaces.
+native/backend/** -text -whitespace
+LICENSES/** -text -whitespace
+native/backend/LICENSES/** -text -whitespace
+assets/licenses/** -text -whitespace
+LICENSE -text
+native/backend/LICENSE.txt -text
+# The upstream AUTHORS heading uses =======; it is not a merge conflict.
+native/backend/LICENSES/openssl/AUTHORS.md conflict-marker-size=32

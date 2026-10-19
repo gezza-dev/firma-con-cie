@@ -1,0 +1,422 @@
+{
+  "schema_version": 1,
+  "reason": "Unused vendored OpenSSL 1.x headers removed; native builds use the pinned OpenSSL 3.5 prefix",
+  "files": [
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/aes.h",
+      "sha256": "f6ba27e87d97ea578f01540a8f84b7eab05d42c178badce712d0cc668d8a9981"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/asn1.h",
+      "sha256": "851313b1176baa3d6896aaeeebef56216ebdd38dcdabb39b3eca36b6645352bc"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/asn1_mac.h",
+      "sha256": "db4883ed3aa74e07338001b31ec7e3e68546521c54bbdfe68c473b33f8511ca6"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/asn1err.h",
+      "sha256": "b89b16216ddd35f028f5bfd3fe0db4f2ead6c9415e7749b7115b0393b427ef2f"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/asn1t.h",
+      "sha256": "2702f569302248b8228e493177cf0a469f127f1ce5c76bc684bc90fbdfc45743"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/async.h",
+      "sha256": "ef96c716cac393f2cd6da304af029155ecd9f021869cd5a4c341ebdf249036bc"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/asyncerr.h",
+      "sha256": "cacc9ca951aa523d3ed6b9df2366022633925a6729d30cd134a05d2ffe5fb156"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/bio.h",
+      "sha256": "78b055555957eec2bfb4ce5f91b27bdcfdf73128026be9ce85fcca0126fdcd3d"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/bioerr.h",
+      "sha256": "ad29fe4ef37fd7c4b256b690caf9371a74e29981f6561b94436dac54a61bf74b"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/blowfish.h",
+      "sha256": "813b2c7cff888b5b709b90d4da584afef59b5ce1ea888617d682f1af48578faf"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/bn.h",
+      "sha256": "8f79b29c5ad479186acaae962a598d9868dc434fd5fa49a008eecfaff1b998ca"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/bnerr.h",
+      "sha256": "daacb00f416075ae470723f764d0ff9703f4a5fc31e881e1be8937631de7efff"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/buffer.h",
+      "sha256": "a4fa292b903cb8c2ce1761ba4980cf5bdfb66dcadcbb5c8aecc45b012bc64c23"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/buffererr.h",
+      "sha256": "722f6ea87711b7c0cb6ee29c15762c2839e5ad17b9ef579b6e81b6121f035c30"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/camellia.h",
+      "sha256": "561bdb2e985458e809e656c60e4bc83e1d6707746dd8b5badbc10b64198d4770"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/cast.h",
+      "sha256": "a14c51a129b3ae5795dafd98065be0bb0cbf00b4d4528e85adbf629966f42f53"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/cmac.h",
+      "sha256": "75bf95d1da118ff1e2f143ccb7a564d949de440097b97a49725c03976e167b52"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/cms.h",
+      "sha256": "07e4b0a779c957ef9026d69c0cb5a621ddc2060af967e0dd5e91ac861fdfbdb2"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/cmserr.h",
+      "sha256": "086aa0b661ba9de9618afc948a4d1a82df970a406f6c5bb6fa60572a720a62f0"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/comp.h",
+      "sha256": "98a877c62723e6042e4e4740cd1a6e7799df752d9234386d73a28a098e6eb31c"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/comperr.h",
+      "sha256": "f64be205d08af2557187ec19c03678aa9e29f66e428de29cebdd62cd7c3b5515"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/conf.h",
+      "sha256": "e54341e30523dadc09d821366f5afb13c9286d540b34c1945406918ed588fa21"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/conf_api.h",
+      "sha256": "175f86b69b58b0cd1da6c9b27d87ab4e4ed52f37dc76b7895c210c43469504eb"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/conferr.h",
+      "sha256": "abfe26485cd43a80e0c476e628979612ad28a635577baf68eee476850425a498"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/crypto.h",
+      "sha256": "d2cd84e695e68051fe67fa7cf901ccba4fadccc71a6b30090df20a01b91d3ec7"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/cryptoerr.h",
+      "sha256": "e752d7d3da32a6c009cf264450726367fd69e7c2a4c185d580ce650021d68e7a"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/ct.h",
+      "sha256": "b27aaf0d39609500b4fce3b3b65f6752116acb30420de1d53943074a481043f0"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/cterr.h",
+      "sha256": "ab6e70b52e341247c4b217883980ff1e98e4453d1020b0b038cdbf096c4ab8a5"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/des.h",
+      "sha256": "3cb68fbb498e34e19e46f9d41561596ab69ccf78b1d8bdf2f312e892c060015f"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/dh.h",
+      "sha256": "f56e0c29c124017c815c6f3d0c2413e03c81cadae2e84c2c325fc2c6719fd559"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/dherr.h",
+      "sha256": "9b1f7019d8d95e1d5fc5268089e8331829af7416b18a8908266ab60027aae0e3"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/dsa.h",
+      "sha256": "1525e5adf242643a7d36312580314f5ce61ecadf82223a49ff5c32220d78f9b9"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/dsaerr.h",
+      "sha256": "65ea8b47cb25ae82d611337cd47da7c1c5cdb9451982beec9d841413d4a923a9"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/dtls1.h",
+      "sha256": "7304f17cc9998bd7c16539ae9a5ea545f2e0c64086d5e688caba104b6a7ffecc"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/e_os2.h",
+      "sha256": "dc3a29489d60a0980961c2032c74eb26ed4eb38878e2658d31c5680df956a00c"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/ebcdic.h",
+      "sha256": "2289f14f11e75ac739d1123651d16e841f3c74e36daa483c1fed9f8c5c144720"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/ec.h",
+      "sha256": "2a2d02e5c3b982ab2bd0d4e0a1c56e3daa3470c165aae427211a529b7dad8b06"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/ecdh.h",
+      "sha256": "95fb89add3bd32b6d43dcf1a51d1839b915e774d7138afaf618e690efbf414bb"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/ecdsa.h",
+      "sha256": "95fb89add3bd32b6d43dcf1a51d1839b915e774d7138afaf618e690efbf414bb"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/ecerr.h",
+      "sha256": "85a3b64c0644420a18295c8001a06bad5d7c3e84d4f871c925a1b45fb89ef182"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/engine.h",
+      "sha256": "0db45763a43c17d78a4a0b3fda207ac0be4781ebdde45f04fd4b07a5ced46086"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/engineerr.h",
+      "sha256": "6f3d1e91ba1b7971929530cb8ac3ef934c0b82a8cd459caf224e241a3e5ad6e9"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/err.h",
+      "sha256": "1447263f0a840e8135c586e16c3d858cee939deddf4fd905e391869809b4daa2"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/evp.h",
+      "sha256": "9d963bdda81802988170663ccfcef437aea69042f42aef3a11ab4a217b800aef"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/evperr.h",
+      "sha256": "45ae90c137604d4951414b853d7e818bad7819c30e4df26bfc28ffbb4ce1c0f2"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/hmac.h",
+      "sha256": "76386c2273f105f54c5749f2fc854573c371ab185f9248ce295a748e126caae8"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/idea.h",
+      "sha256": "bab682c5cc06027c82d126ed8e65d7dd9dcc75fa464ccbc95d7f168bd69c732d"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/kdf.h",
+      "sha256": "aaafd4a962ba9b9f2a2462076c7f7b4991d9d87e7bef71d87e9308125e0e29c0"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/kdferr.h",
+      "sha256": "e406cbc8a8a7956bcb0e06a949454b48d2702339caf4a2e621ac0cde9c2463e3"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/lhash.h",
+      "sha256": "1036e20aba00e0585b96b91a00ae7792dc12501160e117d1f824833de7fe3752"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/md2.h",
+      "sha256": "9e28f0a8d5e2297649af298f5e3209d32fe9486edb1793cc698a757c91270662"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/md4.h",
+      "sha256": "03d3fc9dceec6c168d219eb9f404ca08b478d5521622834bc24b7d45945702e4"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/md5.h",
+      "sha256": "a0612a8f7e69e3bc166fc186ca44be1e5b1d020b5da8b5be021f73d48c270b82"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/mdc2.h",
+      "sha256": "f13b01ec09c45c2634673d1b9b1a79adbd6ec32bdff94287308e2bb27408e537"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/modes.h",
+      "sha256": "f4e527987e296a26fc1c06f4f896baa5f457b7e67f94957d176eed469b0fe602"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/obj_mac.h",
+      "sha256": "3a674b6d07dea14e339ccfc0a9db7762a4d0eebd57d12d307e33f79553084462"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/objects.h",
+      "sha256": "4018d7c54e6f19c3230af063f4dbc8523f1450528a4af15a97a0a1ff3fb3ba38"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/objectserr.h",
+      "sha256": "0ec7330c122ae2b3174df95ddecea65ff661a6152cd0192529dd1411ef3f62a1"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/ocsp.h",
+      "sha256": "cfbbc3434b56c4671080326aeb8c3d007dab7d2c3621d5146c11aba347158b80"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/ocsperr.h",
+      "sha256": "c73a57b1919601ff8c04f2dc9c62dbd130ef2d3ae39bb0fcdf25bc9e6eaf327a"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/opensslconf.h",
+      "sha256": "25bf7de9958215a5b6f2e268363a2c239c825c8378ed85ed5f15611ce7ce7302"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/opensslv.h",
+      "sha256": "668367a90ddcd6340fbe77aaf40beb489ad1e15d91da94bf0d69c08af843fedb"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/ossl_typ.h",
+      "sha256": "46f541a1cc49bf08908ab3bde05e2683fc56ea268ca3e7f2e27628653ecb4a14"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/pem.h",
+      "sha256": "32d62036d0c35d03fe7f7ddaaffe3caeafcf984ec16e4db7ed19d3e202e9d7ba"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/pem2.h",
+      "sha256": "6833ee5712125d1ce8f7b52437a752e40c2f4793276859a8228c0de71d35c3e0"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/pemerr.h",
+      "sha256": "d91c6016f3c1ba70683b92fde55500ec334777defb6486c41b0a9c4e402aa295"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/pkcs12.h",
+      "sha256": "97c129c6c9a493d7e5d3af123d96040d87c4e54fc5e41aec450832cb32a634d6"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/pkcs12err.h",
+      "sha256": "b7340727a0480f351823b669f55cd3989c065d373c8cf6ff8745b8356f61d5ff"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/pkcs7.h",
+      "sha256": "cdc3505c9bb9168a6fad434dd9d9a49ad630b9ae9216bd665b11051e04a709bc"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/pkcs7err.h",
+      "sha256": "ecee11e9fbddab20f78a018009e6a2daf287ff5df00679298b137fe9996d9386"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/rand.h",
+      "sha256": "5a91abcbdd14dcf2fc62761ccc58ee9407274ea558c292fa77ad625204ac2bd7"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/rand_drbg.h",
+      "sha256": "12379cc0a7f168cbff8e08828da72dc0e87773bc6c3bd14c4b57506339b61fa5"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/randerr.h",
+      "sha256": "41fcebfb0767afa03f3de2732d3f0ce46cd2367ec34b2016cdb5c9e84a9a8994"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/rc2.h",
+      "sha256": "ec2b9196898bbc45ff2ab00204f93a6f20c974225510f29097ad69a6eeebcdfe"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/rc4.h",
+      "sha256": "6fc023442f524349685d13d50854ad773b12b8c7a153d72d615ab27dd4a3d609"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/rc5.h",
+      "sha256": "c238954a1df23f52362d6e5fa78df2c7a5a2ad6ef9536e489f0a23295efa0cab"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/ripemd.h",
+      "sha256": "8c74b93c10a9e83abc17ced3a8021af7506f39a0fadab07b5db2d4faebcf68b6"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/rsa.h",
+      "sha256": "509c4db9081195cf6c9e5fd4683890aeb39509f2997a1989dd5a57cf43039bc2"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/rsaerr.h",
+      "sha256": "e032a933b1a4c13ec901d7561ad23ace01881b60cdcc86af0e4cb0a25a2a3252"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/safestack.h",
+      "sha256": "57665dabb37f4f0bd853539d93c64cb8adf37fd9552dc9fad215cc8f47a991c4"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/seed.h",
+      "sha256": "6bf2373dfb10dc5cbc626cf2fe86b9b1c82373d799bdd6be13eedaf7d4540d55"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/sha.h",
+      "sha256": "0bb6745481ac56b67f450d09033e813bf8f6a5f2025e90d5eb539eab1ad5e323"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/srp.h",
+      "sha256": "82a08bf9a866dec1b7deb66b4077690cee0f6caf91eb00136c5eed4e8d943d06"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/srtp.h",
+      "sha256": "e50e2dd5df6a0db219091cd1c6768a6d319ef6485b16e1f361fce43067847626"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/ssl.h",
+      "sha256": "c60006f61d48ec19032b672194b5ee7f535f9a537125980dae2006b7d21cca1b"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/ssl2.h",
+      "sha256": "7fb557a32488ad44a25420abff8279abd0bd1f4ab768e73d3e1d5c2dab36c0c5"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/ssl3.h",
+      "sha256": "d04cfec2a9f9da2aa299f55884215e200b490a6e0a9423255262648bd8a6d1c0"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/sslerr.h",
+      "sha256": "4799ae1dca959b00d3a826026c858ace5f52c42f8660c60f0a2ab6939a2453ce"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/stack.h",
+      "sha256": "45ba803bbe14007e494bb24b2ca954f6362ef700a10480efa3d2f3acb159deec"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/store.h",
+      "sha256": "1105bad1a309d3122a2cfbdc4098a33e33d50c8118e70bb332f3b7d6ef2bbb58"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/storeerr.h",
+      "sha256": "071c66bcc03ed5c2a24f1964f45e8d1a633f3cb4b183c718ded3e25312f8c4e0"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/symhacks.h",
+      "sha256": "0c9e026a5932a2432e3cdf7defb789610c4272010e51e5ff0471809eabb7aa2d"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/tls1.h",
+      "sha256": "d4104ca8720332b9852f4725d4660a6cf77a52b587e7d96ec263e996c1d0ae2f"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/ts.h",
+      "sha256": "9bd039ebce7bf6b6e71fc9667e44e017fc0cb7c79c023be1c965894e61b79238"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/tserr.h",
+      "sha256": "b6e1bbc8c53e4f7c054768dec55272d001dfbfee788a85ba8b0c069e08cbbe85"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/txt_db.h",
+      "sha256": "903696bd5b9908530f8a8578fef47721f47f3fe8507bac7761473e925e942159"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/ui.h",
+      "sha256": "f5ea3f5d2e7beb3e81db8c23c6e618e38e511c213fd93a11ef51b9ae4ad03619"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/uierr.h",
+      "sha256": "bb39377c702d9765547ce95f9e758b46a54ee4e2689f892033cf2a4ea57d5d0b"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/whrlpool.h",
+      "sha256": "38750722d1737083fa8caedfccd3bce574080e35692010d2f91dd303b154af69"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/x509.h",
+      "sha256": "f1b8b356d649da24236d5aabdfafe047b516b2008d8d5d09da5e99fbc4b4a98c"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/x509_vfy.h",
+      "sha256": "f621ac4c38a89bd010656ca00937773126a7ef348b29a14b04cc5ec5c095b531"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/x509err.h",
+      "sha256": "622499b9aaa546957c802da9aee36794c24c9c7d2e105ae69b47841ecdac6b7a"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/x509v3.h",
+      "sha256": "5c66d361607135f488201509ec733219a0f6606a19303ab7716c2610c683b170"
+    },
+    {
+      "path": "cie_sign_sdk/Dependencies/openssl/include/openssl/x509v3err.h",
+      "sha256": "0e55368c874daa18a8074886aedf6dd0f9b84c5df5f70821e6da5087d9b321c0"
+    }
+  ]
+}

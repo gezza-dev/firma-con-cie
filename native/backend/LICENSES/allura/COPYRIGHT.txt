@@ -1,0 +1,6 @@
+Copyright (c) 2011 TypeSETit, LLC (typesetit@att.net),
+with Reserved Font Name "Allura"
+
+Allura-Regular.ttf, Version 1.005. Author: Robert E. Leuschke.
+The font metadata declares SIL Open Font License 1.1.
+The original font has not been modified by this fork.

@@ -1,0 +1,3 @@
+LIBRARY cie_prototype_minidriver
+EXPORTS
+    CardAcquireContext

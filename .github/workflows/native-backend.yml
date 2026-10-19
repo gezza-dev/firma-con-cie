@@ -1,0 +1,72 @@
+name: CIE ID shared native backend
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  backend:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            system: linux
+          - os: ubuntu-24.04
+            system: windows
+          - os: macos-15
+            system: macos
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - name: Linux toolchain
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake ninja-build pkg-config libpcsclite-dev python3-venv perl autoconf automake libtool gettext g++-mingw-w64-x86-64-posix gcc-mingw-w64-x86-64-posix
+      - name: macOS toolchain
+        if: runner.os == 'macOS'
+        run: brew install cmake ninja pkg-config autoconf automake libtool
+      - name: Meson
+        run: |
+          python3 -m venv .build/tools
+          .build/tools/bin/pip install meson==1.11.0
+          echo "$PWD/.build/tools/bin" >> "$GITHUB_PATH"
+      - uses: actions/cache@v4
+        with:
+          path: .build/dependencies
+          key: native-${{ runner.os }}-${{ runner.arch }}-${{ matrix.system }}-${{ hashFiles('scripts/build_portable_dependencies.py', 'native/backend/scripts/dependencies.lock.json') }}
+      - name: Dependencies and real backend
+        env:
+          TARGET_SYSTEM: ${{ matrix.system }}
+        run: |
+          if [ "$TARGET_SYSTEM" = windows ]; then
+            python3 scripts/build_portable_dependencies.py --target windows-x64 --arch x86_64
+            python3 scripts/build_native.py --system windows --toolchain "$PWD/.build/dependencies/windows-x64/mingw.cmake" --dependency-prefix "$PWD/.build/dependencies/windows-x64/prefix"
+          else
+            python3 scripts/build_portable_dependencies.py
+            python3 scripts/build_native.py --dependency-prefix "$PWD/.build/dependencies/$TARGET_SYSTEM-$(uname -m)/prefix"
+            python3 scripts/smoke_native.py --runtime "native/runtime/$TARGET_SYSTEM" --report "reports/$TARGET_SYSTEM-native.json"
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: native-${{ matrix.system }}-${{ runner.arch }}
+          path: native/runtime/${{ matrix.system }}
+  windows-runtime:
+    needs: backend
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: native-windows-X64
+          path: .build/windows-runtime
+      - name: Execute the cross-compiled backend on Windows, without a card
+        shell: pwsh
+        run: python scripts/smoke_native.py --runtime .build/windows-runtime --report reports/windows-native.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-runtime-report
+          path: reports/windows-native.json

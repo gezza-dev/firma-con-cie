@@ -1,0 +1,13 @@
+Tool: built-in image_gen (no CLI).
+
+Composition pass (circle + silver tile, before user's black-base correction):
+Use case: precise-object-edit.
+Asset type: final desktop application icon for macOS, Windows and Linux, square 1024x1024 RGBA PNG with transparent background.
+Image 1 is the composition and proportions reference (a Finder screenshot). Image 2 is the CIE ID circular logo to preserve.
+Correct the icon to match Image 1: a LIGHT SILVER-GRAY rounded-square tile, centered, with a noticeably SMALLER circular CIE ID logo centered inside it. The silver tile must be visibly broad around the circle on all four sides, like the screenshot. On a 1024 square canvas, tile approximately 832x832 at (96,96), rounded corners radius approximately 200; circular logo diameter approximately 600, centered at (512,512), leaving about 116px of silver margin between circle and tile edge on each side. Use a subtle light silver gradient and thin soft pale tile rim as in screenshot. The CIRCLE must have a thin BLACK outline, no gray outline. Preserve the original blue and white CIE ID logo, white profile silhouette, exact lettering "Cie" above "ID". Do not enlarge the circle to fill the tile. Outer canvas beyond tile remains truly transparent. Render the icon only: NO Finder dark rectangular background, NO filename caption "CIE-ID.app", NO screenshot UI, NO additional text, NO watermark. Front view, no perspective.
+
+Final color correction (silver composition used as edit target):
+Use case: precise-object-edit.
+Asset type: production CIE ID desktop application icon, square PNG with genuine transparent corners.
+Input image is the edit target. Preserve the CURRENT composition and proportions exactly: smaller centered circular CIE ID logo with broad rounded-square base around it.
+Change ALL the silver/gray material OUTSIDE THE CIRCULAR LOGO but INSIDE THE ROUNDED-SQUARE TILE to solid pure BLACK #000000. This includes the pale rim and any gray or white highlights on that base. The ENTIRE rounded-square base must be BLACK, not gray or silver. Keep the circle's thin black outline. Keep the circle size and position unchanged, its blue field, white face silhouette and exact "Cie" above "ID" lettering unchanged. The black rounded tile has a clean smooth antialiased silhouette, with fully transparent canvas outside its rounded corners. No glow, no light outline, no gray patches, no shadow, no stray pixels, no filename or background.

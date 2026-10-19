@@ -1,0 +1,10 @@
+// Public CIE CA certificates, sourced and pinned in trust/manifest.json.
+#pragma once
+namespace cie {
+inline constexpr char cieRootPem[] = R"CIEPEM(@CIE_ROOT_PEM@)CIEPEM";
+inline constexpr char difesaRootsPem[] = R"DIFESAPEM(@DIFESA_SIGNING_PEM@
+@DIFESA_TSA_PEM@)DIFESAPEM";
+inline constexpr char cieIssuersPem[] = R"CIEPEM(@CIE_SUBCA1_PEM@
+@CIE_SUBCA002_PEM@
+@CIE_SUBCA003_PEM@)CIEPEM";
+}

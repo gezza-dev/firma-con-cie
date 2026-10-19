@@ -1,0 +1,35 @@
+{
+  "source": "https://pki.difesa.it/IT/default.aspx",
+  "retrieved": "2026-10-16",
+  "policy": "Explicit application anchors for signature/TSA chain validation. Public CA certificates independently downloaded over authenticated HTTPS, matched to fingerprints published by PKI Difesa, self-signatures verified. No operating-system trust stores changed. Not an EU Trusted List or qualification attestation.",
+  "certificates": [
+    {
+      "url": "https://pki.difesa.it/cafirmadigitale.crt",
+      "publishedSha1Matches": true,
+      "derSha256": "053aa9ae51a7b609cc961e58bdfd9e85b60e973adf44aec3f02358587c3031b7",
+      "pemSha256": "98645e22d95875f87465c406d8b8176370c27d2d4afafec320c6a98c083ebfc4",
+      "subject": "CN=Ministero della Difesa - CA di Firma Digitale,2.5.4.5=97355240587,OU=S.M.D. - C.do C4 Difesa,O=Ministero della Difesa,C=IT",
+      "notBefore": "2014-07-15T08:11:41+00:00",
+      "notAfter": "2044-07-15T08:11:41+00:00",
+      "selfSignatureVerified": true,
+      "signatureAlgorithm": "1.2.840.113549.1.1.11",
+      "publicKeyBits": 4096
+    },
+    {
+      "url": "https://pki.difesa.it/timestampauthorityeidas.crt",
+      "publishedSha1Matches": true,
+      "derSha256": "16db130492b230b2092e40dd7f577e3cb3053d6a10bfbe302f45f2957675b5e8",
+      "pemSha256": "1818b4c87a508f166ecbe366dc16df7be3daf04b524027b8d033e461516e39db",
+      "subject": "CN=Ministero della Difesa - Time Stamp Authority eIDAS,2.5.4.5=97355240587,OU=S.M.D. - C.do C4 Difesa,O=Ministero della Difesa,C=IT",
+      "notBefore": "2017-04-14T07:47:26+00:00",
+      "notAfter": "2047-04-14T07:47:26+00:00",
+      "selfSignatureVerified": true,
+      "signatureAlgorithm": "1.2.840.113549.1.1.11",
+      "publicKeyBits": 4096
+    }
+  ],
+  "pemSha256": {
+    "difesa-signing.pem": "98645e22d95875f87465c406d8b8176370c27d2d4afafec320c6a98c083ebfc4",
+    "difesa-tsa.pem": "1818b4c87a508f166ecbe366dc16df7be3daf04b524027b8d033e461516e39db"
+  }
+}
