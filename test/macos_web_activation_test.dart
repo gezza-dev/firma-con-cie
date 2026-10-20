@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -38,9 +40,13 @@ void main() {
         null,
       ),
     );
-    expect(await openWebSystemSettings(), isTrue);
-    expect(calls.single.method, 'openSystemSettings');
-    expect(calls.single.arguments, isNull);
+    expect(await openWebSystemSettings(), Platform.isMacOS);
+    if (Platform.isMacOS) {
+      expect(calls.single.method, 'openSystemSettings');
+      expect(calls.single.arguments, isNull);
+    } else {
+      expect(calls, isEmpty);
+    }
   });
 
   for (final published in [false, true]) {
@@ -244,9 +250,16 @@ void main() {
           null,
         ),
       );
-      expect((await activateWebComponent())['ok'], isTrue);
-      expect(calls.single.method, 'activateComponent');
-      expect(calls.single.arguments, isNull);
+      final result = await activateWebComponent();
+      if (Platform.isMacOS) {
+        expect(result['ok'], isTrue);
+        expect(calls.single.method, 'activateComponent');
+        expect(calls.single.arguments, isNull);
+      } else {
+        expect(result['ok'], isFalse);
+        expect(result['code'], 'unsupported');
+        expect(calls, isEmpty);
+      }
     },
   );
 
