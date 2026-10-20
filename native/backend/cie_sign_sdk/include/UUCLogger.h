@@ -10,11 +10,11 @@
 #define LOG_TYPE_MESSAGE		3
 #define LOG_TYPE_DEBUG			4
 
-// macro 
-#define DECLARE_LOG UUCLogger g_log
-#define USE_LOG extern UUCLogger g_log
-#define SET_LOG_FILE(file) g_log.setLogFile(file)
-#define SET_LOG_LEVEL(level) g_log.setLogLevel(level)
+// Avoid interposing GLib's g_log function when GTK loads the SDK.
+#define DECLARE_LOG UUCLogger cie_sdk_logger
+#define USE_LOG extern UUCLogger cie_sdk_logger
+#define SET_LOG_FILE(file) cie_sdk_logger.setLogFile(file)
+#define SET_LOG_LEVEL(level) cie_sdk_logger.setLogLevel(level)
 
 #define LOG_MSG(params) ((void)0)
 #define LOG_ERR(params) ((void)0)

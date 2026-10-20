@@ -12,6 +12,10 @@
 #include "web_container_win.h"
 #include "../platform/windows/web/setup_policy.h"
 #endif
+#if defined(__linux__) && !defined(CIE_WEB_TEST_STORE)
+#include <dlfcn.h>
+#include <filesystem>
+#endif
 namespace cie_web_store {
 #if defined(_WIN32) && !defined(CIE_WEB_TEST_STORE)
 namespace {
@@ -104,6 +108,32 @@ int32_t test(const std::string& id){
  BCRYPT_KEY_HANDLE publicKey=0;if(!CryptImportPublicKeyInfoEx2(X509_ASN_ENCODING,&cert->pCertInfo->SubjectPublicKeyInfo,0,nullptr,&publicKey))return -4;
  auto verified=BCryptVerifySignature(publicKey,&padding,digest,n,signature,size,BCRYPT_PAD_PKCS1);BCryptDestroyKey(publicKey);return verified;
 }
+#elif defined(__linux__) && !defined(CIE_WEB_TEST_STORE)
+bool componentAvailable(){
+ Dl_info own{};
+ if(!dladdr(reinterpret_cast<void*>(&componentAvailable),&own)||!own.dli_fname)return false;
+ auto path=std::filesystem::absolute(own.dli_fname).parent_path()/"libcie_linux_pkcs11.so";
+ // Read module metadata only: never initialize PKCS#11, enumerate readers or
+ // inspect a Firefox profile while the application refreshes its Home.
+ void* module=dlopen(path.c_str(),RTLD_LOCAL|RTLD_NOW);if(!module)return false;
+ auto version=reinterpret_cast<uint32_t(*)()>(dlsym(module,"CieLinuxWebAbiVersion"));
+ bool available=version&&version()==1;dlclose(module);return available;
+}
+std::vector<std::string> list(){cie_cache::Store store;return store.list("web");}
+std::vector<uint8_t> read(const std::string& id){
+ cie_pairing::checkId(id);cie_cache::Store store;auto value=store.read("web",id);
+ if(value.size()>8192)throw std::runtime_error("web_invalid_certificate");return {value.begin(),value.end()};
+}
+bool provisioned(const std::string& id,const uint8_t* der,uint32_t size){
+ if(!der||!size||size>8192)return false;
+ try{return read(id)==std::vector<uint8_t>(der,der+size);}catch(...){return false;}
+}
+void write(const std::string& id,const uint8_t* der,uint32_t size){
+ cie_pairing::checkId(id);if(!der||!size||size>8192)throw std::runtime_error("web_invalid_certificate");
+ cie_cache::Bytes value(der,der+size);cie_cache::Store store(true);store.write("web",id,value);
+}
+void erase(const std::string& id){cie_pairing::checkId(id);cie_cache::Store store;store.erase("web",id);}
+int32_t test(const std::string&){return -1;} // Explicit authentication belongs to Firefox.
 #else
 std::vector<std::string> list(){return {};}
 bool componentAvailable(){return false;}

@@ -1,11 +1,18 @@
 #include "cryptoki.h"
 #include <dlfcn.h>
 #include <iostream>
+#include <cstring>
 
 int main(int argc, char **argv)
 {
     // Validate the real loaded module and ABI without touching a card or PIN.
-    if (argc != 2) { std::cerr << "Middleware path missing\n"; return 1; }
+    if (argc != 2 && argc != 3) { std::cerr << "Middleware path missing\n"; return 1; }
+    void *glib = nullptr;
+    if (argc == 3) {
+        if (std::strcmp(argv[2], "--preload-glib")) return 1;
+        glib = dlopen("libglib-2.0.so.0", RTLD_GLOBAL | RTLD_NOW);
+        if (!glib) { std::cerr << dlerror() << '\n'; return 1; }
+    }
     void *module = dlopen(argv[1], RTLD_LOCAL | RTLD_NOW);
     if (!module) { std::cerr << dlerror() << '\n'; return 1; }
     auto getFunctionList = reinterpret_cast<CK_RV (*)(CK_FUNCTION_LIST_PTR_PTR)>(
@@ -33,5 +40,6 @@ int main(int argc, char **argv)
     }
     std::cout << "Native middleware exports, PKCS#11 ABI and OpenSSL 3.5.9 runtime passed\n";
     dlclose(module);
+    if (glib) dlclose(glib);
     return 0;
 }

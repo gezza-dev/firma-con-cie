@@ -126,7 +126,7 @@ Questa ricetta non firma Authenticode il prodotto. L’esecuzione in processi pr
 
 ## Linux
 
-La ricetta di sviluppo di riferimento usa Ubuntu 24.04. Non è attestato il funzionamento completo dell’app con una CIE reale su Linux.
+La ricetta di sviluppo di riferimento usa Ubuntu 24.04. Su Ubuntu 26.10 x86_64 sono stati collaudati abbinamento persistente e firme PDF/P7M con PIN parziale; l’utente ha confermato anche un test reale di accesso ai siti con Mozilla Firefox. Il collaudo completo di tutte le funzioni resta da completare: vedere [STATUS.md](STATUS.md).
 
 ```sh
 sudo apt-get update
@@ -144,7 +144,34 @@ flutter pub get --enforce-lockfile
 flutter build linux --release
 ```
 
-Conservare l’intera directory `build/linux/<architettura>/release/bundle`. Il runner copia le librerie private in `cie_native`; pcsc-lite e driver compatibili devono essere disponibili sul sistema destinatario. La cache cifrata degli abbinamenti è condivisa e testata senza carta. Il componente di accesso ai siti e l’assemblaggio DSS/JVM Linux non sono completati. Per il solo bridge Linux serve OpenSSL 3 (`libssl-dev`); la build completa usa la copia privata del prefisso quando specificato.
+Conservare l’intera directory `build/linux/<architettura>/release/bundle`. Il runner copia le librerie private in `cie_native`; pcsc-lite e driver compatibili devono essere disponibili sul sistema destinatario. La cache cifrata degli abbinamenti è condivisa e ha test software e prove reali Linux. Il provider di accesso Firefox PKCS#11 è incluso; il test reale di accesso è stato confermato riuscito dall’utente. La build non registra il modulo nel browser: la configurazione resta manuale. Vedere [LINUX_FIREFOX.md](LINUX_FIREFOX.md). L’assemblaggio DSS/JVM Linux resta incompleto. Per il solo bridge Linux serve OpenSSL 3 (`libssl-dev`); la build completa usa la copia privata del prefisso quando specificato.
+
+### Scaling dei caratteri Linux
+
+Il runner espone su `cie.id/linux_text_scaling` la risoluzione logica effettiva
+dei caratteri GDK, divisa per 96. Usa `gdk_screen_get_resolution`, che include
+già la compensazione `GDK_DPI_SCALE`, e osserva `notify::resolution` per le
+variazioni durante l’esecuzione. Non modifica impostazioni del desktop.
+
+Il builder dell’app applica questo valore solo su Linux e solo quando Flutter
+fornisce `TextScaler.noScaling`. Un text scaler già attivo nel motore ha la
+precedenza e viene conservato integralmente, anche se riduce i caratteri.
+Non si moltiplicano le scale GTK e Flutter e non si usa `devicePixelRatio` per
+calcolare la scala del testo. Risoluzioni non disponibili o non valide usano
+il comportamento standard di Flutter. La scala raggiunge anche i dialoghi.
+
+I test del runner richiedono i file Flutter generati dalla build Linux, ma
+non avviano l’app né richiedono un display, un lettore o una carta:
+
+```sh
+cmake -S linux/runner/tests -B .build/linux-runner-tests -G Ninja
+cmake --build .build/linux-runner-tests --parallel 2
+ctest --test-dir .build/linux-runner-tests --output-on-failure
+flutter test --no-pub test/linux_text_scaling_test.dart
+```
+
+Per leggere soltanto il valore del desktop corrente, senza finestre o accessi
+alla carta: `.build/linux-runner-tests/text_scaling_tests --desktop-read-only`.
 
 ## DSS/JVM: macOS e Windows
 

@@ -8,6 +8,11 @@ Su entrambi si usa il PIN completo di otto cifre. L'attivazione Windows al primo
 abbinamento è descritta in [WINDOWS_WEB_FIRST_USE.md](WINDOWS_WEB_FIRST_USE.md).
 Le note successive conservano anche passaggi e limiti storici del porting.
 
+Il 20 ottobre 2026 l’utente ha confermato anche l’esito positivo del test reale
+di accesso ai siti con Mozilla Firefox su Linux. La conferma riguarda il
+collaudo manuale; sito, versione del browser e protocollo TLS non sono stati
+verificati indipendentemente. [Prova e limiti Linux](LINUX_FIREFOX.md).
+
 Il prototipo aggiunge l’autenticazione con carta fisica e lettore (livello 3).
 Non modifica CIE ID Universal pubblicata, non implementa il login tramite
 smartphone e non abilita il login al sistema operativo. Le prove reali di
@@ -189,6 +194,16 @@ con `lsregister -f` prima di aprirlo. Non disabilitare estensioni ufficiali auto
 Smart Card si concede nella finestra macOS. Non cambiare SIP o altri controlli.
 La rimozione di questa registrazione di prova usa `pluginkit -r` sullo stesso
 percorso; i dati Web si rimuovono prima dall’app.
+
+## Linux / Firefox
+
+Il runtime Linux include ora un provider PKCS#11 separato, con PIN completo e
+motore condiviso. Il collaudo software comprende PKCS#11, NSS in memoria e
+archivio pubblico isolato. Il test reale di accesso ai siti con Mozilla Firefox
+è stato confermato riuscito dall’utente il 20 ottobre 2026, con i limiti di
+osservazione riportati nella documentazione Linux.
+La build e l’app non registrano il modulo e non modificano i profili del browser.
+[Architettura, durata delle sessioni, limiti e prove](LINUX_FIREFOX.md).
 
 ## Windows x64
 

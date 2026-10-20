@@ -74,6 +74,11 @@ set_target_properties(${BINARY_NAME}
 # them to the application.
 include(flutter/generated_plugins.cmake)
 
+# Plugin libraries are copied into lib/ without a CMake install relink.
+foreach(plugin ${FLUTTER_PLUGIN_LIST})
+  set_target_properties(${plugin}_plugin PROPERTIES
+    BUILD_WITH_INSTALL_RPATH ON INSTALL_RPATH "$ORIGIN")
+endforeach()
 
 # === Installation ===
 # By default, "installing" just makes a relocatable bundle in the build
@@ -138,5 +143,6 @@ endif()
 # Dart share this layout; no library is installed in the operating system.
 set(CIE_RUNTIME "${CMAKE_CURRENT_SOURCE_DIR}/../native/runtime/linux")
 if(EXISTS "${CIE_RUNTIME}/backend-manifest.json")
-  install(DIRECTORY "${CIE_RUNTIME}/" DESTINATION "${CMAKE_INSTALL_PREFIX}/cie_native" COMPONENT Runtime)
+  install(DIRECTORY "${CIE_RUNTIME}/" DESTINATION "${CMAKE_INSTALL_PREFIX}/cie_native"
+    USE_SOURCE_PERMISSIONS COMPONENT Runtime)
 endif()

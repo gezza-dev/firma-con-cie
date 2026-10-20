@@ -1,4 +1,5 @@
 #include "my_application.h"
+#include "text_scaling.h"
 
 #include <flutter_linux/flutter_linux.h>
 #ifdef GDK_WINDOWING_X11
@@ -83,6 +84,14 @@ static void my_application_activate(GApplication* application) {
   gtk_widget_realize(GTK_WIDGET(view));
 
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
+
+  // GTK resolves the desktop's logical font DPI independently of display DPI.
+  // Keep the channel alive for the view and stop its settings observer on exit.
+  g_object_set_data_full(
+      G_OBJECT(view), "cie-text-scaling",
+      cie_text_scaling_new(fl_engine_get_binary_messenger(fl_view_get_engine(view)),
+                           gtk_widget_get_screen(GTK_WIDGET(view))),
+      g_object_unref);
 
   gtk_widget_grab_focus(GTK_WIDGET(view));
 }

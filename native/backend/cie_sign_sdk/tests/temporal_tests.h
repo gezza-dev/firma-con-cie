@@ -5,6 +5,7 @@
 #include "PdfVerifier.h"
 #include "SignedDocument.h"
 #include <openssl/ts.h>
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 namespace {

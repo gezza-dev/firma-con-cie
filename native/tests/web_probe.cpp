@@ -5,13 +5,18 @@
 #include <PCSC/winscard.h>
 #include <PCSC/pcsclite.h>
 using DWORD=uint32_t;
-#define SCardListReadersA SCardListReaders
-#define SCardConnectA SCardConnect
-#define SCardStatusA SCardStatus
-#else
+#elif defined(_WIN32)
 #include <winscard.h>
 #include <scarderr.h>
 #include <winsmcrd.h>
+#else
+#include <winscard.h>
+#include <pcsclite.h>
+#endif
+#ifndef _WIN32
+#define SCardListReadersA SCardListReaders
+#define SCardConnectA SCardConnect
+#define SCardStatusA SCardStatus
 #endif
 #include <iostream>
 #include <vector>

@@ -601,9 +601,13 @@ char* cie_bridge_web_forget(const char* card){return guarded([&]()->std::string{
 });}
 char* cie_bridge_web_test(const char* card){return guarded([&]()->std::string{
  if(!card||!cie_pairing::validId(card))return error("web_invalid_id","Selezionare la CIE da provare.");
+#if defined(__linux__) && !defined(CIE_WEB_TEST_STORE)
+ return error("web_test_requires_firefox","Su Linux la prova di accesso si esegue da Firefox, che richiede il PIN completo di otto cifre. Nessuna prova sulla carta è stata avviata dall’applicazione.");
+#else
  try{auto status=cie_web_store::test(card);if(status)return error("web_system_test_failed","Prova del componente Windows non riuscita. Verificare la registrazione del minidriver e la disponibilità della CIE; nessun tentativo automatico.",status);
   return "{\"ok\":true,\"message\":\"Firma della richiesta locale verificata tramite Windows Smart Card KSP. Il login a un sito resta una prova separata.\"}";
  }catch(...){return error("web_system_test_failed","Configurazione Web non disponibile per questo utente.");}
+#endif
 });}
 char* cie_bridge_unpair(const char* card){return guarded([&]()->std::string{
  try{if(!card)return error("pairing_invalid_id","Identificativo CIE mancante");if(*card)cie_pairing::erase(card);else for(auto& id:cie_pairing::list())cie_pairing::erase(id);return "{\"ok\":true}";}
@@ -654,7 +658,13 @@ char* cie_bridge_certificate_name(const char* hex){return guarded([&]()->std::st
  char name[512]{};if(certificateNameFn(der.data(),uint32_t(der.size()),name,sizeof(name)))return error("invalid_certificate","Nome del titolare non disponibile");
  return "{\"ok\":true,\"fullName\":"+quote(name)+",\"cardNumber\":"+quote(publicCardNumber(der.data(),uint32_t(der.size())))+"}";
 });}
-char* cie_bridge_web_status(void){return guarded([]()->std::string{return std::string("{\"ok\":true,\"available\":")+(cie_web_store::componentAvailable()?"true":"false")+"}";});}
+char* cie_bridge_web_status(void){return guarded([]()->std::string{
+ auto out=std::string("{\"ok\":true,\"available\":")+(cie_web_store::componentAvailable()?"true":"false");
+#if defined(__linux__) && !defined(CIE_WEB_TEST_STORE)
+ out+=",\"provider\":\"linux-firefox-pkcs11\",\"browserRegistrationRequired\":true,\"browserConfigurationVerified\":false,\"fullPinRequired\":true";
+#endif
+ return out+"}";
+});}
 char* cie_bridge_enrollments(void){return guarded([]()->std::string{
  auto blocked=cie_pairing::invalidatedCards();std::string invalidations=",\"invalidatedCards\":[";bool firstBlocked=true;
  for(const auto& id:blocked){if(!firstBlocked)invalidations+=",";firstBlocked=false;invalidations+=quote(id);}invalidations+="]";

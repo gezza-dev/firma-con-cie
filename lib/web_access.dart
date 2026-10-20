@@ -11,6 +11,12 @@ import 'package:flutter/services.dart';
 import 'native_bridge.dart';
 import 'pairing_view.dart';
 
+const linuxFirefoxSetupMessage =
+    'Certificato pubblico predisposto. Configura il modulo CIE ID in Firefox e inserisci il PIN completo di otto cifre quando richiesto dal browser. La configurazione di Firefox non è stata verificata.';
+
+const linuxFirefoxInformationMessage =
+    'Per accedere ai siti con Firefox, prepara il certificato dall’applicazione e configura il modulo CIE ID nel browser. Firefox richiede il PIN completo di otto cifre. Questa finestra non avvia prove sulla carta e non modifica il browser.';
+
 typedef WebPublisher = Future<void> Function(
   String card,
   String? certificateHex,
@@ -20,7 +26,8 @@ Future<bool> openWebSystemSettings() async {
   if (!Platform.isMacOS) return false;
   try {
     return await const MethodChannel('cie.prototype/web')
-            .invokeMethod<bool>('openSystemSettings') ?? false;
+            .invokeMethod<bool>('openSystemSettings') ??
+        false;
   } on PlatformException {
     return false;
   } on MissingPluginException {
@@ -33,7 +40,8 @@ Future<JsonResult> activateWebComponent() async {
   if (!Platform.isMacOS) return {'ok': false, 'code': 'unsupported'};
   try {
     return await const MethodChannel('cie.prototype/web')
-            .invokeMapMethod<String, dynamic>('activateComponent') ?? {'ok': false};
+            .invokeMapMethod<String, dynamic>('activateComponent') ??
+        {'ok': false};
   } on PlatformException {
     return {'ok': false, 'code': 'web_component_activation_failed'};
   } on MissingPluginException {
@@ -65,10 +73,11 @@ class WebAccessCard extends StatefulWidget {
     this.busy = false,
     this.publisher = publishWebCertificate,
     this.tester,
+    this.linuxFirefox = false,
   });
   final WebAccessService service;
   final String reader, card;
-  final bool enabled, busy;
+  final bool enabled, busy, linuxFirefox;
   final FutureOr<void> Function(bool) onBusy;
   final WebPublisher publisher;
   final WebTester? tester;
@@ -121,7 +130,7 @@ class _WebAccessCardState extends State<WebAccessCard> {
       }
       await widget.publisher(widget.card, pendingCertificate);
       pendingCertificate = null;
-      message = 'Certificato pubblico configurato per l’accesso ai siti. Apri il sito nel browser.';
+      message = widget.linuxFirefox ? linuxFirefoxSetupMessage : 'Certificato pubblico configurato per l’accesso ai siti. Apri il sito nel browser.';
     } on PlatformException catch (error) {
       message = error.message ?? 'Componente di sistema non disponibile. Puoi completare la configurazione senza reinserire il PIN.';
     } catch (_) {
@@ -182,6 +191,10 @@ class _WebAccessCardState extends State<WebAccessCard> {
 
   Future<void> testSystem() async {
     if (working || widget.busy || !widget.enabled) return;
+    if (widget.linuxFirefox) {
+      setState(() => message = linuxFirefoxInformationMessage);
+      return;
+    }
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
@@ -254,7 +267,9 @@ class _WebAccessCardState extends State<WebAccessCard> {
         Text(
           tr(
             context,
-            "Configurazione separata dall’abbinamento per firmare documenti. Il certificato pubblico viene conservato dal sistema; il PIN non viene salvato da questa procedura. Per accedere ai siti, sia su macOS sia su Windows, inserisci tutte le otto cifre del PIN nella finestra protetta del sistema, anche se la CIE è abbinata.",
+            widget.linuxFirefox
+                ? "Su Linux l’accesso ai siti usa il modulo CIE ID per Firefox. Il browser richiede tutte le otto cifre del PIN, anche se la CIE è abbinata. L’applicazione non modifica la configurazione di Firefox."
+                : "Configurazione separata dall’abbinamento per firmare documenti. Il certificato pubblico viene conservato dal sistema; il PIN non viene salvato da questa procedura. Per accedere ai siti, sia su macOS sia su Windows, inserisci tutte le otto cifre del PIN nella finestra protetta del sistema, anche se la CIE è abbinata.",
           ),
         ),
         const SizedBox(height: 12),
@@ -280,7 +295,14 @@ class _WebAccessCardState extends State<WebAccessCard> {
               onPressed: !widget.enabled || widget.busy || working
                   ? null
                   : testSystem,
-              child: Text(tr(context, "Prova componente di sistema")),
+              child: Text(
+                tr(
+                  context,
+                  widget.linuxFirefox
+                      ? "Informazioni Firefox"
+                      : "Prova componente di sistema",
+                ),
+              ),
             ),
           ],
         ),
@@ -291,8 +313,13 @@ class _WebAccessCardState extends State<WebAccessCard> {
               "Il componente per configurare l’accesso ai siti manca nel runtime.",
             ),
           ),
-        AppNotification(message: message, enabled: !working && !widget.busy,
-          title: 'Accesso ai siti con CIE', onDismissed: () { if (mounted) setState(() => message = null); },
+        AppNotification(
+          message: message,
+          enabled: !working && !widget.busy,
+          title: 'Accesso ai siti con CIE',
+          onDismissed: () {
+            if (mounted) setState(() => message = null);
+          },
         ),
       ],
     ),

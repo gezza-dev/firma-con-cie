@@ -20,6 +20,7 @@ Future<JsonResult> readWebSystemStatus() async {
 }
 
 class EnrollmentRecord {
+  static const firefoxSetupMessage = linuxFirefoxSetupMessage;
   static const componentActivationMessage =
       'Il certificato è configurato, ma il componente di sistema per l’accesso ai siti non è ancora attivo su questo computer. Puoi già firmare documenti. Non occorre ripetere il PIN o abbinare nuovamente la CIE.';
   EnrollmentRecord(this.data, this.system, {this.removalPending = false});
@@ -33,6 +34,8 @@ class EnrollmentRecord {
   bool get hasPublicData => data['publicDataSaved'] == true;
   bool get componentAvailable =>
       system['available'] as bool? ?? data['systemComponentAvailable'] == true;
+  bool get needsBrowserRegistration =>
+      system['browserRegistrationRequired'] == true;
   bool get needsComponentActivation =>
       !componentAvailable && system['canActivateComponent'] == true;
   bool get needsSystemSettings =>
@@ -68,6 +71,8 @@ class EnrollmentRecord {
       ? 'Completa la configurazione per accedere ai siti.'
       : !componentAvailable
       ? 'Accesso ai siti da attivare. Consulta Impostazioni → Log.'
+      : needsBrowserRegistration
+      ? firefoxSetupMessage
       : 'Accesso ai siti configurato: apri il sito nel browser.';
   Map<String, bool> get diagnosticFlags => {
     'removalPending': removalPending,
@@ -256,7 +261,9 @@ class EnrollmentController {
         message == null &&
         record?.webProvisioned == true) {
       message = record!.componentAvailable
-          ? 'Certificato pubblico configurato per l’accesso ai siti. Apri il sito nel browser.'
+          ? record.needsBrowserRegistration
+                ? EnrollmentRecord.firefoxSetupMessage
+                : 'Certificato pubblico configurato per l’accesso ai siti. Apri il sito nel browser.'
           : EnrollmentRecord.componentActivationMessage;
     }
     return result;

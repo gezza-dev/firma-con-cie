@@ -23,6 +23,7 @@ add_executable(${BINARY_NAME}
   "${ICON_RESOURCE}"
   "main.cc"
   "my_application.cc"
+  "text_scaling.cc"
   "${FLUTTER_MANAGED_DIR}/generated_plugin_registrant.cc"
 )
 

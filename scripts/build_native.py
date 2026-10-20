@@ -78,6 +78,8 @@ def main():
             if not path.is_file():
                 raise SystemExit('Missing private MinGW runtime: '+name)
             copy_binary(path, output/name)
+    if args.system == 'linux':
+        copy_binary(build/'libcie_linux_pkcs11.so', output/'libcie_linux_pkcs11.so')
     licenses = output/'licenses'
     (output/'tests').mkdir(exist_ok=True)
     for name in ['cie_enrollment_state_tests','cie_web_probe','cie_web_policy_tests','cie_web_sign_request_tests','cie_web_abi_tests','cie_web_crypto_tests']:
@@ -126,6 +128,8 @@ def main():
         pairing_storage="per-user-file-cache-v3", os_credential_store=False, legacy_pairings_imported=False,
         file_cache_crypto="AES-256-CBC+HMAC-SHA256-encrypt-then-MAC", local_key_in_private_file=True,
         web_authentication_abi=1, web_authentication_hardware_validated=False,
+        linux_firefox_pkcs11=(args.system == 'linux'), linux_web_full_pin_only=(args.system == 'linux'),
+        browser_registration_performed=False,
         pin_change=True, puk_unblock=True, persistent_pairing_invalidation=True, nonblocking_pairing_cleanup=True,
         files={str(p.relative_to(output)):sha(p) for p in output.rglob('*') if p.is_file() and p.name!='backend-manifest.json'})
     (output/'backend-manifest.json').write_text(json.dumps(manifest, indent=2)+'\n')

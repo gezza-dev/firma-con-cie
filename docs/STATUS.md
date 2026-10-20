@@ -6,9 +6,9 @@ Situazione al 20 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario
 | --- | --- | --- | --- |
 | Interfaccia condivisa | Compilata Universal; eseguita su Apple Silicon | Compilata/eseguita x64 | Collaudo desktop da completare |
 | Middleware e SDK | Compilati ARM64/x86_64; test nativi su ARM64 | Backend MinGW x64 e componenti MSVC; test su Windows | Compilazione/test nativi senza carta |
-| Firma PAdES/CAdES | CIE reale verificata | CIE reale verificata | Prova reale da eseguire |
-| Abbinamento e PIN parziale | Persistenza e firme reali verificate | Persistenza e firme reali verificate | Cache su file testata senza carta |
-| Accesso ai siti | CryptoTokenKit e accesso Safari al portale CIE verificati | CSP/KSP e accesso Chrome al portale CIE verificati | Componente di sistema non disponibile |
+| Firma PAdES/CAdES | CIE reale verificata | CIE reale verificata | PDF e P7M con CIE reale e PIN parziale verificati |
+| Abbinamento e PIN parziale | Persistenza e firme reali verificate | Persistenza e firme reali verificate | Abbinamento, persistenza e firme con PIN parziale verificati |
+| Accesso ai siti | CryptoTokenKit e accesso Safari al portale CIE verificati | CSP/KSP e accesso Chrome al portale CIE verificati | Provider Firefox PKCS#11; test reale con Mozilla Firefox riuscito, confermato dall’utente |
 | Cambio PIN e Sblocco Carta | Test software; collaudo reale da completare | Test software; collaudo reale da completare | Collaudo reale non eseguito |
 | DSS/LTA con JVM privata | Predisposto e testato | Predisposto e testato | Assemblaggio non previsto dallo script attuale |
 
@@ -133,3 +133,96 @@ L’utente ha confermato il collaudo delle modifiche Windows. L’ultima ricompi
 ## Pubblicazione
 
 Il repository è predisposto per i sorgenti e resta privato. Non sono pubblicate release binarie di CIE ID Desktop. Prima di distribuire un’app occorre completare il pacchetto corrispondente descritto in [LICENSING.md](LICENSING.md), il collaudo finale e la firma/distribuzione della piattaforma.
+
+## Integrazione Linux / Firefox
+
+Il provider Linux PKCS#11 usa il motore Web comune e il PIN completo richiesto
+al browser. I test software esercitano il provider con PC/SC e carta simulati,
+NSS senza database e la cache del solo certificato pubblico in un namespace
+temporaneo. La disponibilità del modulo non viene presentata come prova di
+configurazione Firefox. Nessun profilo browser viene letto o modificato; nessuna
+prova CIE reale è inclusa. [Dettagli](LINUX_FIREFOX.md).
+
+## Abbinamento reale Linux
+
+Collaudo locale su Ubuntu 26.10 x86_64: abbinamento della CIE riuscito con PIN
+completo inserito dall’utente nell’applicazione. Dopo il riavvio la Home mostra
+la carta già abbinata senza chiedere un altro PIN, confermato dall’utente.
+La lettura indipendente dell’archivio conferma il record pronto per la firma,
+i dati pubblici verificati e la persistenza dei file cifrati, con permessi
+0700/0600 e proprietario corretto. Le letture di verifica sono state protette
+con un blocco PC/SC, senza ulteriori autenticazioni.
+
+Il collaudo riguarda abbinamento e persistenza. Firma con PIN parziale,
+rimozione dell’abbinamento e accesso ai siti non sono stati provati con la CIE
+reale in questa sessione; nessuna configurazione browser è stata modificata.
+
+## Firma PDF reale Linux con PIN parziale
+
+Prova su Ubuntu 26.10 x86_64 con la CIE già abbinata: l’utente ha seguito il
+flusso nell’applicazione con le ultime quattro cifre del PIN e ha confermato
+il salvataggio riuscito di un PDF sintetico. Il file contiene una firma integra
+che copre tutto il PDF; la verifica CMS indipendente con OpenSSL è riuscita.
+Pagina e testo sono conservati e il documento di partenza è invariato.
+
+I controlli correnti riportano certificato entro validità, catena ministeriale
+CIE attendibile e stato di revoca OCSP positivo per la catena. La firma non
+contiene una marca temporale e questa prova non stabilisce validità storica.
+Il verificatore ha usato un blocco PC/SC, senza ulteriori autenticazioni.
+L’abbinamento e i record cifrati sono rimasti invariati dopo la firma.
+
+Il risultato riguarda questa prova PDF e la configurazione locale utilizzata.
+CAdES/P7M, rimozione dell’abbinamento e accesso ai siti non sono stati collaudati
+con la CIE reale in questa sessione. Nessuna configurazione browser modificata.
+
+## Firma CAdES/P7M reale Linux con PIN parziale
+
+Prova successiva sullo stesso PDF sintetico, su Ubuntu 26.10 x86_64 con la CIE
+già abbinata. L’utente ha seguito il flusso CAdES con le ultime quattro cifre
+del PIN nell’applicazione e ha confermato il salvataggio riuscito. Il P7M
+contiene una firma integra, verificata dal backend e indipendentemente con
+OpenSSL; il contenuto estratto è identico byte per byte al PDF originale.
+
+Certificato entro validità, catena ministeriale CIE attendibile e stato di
+revoca OCSP della catena hanno esito positivo. Nessuna marca temporale: la
+prova non stabilisce validità storica. Le verifiche sono state eseguite con
+blocco PC/SC e zero chiamate alla carta. L’abbinamento e i record cifrati sono
+rimasti invariati dopo la firma.
+
+Sono quindi collaudati localmente abbinamento, persistenza e firma PDF/P7M con
+PIN parziale per questa configurazione. Rimozione dell’abbinamento e accesso
+ai siti restano fuori da queste prove reali; nessuna configurazione browser
+è stata modificata e nessuna operazione PIN/PUK di modifica è stata eseguita.
+
+## Scaling dei caratteri Linux
+
+Il runner integra il DPI logico dei caratteri GTK quando Flutter riceve una
+scala del testo del 100%. Sul desktop KDE locale la lettura effettiva è
+120 DPI, quindi 125%. Le modifiche al DPI vengono propagate durante
+l’esecuzione. Una scala già fornita da Flutter ha la precedenza: nessuna
+moltiplicazione fra scale del testo o con la scala dello schermo.
+
+Sono coperti da test software il fallback GTK, le scale Flutter preesistenti,
+lo scaling dello schermo indipendente, gli aggiornamenti e il ripristino al
+100%, gli errori del canale, la chiusura e i layout Home/dialoghi al 125% e
+150%. I test nativi usano uno schermo GObject sintetico senza display; una
+lettura separata del desktop verifica il canale reale senza creare finestre.
+Nessuna prova CIE o di accesso ai siti fa parte di questo collaudo.
+
+## Accesso reale ai siti con Firefox su Linux (20 ottobre)
+
+Dopo le istruzioni per registrare `libcie_linux_pkcs11.so` e provare l’accesso
+con CIE e PIN completo, l’utente ha comunicato: «Test accesso ai siti con
+Mozilla FireFox eseguito con successo».
+
+Il login reale Linux/Firefox è quindi registrato come riuscito sulla base
+della conferma dell’utente. Non sono stati acquisiti PIN, dati personali,
+certificati o schermate. Non sono state eseguite ulteriori autenticazioni
+dall’agente. Il sito effettivamente usato, la versione e il confezionamento
+di Firefox e il protocollo TLS non sono stati comunicati né verificati
+indipendentemente; non si deducono dal successo della prova.
+
+Restano distinti i test software già eseguiti e i limiti del provider,
+compresa l’assenza di RSA-PSS. La prova non attesta compatibilità generale
+con TLS 1.3, Snap/Flatpak, altri browser, siti o lettori, né tutti i casi di
+errore, rimozione e scadenza della sessione. [Dettagli](LINUX_FIREFOX.md).

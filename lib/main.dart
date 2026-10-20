@@ -14,6 +14,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'native_bridge.dart';
 import 'app_theme.dart';
+import 'linux_text_scaling.dart';
 import 'verification_view.dart';
 import 'pin_management.dart';
 import 'pairing_view.dart';
@@ -140,6 +141,7 @@ class _CiePrototypeState extends State<CiePrototype> {
         theme: cieTheme(Brightness.light),
         darkTheme: cieTheme(Brightness.dark),
         themeMode: appearance.mode,
+        builder: (context, child) => LinuxTextScaling(child: child!),
         home: PrototypeHome(
           service: widget.service,
           preferences: widget.preferences,
@@ -1752,6 +1754,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
                                         ),
                                         children: [
                                           WebAccessCard(
+                                            linuxFirefox: Platform.isLinux,
                                             key: ValueKey(
                                               'advanced-web-${selected!['cardId']}',
                                             ),
@@ -1903,6 +1906,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
                           ),
                         ),
                       WebAccessCard(
+                                            linuxFirefox: Platform.isLinux,
                         key: ValueKey(
                           'web-${reader['name']}-${reader['cardId']}',
                         ),
