@@ -226,6 +226,8 @@ void main() {
         find.text('Il nuovo PIN e la conferma non corrispondono.'),
         findsOneWidget,
       );
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
       await fill(tester);
       await submit(tester, false);
       await tester.tap(find.text('Annulla'));

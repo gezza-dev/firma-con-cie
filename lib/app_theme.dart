@@ -7,7 +7,7 @@ ThemeData cieTheme(Brightness brightness) {
     seedColor: const Color(0xff4c65ad),
     brightness: brightness,
   );
-  return ThemeData(
+  final theme = ThemeData(
     useMaterial3: true,
     brightness: brightness,
     colorScheme: scheme,
@@ -16,6 +16,36 @@ ThemeData cieTheme(Brightness brightness) {
         : scheme.surface,
     inputDecorationTheme: const InputDecorationTheme(
       border: OutlineInputBorder(),
+    ),
+  );
+  // Keep the azure captions readable on both surfaces and filled buttons.
+  final caption = brightness == Brightness.dark
+      ? const Color(0xff8dceff)
+      : const Color(0xff0076a8);
+  WidgetStateProperty<Color?> enabledColor(Color color) =>
+      WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.disabled) ? null : color,
+      );
+  final outlineStyle = ButtonStyle(foregroundColor: enabledColor(caption));
+  final filledStyle = ButtonStyle(
+    foregroundColor: enabledColor(const Color(0xff8dceff)),
+    backgroundColor: enabledColor(const Color(0xff14394f)),
+  );
+  final baseMenuLabel = theme.typography.englishLike
+      .merge(theme.textTheme)
+      .labelMedium!;
+  final menuLabel = baseMenuLabel.copyWith(
+    fontSize: baseMenuLabel.fontSize! + 1,
+    color: scheme.onSurface,
+  );
+  return theme.copyWith(
+    textButtonTheme: TextButtonThemeData(style: outlineStyle),
+    outlinedButtonTheme: OutlinedButtonThemeData(style: outlineStyle),
+    filledButtonTheme: FilledButtonThemeData(style: filledStyle),
+    elevatedButtonTheme: ElevatedButtonThemeData(style: filledStyle),
+    navigationRailTheme: NavigationRailThemeData(
+      selectedLabelTextStyle: menuLabel,
+      unselectedLabelTextStyle: menuLabel,
     ),
   );
 }

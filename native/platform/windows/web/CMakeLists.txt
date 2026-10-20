@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD 17)
 # must not silently compile a different ABI.
 # Never use the modified legacy CardMod.h from cie_sign_sdk/include.
 set(CIE_CARDMOD_INCLUDE "" CACHE PATH "Directory containing CPDK cardmod.h")
-add_library(cie_prototype_minidriver SHARED minidriver.cpp ../../../src/paired_store.cpp ../../../src/pairing_invalidation.cpp ../../../src/web_cert_store.cpp)
+add_library(cie_prototype_minidriver SHARED minidriver.cpp ../../../src/paired_store.cpp ../../../src/pairing_invalidation.cpp ../../../src/web_cert_store.cpp ../../../src/local_cache.cpp ../../../src/local_cache_crypto.cpp)
 target_include_directories(cie_prototype_minidriver BEFORE PRIVATE "${CIE_CARDMOD_INCLUDE}")
 target_include_directories(cie_prototype_minidriver PRIVATE ../../../include ../../../src)
 target_compile_definitions(cie_prototype_minidriver PRIVATE CIE_WEB_NOEXPORT NOMINMAX WIN32_LEAN_AND_MEAN UNICODE _UNICODE)

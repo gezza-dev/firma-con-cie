@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 import 'app_localizations.dart';
+import 'app_notification.dart';
 
 import 'dart:io';
 
@@ -78,11 +79,14 @@ class _PreferencesViewState extends State<PreferencesView> {
         ),
       ),
       const SizedBox(height: 20),
-      if (error != null)
-        Text(
-          tr(context, error!),
-          style: TextStyle(color: Theme.of(context).colorScheme.error),
-        ),
+      AppNotification(
+        message: error,
+        error: true,
+        enabled: !busy,
+        onDismissed: () {
+          if (mounted) setState(() => error = null);
+        },
+      ),
       if (busy) const LinearProgressIndicator(),
       DropdownButtonFormField<String>(
         key: ValueKey(widget.value.format),

@@ -92,6 +92,7 @@ class DiagnosticRecorder {
       'pin_operation_indeterminate',
       'pairing_invalidation_unavailable',
       'pairing_store_unavailable',
+      'enrollment_removal_incomplete',
       'puk_incorrect',
       'puk_locked',
       'invalid_pin',
@@ -112,6 +113,20 @@ class DiagnosticRecorder {
       event['code'] = codes.contains(result['code'])
           ? result['code']
           : 'unclassified_error';
+    }
+    if (operation == 'forget_enrollment' && result['ok'] != true) {
+      final status = result['nativeCode'];
+      if (status is int && status >= -2147483648 && status <= 4294967295) {
+        event['nativeCode'] = status;
+      }
+      if (const {
+        'web_certificate',
+        'public_data',
+        'pairing',
+        'pairing_cache',
+      }.contains(result['removalStage'])) {
+        event['removalStage'] = result['removalStage'];
+      }
     }
     if ((operation == 'change_pin' || operation == 'unblock_pin') &&
         result['cleanupCode'] == 'pairing_store_cleanup_failed') {
@@ -160,6 +175,7 @@ class DiagnosticRecorder {
           for (final flags in webAccess.take(256))
             {
               for (final key in const [
+                'removalPending',
                 'readyForSigning',
                 'publicDataSaved',
                 'webCertificatePublished',

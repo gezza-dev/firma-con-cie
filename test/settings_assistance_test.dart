@@ -324,6 +324,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(probes, 0);
       expect(saves, 0);
+      expect(find.byType(AlertDialog), findsOneWidget);
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
       await tester.enterText(
         find.widgetWithText(TextField, 'Host del proxy'),
         'proxy.test',
@@ -341,6 +344,8 @@ void main() {
       expect(saves, 0);
       expect(tested!.proxy.host, 'proxy.test');
       expect(find.textContaining('Connessione non riuscita'), findsOneWidget);
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
       await tester.enterText(
         find.widgetWithText(TextField, 'Host del proxy'),
         'changed.proxy.test',

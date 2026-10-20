@@ -8,6 +8,8 @@
 #include <iostream>
 #include <stdexcept>
 #include <cstring>
+#include <filesystem>
+#include <chrono>
 static int checks=0;
 static void check(bool value){++checks;if(!value)throw std::runtime_error("web certificate store check "+std::to_string(checks));}
 // Synthetic RSA-2048/SHA-256 certificate. Its private key was discarded.
@@ -69,6 +71,10 @@ struct Fixture {
  unsigned count(){auto fresh=CertOpenStore(CERT_STORE_PROV_SYSTEM_W,0,0,CERT_SYSTEM_STORE_CURRENT_USER,L"MY");check(fresh!=nullptr);unsigned n=0;PCCERT_CONTEXT c=nullptr;while((c=CertEnumCertificatesInStore(fresh,c)))if(c->cbCertEncoded==cert->cbCertEncoded&&!memcmp(c->pbCertEncoded,cert->pbCertEncoded,c->cbCertEncoded))++n;CertCloseStore(fresh,0);return n;}
 };
 int main(){try{
+ auto isolated=std::filesystem::temp_directory_path()/("cie-web-file-tests-"+std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
+ check(std::filesystem::create_directory(isolated));
+ struct Cleanup{std::filesystem::path p;~Cleanup(){std::error_code ec;std::filesystem::remove_all(p,ec);}} cleanup{isolated};
+ check(_wputenv_s(L"CIE_PAIRING_TEST_CACHE",isolated.c_str())==0);
  check(std::string(cie_pairing::service).find(".tests.")!=std::string::npos);
  Fixture f;cie_web_store::erase(testId);
  f.cert=CertCreateCertificateContext(X509_ASN_ENCODING,testCertificate,sizeof(testCertificate));check(f.cert!=nullptr);

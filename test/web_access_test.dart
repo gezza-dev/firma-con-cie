@@ -102,6 +102,9 @@ void main() {
     expect(service.enrollments, 1);
     expect(attempts, 1);
     expect(find.byType(TextField), findsNothing);
+    expect(find.byType(AlertDialog), findsOneWidget);
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Completa configurazione senza PIN'));
     await tester.pumpAndSettle();
     expect(service.enrollments, 1);

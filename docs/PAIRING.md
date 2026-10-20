@@ -1,163 +1,52 @@
-# Abbinamento privato e PIN parziale
+# Abbinamento locale e PIN parziale
 
-Questa integrazione riguarda il prototipo Flutter condiviso macOS/Windows.
-Non legge, migra o modifica gli abbinamenti dell’app CIE ID Universal o del
-middleware ufficiale. Non installa o attiva silenziosamente CryptoTokenKit/minidriver;
-la preparazione dell’accesso ai siti è ora inclusa nell’abbinamento unico UX2. La cache legacy del middleware rimane disabilitata.
+Il flusso segue CIE ID Universal: la Home riconosce la CIE, **Abbina CIE** richiede il PIN completo una sola volta e **Rimuovi CIE** cancella i dati locali della carta selezionata. La cache appartiene al singolo utente e a questa applicazione; non legge o modifica la cache di CIE ID Universal.
 
-## Uso
+## Archivio condiviso su file
 
-La Home riconosce automaticamente lettore e CIE. **Abbina CIE** richiede il PIN
-completo di otto cifre e una conferma esplicita; Annulla non autentica la carta.
-L’ABI additiva `cie_bridge_enroll`/`cie_card_enroll_v2` esegue un solo VERIFY,
-controlla IAS/DAPP e SOD e restituisce il certificato esatto verificato nel DG,
-con givenName/surname. Non concatena `pair` ed `enrollWeb` e non cambia PIN/PUK.
-Il prefisso resta esclusivamente nel ponte nativo. La successiva pubblicazione
-nel sistema usa soltanto il materiale pubblico e non autentica nuovamente.
+Il runtime usa `file-cache-v3` su macOS, Windows e Linux. Non usa Portachiavi, Gestione credenziali, GNOME Keyring o KWallet per conservare gli abbinamenti. Il percorso dipende dalla cartella dati dell’utente e da un identificativo tecnico stabile, mai dal nome o dal percorso dell’eseguibile:
 
-Il componente di sistema viene osservato prima del dialogo PIN. Se manca,
-il dialogo lo segnala: è comunque possibile abbinare per firmare e completare
-l’attivazione successivamente. Non si eseguono installazioni privilegiate o
-modifiche alle registrazioni di altri middleware. La presenza di un certificato
-non equivale a un login riuscito. Stato firma, dati pubblici, pubblicazione,
-componente e identità osservata sono distinti, senza promuovere uno stato ignoto.
+- macOS: `~/Library/Application Support/it.giancarloezza.CIEID.FlutterPrototype.pairing.v1/cache-v3/`;
+- Windows: `%LOCALAPPDATA%/it.giancarloezza.CIEID.FlutterPrototype.pairing.v1/cache-v3/`;
+- Linux: `~/.local/share/it.giancarloezza.CIEID.FlutterPrototype.pairing.v1/cache-v3/`.
 
-Le vecchie registrazioni con solo prefisso rimangono utilizzabili per firmare.
-**Completa abbinamento** richiede esplicitamente una nuova lettura con il PIN
-completo; non usa di nascosto il PIN parziale. **Completa accesso ai siti** per
-un record v2 riutilizza il certificato già verificato anche dopo il riavvio,
-senza lettore o PIN. Un errore di pubblicazione conserva l’abbinamento per la
-firma e i dati pubblici disponibili; non viene ritentata l’autenticazione.
-La scrittura dei dati pubblici precede quella del prefisso: se fallisce, un
-abbinamento precedente non viene sovrascritto. Gli store non sono una transazione
-atomica; gli errori di fase restano visibili e non si finge un rollback completo.
+Ogni file `.card` contiene un record binario versionato con le prime quattro cifre del PIN, se abbinate, e i dati pubblici verificati della carta (certificato, Nome e Cognome). Il numero stampato della CIE viene ricavato dal certificato. Il PIN completo, le ultime quattro cifre e il PUK non vengono salvati. I file `.web` conservano la copia del certificato pubblico necessaria al provider Windows, nello stesso formato cifrato.
 
-L’elenco mostra Nome e Cognome per i nuovi abbinamenti, anche senza carta.
-**Rimuovi CIE** coordina le sole copie del prototipo: pubblicazione macOS,
-certificato Windows con verifica di proprietà, metadati e prefisso. Il PIN non
-serve. Se una fase fallisce, la rimozione resta incompleta e può essere ripetuta.
-La rimozione multipla si ferma al primo errore e conserva le CIE ancora presenti.
-Non vengono rimossi certificati estranei o abbinamenti dell’app originale.
+Il record è cifrato con AES-256-CBC, IV casuale e HMAC-SHA256 in modalità encrypt-then-MAC. Due sottochiavi distinte vengono derivate con HMAC-SHA256 e contesti separati dalla chiave principale casuale locale di 64 byte. Il MAC autentica intestazione, IV, cifrato, tipo di record, identificativo della CIE e spazio dei nomi dell’app. Il controllo del MAC precede sempre decifratura e analisi del padding. I test includono un vettore di riferimento indipendente per confrontare i backend crittografici: CommonCrypto su macOS, CNG su Windows e OpenSSL 3 su Linux. L’esecuzione dei test su ciascun sistema è documentata separatamente in STATUS.md.
 
-In Firma Elettronica, per una CIE abbinata selezionata, attivare Usa le ultime quattro cifre
-del PIN. La scelta è esplicita; resta disponibile il PIN completo. Il PIN parziale
-vale per PAdES, anche con grafica, CAdES e cofirma P7M. Dart passa soltanto le ultime
-quattro cifre: il ponte nativo legge il prefisso e ricompone il PIN in un buffer
-locale, poi l’adattatore verifica nuovamente la carta prima dell’autenticazione.
-Le API legacy continuano a richiedere otto cifre. Una carta non abbinata o un
-archivio non leggibile non causano un tentativo con quattro cifre né un fallback
-con altre credenziali. Dopo un PIN non accettato, controllare i dati e ripetere
-l’abbinamento se il PIN è stato cambiato; non ripetere alla cieca.
+La chiave principale è nel file separato `.key`: non è fissa, non è nel codice e non deriva dal PIN. Una chiave mancante o danneggiata con record esistenti non viene rigenerata automaticamente. Non esiste un fallback in chiaro o al vecchio gestore credenziali.
 
-## Protezione dei dati
+### Protezione e limiti
 
-macOS usa una password generica nel Portachiavi, non sincronizzata, con protezione
-WhenUnlockedThisDeviceOnly per i nuovi elementi. Windows usa credenziali generiche
-nell’archivio del corrente utente con persistenza locale al PC. Il servizio è
-`it.giancarloezza.CIEID.FlutterPrototype.pairing.v1`; l’account/target contiene
-l’identificativo della carta. Il valore segreto contiene soltanto quattro cifre.
-Non vengono salvati il PIN completo, le ultime quattro cifre o il PUK.
-Il nuovo materiale pubblico v2 (certificato DER e Nome/Cognome, nessun prefisso)
-usa un namespace distinto: servizio `.public.v2` nel Portachiavi o suffisso
-`/public.v2` in Credential Manager. Formato binario versionato, lunghezze limitate
-e nessun fallback a file. Anche questi dati identificano l’intestatario e restano
-locali al suo account. L’elenco dei prefissi ignora esplicitamente i record pubblici.
-Le copie pubblicate per CTK/MY rimangono separate dall’archivio dei prefissi.
+Su macOS/Linux la directory è `0700` e i file sono `0600`, di proprietà dell’utente corrente. Su Windows directory e file hanno una DACL protetta riservata al SID dell’utente corrente. Sono rifiutati collegamenti simbolici/reparse point, file non regolari, hard link e permessi non conformi quando si leggono chiave o dati. Scritture su file temporanei privati, flush e sostituzione atomica evitano record troncati; un lock fra processi serializza le modifiche.
 
-La protezione dipende dagli accessi del sistema operativo; non protegge da un
-account utente compromesso. L’identificativo è un dato personale locale e può
-comparire nell’interfaccia del gestore credenziali. Non si usano file cifrati con
-chiavi incorporate nell’app, fallback in chiaro o sincronizzazioni personalizzate.
-Non si promette la cancellazione forense dei backup del sistema operativo.
+Questa scelta ha un limite concreto: **la chiave è un file locale**, non è isolata in un gestore credenziali del sistema. Un programma che può leggere i file del medesimo utente (o un amministratore) può recuperare anche la chiave. La cifratura non offre quindi la stessa separazione fra applicazioni del Portachiavi. La cache resta protetta dai permessi dell’account e dall’eventuale cifratura del disco. Non è un formato di backup da condividere insieme alla chiave.
 
-I buffer nativi di input e ricomposizione vengono azzerati e le richieste sono
-serializzate. Firma e abbinamento usano una connessione condivisa con transazione PC/SC
-che serializza gli APDU, senza reinvio automatico. La transazione viene acquisita
-dopo il solo reset iniziale e rilasciata con reset alla chiusura. Questo evita
-l’incompatibilità osservata sul Mac nella lettura dell’identificativo con
-connessione esclusiva; il preflight corretto completa IAS/DAPP senza alcun PIN. I dati copiati internamente dalle API del sistema
-operativo e le stringhe gestite Dart non consentono garanzie di azzeramento
-completo. Il prefisso non attraversa l’ABI JSON/FFI e non entra in diagnostica,
-preferenze, report o esportazioni. Nessuna password viene richiesta in chat.
+Il formato della cache non è compatibile byte per byte con il file `.cache` di Universal. Non viene riutilizzata la chiave statica della sua implementazione dimostrativa.
 
-Se si avvia Cambio PIN o Sblocco Carta con dati formalmente validi, il ponte
-rimuove prima l’abbinamento locale della carta; se la rimozione fallisce, la
-modifica non parte. Questo evita prefissi obsoleti anche quando l’esito della
-modifica fisica è incerto. L’abbinamento va ripetuto dopo l’operazione; ciò può
-servire anche se il tentativo non ha modificato il PIN. Modifiche effettuate da
-altre app non sono osservabili automaticamente. Le prove reali di Cambio PIN e
-Sblocco Carta restano rinviate dall’utente.
+## Passaggio dai vecchi abbinamenti
 
-## Test separati dalle carte reali
+La scelta per questa migrazione è un **nuovo abbinamento con il PIN completo**. Nessun prefisso PIN o altro dato viene importato automaticamente dal Portachiavi, da Gestione credenziali o dall’app originale. I vecchi elementi non vengono cancellati automaticamente; il nuovo runtime non li consulta. Una configurazione Web precedente non ricompare da sola nella Home come carta abbinata. I certificati pubblici già pubblicati nel sistema restano separati fino alla successiva configurazione/rimozione esplicita.
 
-`native/tests/test_pairing.py` usa soltanto un adattatore sintetico e un archivio
-in memoria, in una libreria di test distinta dalla produzione. Controlla
-validazione, autenticazione unica, cambio carta, PIN errato/bloccato, archivio
-non disponibile prima del VERIFY, ricomposizione nativa e rimozioni.
-I test ABI PIN/PUK usano anch’essi questa libreria isolata: nessuna scrittura
-nell’archivio protetto reale.
+Dopo il nuovo abbinamento verificare persistenza al riavvio, firma PDF e P7M con PIN parziale e rimozione dalla Home. Le precedenti prove reali del vecchio archivio non attestano automaticamente il nuovo formato.
 
-`cie_pairing_store_tests` verifica lettura, aggiornamento, elenco e rimozione con
-credenziali sintetiche nel servizio **pairing.tests.v1**, separato dagli abbinamenti
-del prototipo. Rimuove il record creato e controlla che gli altri record del
-servizio di test restino identici. Va avviato esplicitamente, non è nel CTest
-automatico. Il test runtime controlla prima tutti gli hash del manifest:
+## Procedura e rimozione
 
-```
-python scripts/test_pairing_runtime.py --runtime native/runtime/windows-pairing --report pairing.json --protected-store-test
+L’ABI `cie_bridge_enroll` esegue una sola autenticazione, verifica IAS/DAPP e SOD, salva i dati pubblici verificati e il prefisso nativo, poi prepara il certificato per l’accesso ai siti. La pubblicazione usa il certificato già verificato e non ripete il PIN. Non ci sono tentativi automatici dopo un errore. Gli errori di salvataggio restano distinti dall’esito dell’autenticazione.
+
+La firma con PIN parziale ricompone le otto cifre solo nel ponte nativo, controlla l’identità della carta e azzera i buffer al termine. Il login Web continua a richiedere le otto cifre nella finestra del sistema: né CryptoTokenKit né il minidriver usano il prefisso per accedere ai siti.
+
+**Rimuovi CIE** coordina la sola configurazione Web di questa applicazione e cancella il file `.card` esatto, senza decifrarlo. Si può quindi rimuovere anche un record cifrato danneggiato o la cui chiave manca, purché la directory sia accessibile e il file sia regolare. La rimozione è ripetibile, non chiede PIN, non autentica la carta e non modifica altre carte o certificati. Su Windows vengono rimossi soltanto certificati MY con il marcatore di proprietà di questa applicazione. CryptoTokenKit e lo store certificati Windows restano necessari per il browser: sono distinti dall’archivio degli abbinamenti.
+
+Un errore parziale mostra **Riprova rimozione** nella sessione corrente, senza proporre di riconfigurare la carta. Le immagini personalizzate vengono eliminate solo dopo il successo nativo. Cambio PIN e Sblocco Carta continuano a invalidare durevolmente l’abbinamento prima dell’operazione; il fallimento della pulizia non causa un nuovo tentativo sulla carta. Le prove reali di queste due funzioni restano separate.
+
+## Test
+
+```sh
+ctest --test-dir .build/native-macos --output-on-failure
+python3 scripts/test_pairing_runtime.py --runtime native/runtime/macos-file-cache --report reports/pairing-file-cache.json --file-store-test
 ```
 
-I nuovi test `test_enrollment.py` e `enrollment_state_tests.cpp` coprono
-una sola autenticazione, recupero senza PIN, record vecchi/corrotti, errori di
-scrittura per fase, preservazione del prefisso e rimozioni incomplete. Usano
-solo archivi in memoria. Il test esplicito `cie_pairing_store_tests` comprende
-anche round trip/elenco/rimozione del namespace pubblico, ma non è stato eseguito
-con i nuovi record sui sistemi reali in questo blocco.
+I test della cache usano esclusivamente directory temporanee e dati sintetici. Il binario è compilato con `CIE_PAIRING_TEST_SERVICE`; solo questa build accetta `CIE_PAIRING_TEST_CACHE`. Le prove coprono riavvio, eseguibili rinominati, conservazione di un’altra carta, IV casuale, alterazione di tutti i byte del cifrato/tag, chiave errata o mancante, permessi, symlink, lock e cancellazione senza decifrare. Non contattano una CIE e non modificano archivi di credenziali reali.
 
-I test Flutter controllano conferma/annullamento, lunghezza del PIN, invio singolo,
-visibilità dell’opzione parziale, pulizia del campo, archivio non disponibile e
-assenza di identificativi/segreti nella diagnostica. Le prove con la CIE reale
-sono distinte e richiedono inserimento personale del PIN nel prototipo.
-Linux non dispone ancora di un adattatore per l’archivio protetto: l’abbinamento
-è disabilitato, senza fallback a file. Non viene pubblicata una release.
-
-## Esiti precedenti e nuovo collaudo UX2
-
-Sul Mac l’abbinamento reale è riuscito, resta disponibile dopo riavvio e permette
-firme PAdES/CAdES con le ultime quattro cifre. La verifica indipendente conferma
-integrità e contenuto; il controllo corrente di catena e revoca è positivo.
-Su Windows i test software e Credential Manager isolato passano, con Release e
-GUI collaudate. Anche le prove CIE reali Windows sono riuscite: abbinamento
-persistente e firme PDF/P7M con PIN parziale, integrità confermata da OpenSSL
-e backend. La successiva verifica corrente di fiducia/revoca è positiva; la
-validità storica resta indeterminata senza una marca attendibile. Il caricamento ctypes dei test
-usa soltanto la cartella runtime privata tramite `os.add_dll_directory`, senza
-modificare impostazioni o PATH di sistema. Nessun Cambio PIN/Sblocco Carta reale.
-Esiti e limiti completi in [VALIDATION.md](VALIDATION.md).
-
-### Riconoscimento automatico e concorrenza
-
-La scansione iniziale e i tick a un secondo avvengono fuori dall’isolate UI.
-`SCardGetStatusChange` usa timeout zero e un contesto PC/SC posseduto dalla sola
-osservazione, senza thread bloccati o cancellazioni globali. Solo per una nuova
-presenza si tenta l’identificazione pubblica, con connessione esclusiva e senza
-reset/VERIFY: se un altro client possiede la carta, viene differita. Una CIE già
-riconosciuta è ricordata entro la stessa epoca di presenza (ATR e contatore
-inserimenti); una carta non CIE non viene interrogata a ogni tick. Gli errori
-transitori hanno un intervallo minimo di tre secondi. Nessun certificato o PIN
-viene letto dalla carta dal monitor. Al cambio di presenza e ogni cinque tick
-viene osservato lo stato pubblico del componente di sistema, senza operazioni
-private, così l’attivazione o una pubblicazione ritardata aggiornano la Home.
-
-Un solo tick può essere in corso. Prima delle operazioni dell’app e dei dialoghi
-sensibili il controller sospende e attende il tick corrente; risposte superate
-non cambiano la selezione. L’app inattiva sospende il monitor, anche mentre il
-browser chiede il PIN. Il monitor non forza reset e non naviga verso la Home.
-La scelta automatica avviene solo con una CIE non ambigua; il cambio carta
-invalida anteprima e risultati della firma, preservando il documento selezionato.
-I tempi con lettori reali e la convivenza col browser restano da collaudare.
-
-Il nuovo flusso UX2 è coperto da test software condivisi e build macOS/Windows.
-Le prove reali del nuovo abbinamento, del recupero e della rimozione coordinata
-sono rinviate dall’utente, insieme a quelle del segno PAdES. Le precedenti prove
-riuscite non sono presentate come collaudo della nuova procedura.
+Su Windows il provider smart card deve essere ricompilato e incluso nel nuovo payload: un vecchio minidriver continuerebbe a cercare la copia pubblica nel vecchio archivio. I test del certificato Windows restano espliciti e usano soltanto un certificato sintetico nel suo spazio di test. Per stato e collaudi hardware vedere [STATUS.md](STATUS.md).

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 import 'app_localizations.dart';
+import 'app_notification.dart';
 
 import 'dart:convert';
 import 'dart:io';
@@ -398,18 +399,15 @@ class _SettingsViewState extends State<SettingsView> {
               ),
             ],
           ),
-        if (message != null)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: SelectableText(
-              tr(context, message!),
-              style: TextStyle(
-                color: failed
-                    ? Colors.red
-                    : Theme.of(context).colorScheme.primary,
-              ),
-            ),
-          ),
+        AppNotification(
+          message: message,
+          error: failed,
+          enabled: !busy,
+          title: failed ? 'Operazione non completata' : 'CIE ID',
+          onDismissed: () {
+            if (mounted) setState(() => message = null);
+          },
+        ),
         if (busy) const LinearProgressIndicator(),
         Offstage(
           offstage: tab != _SettingsTab.log,

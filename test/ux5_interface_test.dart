@@ -144,6 +144,9 @@ void main() {
       await t.tap(find.text('Salva impostazioni'));
       await t.pumpAndSettle();
       expect((await store.load()).proxy.mode, ProxyMode.direct);
+      expect(find.byType(AlertDialog), findsOneWidget);
+      await t.tap(find.text('OK'));
+      await t.pumpAndSettle();
       await t.tap(find.widgetWithText(Tab, 'Generali'));
       await t.pumpAndSettle();
       expect(find.text('Preferenze firma'), findsOneWidget);

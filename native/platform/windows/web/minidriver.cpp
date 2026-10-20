@@ -248,3 +248,10 @@ DWORD WINAPI CardAcquireContext(PCARD_DATA d,DWORD flags){return boundary([&]()-
  d->pvUnused3=d->pvUnused4=nullptr;
  return SCARD_S_SUCCESS;
  });}
+
+// Read-only compatibility probe: no context, certificate, card, or PIN access.
+extern "C"
+#ifndef _MSC_VER
+__declspec(dllexport)
+#endif
+DWORD CiePairingStorageVersion(){return 3;}

@@ -131,7 +131,7 @@ La ricetta di sviluppo di riferimento usa Ubuntu 24.04. Non è attestato il funz
 ```sh
 sudo apt-get update
 sudo apt-get install build-essential cmake ninja-build pkg-config \
-  libpcsclite-dev pcscd libccid libgtk-3-dev liblzma-dev \
+  libpcsclite-dev pcscd libccid libgtk-3-dev liblzma-dev libssl-dev \
   python3-venv perl autoconf automake libtool gettext
 python3 -m venv .build/tools
 .build/tools/bin/pip install meson==1.11.0
@@ -144,7 +144,7 @@ flutter pub get --enforce-lockfile
 flutter build linux --release
 ```
 
-Conservare l’intera directory `build/linux/<architettura>/release/bundle`. Il runner copia le librerie private in `cie_native`; pcsc-lite e driver compatibili devono essere disponibili sul sistema destinatario. L’archivio protetto, il componente di accesso ai siti e l’assemblaggio DSS/JVM Linux non sono completati.
+Conservare l’intera directory `build/linux/<architettura>/release/bundle`. Il runner copia le librerie private in `cie_native`; pcsc-lite e driver compatibili devono essere disponibili sul sistema destinatario. La cache cifrata degli abbinamenti è condivisa e testata senza carta. Il componente di accesso ai siti e l’assemblaggio DSS/JVM Linux non sono completati. Per il solo bridge Linux serve OpenSSL 3 (`libssl-dev`); la build completa usa la copia privata del prefisso quando specificato.
 
 ## DSS/JVM: macOS e Windows
 

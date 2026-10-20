@@ -172,7 +172,7 @@ void main() {
       expect(find.text('Seleziona un documento'), findsOneWidget);
       await t.tap(find.text('Indietro'));
       await t.pumpAndSettle();
-      expect(find.text('Scegli la CIE con cui firmare'), findsOneWidget);
+      expect(find.text('Seleziona la CIE con cui firmare tra quelle in elenco'), findsOneWidget);
       expect(
         t
             .widget<OutlinedButton>(

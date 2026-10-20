@@ -40,7 +40,17 @@ count=adapter.fake_enrollment_attempts()
 for _ in range(3):assert call('complete_enrollment','TEST')['ok']
 assert adapter.fake_enrollment_attempts()==count
 encoded=json.dumps(success);assert '1234' not in encoded and '5678' not in encoded
-bridge.fake_enrollment_store_fail(3);assert call('forget_enrollment','TEST')['code']=='enrollment_removal_incomplete';assert 'TEST' in call('pairings')['cards']
+bridge.fake_enrollment_store_fail(3)
+failure=call('forget_enrollment','TEST')
+assert failure['code']=='enrollment_removal_incomplete' and failure['nativeCode']==-25308 and failure['removalStage']=='pairing_cache'
+assert 'TEST' in call('pairings')['cards']
+bridge.fake_enrollment_store_fail(0);bridge.fake_store_erase_fail(1)
+failure=call('forget_enrollment','TEST')
+assert failure['code']=='enrollment_removal_incomplete' and failure['nativeCode']==-25308 and failure['removalStage']=='pairing_cache'
+assert not call('enrollments')['records'][0]['publicDataSaved']
+assert 'TEST' in call('pairings')['cards']
+bridge.fake_store_erase_fail(0)
 bridge.fake_enrollment_store_fail(0);assert call('forget_enrollment','TEST')['ok'];assert not call('enrollments')['records'];assert call('forget_enrollment','TEST')['ok']
 assert call('complete_enrollment','TEST')['code']=='enrollment_read_required';assert adapter.fake_enrollment_attempts()==count
+assert adapter.fake_pair_attempts()==before and adapter.fake_web_attempts()==web
 print('ENROLLMENT_ABI_CHECKS='+str(checks)+'; one authentication, recovery without PIN, partial failures and existing prefix preservation')

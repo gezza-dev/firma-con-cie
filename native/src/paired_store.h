@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <algorithm>
 namespace cie_pairing {
-// Scope is deliberately separate from official middleware enrollment.
+// Stable per-user file-cache scope, separate from official middleware and OS credentials.
 #ifdef CIE_PAIRING_TEST_SERVICE
 inline constexpr const char* service="it.giancarloezza.CIEID.FlutterPrototype.pairing.tests.v1";
 #else
@@ -33,12 +33,18 @@ void invalidate(const std::string& id);
 void acceptFreshPairing(const std::string& id);
 std::vector<std::string> invalidatedCards();
 bool supported();
+void prepare();
+// Removes a complete cache record without decrypting it. Works even if its
+// key or encrypted contents are damaged. No legacy credential-store fallback.
+void eraseRecord(const std::string& id);
 // Versioned authenticated public material, separate namespace from PIN prefixes.
 std::vector<uint8_t> readPublic(const std::string& id);
 void writePublic(const std::string& id,const std::vector<uint8_t>& value);
 void erasePublic(const std::string& id);
+// Compatibility for field-level cleanup; whole-card removal uses eraseRecord.
+void eraseForRemoval(const std::string& id,bool publicData);
 std::vector<std::string> listPublic();
-// Prefix never crosses the native ABI. Errors never fall back to plaintext.
+// Prefix never crosses the native ABI. File payloads use encrypt-then-MAC.
 bool read(const std::string& id,Secret& prefix);
 void write(const std::string& id,const char* prefix);
 void erase(const std::string& id);

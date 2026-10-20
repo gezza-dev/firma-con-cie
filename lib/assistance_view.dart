@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 import 'app_localizations.dart';
+import 'app_notification.dart';
 
 import 'package:flutter/material.dart';
 
@@ -53,11 +54,14 @@ class _AssistanceViewState extends State<AssistanceView> {
         icon: const Icon(Icons.open_in_new),
         label: Text(tr(context, "Domande frequenti")),
       ),
-      if (error != null)
-        SelectableText(
-          tr(context, error!),
-          style: TextStyle(color: Theme.of(context).colorScheme.error),
-        ),
+      AppNotification(
+        message: error,
+        error: true,
+        enabled: !opening,
+        onDismissed: () {
+          if (mounted) setState(() => error = null);
+        },
+      ),
       const SizedBox(height: 16),
       Text(
         tr(

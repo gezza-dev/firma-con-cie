@@ -46,6 +46,40 @@ class MainFlutterWindow: NSWindow {
     webChannel = channel
     channel.setMethodCallHandler { call, result in
       let classID = "it.giancarloezza.CIEID.FlutterPrototype.WebToken"
+      if call.method == "activateComponent" {
+        // Fixed command and our embedded extension only. No path, identifier,
+        // certificate or credential is accepted from the Flutter caller.
+        guard call.arguments == nil,
+              let plugins = Bundle.main.builtInPlugInsURL,
+              let bundle = Bundle(url: plugins.appendingPathComponent("CIEPrototypeToken.appex")),
+              bundle.bundleIdentifier == classID,
+              let ext = bundle.object(forInfoDictionaryKey: "NSExtension") as? [String: Any],
+              ext["NSExtensionPointIdentifier"] as? String == "com.apple.ctk-tokens" else {
+          result(["ok": false, "code": "web_component_missing"]); return
+        }
+        DispatchQueue.global(qos: .userInitiated).async {
+          let activated = WebComponentActivation.activate(bundled: true)
+          let election = WebComponentActivation.election()
+          DispatchQueue.main.async {
+            let driverPresent = TKTokenDriver.Configuration.driverConfigurations[classID] != nil
+            let state = WebComponentActivation.state(bundled: true, driverPresent: driverPresent, election: election)
+            result(["ok": activated && state == "enabled", "activationState": state,
+              "code": activated && state == "enabled" ? "web_component_enabled" : "web_component_activation_failed"])
+          }
+        }
+        return
+      }
+      if call.method == "openSystemSettings" {
+        let target: String
+        if #available(macOS 13.0, *) {
+          target = "x-apple.systempreferences:com.apple.LoginItems-Settings.extension"
+        } else {
+          target = "x-apple.systempreferences:com.apple.preferences.extensions"
+        }
+        let opened = NSWorkspace.shared.open(URL(string: target)!)
+        result(opened || NSWorkspace.shared.open(URL(fileURLWithPath: "/System/Applications/System Settings.app")))
+        return
+      }
       if call.method == "test" {
         MainFlutterWindow.restoreWebCertificates()
         guard let args = call.arguments as? [String: String], let id = args["card"],
@@ -77,8 +111,25 @@ class MainFlutterWindow: NSWindow {
           if SecItemCopyMatching(query as CFDictionary, &values) == errSecSuccess,
              let keys = values as? [[CFString: Any]], keys.contains(where: { ($0[kSecAttrTokenID] as? String)?.hasPrefix(classID + ":") == true }) { observed.append(id) }
         }
-        result(["available": TKTokenDriver.Configuration.driverConfigurations[classID] != nil,
-          "certificateHexByCard": certificateHex, "configuredCards": Array(certificateHex.keys).sorted(), "publishedCards": published.sorted(), "observedCards": observed.sorted()]); return
+        let driverPresent = TKTokenDriver.Configuration.driverConfigurations[classID] != nil
+        let bundled = Bundle.main.builtInPlugInsURL.map {
+          FileManager.default.fileExists(atPath: $0.appendingPathComponent("CIEPrototypeToken.appex").path)
+        } ?? false
+        let certificates = certificateHex, publishedIDs = published.sorted(), observedIDs = observed.sorted()
+        DispatchQueue.global(qos: .utility).async {
+          let state = WebComponentActivation.state(bundled: bundled, driverPresent: driverPresent,
+            election: bundled ? WebComponentActivation.election() : nil)
+          let available = state == "enabled" || (state == "unknown" && driverPresent)
+          let needsSettings = state == "disabled" || state == "unavailable"
+          DispatchQueue.main.async {
+            result(["available": available, "activationState": state,
+              "canActivateComponent": needsSettings && bundled,
+              "canOpenSystemSettings": needsSettings, "certificateHexByCard": certificates,
+              "configuredCards": Array(certificates.keys).sorted(), "publishedCards": publishedIDs,
+              "observedCards": available ? observedIDs : []])
+          }
+        }
+        return
       }
       guard let args = call.arguments as? [String: String], let id = args["card"],
             id.range(of: "^[A-Za-z0-9]{1,63}$", options: .regularExpression) != nil else {

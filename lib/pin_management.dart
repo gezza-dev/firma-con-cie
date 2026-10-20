@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 import 'app_localizations.dart';
+import 'app_notification.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -164,7 +165,7 @@ class _PinManagementState extends State<PinManagementPage> {
       try {
         await widget.onPairingsChanged?.call();
       } catch (_) {}
-      if (mounted) setState(() => result = response);
+      if (mounted) setState(() => result = Map<String, dynamic>.from(response));
     });
     if (mounted) setState(() => submitting = false);
   }
@@ -275,48 +276,35 @@ class _PinManagementState extends State<PinManagementPage> {
           ),
         ),
       ),
-      if (result != null) ...[
-        const SizedBox(height: 20),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  result!['ok'] == true
-                      ? tr(context, "Operazione completata")
-                      : result!['code'] == 'pin_operation_indeterminate'
-                      ? tr(context, "Esito non determinabile")
-                      : tr(context, "Operazione non completata"),
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  tr(
-                    context,
-                    result!['code'] == 'pairing_store_unavailable' ||
-                            result!['message'] == 'pairing_store_unavailable'
-                        ? 'Archivio protetto non accessibile. Questa versione del runtime ha interrotto l’operazione prima di inviare il PIN alla carta. Aggiorna il runtime; nessun tentativo automatico verrà eseguito.'
-                        : result!['message'] as String? ??
-                              'Operazione non completata.',
-                  ),
-                ),
-                if (result!['cleanupWarning'] is String) ...[
-                  const SizedBox(height: 8),
-                  Text(result!['cleanupWarning'] as String),
-                ],
+      AppNotification(
+        event: result,
+        enabled: !submitting && !widget.busy,
+        title: result?['ok'] == true
+            ? 'Operazione completata'
+            : result?['code'] == 'pin_operation_indeterminate'
+            ? 'Esito non determinabile'
+            : 'Operazione non completata',
+        error: result?['ok'] == false,
+        message: result == null
+            ? null
+            : result!['code'] == 'pairing_store_unavailable' ||
+                  result!['message'] == 'pairing_store_unavailable'
+            ? 'Archivio protetto non accessibile. Questa versione del runtime ha interrotto l’operazione prima di inviare il PIN alla carta. Aggiorna il runtime; nessun tentativo automatico verrà eseguito.'
+            : result!['message'] as String? ??
+                  (result!['ok'] == true
+                      ? 'Operazione completata'
+                      : 'Operazione non completata.'),
+        details: result == null
+            ? null
+            : [
+                if (result!['cleanupWarning'] is String)
+                  tr(context, result!['cleanupWarning'] as String),
                 if (result!['attemptsRemaining'] is int)
-                  Text(
-                    tr(context, "Tentativi residui: {p0}", [
-                      result!['attemptsRemaining'],
-                    ]),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ],
+                  tr(context, 'Tentativi residui: {p0}', [
+                    result!['attemptsRemaining'],
+                  ]),
+              ].join('\n'),
+      ),
     ],
   );
 }

@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #include "web_cert_store.h"
 #include "paired_store.h"
+#include "local_cache.h"
 #include <cstring>
 #if defined(_WIN32) && !defined(CIE_WEB_TEST_STORE)
 #include <windows.h>
-#include <wincred.h>
-#include "windows_credential_limits.h"
 #include <bcrypt.h>
 #include <ncrypt.h>
 #include <winscard.h>
@@ -15,10 +14,6 @@
 #endif
 namespace cie_web_store {
 #if defined(_WIN32) && !defined(CIE_WEB_TEST_STORE)
-static std::wstring target(const std::string& id){
- auto service=std::string(cie_pairing::service)+".web.certificates/"+id;
- return std::wstring(service.begin(),service.end());
-}
 namespace {
 constexpr DWORD markerProperty=CERT_FIRST_USER_PROP_ID+71;
 struct Store{HCERTSTORE p=CertOpenStore(CERT_STORE_PROV_SYSTEM_W,0,0,CERT_SYSTEM_STORE_CURRENT_USER,L"MY");~Store(){if(p)CertCloseStore(p,0);}};
@@ -45,13 +40,7 @@ void removeCertificates(HCERTSTORE store,const std::string& id,const std::string
  }
 }
 }
-std::vector<std::string> list(){
- DWORD n=0;PCREDENTIALW* data=nullptr;auto base=target("");auto filter=base+L"*";std::vector<std::string> ids;
- if(!CredEnumerateW(filter.c_str(),0,&n,&data)){if(GetLastError()==ERROR_NOT_FOUND)return ids;throw std::runtime_error("web_store_unavailable");}
- struct Free{PCREDENTIALW* p;~Free(){CredFree(p);}} free{data};
- for(DWORD i=0;i<n;++i){std::wstring t=data[i]->TargetName?data[i]->TargetName:L"";if(data[i]->Type!=CRED_TYPE_GENERIC||t.compare(0,base.size(),base))continue;auto tail=t.substr(base.size());std::string id(tail.begin(),tail.end());cie_pairing::checkId(id);ids.push_back(id);}
- if(ids.size()>256)throw std::runtime_error("pairing_limit");return ids;
-}
+std::vector<std::string> list(){cie_cache::Store store;return store.list("web");}
 bool componentAvailable(){
  SCARDCONTEXT c=0;if(SCardEstablishContext(SCARD_SCOPE_USER,nullptr,nullptr,&c))return false;
  struct Release{SCARDCONTEXT c;~Release(){SCardReleaseContext(c);}} release{c};
@@ -62,21 +51,23 @@ bool componentAvailable(){
   wchar_t provider[512]{};DWORD n=512;
   if(SCardGetCardTypeProviderNameW(c,name,3,provider,&n)||std::wstring(provider)!=MS_SMART_CARD_KEY_STORAGE_PROVIDER)continue;
   wchar_t module[4096]{};n=4096;if(SCardGetCardTypeProviderNameW(c,name,0x80000001,module,&n))continue;
-  std::error_code ec;auto path=std::filesystem::path(module);if(path.filename()==L"cie_prototype_minidriver.dll"&&std::filesystem::is_regular_file(path,ec))return true;
+  std::error_code ec;auto path=std::filesystem::path(module);if(path.filename()!=L"cie_prototype_minidriver.dll"||!std::filesystem::is_regular_file(path,ec))continue;
+  // A previous provider reads Credential Manager. Treat it as an upgrade,
+  // rather than silently accepting it for a file-cache enrollment.
+  auto library=LoadLibraryExW(path.c_str(),nullptr,LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR|LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+  if(!library)continue;auto version=reinterpret_cast<DWORD(*)()>(GetProcAddress(library,"CiePairingStorageVersion"));
+  bool compatible=version&&version()==3;FreeLibrary(library);if(compatible)return true;
  }
  return false;
 }
 bool provisioned(const std::string& id,const uint8_t* der,uint32_t size){
  Store store;if(!store.p)return false;try{return read(id)==std::vector<uint8_t>(der,der+size)&&checkCertificateOwnership(store.p,id,der,size);}catch(...){return false;}
 }
-std::vector<uint8_t> read(const std::string& id){cie_pairing::checkId(id);PCREDENTIALW value=nullptr;auto name=target(id);
- if(!CredReadW(name.c_str(),CRED_TYPE_GENERIC,0,&value)){if(GetLastError()==ERROR_NOT_FOUND)return {};throw std::runtime_error("web_store_unavailable");}
- struct Free{PCREDENTIALW p;~Free(){if(p->CredentialBlob)SecureZeroMemory(p->CredentialBlob,p->CredentialBlobSize);CredFree(p);}} free{value};
- if(!value->CredentialBlob||!value->CredentialBlobSize||value->CredentialBlobSize>cie_windows::credentialBlobLimit)throw std::runtime_error("web_invalid_certificate");
- return {value->CredentialBlob,value->CredentialBlob+value->CredentialBlobSize};
+std::vector<uint8_t> read(const std::string& id){cie_pairing::checkId(id);cie_cache::Store store;auto bytes=store.read("web",id);
+ if(bytes.size()>8192)throw std::runtime_error("web_invalid_certificate");return {bytes.begin(),bytes.end()};
 }
 void write(const std::string& id,const uint8_t* der,uint32_t size){cie_pairing::checkId(id);
- if(!der||!size||size>cie_windows::credentialBlobLimit)throw std::runtime_error("web_invalid_certificate");
+ if(!der||!size||size>8192)throw std::runtime_error("web_invalid_certificate");
  Store store;if(!store.p)throw std::runtime_error("web_store_unavailable");
  const bool replace=checkCertificateOwnership(store.p,id,der,size);
  PCCERT_CONTEXT created=CertCreateCertificateContext(X509_ASN_ENCODING,der,size);
@@ -92,11 +83,11 @@ void write(const std::string& id,const uint8_t* der,uint32_t size){cie_pairing::
  // Windows MY persists one entry per certificate. Refuse foreign associations
  // before writing; replace only a context already owned by this configuration.
  if(!CertAddCertificateContextToStore(store.p,created,replace?CERT_STORE_ADD_REPLACE_EXISTING:CERT_STORE_ADD_NEW,&added))throw std::runtime_error("web_store_unavailable");
- auto name=target(id);CREDENTIALW value{};value.Type=CRED_TYPE_GENERIC;value.TargetName=name.data();value.CredentialBlob=const_cast<LPBYTE>(der);value.CredentialBlobSize=size;value.Persist=CRED_PERSIST_LOCAL_MACHINE;value.UserName=const_cast<LPWSTR>(L"CIE ID · Public web certificate");
- if(!CredWriteW(&value,0)){CertDeleteCertificateFromStore(added);throw std::runtime_error("web_store_unavailable");}
+ try{cie_cache::Store cache(true);cie_cache::Bytes bytes(der,der+size);cache.write("web",id,bytes);}
+ catch(...){CertDeleteCertificateFromStore(added);throw;}
  CertFreeCertificateContext(added);removeCertificates(store.p,id,marker);
 }
-void erase(const std::string& id){cie_pairing::checkId(id);Store store;if(!store.p)throw std::runtime_error("web_store_unavailable");removeCertificates(store.p,id);auto name=target(id);if(!CredDeleteW(name.c_str(),CRED_TYPE_GENERIC,0)&&GetLastError()!=ERROR_NOT_FOUND)throw std::runtime_error("web_store_unavailable");}
+void erase(const std::string& id){cie_pairing::checkId(id);Store store;if(!store.p)throw std::runtime_error("web_store_unavailable");removeCertificates(store.p,id);cie_cache::Store cache;cache.erase("web",id);}
 int32_t test(const std::string& id){
  auto der=read(id);if(der.empty())return -1;
  auto cert=CertCreateCertificateContext(X509_ASN_ENCODING,der.data(),static_cast<DWORD>(der.size()));if(!cert)return -2;

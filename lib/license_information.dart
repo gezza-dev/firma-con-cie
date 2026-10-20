@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 import 'app_localizations.dart';
+import 'app_notification.dart';
 
 import 'dart:io';
 import 'dart:convert';
@@ -83,11 +84,13 @@ class _LicenseInformationState extends State<_LicenseInformation> {
               "Apri la cartella per consultare i testi completi e le licenze dei singoli componenti.",
             ),
           ),
-          if (error != null)
-            Text(
-              tr(context, error!),
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
+          AppNotification(
+            message: error,
+            error: true,
+            onDismissed: () {
+              if (mounted) setState(() => error = null);
+            },
+          ),
         ],
       ),
     ),

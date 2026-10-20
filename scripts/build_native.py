@@ -85,11 +85,14 @@ def main():
         copy_binary(binary,output/'tests'/binary.name)
     if args.system=='windows':
         copy_binary(build/'cie_web_store_tests.exe',output/'tests/cie_web_store_tests.exe')
-    for name in ['cie_pin_tests'+('.exe' if args.system=='windows' else ''),'cie_identification_tests'+('.exe' if args.system=='windows' else ''),'cie_document_tests'+('.exe' if args.system=='windows' else ''),'cie_signing_time_tests'+('.exe' if args.system=='windows' else ''),'cie_cosign_tests'+('.exe' if args.system=='windows' else ''),'cie_network_test_client'+('.exe' if args.system=='windows' else ''),'cie_pairing_store_tests'+('.exe' if args.system=='windows' else ''),'cie_pairing_sod_tests'+('.exe' if args.system=='windows' else ''),libprefix+'cie_bridge_pairing_tests'+suffix,libprefix+'fake_backend'+suffix,libprefix+'fake_card_adapter'+suffix]:
+    for name in ['cie_cache_crypto_tests'+('.exe' if args.system=='windows' else ''),'cie_pin_tests'+('.exe' if args.system=='windows' else ''),'cie_identification_tests'+('.exe' if args.system=='windows' else ''),'cie_document_tests'+('.exe' if args.system=='windows' else ''),'cie_signing_time_tests'+('.exe' if args.system=='windows' else ''),'cie_cosign_tests'+('.exe' if args.system=='windows' else ''),'cie_network_test_client'+('.exe' if args.system=='windows' else ''),'cie_pairing_store_tests'+('.exe' if args.system=='windows' else ''),'cie_pairing_sod_tests'+('.exe' if args.system=='windows' else ''),libprefix+'cie_bridge_pairing_tests'+suffix,libprefix+'cie_bridge_file_cache_tests'+suffix,libprefix+'fake_backend'+suffix,libprefix+'fake_card_adapter'+suffix]:
         copy_binary(build/name,output/'tests'/name)
     shutil.copy2(ROOT/'native/tests/test_bridge.py',output/'tests/test_bridge.py')
     shutil.copy2(ROOT/'native/tests/test_network.py',output/'tests/test_network.py')
     shutil.copy2(ROOT/'native/tests/test_pairing.py',output/'tests/test_pairing.py')
+    shutil.copy2(ROOT/'native/tests/test_pairing_file_store.py',output/'tests/test_pairing_file_store.py')
+    shutil.copy2(ROOT/'native/tests/test_file_cache_enrollment.py',output/'tests/test_file_cache_enrollment.py')
+    (output/'tests/test_pairing_owner_migration.py').unlink(missing_ok=True)
     shutil.copy2(ROOT/'native/tests/test_pin_invalidation.py',output/'tests/test_pin_invalidation.py')
     shutil.copy2(ROOT/'native/tests/test_enrollment.py',output/'tests/test_enrollment.py')
     shutil.copy2(ROOT/'native/tests/test_web_bridge.py',output/'tests/test_web_bridge.py')
@@ -120,6 +123,8 @@ def main():
         cross_compiled=cross, tests_executed_on_build_host=not cross,
         full_pin_signing=True, enrollment=True, enrollment_version=2, automatic_idle_card_observation=True, enrollment_scope="private-prototype-current-user",
         protected_pin_prefix=True, partial_pin_signing=True, enrollment_cache_access=False,
+        pairing_storage="per-user-file-cache-v3", os_credential_store=False, legacy_pairings_imported=False,
+        file_cache_crypto="AES-256-CBC+HMAC-SHA256-encrypt-then-MAC", local_key_in_private_file=True,
         web_authentication_abi=1, web_authentication_hardware_validated=False,
         pin_change=True, puk_unblock=True, persistent_pairing_invalidation=True, nonblocking_pairing_cleanup=True,
         files={str(p.relative_to(output)):sha(p) for p in output.rglob('*') if p.is_file() and p.name!='backend-manifest.json'})

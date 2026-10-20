@@ -13,10 +13,10 @@ Future<void> signingDocument(
 }) async {
   await t.tap(find.text('Firma Elettronica').first);
   await t.pumpAndSettle();
-  if (find.text('Scegli la CIE con cui firmare').evaluate().isNotEmpty) {
+  if (find.text('Seleziona la CIE con cui firmare tra quelle in elenco').evaluate().isNotEmpty) {
     await t.tap(
       pairedCard == null
-          ? find.text('Firma con CIE non abbinata')
+          ? find.text('Firma con CIE non presente in elenco')
           : find.byKey(ValueKey('signing-card-$pairedCard')),
     );
     await t.pumpAndSettle();

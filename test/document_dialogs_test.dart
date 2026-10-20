@@ -73,7 +73,7 @@ void main() {
       expect(t.widget<OutlinedButton>(back).onPressed, isNull);
       final sign = find.widgetWithText(
         OutlinedButton,
-        'Firma con CIE non abbinata',
+        'Firma con CIE non presente in elenco',
       );
       final caption = find.textContaining('Puoi preparare il documento prima');
       expect(
@@ -88,7 +88,7 @@ void main() {
             .destination,
         AppDestination.sign,
       );
-      expect(find.text('Scegli la CIE con cui firmare'), findsOneWidget);
+      expect(find.text('Seleziona la CIE con cui firmare tra quelle in elenco'), findsOneWidget);
       await t.pumpWidget(const SizedBox());
     },
   );

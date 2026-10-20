@@ -7,6 +7,10 @@
 #include <map>
 #include "setup_policy.h"
 #include "card_identification.h"
+#if defined(__MINGW32__) && !defined(SCARD_PROVIDER_KSP)
+// Windows SDK defines this provider ID; older MinGW headers omit the name.
+static constexpr unsigned SCARD_PROVIDER_KSP=3;
+#endif
 int main(){unsigned checks=0;auto check=[&](bool v){++checks;if(!v)throw std::runtime_error("setup policy check "+std::to_string(checks));};try{
  static_assert(cie_setup::cspProvider==SCARD_PROVIDER_CSP);
  static_assert(cie_setup::kspProvider==SCARD_PROVIDER_KSP);

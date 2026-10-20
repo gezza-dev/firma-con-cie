@@ -14,7 +14,9 @@ Il progetto è in sviluppo. Questo repository contiene i sorgenti; **non è anco
 | --- | --- |
 | macOS | Bundle Universal Apple Silicon/Intel compilato. Firma PDF/P7M, abbinamento, PIN parziale e accesso Safari con CIE reale verificati su Apple Silicon. L’esecuzione su Intel resta da collaudare. |
 | Windows x64 | Interfaccia e componenti nativi compilati e verificati. Firma PDF/P7M, abbinamento persistente, PIN parziale e accesso Chrome con CIE reale collaudati. |
-| Linux | Backend condiviso compilato e testato senza carta. Interfaccia completa, archivio protetto, integrazione Web e collaudi con lettore/CIE restano da completare. |
+| Linux | Backend condiviso compilato e testato senza carta. Cache degli abbinamenti implementata e testata su file; collaudo desktop, integrazione Web e prove con lettore/CIE restano da completare. |
+
+Il nuovo archivio su file richiede di abbinare nuovamente le CIE con il PIN completo; non importa i precedenti abbinamenti. Le prove reali riportate nella tabella riguardano il precedente archivio, mentre la nuova cache ha collaudi software separati.
 
 Cambio PIN e Sblocco Carta sono implementati con test software: le prove reali su macOS e Windows restano da completare. La validazione DSS/LTA con JVM privata è attualmente predisposta per macOS e Windows.
 
@@ -26,7 +28,7 @@ Cambio PIN e Sblocco Carta sono implementati con test software: le prove reali s
 - **Firma Elettronica:** procedura guidata per PAdES/PDF e CAdES/P7M; firma con CIE abbinata o non abbinata; cofirma P7M; verifica del documento prodotto prima del salvataggio.
 - **Firma grafica PDF:** anteprima locale, scelta di pagina e posizione, immagine personalizzata o firma testuale. Nome e Cognome sono letti dal certificato della CIE; data e ora riportano il fuso locale. I pulsanti di conferma restano visibili mentre l’anteprima scorre.
 - **Verifica Firma:** analisi di PDF e P7M anche senza CIE, risultati distinti per integrità, certificato, fiducia, revoca, marche temporali e validità storica; estrazione del contenuto incorporato nei P7M.
-- **Abbinamento protetto:** PIN parziale per firmare con carte abbinate; il prefisso è custodito dal componente nativo nel Portachiavi macOS o nella Gestione credenziali Windows.
+- **Abbinamento locale:** PIN parziale per firmare con carte abbinate; prefisso e dati verificati sono custoditi dal componente nativo in una cache cifrata per utente, condivisa fra macOS, Windows e Linux. [Formato, protezione e limiti](docs/PAIRING.md).
 - **Accesso ai siti:** preparazione del certificato pubblico durante l’abbinamento; estensione CryptoTokenKit su macOS e componente smart card CSP/KSP su Windows. Nel browser si usa il PIN completo di otto cifre, anche per carte abbinate.
 - **Cambio PIN e Sblocco Carta:** flussi dedicati con PIN completo o PUK, conferma esplicita e nessun tentativo automatico; stato del collaudo reale indicato sopra.
 - **Guida e Assistenza:** guida inclusa e consultabile offline, collegamenti esterni nel browser predefinito, FAQ e contatti ufficiali per la CIE.

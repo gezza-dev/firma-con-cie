@@ -22,15 +22,21 @@ Future<JsonResult> readWebSystemStatus() async {
 class EnrollmentRecord {
   static const componentActivationMessage =
       'Il certificato è configurato, ma il componente di sistema per l’accesso ai siti non è ancora attivo su questo computer. Puoi già firmare documenti. Non occorre ripetere il PIN o abbinare nuovamente la CIE.';
-  EnrollmentRecord(this.data, this.system);
+  EnrollmentRecord(this.data, this.system, {this.removalPending = false});
   final JsonResult data, system;
+  final bool removalPending;
   String get id => data['card'] as String;
   String get name => data['fullName'] as String? ?? '';
   String get cardNumber => data['cardNumber'] as String? ?? '';
-  bool get readyForSigning => data['readyForSigning'] == true;
+  bool get readyForSigning =>
+      !removalPending && data['readyForSigning'] == true;
   bool get hasPublicData => data['publicDataSaved'] == true;
   bool get componentAvailable =>
       system['available'] as bool? ?? data['systemComponentAvailable'] == true;
+  bool get needsComponentActivation =>
+      !componentAvailable && system['canActivateComponent'] == true;
+  bool get needsSystemSettings =>
+      !componentAvailable && system['canOpenSystemSettings'] == true;
   bool get webProvisioned =>
       system['certificateHexByCard'] is Map &&
           hasPublicData &&
@@ -45,17 +51,26 @@ class EnrollmentRecord {
           ? (system['observedCards'] as List).contains(id)
           : data['webIdentityObserved'] == true);
   // Home describes available actions, never absence of a diagnostic observation.
-  String get status => !readyForSigning
+  String get status => removalPending
+      ? 'Rimozione della CIE da completare.'
+      : !readyForSigning
       ? 'Abbinamento per la firma da completare.'
       : 'CIE abbinata. Puoi firmare documenti.';
-  String get webStatus => !hasPublicData
+  String get webStatus => removalPending
+      ? 'Premi Riprova rimozione. Non occorre abbinare o configurare nuovamente la carta.'
+      : !hasPublicData
       ? 'Completa l’abbinamento per accedere ai siti.'
+      : needsComponentActivation
+      ? 'Per accedere ai siti, attiva il componente CIE ID. L’abbinamento per firmare è conservato.'
+      : needsSystemSettings
+      ? 'Per accedere ai siti, abilita il componente nelle Impostazioni di Sistema. L’abbinamento per firmare è conservato.'
       : !webProvisioned
       ? 'Completa la configurazione per accedere ai siti.'
       : !componentAvailable
       ? 'Accesso ai siti da attivare. Consulta Impostazioni → Log.'
       : 'Accesso ai siti configurato: apri il sito nel browser.';
   Map<String, bool> get diagnosticFlags => {
+    'removalPending': removalPending,
     'readyForSigning': readyForSigning,
     'publicDataSaved': hasPublicData,
     'webCertificatePublished': webProvisioned,
@@ -74,6 +89,7 @@ class EnrollmentController {
   final WebPublisher publisher;
   final WebStatusReader systemStatus;
   Map<String, EnrollmentRecord> records = {};
+  final Set<String> _pendingRemovals = {};
   bool readable = false;
   String? message;
   Future<void> refresh() async {
@@ -97,18 +113,36 @@ class EnrollmentController {
       if (id is! String || !RegExp(r'^[A-Za-z0-9]{1,63}$').hasMatch(id)) {
         continue;
       }
-      if (!invalidated.contains(id)) next[id] = EnrollmentRecord(data, system);
+      if (!invalidated.contains(id)) {
+        next[id] = EnrollmentRecord(
+          data,
+          system,
+          removalPending: _pendingRemovals.contains(id),
+        );
+      }
     }
     // Old Web-only configurations remain visible/removable, never silently
     // converted to PIN pairings or imported from the original application.
-    for (final id in {
-      ...(system['configuredCards'] as List? ?? []),
-      ...(system['publishedCards'] as List? ?? []),
-    }) {
+    // The file-cache runtime starts with fresh PIN-authenticated enrollments.
+    // Never resurrect legacy OS-store/Web-only entries as paired cards.
+    for (final id
+        in result['storage'] == 'file-cache-v3'
+            ? <dynamic>{}
+            : {
+                ...(system['configuredCards'] as List? ?? []),
+                ...(system['publishedCards'] as List? ?? []),
+              }) {
       if (id is String &&
           !invalidated.contains(id) &&
           RegExp(r'^[A-Za-z0-9]{1,63}$').hasMatch(id)) {
-        next.putIfAbsent(id, () => EnrollmentRecord({'card': id}, system));
+        next.putIfAbsent(
+          id,
+          () => EnrollmentRecord(
+            {'card': id},
+            system,
+            removalPending: _pendingRemovals.contains(id),
+          ),
+        );
       }
     }
     // Legacy Web-only metadata was authenticated by the prototype previously.
@@ -146,9 +180,32 @@ class EnrollmentController {
     final native = await service.webStatus();
     final platform = await systemStatus();
     final system = {...native, ...platform};
+    final waiting = records.values
+        .where(
+          (record) =>
+              (record.needsSystemSettings || record.needsComponentActivation) &&
+              record.readyForSigning &&
+              record.hasPublicData &&
+              !record.webProvisioned,
+        )
+        .map((record) => record.id)
+        .toSet();
     records = records.map(
-      (id, record) => MapEntry(id, EnrollmentRecord(record.data, system)),
+      (id, record) => MapEntry(
+        id,
+        EnrollmentRecord(
+          record.data,
+          system,
+          removalPending: record.removalPending,
+        ),
+      ),
     );
+    // Only a confirmed unavailable -> available transition may finish public
+    // publication. No enroll()/PIN/card authentication and no retry loop after
+    // a failed publication. Manual completion remains available on failure.
+    for (final id in waiting) {
+      if (records[id]?.componentAvailable == true) await complete(id);
+    }
   }
 
   Future<JsonResult> _publish(JsonResult result, String id) async {
@@ -187,6 +244,7 @@ class EnrollmentController {
     // save a PIN closure/managed string for recovery after publication failure.
     final result = await service.enroll(reader, id, pin);
     pin = '';
+    if (result['ok'] == true) _pendingRemovals.remove(id);
     return _publish(result, id);
   }
 
@@ -206,10 +264,20 @@ class EnrollmentController {
 
   Future<JsonResult> remove(String id) async {
     message = null;
+    _pendingRemovals.add(id);
+    final record = records[id];
+    if (record != null) {
+      records[id] = EnrollmentRecord(
+        record.data,
+        record.system,
+        removalPending: true,
+      );
+    }
     try {
       await publisher(id, null);
     } catch (_) {
-      message = 'Rimozione dal sistema non completata. Riprova Rimuovi CIE senza PIN.';
+      await refresh();
+      message = 'Rimozione dal sistema non completata. Premi Riprova rimozione. Il PIN della carta non serve.';
       return {
         'ok': false,
         'code': 'enrollment_removal_incomplete',
@@ -217,12 +285,16 @@ class EnrollmentController {
       };
     }
     final result = await service.forgetEnrollment(id);
-    if (result['ok'] != true) {
-      message =
-          result['message'] as String? ??
-          'Rimozione non completata. Puoi riprovare senza PIN.';
+    if (result['ok'] == true) {
+      _pendingRemovals.remove(id);
+      records.remove(id);
     }
     await refresh();
+    if (result['ok'] != true) {
+      // Do not turn a partially removed Web configuration into an invitation
+      // to pair/configure it again. Preserve native details in diagnostics only.
+      message = 'Rimozione non completata. Verifica che la cartella dati dell’applicazione sia accessibile e premi Riprova rimozione. Il PIN della carta non serve.';
+    }
     return result;
   }
 }

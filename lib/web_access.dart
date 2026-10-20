@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 import 'app_localizations.dart';
+import 'app_notification.dart';
 
 import 'dart:io';
 import 'dart:async';
@@ -14,6 +15,32 @@ typedef WebPublisher = Future<void> Function(
   String card,
   String? certificateHex,
 );
+typedef WebSettingsOpener = Future<bool> Function();
+Future<bool> openWebSystemSettings() async {
+  if (!Platform.isMacOS) return false;
+  try {
+    return await const MethodChannel('cie.prototype/web')
+            .invokeMethod<bool>('openSystemSettings') ?? false;
+  } on PlatformException {
+    return false;
+  } on MissingPluginException {
+    return false;
+  }
+}
+
+typedef WebComponentActivator = Future<JsonResult> Function();
+Future<JsonResult> activateWebComponent() async {
+  if (!Platform.isMacOS) return {'ok': false, 'code': 'unsupported'};
+  try {
+    return await const MethodChannel('cie.prototype/web')
+            .invokeMapMethod<String, dynamic>('activateComponent') ?? {'ok': false};
+  } on PlatformException {
+    return {'ok': false, 'code': 'web_component_activation_failed'};
+  } on MissingPluginException {
+    return {'ok': false, 'code': 'web_component_missing'};
+  }
+}
+
 typedef WebTester = Future<JsonResult> Function(String card);
 Future<void> publishWebCertificate(String card, String? hex) async {
   if (!Platform.isMacOS) return; // Windows publishes in the native bridge.
@@ -264,11 +291,9 @@ class _WebAccessCardState extends State<WebAccessCard> {
               "Il componente per configurare l’accesso ai siti manca nel runtime.",
             ),
           ),
-        if (message != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 12),
-            child: SelectableText(tr(context, message!)),
-          ),
+        AppNotification(message: message, enabled: !working && !widget.busy,
+          title: 'Accesso ai siti con CIE', onDismissed: () { if (mounted) setState(() => message = null); },
+        ),
       ],
     ),
   );

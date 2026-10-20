@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 import 'app_localizations.dart';
+import 'app_notification.dart';
 
 import 'dart:io';
 import 'dart:math' as math;
@@ -360,7 +361,7 @@ class _AppearanceEditorState extends State<_AppearanceEditor> {
           widget.cardholderName?.isNotEmpty == true
               ? tr(
                   context,
-                  "Scegli la pagina e trascina il riquadro. L’anteprima usa il Nome e Cognome verificati durante l’abbinamento; la firma li rilegge dalla CIE effettivamente usata, dopo il PIN. Anche un’immagine personalizzata è accompagnata dal Nome e Cognome. Data e ora mostrate sono indicative: il documento riporterà quelle del momento della firma, con il fuso orario locale.",
+                  "Scegli la pagina e trascina il riquadro. L’anteprima usa il Nome e Cognome verificati durante l’abbinamento; la firma li rilegge dalla CIE effettivamente usata dopo l'inserimento del PIN. Anche un’immagine personalizzata è accompagnata dal Nome e Cognome. Data e ora mostrate sono indicative: il documento riporterà quelle del momento della firma, con il fuso orario locale.",
                 )
               : tr(
                   context,
@@ -401,14 +402,7 @@ class _AppearanceEditorState extends State<_AppearanceEditor> {
           ],
         ),
         if (working) const LinearProgressIndicator(),
-        if (error != null)
-          Padding(
-            padding: const EdgeInsets.all(8),
-            child: Text(
-              tr(context, error!),
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          ),
+        AppNotification(message: error, error: true, enabled: !working, onDismissed: () { if (mounted) setState(() => error = null); }),
         LayoutBuilder(
           builder: (context, constraints) {
             final w = math.min(constraints.maxWidth, 380 * aspect),

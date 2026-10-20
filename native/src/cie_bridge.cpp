@@ -3,7 +3,7 @@
 #include "middleware_abi.h"
 #include "pin_operations.h"
 #include "pdf_appearance.h"
-#include "NetworkConfig.h"
+#include "../backend/cie_sign_sdk/include/NetworkConfig.h"
 #include "paired_store.h"
 #include "web_cert_store.h"
 #include "cie_enrollment_types.h"
@@ -426,7 +426,8 @@ static char* signDocument(const char* reader,const char* expected,const char* in
         cie_pairing::Secret complete;
         char* signingPin=pin;
         if(paired){
-            if(!cie_pairing::read(card,complete))return error("pairing_required","CIE non abbinata. Abbinare la carta o usare il PIN completo.");
+            try{if(!cie_pairing::read(card,complete))return error("pairing_required","CIE non abbinata. Abbinare la carta o usare il PIN completo.");}
+            catch(...){return error("pairing_store_unavailable","Abbinamento non leggibile. Rimuovi la CIE dalla Home e ripeti l’abbinamento con il PIN completo. Nessun PIN è stato inviato alla carta.");}
             std::memcpy(complete.bytes.data()+4,pin,4);complete.bytes[8]=0;signingPin=complete.bytes.data();
         }
         // The adapter re-identifies the selected card BEFORE checking the PIN.
@@ -540,7 +541,7 @@ static char* pinOperation(const char* reader,const char* expected,char* authenti
             // Both deletions are attempted independently. Never block card mutation
             // on Keychain/Credential Manager failure after durable invalidation.
             auto cleanup=[&](auto fn){try{fn(card);}catch(const cie_pairing::StoreError& e){cleanupFailed=true;if(!cleanupNative)cleanupNative=e.nativeCode;}catch(...){cleanupFailed=true;}};
-            cleanup(cie_pairing::erase);cleanup(cie_pairing::erasePublic);
+            cleanup(cie_pairing::eraseRecord);
         }
         auto perform=[&]()->std::string {
         int phase=0;
@@ -577,7 +578,7 @@ char* cie_bridge_unblock_pin(const char* reader,const char* expected,char* puk,c
 
 char* cie_bridge_pairings(void){return guarded([]()->std::string{
  try {auto ids=cie_pairing::list();std::string out="{\"ok\":true,\"cards\":[";bool first=true;for(auto& id:ids){if(!first)out+=",";first=false;out+=quote(id);}return out+"]}";}
- catch(...){return error("pairing_store_unavailable","Archivio protetto non disponibile. Nessun PIN viene salvato in file.");}
+ catch(...){return error("pairing_store_unavailable","Archivio locale non disponibile. Il PIN completo non viene salvato.");}
 });}
 char* cie_bridge_web_enroll(const char* reader,const char* card,char* pin){PinGuard secret{pin};return guarded([&]()->std::string{
  if(!webEnrollFn)return error("web_unavailable","Aggiornare il runtime per configurare l’accesso ai siti.");
@@ -589,8 +590,8 @@ char* cie_bridge_web_enroll(const char* reader,const char* card,char* pin){PinGu
  try{cie_web_store::write(card,der,size);}
  catch(const std::exception& e){
   if(std::string(e.what())=="web_certificate_conflict")return error("web_certificate_conflict","Questo certificato è già associato a un altro componente di sistema. La configurazione Web di questa applicazione è stata interrotta senza modificare l’associazione esistente. Non occorre ripetere il PIN.");
-  return error("web_store_unavailable","PIN verificato ma certificato non salvato nell’archivio protetto di Windows.");
- }catch(...){return error("web_store_unavailable","PIN verificato ma certificato non salvato nell’archivio protetto di Windows.");}
+  return error("web_store_unavailable","PIN verificato ma certificato non salvato nell’archivio locale.");
+ }catch(...){return error("web_store_unavailable","PIN verificato ma certificato non salvato nell’archivio locale.");}
  static const char hex[]="0123456789abcdef";std::string encoded;encoded.reserve(size*2);for(uint32_t i=0;i<size;++i){encoded+=hex[der[i]>>4];encoded+=hex[der[i]&15];}
  return "{\"ok\":true,\"card\":"+quote(card)+",\"certificateHex\":"+quote(encoded)+"}";
 });}
@@ -612,7 +613,7 @@ char* cie_bridge_pair(const char* reader,const char* card,char* pin){PinGuard se
  if(!pairAuthFn||!cie_pairing::supported())return error("pairing_unavailable","Abbinamento non disponibile nel runtime.");
  if(!reader||!*reader||!card||!cie_pairing::validId(card)||!cie_pin::digits(pin))return error("invalid_pin","Selezionare una CIE e inserire il PIN completo di otto cifre.");
  cie_pairing::Secret prefix;std::memcpy(prefix.bytes.data(),pin,4);
- try{auto ids=cie_pairing::list();if(ids.size()>=256 && std::find(ids.begin(),ids.end(),card)==ids.end())return error("pairing_limit","Rimuovere un abbinamento prima di aggiungerne altri.");}
+ try{cie_pairing::prepare();auto ids=cie_pairing::list();if(ids.size()>=256 && std::find(ids.begin(),ids.end(),card)==ids.end())return error("pairing_limit","Rimuovere un abbinamento prima di aggiungerne altri.");}
  catch(...){return error("pairing_store_unavailable","Archivio protetto non disponibile. Nessun tentativo sulla carta.");}
  auto status=pairAuthFn(reader,card,pin);
  if(status==-10)return error("card_changed","La CIE è cambiata. Ripetere il rilevamento.");
@@ -658,8 +659,9 @@ char* cie_bridge_enrollments(void){return guarded([]()->std::string{
  auto blocked=cie_pairing::invalidatedCards();std::string invalidations=",\"invalidatedCards\":[";bool firstBlocked=true;
  for(const auto& id:blocked){if(!firstBlocked)invalidations+=",";firstBlocked=false;invalidations+=quote(id);}invalidations+="]";
  try{auto signedIds=cie_pairing::list(),ids=cie_pairing::listPublic();ids.insert(ids.end(),signedIds.begin(),signedIds.end());auto webIds=cie_web_store::list();ids.insert(ids.end(),webIds.begin(),webIds.end());std::sort(ids.begin(),ids.end());ids.erase(std::unique(ids.begin(),ids.end()),ids.end());
-  std::string out="{\"ok\":true,\"records\":[";bool first=true;
-  for(const auto& id:ids){if(std::find(blocked.begin(),blocked.end(),id)!=blocked.end())continue;if(!first)out+=",";first=false;bool ready=std::find(signedIds.begin(),signedIds.end(),id)!=signedIds.end();auto bytes=cie_pairing::readPublic(id);
+  std::string out="{\"ok\":true,\"storage\":\"file-cache-v3\",\"records\":[";bool first=true;
+  for(const auto& id:ids){if(std::find(blocked.begin(),blocked.end(),id)!=blocked.end())continue;if(!first)out+=",";first=false;bool ready=std::find(signedIds.begin(),signedIds.end(),id)!=signedIds.end();std::vector<uint8_t> bytes;
+   try{bytes=cie_pairing::readPublic(id);}catch(...){out+="{\"card\":"+quote(id)+",\"version\":0,\"readyForSigning\":false,\"publicDataSaved\":false,\"code\":\"pairing_cache_invalid\"}";continue;}
    if(bytes.empty()){
     std::string name,number;try{auto der=cie_web_store::read(id);char text[512]{};if(certificateNameFn&&!der.empty()&&!certificateNameFn(der.data(),uint32_t(der.size()),text,sizeof(text)))name=text;number=publicCardNumber(der.data(),uint32_t(der.size()));}catch(...){}
     out+="{\"card\":"+quote(id)+",\"fullName\":"+quote(name)+",\"cardNumber\":"+quote(number)+",\"version\":1,\"readyForSigning\":"+(ready?"true":"false")+",\"publicDataSaved\":false}";continue;}
@@ -672,7 +674,7 @@ char* cie_bridge_enroll(const char* reader,const char* card,char* pin){PinGuard 
  if(!enrollFn||!cie_pairing::supported())return error("enrollment_unavailable","Aggiornare il runtime per l’abbinamento unico. Nessun PIN inviato.");
  if(!reader||!*reader||!card||!cie_pairing::validId(card)||!cie_pin::digits(pin))return error("invalid_pin","Selezionare una CIE e inserire le otto cifre del PIN.");
  cie_pairing::Secret prefix;std::memcpy(prefix.bytes.data(),pin,4);bool previous=false;
- try{auto ids=cie_pairing::list(),publicIds=cie_pairing::listPublic();previous=std::find(ids.begin(),ids.end(),card)!=ids.end();std::set<std::string> all(ids.begin(),ids.end());all.insert(publicIds.begin(),publicIds.end());if(all.size()>=256&&!all.count(card))return error("pairing_limit","Rimuovere una CIE prima di aggiungerne un’altra.");(void)cie_pairing::readPublic(card);}
+ try{cie_pairing::prepare();auto ids=cie_pairing::list(),publicIds=cie_pairing::listPublic();previous=std::find(ids.begin(),ids.end(),card)!=ids.end();std::set<std::string> all(ids.begin(),ids.end());all.insert(publicIds.begin(),publicIds.end());if(all.size()>=256&&!all.count(card))return error("pairing_limit","Rimuovere una CIE prima di aggiungerne un’altra.");(void)cie_pairing::readPublic(card);}
  catch(...){return error("pairing_store_unavailable","Archivio protetto non leggibile. Nessun PIN inviato.");}
  CieEnrollmentMaterial m{};m.size=sizeof(m);auto status=enrollFn(reader,card,pin,&m);
  if(status==-10)return error("card_changed","La carta è cambiata. Nessun nuovo tentativo automatico.");
@@ -692,6 +694,12 @@ char* cie_bridge_complete_enrollment(const char* card){return guarded([&]()->std
 });}
 char* cie_bridge_forget_enrollment(const char* card){return guarded([&]()->std::string{
  if(!card||!cie_pairing::validId(card))return error("pairing_invalid_id","Selezionare la CIE da rimuovere.");
- try{cie_web_store::erase(card);cie_pairing::erasePublic(card);cie_pairing::erase(card);return "{\"ok\":true}";}
- catch(...){return error("enrollment_removal_incomplete","Rimozione non completata. Le parti rimaste sono conservate: riprova Rimuovi CIE senza PIN.");}
+ const char* stage="web_certificate";
+ auto failure=[&](int64_t native=0){
+  auto out=error("enrollment_removal_incomplete","Rimozione non completata. Verifica che la cartella dati dell’applicazione sia accessibile e premi Riprova rimozione. Il PIN della carta non serve.",native);
+  out.pop_back();return out+",\"removalStage\":"+quote(stage)+"}";
+ };
+ try{cie_web_store::erase(card);stage="pairing_cache";cie_pairing::eraseRecord(card);return "{\"ok\":true}";}
+ catch(const cie_pairing::StoreError& e){return failure(e.nativeCode);}
+ catch(...){return failure();}
 });}

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 import 'app_localizations.dart';
+import 'app_notification.dart';
 
 import 'dart:io';
 import 'dart:convert';
@@ -79,6 +80,8 @@ class CiePrototype extends StatefulWidget {
     this.verificationSavePicker,
     this.webPublisher = publishWebCertificate,
     this.webStatusReader = readWebSystemStatus,
+    this.webSettingsOpener = openWebSystemSettings,
+    this.webComponentActivator = activateWebComponent,
     this.windowsWebInstaller,
   });
   final PreferencesStore? preferences;
@@ -89,6 +92,8 @@ class CiePrototype extends StatefulWidget {
   final CieService service;
   final WebPublisher webPublisher;
   final WebStatusReader webStatusReader;
+  final WebSettingsOpener webSettingsOpener;
+  final WebComponentActivator webComponentActivator;
   final WindowsWebInstaller? windowsWebInstaller;
   @override
   State<CiePrototype> createState() => _CiePrototypeState();
@@ -144,6 +149,8 @@ class _CiePrototypeState extends State<CiePrototype> {
           verificationSavePicker: widget.verificationSavePicker,
           webPublisher: widget.webPublisher,
           webStatusReader: widget.webStatusReader,
+          webSettingsOpener: widget.webSettingsOpener,
+          webComponentActivator: widget.webComponentActivator,
           windowsWebInstaller: widget.windowsWebInstaller,
         ),
       ),
@@ -162,6 +169,8 @@ class PrototypeHome extends StatefulWidget {
     this.verificationSavePicker,
     this.webPublisher = publishWebCertificate,
     this.webStatusReader = readWebSystemStatus,
+    this.webSettingsOpener = openWebSystemSettings,
+    this.webComponentActivator = activateWebComponent,
     this.windowsWebInstaller,
   });
   final PreferencesStore? preferences;
@@ -172,6 +181,8 @@ class PrototypeHome extends StatefulWidget {
   final CieService service;
   final WebPublisher webPublisher;
   final WebStatusReader webStatusReader;
+  final WebSettingsOpener webSettingsOpener;
+  final WebComponentActivator webComponentActivator;
   final WindowsWebInstaller? windowsWebInstaller;
   @override
   State<PrototypeHome> createState() => _PrototypeHomeState();
@@ -259,6 +270,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
   );
   bool unified = false, modalInteraction = false, activeApplication = true;
   String? homeMessage;
+  int notificationRevision = 0;
   bool addingCard = false;
   Future<void> _coordinateMonitor() async {
     await monitor?.setPaused(
@@ -269,7 +281,37 @@ class _PrototypeHomeState extends State<PrototypeHome>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     activeApplication = state == AppLifecycleState.resumed;
-    unawaited(_coordinateMonitor());
+    if (activeApplication) {
+      unawaited(_resumeWebStatus());
+    } else {
+      unawaited(_coordinateMonitor());
+    }
+  }
+
+  bool refreshingWebStatus = false, waitingForWebSettings = false;
+  void _updateWebSettingsMessage() {
+    if (waitingForWebSettings &&
+        !enrollment.records.values.any((record) => record.needsSystemSettings)) {
+      waitingForWebSettings = false;
+      homeMessage = enrollment.message;
+    }
+  }
+  Future<void> _resumeWebStatus() async {
+    if (refreshingWebStatus || busy || modalInteraction || !unified) {
+      unawaited(_coordinateMonitor());
+      return;
+    }
+    refreshingWebStatus = true;
+    try {
+      await monitor?.setPaused(true);
+      await enrollment.refreshSystem();
+      if (mounted) setState(_updateWebSettingsMessage);
+    } catch (_) {
+      // Preserve enrollment and last state on a transient status read failure.
+    } finally {
+      refreshingWebStatus = false;
+      unawaited(_coordinateMonitor());
+    }
   }
 
   void _monitorChanged() {
@@ -549,6 +591,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
   Future<void> _operation(String label, Future<void> Function() action) async {
     if (busy) return;
     setState(() {
+      notificationRevision++;
       busy = true;
       progress = label;
       error = null;
@@ -635,7 +678,10 @@ class _PrototypeHomeState extends State<PrototypeHome>
       monitor = CardMonitor(
         service,
         afterChange: () async {
-          if (unified) await enrollment.refreshSystem();
+          if (unified) {
+            await enrollment.refreshSystem();
+            if (mounted) _updateWebSettingsMessage();
+          }
         },
       )..addListener(_monitorChanged);
     }
@@ -794,7 +840,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
         homeMessage =
             enrollment.message ??
             (result['ok'] == true
-                ? 'CIE abbinata. La configurazione per l’accesso ai siti è indicata qui sotto.'
+                ? 'CIE abbinata. Puoi firmare documenti. Lo stato dell’accesso ai siti è disponibile nella Home.'
                 : 'Abbinamento non completato. Nessun tentativo automatico.');
       });
     } catch (_) {
@@ -809,6 +855,56 @@ class _PrototypeHomeState extends State<PrototypeHome>
       modalInteraction = false;
       unawaited(_coordinateMonitor());
     }
+  }
+
+  Future<void> _activateWebComponent(EnrollmentRecord record) async {
+    if (busy || modalInteraction || record.removalPending) return;
+    modalInteraction = true;
+    await _coordinateMonitor();
+    bool? confirmed;
+    try {
+      if (!mounted) return;
+      confirmed = await showDialog<bool>(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: Text(tr(context, 'Attiva accesso ai siti')),
+          content: Text(tr(context, 'Verrà riattivato soltanto il componente CIE ID di questa applicazione. L’abbinamento è conservato e non viene richiesto il PIN. Le altre estensioni non vengono modificate.')),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr(context, 'Annulla'))),
+            FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(tr(context, 'Attiva'))),
+          ],
+        ),
+      );
+    } finally {
+      modalInteraction = false;
+      if (confirmed != true) unawaited(_coordinateMonitor());
+    }
+    if (confirmed != true || !mounted) return;
+    await _operation('Attivazione accesso ai siti…', () async {
+      JsonResult result;
+      try { result = await widget.webComponentActivator(); }
+      catch (_) { result = {'ok': false}; }
+      await enrollment.refreshSystem();
+      final updated = enrollment.records[record.id];
+      if (result['ok'] == true && updated?.componentAvailable == true) {
+        homeMessage = enrollment.message ?? (updated!.webProvisioned
+            ? 'Accesso ai siti attivato. Apri il sito nel browser. Non occorre ripetere l’abbinamento.'
+            : 'Componente CIE ID attivato. Premi Completa accesso ai siti per terminare senza reinserire il PIN.');
+      } else {
+        homeMessage = 'Attivazione non completata. L’abbinamento è conservato e puoi continuare a firmare. Puoi riprovare su tua iniziativa; non occorre reinserire il PIN.';
+      }
+    });
+  }
+
+  Future<void> _openWebSettings() async {
+    if (busy || modalInteraction) return;
+    bool opened;
+    try { opened = await widget.webSettingsOpener(); } catch (_) { opened = false; }
+    if (!mounted) return;
+    waitingForWebSettings = opened;
+    setState(() => homeMessage = opened
+        ? 'In Impostazioni di Sistema apri Generali → Elementi login ed estensioni e abilita il componente CIE ID per le smart card. Torna poi nell’app: non occorre ripetere il PIN.'
+        : 'Non è stato possibile aprire le Impostazioni di Sistema. Aprile dal menu Apple e cerca le estensioni per smart card. L’abbinamento è conservato; non occorre ripetere il PIN.');
   }
 
   Future<void> _completeEnrollment(EnrollmentRecord record) async {
@@ -872,12 +968,6 @@ class _PrototypeHomeState extends State<PrototypeHome>
             'Configurazione aggiornata. Controlla lo stato della CIE.';
       },
     );
-    if (mounted) {
-      await _showWebCompletionStatus(
-        homeMessage ??
-            'Configurazione aggiornata. Controlla lo stato della CIE.',
-      );
-    }
   }
 
   Future<bool> _ensureWindowsWebComponent(
@@ -895,7 +985,6 @@ class _PrototypeHomeState extends State<PrototypeHome>
     final message =
         result['message'] as String? ??
         'Installazione del componente Windows non completata. Nessun PIN è stato inviato e non viene eseguito un nuovo tentativo automatico.';
-    setState(() => homeMessage = message);
     return await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
@@ -922,19 +1011,8 @@ class _PrototypeHomeState extends State<PrototypeHome>
     await _coordinateMonitor();
     if (!mounted) return;
     try {
-      await showDialog<void>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(tr(context, 'Accesso ai siti con CIE')),
-          content: Text(tr(context, message)),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(tr(context, 'Chiudi')),
-            ),
-          ],
-        ),
-      );
+      await showAppNotification(context, message: message,
+        title: 'Accesso ai siti con CIE', buttonLabel: 'Chiudi');
     } finally {
       modalInteraction = false;
       unawaited(_coordinateMonitor());
@@ -990,13 +1068,13 @@ class _PrototypeHomeState extends State<PrototypeHome>
         homeMessage = null;
         final ids = card.isEmpty ? enrollment.records.keys.toList() : [card];
         for (final id in ids) {
-          if (preferenceStore is CardImagePreferences) {
-            await (preferenceStore as CardImagePreferences).removeCardImage(id);
-          }
           final r = await enrollment.remove(id);
           if (r['ok'] != true) {
             homeMessage = enrollment.message;
             break;
+          }
+          if (preferenceStore is CardImagePreferences) {
+            await (preferenceStore as CardImagePreferences).removeCardImage(id);
           }
         }
         await _refreshPairings();
@@ -1384,13 +1462,45 @@ class _PrototypeHomeState extends State<PrototypeHome>
     });
   }
 
+  Widget _notification() {
+    final shownHome = homeMessage;
+    final shownError = error;
+    return AppNotification(
+      key: const ValueKey('application-notification'),
+      message: shownHome ?? shownError?['message'] as String? ??
+          (shownError == null ? null : 'Operazione non completata'),
+      event: (shownHome ?? shownError, notificationRevision),
+      title: shownHome == null && shownError != null ? 'Operazione non completata' : 'CIE ID',
+      error: shownHome == null && shownError != null,
+      enabled: !busy && !modalInteraction,
+      details: shownError == null ? null : [
+        if (shownError['code'] != null) '${shownError['code']}',
+        if (shownError['nativeCode'] != null) tr(context, 'Codice nativo: {p0}', [shownError['nativeCode']]),
+      ].join('\n'),
+      onDismissed: shownHome == null ? null : () {
+        if (mounted && homeMessage == shownHome) {
+          setState(() {
+            homeMessage = null;
+            if (identical(error, shownError)) error = null;
+          });
+        }
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) => PopScope<void>(
     canPop: false,
     onPopInvokedWithResult: (didPop, result) {
       if (!didPop) _goBack();
     },
-    child: Scaffold(
+    child: AppNotificationScope(
+      onVisibilityChanged: (visible) {
+        if (!mounted) return;
+        modalInteraction = visible;
+        unawaited(_coordinateMonitor());
+      },
+      child: Scaffold(
       body: Row(
         children: [
           NavigationRail(
@@ -1471,19 +1581,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            if (error != null &&
-                                page == AppDestination.sign.index &&
-                                signature?['ok'] == false)
-                              const Icon(
-                                Icons.cancel_outlined,
-                                size: 64,
-                                color: Colors.red,
-                              ),
-                            if (error != null)
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 18),
-                                child: ErrorNotice(result: error!),
-                              ),
+                            _notification(),
                             if (page == 0) ..._cardPage(context),
                             if (page == 1) ..._signPage(context),
                             if (page == 2) ..._verifyPage(context),
@@ -1716,6 +1814,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
         ],
       ),
     ),
+    ),
   );
   List<Widget> _cardPage(BuildContext context) => unified
       ? _unifiedHome(context)
@@ -1881,25 +1980,6 @@ class _PrototypeHomeState extends State<PrototypeHome>
       'Collega il lettore e appoggia la CIE. Il riconoscimento è automatico e non richiede il PIN.',
     ),
     const SizedBox(height: 18),
-    if (homeMessage != null)
-      Card(
-        child: Padding(
-          padding: const EdgeInsets.all(18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(tr(context, homeMessage!)),
-              const SizedBox(height: 12),
-              FilledButton(
-                onPressed: busy
-                    ? null
-                    : () => setState(() => homeMessage = null),
-                child: Text(tr(context, "Concludi")),
-              ),
-            ],
-          ),
-        ),
-      ),
     Card(
       child: Padding(
         padding: const EdgeInsets.all(22),
@@ -2008,16 +2088,29 @@ class _PrototypeHomeState extends State<PrototypeHome>
                       spacing: 12,
                       runSpacing: 8,
                       children: [
-                        if (!record.readyForSigning ||
-                            !record.hasPublicData ||
-                            !record.webProvisioned ||
-                            !record.componentAvailable)
+                        if (!record.removalPending &&
+                            (!record.readyForSigning ||
+                                !record.hasPublicData ||
+                                !record.webProvisioned ||
+                                !record.componentAvailable))
                           OutlinedButton(
                             onPressed: busy
                                 ? null
-                                : () => _completeEnrollment(record),
+                                : () => record.needsComponentActivation &&
+                                        record.readyForSigning && record.hasPublicData
+                                    ? _activateWebComponent(record)
+                                    : record.needsSystemSettings &&
+                                        record.readyForSigning && record.hasPublicData
+                                    ? _openWebSettings()
+                                    : _completeEnrollment(record),
                             child: Text(
-                              record.hasPublicData &&
+                              record.needsComponentActivation &&
+                                      record.readyForSigning && record.hasPublicData
+                                  ? tr(context, 'Attiva accesso ai siti')
+                                  : record.needsSystemSettings &&
+                                      record.readyForSigning && record.hasPublicData
+                                  ? tr(context, 'Apri Impostazioni di Sistema')
+                                  : record.hasPublicData &&
                                       record.readyForSigning &&
                                       record.webProvisioned &&
                                       !record.componentAvailable
@@ -2039,7 +2132,14 @@ class _PrototypeHomeState extends State<PrototypeHome>
                             alignment: Alignment.centerLeft,
                           ),
                           onPressed: busy ? null : () => _unpair(record.id),
-                          child: Text(tr(context, "Rimuovi CIE")),
+                          child: Text(
+                            tr(
+                              context,
+                              record.removalPending
+                                  ? "Riprova rimozione"
+                                  : "Rimuovi CIE",
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -2116,7 +2216,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
           ),
         if (step == SigningStep.card) ...[
           Text(
-            tr(context, "Scegli la CIE con cui firmare"),
+            tr(context, "Seleziona la CIE con cui firmare tra quelle in elenco"),
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 12),
@@ -2145,10 +2245,10 @@ class _PrototypeHomeState extends State<PrototypeHome>
                 onTap: () => _chooseSigningCard(id),
               ),
             ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 24),
           OutlinedButton(
             onPressed: () => _chooseSigningCard(null),
-            child: Text(tr(context, "Firma con CIE non abbinata")),
+            child: Text(tr(context, "Firma con CIE non presente in elenco")),
           ),
           const SizedBox(height: 24),
           Text(
@@ -2160,7 +2260,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
         ],
         if (step == SigningStep.document) ...[
           if (pairedMode)
-            Text(tr(context, "CIE scelta: {p0}", [signingCardLabel])),
+            Text(tr(context, "CIE selezionata: {p0}", [signingCardLabel])),
           DocumentDropZone(
             enabled: canSign && ready,
             onPaths: (paths) => _drop(paths, verify: false),
@@ -2362,7 +2462,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
                 : tr(context, "Firma CAdES · P7M"),
           ),
           if (pairedMode)
-            Text(tr(context, "CIE scelta: {p0}", [signingCardLabel])),
+            Text(tr(context, "CIE selezionata: {p0}", [signingCardLabel])),
           if (target == null)
             Text(
               pairedMode
@@ -2610,14 +2710,19 @@ class _PrototypeHomeState extends State<PrototypeHome>
         ),
       ],
     ],
-    if (extraction != null) ...[
-      const SizedBox(height: 16),
-      if (extraction!['ok'] == true) ...[
-        Text(tr(context, "Documento estratto e salvato.")),
-        SelectableText('${extraction!['output']}'),
-      ] else
-        VerificationProblem(result: extraction!, extraction: true),
-    ],
+    AppNotification(
+      event: extraction,
+      message: extraction == null ? null : extraction!['ok'] == true
+          ? 'Documento estratto e salvato.'
+          : verificationProblemMessage(extraction!, extraction: true),
+      error: extraction?['ok'] == false,
+      details: extraction?['ok'] == true ? (extraction?['output'] as String?) : [
+        if (extraction?['message'] is String) tr(context, extraction!['message'] as String),
+        if (extraction?['code'] != null) '${extraction!['code']}',
+        if (extraction?['nativeCode'] != null) tr(context, 'Codice nativo: {p0}', [extraction!['nativeCode']]),
+      ].join('\n'),
+      enabled: !verifyFlow.exporting,
+    ),
   ];
   Widget _heading(BuildContext context, String title, String subtitle) =>
       Column(

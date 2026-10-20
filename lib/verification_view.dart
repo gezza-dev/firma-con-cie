@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 import 'app_localizations.dart';
+import 'app_notification.dart';
 
 import 'package:flutter/material.dart';
 
@@ -514,6 +515,28 @@ class _CheckRow extends StatelessWidget {
   );
 }
 
+String verificationProblemMessage(Map result, {bool extraction = false}) {
+  final code = result['code'];
+  final unreadable = const {
+    'input_missing',
+    'document_unreadable',
+    'document_unreadable_or_too_large',
+    'pdf_invalid',
+    'invalid_format',
+  }.contains(code);
+  return code == 'document_changed'
+      ? 'Il documento è cambiato. Ripeti la verifica sul file aggiornato.'
+      : unreadable
+      ? 'Seleziona un file PDF o P7M leggibile, non vuoto e di dimensioni non superiori a 256 MiB.'
+      : code == 'network_configuration_required'
+      ? 'Controlla o ripristina la configurazione della connessione in Impostazioni, poi ripeti la verifica.'
+      : code == 'output_exists'
+      ? 'Scegli un nuovo nome: i file esistenti non vengono sovrascritti.'
+      : extraction
+      ? 'Il contenuto non è stato salvato. Scegli una destinazione nuova e riprova.'
+      : 'Il controllo non è stato completato. Puoi ripeterlo o scegliere un altro documento. Un problema di connessione non rende la firma non valida.';
+}
+
 class VerificationProblem extends StatelessWidget {
   const VerificationProblem({
     super.key,
@@ -537,17 +560,7 @@ class VerificationProblem extends StatelessWidget {
         : unreadable
         ? 'Documento non leggibile'
         : 'Verifica non completata';
-    final message = code == 'document_changed'
-        ? 'Il documento è cambiato. Ripeti la verifica sul file aggiornato.'
-        : unreadable
-        ? 'Seleziona un file PDF o P7M leggibile, non vuoto e di dimensioni non superiori a 256 MiB.'
-        : code == 'network_configuration_required'
-        ? 'Controlla o ripristina la configurazione della connessione in Impostazioni, poi ripeti la verifica.'
-        : code == 'output_exists'
-        ? 'Scegli un nuovo nome: i file esistenti non vengono sovrascritti.'
-        : extraction
-        ? 'Il contenuto non è stato salvato. Scegli una destinazione nuova e riprova.'
-        : 'Il controllo non è stato completato. Puoi ripeterlo o scegliere un altro documento. Un problema di connessione non rende la firma non valida.';
+    final message = verificationProblemMessage(result, extraction: extraction);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -589,31 +602,15 @@ class ErrorNotice extends StatelessWidget {
   const ErrorNotice({super.key, required this.result});
   final JsonResult result;
   @override
-  Widget build(BuildContext context) => Card(
-    color: Theme.of(context).colorScheme.errorContainer,
-    child: Padding(
-      padding: const EdgeInsets.all(18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            tr(context, '${result['message'] ?? 'Operazione non completata'}'),
-            softWrap: true,
-          ),
-          const SizedBox(height: 8),
-          SelectableText(
-            tr(context, "{p0}{p1}", [
-              result['code'] ?? '',
-              result['nativeCode'] == null
-                  ? ''
-                  : tr(context, ' · codice nativo {p0}', [
-                      result['nativeCode'],
-                    ]),
-            ]),
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-        ],
-      ),
-    ),
+  Widget build(BuildContext context) => AppNotification(
+    event: result,
+    message: result['message'] as String? ?? 'Operazione non completata',
+    title: 'Operazione non completata',
+    error: true,
+    details: [
+      if (result['code'] != null) '${result['code']}',
+      if (result['nativeCode'] != null)
+        tr(context, 'Codice nativo: {p0}', [result['nativeCode']]),
+    ].join('\n'),
   );
 }

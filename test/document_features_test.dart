@@ -94,6 +94,8 @@ void main() {
       find.text('Trascinare un solo documento alla volta.'),
       findsOneWidget,
     );
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
     await drop(tester, [Directory.systemTemp.path]);
     expect(
       find.text('Selezionare un file leggibile, non una cartella.'),

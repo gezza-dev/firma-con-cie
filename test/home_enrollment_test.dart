@@ -18,6 +18,7 @@ class UnifiedFake extends FakeService
     implements CardObservationService, EnrollmentService {
   int observations = 0, enrollCalls = 0, completeCalls = 0, forgetCalls = 0;
   bool rejectPin = false, locked = false, removeFailed = false;
+  String? storage;
   JsonResult presence = {'ok': true, 'readers': <JsonResult>[]};
   final records = <String, JsonResult>{};
   final invalidated = <String>[];
@@ -41,6 +42,7 @@ class UnifiedFake extends FakeService
       ? {'ok': false, 'invalidatedCards': invalidated}
       : {
           'ok': true,
+          'storage': ?storage,
           'records': records.values.toList(),
           'invalidatedCards': invalidated,
         };
@@ -125,6 +127,26 @@ class PublicSystem {
 }
 
 void main() {
+  test('file cache requires fresh enrollment and does not import legacy Web-only identities', () async {
+    final service = UnifiedFake()..storage = 'file-cache-v3';
+    final system = PublicSystem()..cards.add('OLD');
+    final controller = EnrollmentController(
+      service,
+      publisher: system.publish,
+      systemStatus: system.status,
+    );
+    await controller.refresh();
+    expect(controller.records, isEmpty);
+    expect(service.enrollCalls, 0);
+    await controller.enroll('Reader', 'NEW', '12345678');
+    expect(controller.records.keys, ['NEW']);
+    expect(controller.records['NEW']!.readyForSigning, isTrue);
+    expect(
+      system.cards,
+      contains('OLD'),
+    ); // existing system configuration is not deleted
+    expect(service.enrollCalls, 1);
+  });
   test('PIN invalidation removes pairing and prevents stale system certificates resurrecting it', () async {
     final service = UnifiedFake();
     final system = PublicSystem();
@@ -272,10 +294,23 @@ void main() {
     expect((await controller.remove('TEST'))['ok'], isFalse);
     expect(service.forgetCalls, 0);
     expect(service.records.containsKey('TEST'), isTrue);
+    expect(controller.records['TEST']!.removalPending, isTrue);
+    expect(controller.records['TEST']!.readyForSigning, isFalse);
     system.failForget = false;
     service.removeFailed = true;
     expect((await controller.remove('TEST'))['ok'], isFalse);
     expect(controller.records.containsKey('TEST'), isTrue);
+    await controller.refresh();
+    await controller.refreshSystem();
+    expect(
+      controller.records['TEST']!.status,
+      'Rimozione della CIE da completare.',
+    );
+    expect(
+      controller.records['TEST']!.webStatus,
+      contains('Riprova rimozione'),
+    );
+    expect(controller.message, contains('cartella dati'));
     service.removeFailed = false;
     expect((await controller.remove('TEST'))['ok'], isTrue);
     expect(controller.records, isEmpty);
@@ -355,6 +390,79 @@ void main() {
   }
 
   testWidgets(
+    'partial removal offers only explicit retry and never reconfiguration',
+    (t) async {
+      final service = UnifiedFake()..removeFailed = true;
+      service.records['TEST'] = {
+        'card': 'TEST',
+        'fullName': 'Nome Cognome',
+        'cardNumber': 'CA00000AA',
+        'readyForSigning': true,
+        'publicDataSaved': true,
+        'certificateHex': '300100',
+      };
+      final system = PublicSystem()..cards.add('TEST');
+      await start(t, service, system);
+      await t.ensureVisible(find.text('Rimuovi CIE'));
+      await t.tap(find.text('Rimuovi CIE'));
+      await t.pumpAndSettle();
+      await t.tap(find.widgetWithText(FilledButton, 'Rimuovi'));
+      await t.pumpAndSettle();
+      expect(service.forgetCalls, 1);
+      expect(find.byType(AlertDialog), findsOneWidget);
+      await t.tap(find.text('OK'));
+      await t.pumpAndSettle();
+      expect(find.text('Rimozione della CIE da completare.'), findsOneWidget);
+      expect(find.text('CIE abbinata. Puoi firmare documenti.'), findsNothing);
+      expect(
+        find.text('Completa la configurazione per accedere ai siti.'),
+        findsNothing,
+      );
+      expect(find.text('Completa accesso ai siti'), findsNothing);
+      expect(find.text('Completa abbinamento'), findsNothing);
+      expect(find.text('Riprova rimozione'), findsOneWidget);
+      for (var i = 0; i < 6; i++) {
+        await t.pump(const Duration(seconds: 1));
+      }
+      expect(service.forgetCalls, 1);
+      service.removeFailed = false;
+      await t.ensureVisible(find.text('Riprova rimozione'));
+      await t.tap(find.text('Riprova rimozione'));
+      await t.pumpAndSettle();
+      await t.tap(find.widgetWithText(FilledButton, 'Rimuovi'));
+      await t.pumpAndSettle();
+      expect(service.forgetCalls, 2);
+      expect(find.text('Nome Cognome'), findsNothing);
+      expect(find.text('CIE rimossa da questo computer.'), findsOneWidget);
+      expect(service.enrollCalls, 0);
+      expect(service.signCalls, 0);
+      await t.pumpWidget(const SizedBox());
+    },
+    variant: TargetPlatformVariant({
+      TargetPlatform.macOS,
+      TargetPlatform.windows,
+    }),
+  );
+
+  test('removal diagnostics retain only bounded OS code and known stage', () {
+    final recorder = DiagnosticRecorder()..level = AppDiagnosticLevel.errors;
+    recorder.record('forget_enrollment', {
+      'ok': false,
+      'code': 'enrollment_removal_incomplete',
+      'nativeCode': -25308,
+      'removalStage': 'pairing',
+      'card': 'PRIVATE_CARD',
+      'message': 'PRIVATE_TEXT',
+      'pin': 'PRIVATE_PIN',
+    }, 10);
+    final event = recorder.events.single;
+    expect(event['code'], 'enrollment_removal_incomplete');
+    expect(event['nativeCode'], -25308);
+    expect(event['removalStage'], 'pairing');
+    expect(event.toString(), isNot(contains('PRIVATE')));
+  });
+
+  testWidgets(
     'automatic Home pairs once and preserves the chosen page through insertion/removal',
     (t) async {
       final service = UnifiedFake(), system = PublicSystem();
@@ -387,7 +495,8 @@ void main() {
       expect(system.publications, 1);
       expect(find.text('Nome Cognome'), findsOneWidget);
       expect(find.text('Configura accesso ai siti'), findsNothing);
-      await t.tap(find.text('Concludi'));
+      expect(find.byType(AlertDialog), findsOneWidget);
+      await t.tap(find.text('OK'));
       await t.pumpAndSettle();
       service.presence = {'ok': true, 'readers': []};
       await t.pump(const Duration(seconds: 1));

@@ -121,7 +121,7 @@ void main() {
       expect(service.enrollCalls, 0);
       expect(system.publications, 1);
       expect(find.byType(TextField), findsNothing);
-      await t.tap(find.text('Chiudi'));
+      await t.tap(find.text('OK'));
       await t.pumpAndSettle();
       expect(find.text('Informazioni accesso ai siti'), findsOneWidget);
       await t.pumpWidget(const SizedBox());

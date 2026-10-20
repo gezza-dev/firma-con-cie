@@ -115,6 +115,46 @@ Le identità Web sono dati personali locali e non vanno inviate nei rapporti.
 
 ## macOS
 
+### Controllo dell’attivazione dalla Home
+
+La prova reale ha mostrato che Elementi login ed estensioni non elenca il token
+CryptoTokenKit su questo Mac. Per questo il recupero principale è ora
+**Attiva accesso ai siti**, direttamente nella Home: dopo la conferma **Attiva**,
+l’host esegue una sola elezione `pluginkit -e use` limitata all’identificativo
+fisso della propria estensione incorporata. Non accetta comandi, identificativi,
+percorsi o credenziali dal chiamante, non registra bundle e non cambia altri
+middleware. Il risultato viene verificato rileggendo lo stato del componente;
+il solo successo del comando non basta a dichiarare riuscita l’attivazione.
+
+La Home controlla la configurazione CryptoTokenKit insieme all’elezione della
+sola estensione CIE ID tramite `pluginkit -m`: è una lettura, non esegue
+registrazioni né cambia lo stato di altre estensioni. L’assenza della carta o
+di una chiave osservabile non viene interpretata come disattivazione. Il
+controllo dell’elezione avviene fuori dal thread dell’interfaccia, con un limite
+di due secondi; un esito sconosciuto non viene presentato come consenso negato.
+
+Se il componente incluso richiede attenzione, una CIE già abbinata mostra
+il pulsante di attivazione anche quando la pubblicazione del certificato non è
+ancora terminata. L’operazione avviene fuori dal thread dell’interfaccia, con
+un timeout e senza ripetizioni automatiche. Annullamento ed errore conservano
+l’abbinamento. Il canale di apertura delle Impostazioni di Sistema rimane
+separato, come ripiego, senza essere considerato un’attivazione riuscita.
+
+Al ritorno nell’app, lo stato viene aggiornato anche senza lettore. Quando il
+componente passa da non disponibile a disponibile, l’eventuale pubblicazione
+pendente viene completata una volta con i dati pubblici verificati già salvati,
+senza autenticare la carta. Un errore non causa un ciclo di tentativi: restano
+disponibili abbinamento e completamento manuale. Le CIE in rimozione non vengono
+riconfigurate. Il controllo non attesta un login riuscito nel browser.
+
+Test software mirati: `flutter test test/macos_web_activation_test.dart`.
+Il classificatore nativo può essere verificato senza cambiare impostazioni:
+
+```sh
+xcrun swiftc macos/Runner/WebComponentActivation.swift test/macos_activation/main.swift -o /tmp/cie-activation-tests
+/tmp/cie-activation-tests
+```
+
 Estensione nuova `CIEPrototypeToken.appex`, identificatore
 `it.giancarloezza.CIEID.FlutterPrototype.WebToken`, distinta dall’app pubblicata.
 Usa `TKSmartCard` del sistema, con sessione sensibile, senza PC/SC parallelo
