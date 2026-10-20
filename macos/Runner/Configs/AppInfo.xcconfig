@@ -7,6 +7,9 @@
 // The application's name. By default this is also the title of the Flutter window.
 PRODUCT_NAME = CIE-ID
 
+// Header-only C geometry policy, shared with Win32 and tested on Linux.
+SWIFT_INCLUDE_PATHS = $(inherited) "$(SRCROOT)/../native/desktop"
+
 // The application's bundle identifier
 PRODUCT_BUNDLE_IDENTIFIER = it.giancarloezza.CIEID.FlutterPrototype
 

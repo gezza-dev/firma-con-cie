@@ -3,6 +3,10 @@
 #include <dwmapi.h>
 #include <flutter_windows.h>
 
+#include <algorithm>
+
+#include "../../native/desktop/window_geometry.h"
+
 #include "resource.h"
 
 namespace {
@@ -31,10 +35,41 @@ static int g_active_window_count = 0;
 
 using EnableNonClientDpiScaling = BOOL __stdcall(HWND hwnd);
 
-// Scale helper to convert logical scaler values to physical using passed in
-// scale factor
-int Scale(int source, double scale_factor) {
-  return static_cast<int>(source * scale_factor);
+// Convert logical preferences to physical pixels exactly once.
+int Scale(int source, UINT dpi) {
+  return static_cast<int>(cie_window_scale_96(source, dpi));
+}
+
+RECT FitToMonitorWorkArea(const RECT& proposed, HMONITOR monitor) {
+  MONITORINFO info{};
+  info.cbSize = sizeof(info);
+  if (!GetMonitorInfo(monitor, &info)) return proposed;
+  const auto fitted = cie_window_fit_rect(
+      {double(proposed.left), double(proposed.top),
+       double(proposed.right) - proposed.left, double(proposed.bottom) - proposed.top},
+      {double(info.rcWork.left), double(info.rcWork.top),
+       double(info.rcWork.right) - info.rcWork.left,
+       double(info.rcWork.bottom) - info.rcWork.top});
+  return {static_cast<LONG>(fitted.x), static_cast<LONG>(fitted.y),
+          static_cast<LONG>(fitted.x + fitted.width),
+          static_cast<LONG>(fitted.y + fitted.height)};
+}
+
+// Convert only a logical minimum client size; include DPI-aware non-client
+// decorations. Suggested WM_DPICHANGED rectangles never use this conversion.
+RECT MinimumWindowRect(HWND window, UINT dpi) {
+  RECT rect{0, 0, Scale(640, dpi), Scale(400, dpi)};
+  const auto style = static_cast<DWORD>(GetWindowLongPtr(window, GWL_STYLE));
+  const auto extended = static_cast<DWORD>(GetWindowLongPtr(window, GWL_EXSTYLE));
+  using AdjustForDpi = BOOL(WINAPI*)(LPRECT, DWORD, BOOL, DWORD, UINT);
+  const auto adjust = reinterpret_cast<AdjustForDpi>(
+      GetProcAddress(GetModuleHandleW(L"user32.dll"), "AdjustWindowRectExForDpi"));
+  if (adjust) {
+    adjust(&rect, style, FALSE, extended, dpi);
+  } else {
+    AdjustWindowRectEx(&rect, style, FALSE, extended);
+  }
+  return rect;
 }
 
 // Dynamically loads the |EnableNonClientDpiScaling| from the User32 module.
@@ -131,14 +166,19 @@ bool Win32Window::Create(const std::wstring& title,
   const POINT target_point = {static_cast<LONG>(origin.x),
                               static_cast<LONG>(origin.y)};
   HMONITOR monitor = MonitorFromPoint(target_point, MONITOR_DEFAULTTONEAREST);
-  UINT dpi = FlutterDesktopGetDpiForMonitor(monitor);
-  double scale_factor = dpi / 96.0;
+  current_dpi_ = FlutterDesktopGetDpiForMonitor(monitor);
+  if (!current_dpi_) current_dpi_ = 96;
+  const RECT requested{Scale(origin.x, current_dpi_), Scale(origin.y, current_dpi_),
+                       Scale(origin.x, current_dpi_) + Scale(size.width, current_dpi_),
+                       Scale(origin.y, current_dpi_) + Scale(size.height, current_dpi_)};
+  const RECT fitted = FitToMonitorWorkArea(requested, monitor);
+  start_maximized_ = fitted.right - fitted.left < requested.right - requested.left ||
+                     fitted.bottom - fitted.top < requested.bottom - requested.top;
 
   HWND window = CreateWindow(
       window_class, title.c_str(),
-      WS_OVERLAPPEDWINDOW & ~(WS_THICKFRAME | WS_MAXIMIZEBOX),
-      Scale(origin.x, scale_factor), Scale(origin.y, scale_factor),
-      Scale(size.width, scale_factor), Scale(size.height, scale_factor),
+      WS_OVERLAPPEDWINDOW,
+      fitted.left, fitted.top, fitted.right - fitted.left, fitted.bottom - fitted.top,
       nullptr, nullptr, GetModuleHandle(nullptr), this);
 
   if (!window) {
@@ -151,7 +191,7 @@ bool Win32Window::Create(const std::wstring& title,
 }
 
 bool Win32Window::Show() {
-  return ShowWindow(window_handle_, SW_SHOWNORMAL);
+  return ShowWindow(window_handle_, start_maximized_ ? SW_SHOWMAXIMIZED : SW_SHOWNORMAL);
 }
 
 // static
@@ -180,13 +220,21 @@ Win32Window::MessageHandler(HWND hwnd,
                             WPARAM const wparam,
                             LPARAM const lparam) noexcept {
   switch (message) {
-    case WM_SYSCOMMAND:
-      // Block manual resizing/maximizing, including caption double-click and
-      // system-menu/keyboard commands. DPI changes remain handled below.
-      if ((wparam & 0xFFF0) == SC_SIZE || (wparam & 0xFFF0) == SC_MAXIMIZE) {
-        return 0;
+    case WM_GETMINMAXINFO: {
+      DefWindowProc(hwnd, message, wparam, lparam);
+      MONITORINFO monitor{};
+      monitor.cbSize = sizeof(monitor);
+      if (GetMonitorInfo(MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST), &monitor)) {
+        auto* limits = reinterpret_cast<MINMAXINFO*>(lparam);
+        const auto minimum = MinimumWindowRect(hwnd, current_dpi_);
+        limits->ptMinTrackSize.x = std::min(minimum.right - minimum.left,
+                                           monitor.rcWork.right - monitor.rcWork.left);
+        limits->ptMinTrackSize.y = std::min(minimum.bottom - minimum.top,
+                                           monitor.rcWork.bottom - monitor.rcWork.top);
       }
-      break;
+      // Preserve Windows' own maximized frame/border calculation and taskbar.
+      return 0;
+    }
 
     case WM_DESTROY:
       window_handle_ = nullptr;
@@ -197,14 +245,23 @@ Win32Window::MessageHandler(HWND hwnd,
       return 0;
 
     case WM_DPICHANGED: {
-      auto newRectSize = reinterpret_cast<RECT*>(lparam);
-      LONG newWidth = newRectSize->right - newRectSize->left;
-      LONG newHeight = newRectSize->bottom - newRectSize->top;
-
-      SetWindowPos(hwnd, nullptr, newRectSize->left, newRectSize->top, newWidth,
-                   newHeight, SWP_NOZORDER | SWP_NOACTIVATE);
+      current_dpi_ = LOWORD(wparam) ? LOWORD(wparam) : 96;
+      const auto* suggested = reinterpret_cast<RECT*>(lparam);
+      // These coordinates are already physical pixels at the new DPI.
+      const auto fitted = FitToMonitorWorkArea(
+          *suggested, MonitorFromRect(suggested, MONITOR_DEFAULTTONEAREST));
+      SetWindowPos(hwnd, nullptr, fitted.left, fitted.top, fitted.right - fitted.left,
+                   fitted.bottom - fitted.top, SWP_NOZORDER | SWP_NOACTIVATE);
 
       return 0;
+    }
+    case WM_DISPLAYCHANGE:
+    case WM_SETTINGCHANGE:
+    case WM_EXITSIZEMOVE: {
+      const auto result = DefWindowProc(hwnd, message, wparam, lparam);
+      if (message != WM_SETTINGCHANGE || wparam == SPI_SETWORKAREA)
+        FitToCurrentWorkArea();
+      return result;
     }
     case WM_SIZE: {
       RECT rect = GetClientArea();
@@ -228,6 +285,21 @@ Win32Window::MessageHandler(HWND hwnd,
   }
 
   return DefWindowProc(window_handle_, message, wparam, lparam);
+}
+
+void Win32Window::FitToCurrentWorkArea() {
+  if (!window_handle_ || fitting_window_ || IsIconic(window_handle_) ||
+      IsZoomed(window_handle_)) return;
+  RECT current{};
+  if (!GetWindowRect(window_handle_, &current)) return;
+  const auto fitted = FitToMonitorWorkArea(
+      current, MonitorFromWindow(window_handle_, MONITOR_DEFAULTTONEAREST));
+  if (EqualRect(&fitted, &current)) return;
+  fitting_window_ = true;
+  SetWindowPos(window_handle_, nullptr, fitted.left, fitted.top,
+               fitted.right - fitted.left, fitted.bottom - fitted.top,
+               SWP_NOZORDER | SWP_NOACTIVATE);
+  fitting_window_ = false;
 }
 
 void Win32Window::Destroy() {

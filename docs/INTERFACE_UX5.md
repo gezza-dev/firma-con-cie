@@ -64,6 +64,19 @@ Le CIE elencate in **Firma Elettronica** mostrano, accanto alla miniatura, Nome 
 
 La finestra macOS usa un contenuto fisso di 1080 × 760 punti, senza ridimensionamento manuale, zoom o schermo intero. Il ripristino delle vecchie dimensioni della finestra è disattivato; restano disponibili spostamento, chiusura e riduzione a icona. La finestra Windows conserva le dimensioni iniziali previste dal runner: sono rimossi il bordo ridimensionabile e la massimizzazione e vengono ignorati i comandi di sistema di ridimensionamento/ingrandimento. I cambi di DPI del sistema continuano a essere gestiti. Il runner GTK imposta anch’esso `resizable = false`.
 
+Aggiornamento Linux del 20 ottobre: il vincolo GTK fisso è stato sostituito
+dall'adattamento all'area utile GNOME/KDE, con finestra ridimensionabile e
+massimizzazione se necessaria. La dimensione preferita resta 1280×720 in
+coordinate logiche, senza doppio scaling. I vincoli macOS/Windows di questa
+sezione descrivono la versione di quel momento. [Dettagli e test Linux](LINUX_PACKAGE.md).
+
+Nella successiva modifica del 20 ottobre anche macOS e Windows sostituiscono
+i vincoli fissi con adattamento all'area utile, ridimensionamento e zoom o
+massimizzazione. I caratteri mantengono la scala del sistema; il comportamento
+macOS resta senza fullscreen. Test software su Linux superati; build complete
+e verifiche visive delle due piattaforme ancora da eseguire.
+[Dettagli multipiattaforma](DESKTOP_WINDOW_SIZING.md).
+
 App Universal Apple Development: `/percorso/Builds/CIE-ID/macos-ux5-fixed-window/CIE ID.app`. Il backend nativo e l’estensione CryptoTokenKit non cambiano. Verifica GUI macOS, 19 test di firma e analisi statica; i runner Windows/Linux richiedono collaudo sulle rispettive piattaforme.
 
 

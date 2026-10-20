@@ -90,7 +90,13 @@ class Win32Window {
   // Update the window frame's theme to match the system theme.
   static void UpdateTheme(HWND const window);
 
+  // Clamp a normal window after monitor/workarea changes, without DPI conversion.
+  void FitToCurrentWorkArea();
+
   bool quit_on_close_ = false;
+  bool start_maximized_ = false;
+  bool fitting_window_ = false;
+  UINT current_dpi_ = 96;
 
   // window handle for top level window.
   HWND window_handle_ = nullptr;

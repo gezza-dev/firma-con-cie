@@ -3,6 +3,7 @@ import FlutterMacOS
 import CryptoTokenKit
 import Security
 import CryptoKit
+import CieWindowGeometry
 
 class MainFlutterWindow: NSWindow {
   private static let webClassID = "it.giancarloezza.CIEID.FlutterPrototype.WebToken"
@@ -10,6 +11,7 @@ class MainFlutterWindow: NSWindow {
   private var webChannel: FlutterMethodChannel?
   private var fileChannel: FlutterMethodChannel?
   private var applicationChannel: FlutterMethodChannel?
+  private var fittingWindow = false
   override func awakeFromNib() {
     let flutterViewController = FlutterViewController()
     let windowFrame = self.frame
@@ -179,17 +181,28 @@ class MainFlutterWindow: NSWindow {
     }
 
     super.awakeFromNib()
-    // Fixed logical content size; closing, moving and minimizing stay available.
+    // AppKit coordinates are already points: never multiply by backingScaleFactor.
     self.isRestorable = false
-    self.styleMask.remove(.resizable)
+    self.styleMask.insert(.resizable)
     self.collectionBehavior.remove(.fullScreenPrimary)
     self.collectionBehavior.insert(.fullScreenNone)
-    let contentSize = NSSize(width: 1080, height: 760)
-    self.setContentSize(contentSize)
-    self.contentMinSize = contentSize
-    self.contentMaxSize = contentSize
-    self.standardWindowButton(.zoomButton)?.isEnabled = false
+    self.contentMinSize = NSSize(width: 1, height: 1)
+    self.contentMaxSize = NSSize(width: CGFloat.greatestFiniteMagnitude,
+                                height: CGFloat.greatestFiniteMagnitude)
+    self.setContentSize(NSSize(width: 1080, height: 760))
+    self.standardWindowButton(.zoomButton)?.isEnabled = true
     self.center()
+    self.fitWindowToVisibleArea()
+    let notifications = NotificationCenter.default
+    for name in [NSWindow.didChangeScreenNotification,
+                 NSWindow.didChangeBackingPropertiesNotification,
+                 NSWindow.didEndLiveResizeNotification] {
+      notifications.addObserver(self, selector: #selector(windowAreaChanged(_:)),
+                                name: name, object: self)
+    }
+    notifications.addObserver(self, selector: #selector(windowAreaChanged(_:)),
+                              name: NSApplication.didChangeScreenParametersNotification,
+                              object: nil)
     self.title = "CIE ID"
     self.titleVisibility = .hidden
     if let close = self.standardWindowButton(.closeButton), let titlebar = close.superview, let content = self.contentView {
@@ -203,6 +216,39 @@ class MainFlutterWindow: NSWindow {
         label.centerXAnchor.constraint(equalTo: content.centerXAnchor),
         label.centerYAnchor.constraint(equalTo: close.centerYAnchor)
       ])
+    }
+  }
+  deinit {
+    NotificationCenter.default.removeObserver(self)
+  }
+
+  @objc private func windowAreaChanged(_ notification: Notification) {
+    fitWindowToVisibleArea()
+  }
+
+  private func fitWindowToVisibleArea() {
+    guard !fittingWindow,
+          let monitor = self.screen ?? NSScreen.main ?? NSScreen.screens.first else { return }
+    let visible = monitor.visibleFrame
+    guard visible.width > 0, visible.height > 0 else { return }
+    fittingWindow = true
+    defer { fittingWindow = false }
+    // Include titlebar/frame in the fit. Preserve smaller user sizes and signed
+    // secondary-monitor origins; reserve a small margin in AppKit points.
+    let area = visible.width > 24 && visible.height > 24
+      ? visible.insetBy(dx: 12, dy: 12) : visible
+    let content = self.contentRect(forFrameRect: area)
+    self.contentMinSize = NSSize(width: min(640, max(1, content.width)),
+                                 height: min(400, max(1, content.height)))
+    let fitted = cie_window_fit_rect(
+      CieWindowRect(x: Double(self.frame.minX), y: Double(self.frame.minY),
+                    width: Double(self.frame.width), height: Double(self.frame.height)),
+      CieWindowRect(x: Double(area.minX), y: Double(area.minY),
+                    width: Double(area.width), height: Double(area.height)))
+    let frame = NSRect(x: CGFloat(fitted.x), y: CGFloat(fitted.y),
+                       width: CGFloat(fitted.width), height: CGFloat(fitted.height))
+    if !NSEqualRects(self.frame, frame) {
+      self.setFrame(frame, display: true)
     }
   }
   private static func publicCertificateURL(id: String) -> URL? {

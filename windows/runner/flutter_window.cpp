@@ -55,12 +55,16 @@ LRESULT
 FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
                               WPARAM const wparam,
                               LPARAM const lparam) noexcept {
-  // Give Flutter, including plugins, an opportunity to handle window messages.
+  // Notify Flutter/plugins first (including DPI updates), then always apply
+  // native fitting for geometry messages even if a plugin returns a result.
+  const bool sizing_message = message == WM_DPICHANGED || message == WM_GETMINMAXINFO ||
+                              message == WM_DISPLAYCHANGE || message == WM_SETTINGCHANGE ||
+                              message == WM_EXITSIZEMOVE;
   if (flutter_controller_) {
     std::optional<LRESULT> result =
         flutter_controller_->HandleTopLevelWindowProc(hwnd, message, wparam,
                                                       lparam);
-    if (result) {
+    if (result && !sizing_message) {
       return *result;
     }
   }

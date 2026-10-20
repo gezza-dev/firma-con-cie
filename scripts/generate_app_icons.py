@@ -172,8 +172,10 @@ def main():
         '[Desktop Entry]\nType=Application\nName=CIE ID\n'
         'Comment=Electronic identity card and document signing\n'
         'Comment[it]=Carta di identità elettronica e firma dei documenti\n'
-        f'Exec=CIE-ID\nIcon={APP_ID}\nTerminal=false\n'
-        f'Categories=Utility;Security;\nStartupWMClass={APP_ID}\n', encoding='utf-8')
+        f'Exec=CIE-ID\nTryExec=CIE-ID\nIcon={APP_ID}\nTerminal=false\n'
+        f'Categories=Utility;Security;\nStartupWMClass={APP_ID}\n'
+        'Keywords=CIE;smartcard;signature;PDF;\n'
+        'Keywords[it]=CIE;carta;identità;firma;PDF;\n', encoding='utf-8')
     outputs.append(desktop)
     shutil.copyfile(ROOT / 'assets/licenses/native-LICENSE.txt', ASSETS / 'LICENSE-upstream.txt')
     manifest = {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest()

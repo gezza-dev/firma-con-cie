@@ -1,0 +1,4 @@
+module CieWindowGeometry {
+  header "window_geometry.h"
+  export *
+}

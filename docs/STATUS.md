@@ -5,6 +5,7 @@ Situazione al 20 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario
 | Ambito | macOS | Windows | Linux |
 | --- | --- | --- | --- |
 | Interfaccia condivisa | Compilata Universal; eseguita su Apple Silicon | Compilata/eseguita x64 | Collaudo desktop da completare |
+| Adattamento finestra | Implementato; build/collaudo AppKit pendenti | Implementato; oggetto Win32 compilato da Linux; build/collaudo app pendenti | Adattamento GNOME confermato dall'utente; collaudo KDE della finestra aggiornata da completare |
 | Middleware e SDK | Compilati ARM64/x86_64; test nativi su ARM64 | Backend MinGW x64 e componenti MSVC; test su Windows | Compilazione/test nativi senza carta |
 | Firma PAdES/CAdES | CIE reale verificata | CIE reale verificata | PDF e P7M con CIE reale e PIN parziale verificati |
 | Abbinamento e PIN parziale | Persistenza e firme reali verificate | Persistenza e firme reali verificate | Abbinamento, persistenza e firme con PIN parziale verificati |
@@ -265,3 +266,103 @@ acquisito il PIN né osservato indipendentemente il login; sito e protocollo
 TLS non sono stati comunicati. Non sono state avviate ulteriori autenticazioni.
 Restano i limiti del provider e il collaudo separato per altri siti, browser,
 lettori e casi di errore. [Dettagli](LINUX_FIREFOX.md).
+
+## Launcher, icone e pacchetto Linux locale di test (20 ottobre)
+
+Il runner imposta il nome dell'app e il nome dell'icona predefinita GTK,
+conservando la risorsa incorporata per il bundle portabile. Il launcher
+include `TryExec` e parole chiave localizzate. Lo script di packaging crea
+`cie-id-desktop` per test locali, con bundle in `/opt/cie-id-desktop`, comando
+in `/usr/bin`, `.desktop` e nove icone hicolor nelle directory standard.
+Le dipendenze sono ricavate da tutti gli ELF con `dpkg-shlibdeps`; programmi
+di test e dati utente non fanno parte del payload. Non ci sono script che
+avviano l'app, modificano Firefox, collegano Snap o cancellano abbinamenti.
+
+Build del runner con 2 job e pacchetto Ubuntu 26.10 amd64 verificati:
+311 file del payload con hash e proprietario root, launcher valido, icona
+incorporata e risoluzione dell'icona dal tema GTK, 13 ELF con dipendenze
+risolte, manifest nativo e ABI Snap. Installazione, aggiornamento e rimozione
+sono riusciti in un root/database dpkg separato, preservando dati utente
+sintetici; la simulazione APT sull'host risolve le dipendenze del pacchetto.
+Nessuna installazione sull'host, finestra dell'app, prova CIE o modifica del
+browser/permessi Snap è stata eseguita. Verifica visiva del menu/icone su
+KDE/GNOME e installazione su sistemi puliti restano da completare. DSS/LTA
+Linux è escluso; non è una release binaria pronta per redistribuzione.
+[Procedura e percorsi, incluso Firefox Snap](LINUX_PACKAGE.md).
+
+Successivamente, su autorizzazione dell'utente, il pacchetto
+`0.1.0~test20261020.1` è stato installato su Ubuntu 26.10 amd64 con KDE/Wayland.
+APT ha aggiunto il solo `cie-id-desktop`, senza installare altre dipendenze o
+rimuovere pacchetti. Verificati i 311 hash del payload, proprietà root,
+`dpkg --verify`, launcher eseguibile, registrazione GIO e corrispondenza
+dell'application ID. La cache KDE è stata aggiornata: il test del menu colloca
+la voce in **Accessori**, e `kiconfinder6` risolve il PNG hicolor installato,
+identico alla risorsa del repository. L'utente ha confermato visivamente nel
+menu KDE: «Sì, voce e icona corrette». L'agente non ha avviato l'applicazione
+né eseguito nuove prove CIE o modifiche al browser. Durante le verifiche è
+stato rilevato un processo dell'app dal percorso installato, senza interazione
+dell'agente con la finestra o la carta. I collegamenti Snap sono rimasti
+invariati. GNOME e l'icona della finestra/taskbar a programma aperto restano
+da verificare separatamente.
+
+## Adattamento automatico della finestra Linux (20 ottobre)
+
+Il runner GTK usa ora 1280×720 come dimensione preferita, con finestra
+ridimensionabile. L'area utile del monitor e l'altezza della barra del titolo
+limitano la dimensione iniziale; quando lo spazio è insufficiente viene
+richiesta la massimizzazione al gestore finestre, senza fullscreen. GNOME e
+KDE riservano così i pannelli anche sui backend Wayland che non espongono
+l'area utile completa. Monitor, area utile e risoluzione sono osservati durante
+l'esecuzione; una finestra più piccola viene conservata se entra nella nuova
+area. Le coordinate GTK sono già logiche: non si applicano nuovamente fattore
+display o scala dei caratteri. Windows e macOS mantengono i rispettivi runner.
+
+Build release con 2 job, due gruppi CTest del runner (sette casi nativi),
+200 test Flutter superati e tre test di runtime facoltativi saltati; analisi
+senza problemi. I sei nuovi scenari UI attraversano tutte le pagine su
+dimensioni fino a 640×400, caratteri fino al 200% e display al 200%, mantenendo
+scala, scorrimento e pulsante del dialogo di prova. Una lettura senza finestre
+del monitor GNOME/Wayland attivo rileva 1280×800 logici, area utile 1213×771 e
+fattore display 2, spiegando perché la precedente larghezza fissa non entrava.
+
+Nuovo pacchetto `0.1.0~test20261020.2` amd64 assemblato e verificato: 311 file
+con hash, icone, launcher, 13 ELF risolti, manifest nativo e ABI Firefox Snap.
+Installazione, aggiornamento e rimozione sono riusciti nel root dpkg isolato,
+preservando dati sintetici; simulazione APT sull'host superata. Nessuna nuova
+installazione sull'host, avvio dell'app, prova CIE o modifica browser/Snap è
+stata eseguita. La verifica visiva GNOME/KDE della finestra aggiornata resta
+manuale. [Pacchetto e procedura](LINUX_PACKAGE.md).
+
+Successivamente l'utente ha installato il pacchetto aggiornato e confermato:
+«Ok, pacchetto installato e test adattamento automatico eseguito con successo».
+La prova si colloca nella sessione GNOME descritta sopra; l'esito visivo è una
+conferma diretta dell'utente, non osservata indipendentemente dall'agente.
+La versione installata `0.1.0~test20261020.2` e l'integrità dei file sono state
+verificate con `dpkg-query` e `dpkg --verify`, senza avviare l'app o nuove prove
+CIE. Il collaudo visivo della nuova gestione della finestra su KDE e i cambi
+di monitor durante l'esecuzione restano separati.
+
+## Adattamento finestra macOS/Windows (20 ottobre)
+
+I runner sostituiscono i vincoli fissi con adattamento all'area utile del monitor.
+macOS conserva 1080×760 punti come contenuto preferito, usa `visibleFrame` con
+cornice e margine, abilita ridimensionamento/zoom senza fullscreen e osserva
+i cambi di schermo/backing. Windows converte la preferenza iniziale 1280×720
+una volta ai DPI del monitor, limita il rettangolo a `rcWork`, abilita
+ridimensionamento/massimizzazione e conserva senza riscalare il rettangolo
+`WM_DPICHANGED`. Sono gestite variazioni di area utile e monitor, con minimi
+limitati allo spazio disponibile e guardie contro il rientro.
+
+Il calcolo dei rettangoli è un header C comune importato in Swift come modulo
+Clang e incluso dal runner Win32. Tre gruppi CTest su Linux verificano il
+codice in C, C++ e il modulo Clang. Analisi pulita; 212 test Flutter superati
+e tre facoltativi saltati, inclusi 18 scenari di layout su tutte le piattaforme.
+`win32_window.cpp` è compilato da Linux come oggetto Windows x64 usando Clang,
+header MinGW/header C Flutter upstream estratti solo nel workspace. Questo
+non è una build completa della GUI Windows. Swift/AppKit non sono compilati:
+su questo host mancano il compilatore Swift e AppKit.
+
+Build complete e collaudo visivo macOS/Windows restano da eseguire sulle
+piattaforme corrispondenti. Il `.deb` Linux già installato non viene sostituito.
+Nessuna app o prova CIE avviata e nessuna configurazione browser/permessi
+modificata. [Comportamento, test e limiti](DESKTOP_WINDOW_SIZING.md).

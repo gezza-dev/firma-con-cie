@@ -1,5 +1,6 @@
 #include "my_application.h"
 #include "text_scaling.h"
+#include "window_sizing.h"
 
 #include <flutter_linux/flutter_linux.h>
 #ifdef GDK_WINDOWING_X11
@@ -61,8 +62,7 @@ static void my_application_activate(GApplication* application) {
     gtk_window_set_title(window, "CIE ID");
   }
 
-  gtk_window_set_default_size(window, 1280, 720);
-  gtk_window_set_resizable(window, FALSE);
+  cie_window_sizing_attach(window);
 
   g_autoptr(FlDartProject) project = fl_dart_project_new();
   fl_dart_project_set_dart_entrypoint_arguments(
@@ -124,6 +124,9 @@ static void my_application_startup(GApplication* application) {
   // Perform any actions required at application startup.
 
   G_APPLICATION_CLASS(my_application_parent_class)->startup(application);
+  // Installed desktop shells resolve this name through the hicolor theme.
+  // The embedded pixbuf remains the fallback for unpacked/X11 bundles.
+  gtk_window_set_default_icon_name(APPLICATION_ID);
 }
 
 // Implements GApplication::shutdown.
@@ -159,6 +162,7 @@ MyApplication* my_application_new() {
   // corresponding .desktop file. This ensures better integration by allowing
   // the application to be recognized beyond its binary name.
   g_set_prgname(APPLICATION_ID);
+  g_set_application_name("CIE ID");
 
   return MY_APPLICATION(g_object_new(my_application_get_type(),
                                      "application-id", APPLICATION_ID, "flags",

@@ -1,5 +1,10 @@
 # Compilare CIE ID Desktop
 
+L'adattamento delle finestre macOS/Windows usa il modulo C in
+`native/desktop`, da conservare insieme agli altri sorgenti. Test eseguibili
+su Linux, collegamento al runner Swift e limiti della compilazione incrociata
+sono in [DESKTOP_WINDOW_SIZING.md](DESKTOP_WINDOW_SIZING.md).
+
 I comandi partono dalla radice del repository. Usare cartelle di output nuove per conservare le build precedenti. Il repository contiene sorgenti, asset e licenze, non runtime compilati né credenziali. Per lo stato effettivamente collaudato vedere [STATUS.md](STATUS.md).
 
 ## Toolchain e dipendenze
@@ -165,7 +170,38 @@ Nel collaudo manuale separato del 20 ottobre 2026, dopo la preparazione del
 certificato pubblico e l’abilitazione autorizzata di `firefox:pcscd`, l’utente
 ha confermato l’accesso riuscito con Firefox Snap e PIN completo.
 
+### Pacchetto .deb locale di test
+
+Per assemblare un `.deb` locale da un bundle release completo e collaudare
+installazione, aggiornamento e rimozione senza installarlo sull'host:
+
+```sh
+python3 scripts/package_linux_deb.py \
+  --bundle dist/linux-window-fit-software \
+  --output dist/linux-window-fit-deb-test \
+  --version '0.1.0~test20261020.2'
+python3 scripts/test_linux_deb.py \
+  'dist/linux-window-fit-deb-test/cie-id-desktop_0.1.0~test20261020.2_amd64.deb' \
+  --report reports/linux-window-fit/deb-validation.json
+```
+
+Servono `dpkg-dev`, `binutils` e `desktop-file-utils`; il verificatore usa anche
+GTK, `gresource`, `ldd` e la simulazione APT. Il database dpkg di prova è
+separato, senza script di manutenzione o avvio dell'app. Il percorso privato
+installato è `/opt/cie-id-desktop`, con launcher e icone in `/usr/share`.
+[Installazione, limiti e modulo Firefox Snap](LINUX_PACKAGE.md).
+
 ### Scaling dei caratteri Linux
+
+La dimensione della finestra è separata dallo scaling dei caratteri.
+`linux/runner/window_sizing.cc` usa `GdkMonitor` (GTK >= 3.22) e area utile
+in pixel logici, senza moltiplicare per `gdk_monitor_get_scale_factor`.
+1280×720 è una preferenza, con riserva per decorazioni e margine; uno spazio
+inferiore causa una richiesta di massimizzazione al compositor. La finestra
+resta ridimensionabile e osserva monitor/area utile/configurazione. Le dimensioni
+minime sono limitate a quelle disponibili. Non vengono cambiate preferenze
+del desktop, il comportamento dei caratteri o i runner macOS/Windows.
+[API GTK dell'area utile](https://docs.gtk.org/gdk3/method.Monitor.get_workarea.html).
 
 Il runner espone su `cie.id/linux_text_scaling` la risoluzione logica effettiva
 dei caratteri GDK, divisa per 96. Usa `gdk_screen_get_resolution`, che include

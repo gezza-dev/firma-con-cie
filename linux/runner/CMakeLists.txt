@@ -24,6 +24,7 @@ add_executable(${BINARY_NAME}
   "main.cc"
   "my_application.cc"
   "text_scaling.cc"
+  "window_sizing.cc"
   "${FLUTTER_MANAGED_DIR}/generated_plugin_registrant.cc"
 )
 

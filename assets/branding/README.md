@@ -35,6 +35,11 @@ Il riferimento originale rimane nel progetto precedente, senza modifiche.
   Nei pacchetti Linux il programma va installato nel PATH con nome `CIE-ID`;
   per un launcher di un bundle portabile, `Exec` deve indicare il suo percorso
   assoluto. Questi file non installano automaticamente nulla nel sistema.
+  Il pacchetto locale di test generato da `scripts/package_linux_deb.py`
+  installa il launcher in `/usr/share/applications` e i nove PNG chiari in
+  `/usr/share/icons/hicolor`. Il comando `/usr/bin/CIE-ID` avvia il bundle
+  privato in `/opt/cie-id-desktop`; application ID e nome del file `.desktop`
+  coincidono anche su Wayland. [Procedura Linux](../../docs/LINUX_PACKAGE.md).
 
 L'associazione automatica dei due aspetti è configurata per macOS. Gli ICO
 dell'eseguibile Windows e il launcher Linux standard restano risorse statiche:
