@@ -9,7 +9,8 @@ abbinamento è descritta in [WINDOWS_WEB_FIRST_USE.md](WINDOWS_WEB_FIRST_USE.md)
 Le note successive conservano anche passaggi e limiti storici del porting.
 
 Il 20 ottobre 2026 l’utente ha confermato anche l’esito positivo del test reale
-di accesso ai siti con Mozilla Firefox su Linux. La conferma riguarda il
+di accesso ai siti con Mozilla Firefox su Linux e, successivamente, con
+Firefox Snap usando il PIN completo. La conferma riguarda il
 collaudo manuale; sito, versione del browser e protocollo TLS non sono stati
 verificati indipendentemente. [Prova e limiti Linux](LINUX_FIREFOX.md).
 
@@ -203,6 +204,12 @@ archivio pubblico isolato. Il test reale di accesso ai siti con Mozilla Firefox
 è stato confermato riuscito dall’utente il 20 ottobre 2026, con i limiti di
 osservazione riportati nella documentazione Linux.
 La build e l’app non registrano il modulo e non modificano i profili del browser.
+Firefox Snap ha una build ABI verificata per core24 e una copia privata del
+solo certificato pubblico, separata dalla cache Web/PIN dell’host. L’accesso
+al lettore richiede l’autorizzazione Snap manuale; l’app non modifica i permessi.
+I test software sono riusciti anche con NSS dello Snap e carta simulata.
+Il 20 ottobre 2026 l’utente ha confermato anche il login reale Snap con PIN
+completo, dopo la preparazione del DER e l’abilitazione autorizzata di `pcscd`.
 [Architettura, durata delle sessioni, limiti e prove](LINUX_FIREFOX.md).
 
 ## Windows x64

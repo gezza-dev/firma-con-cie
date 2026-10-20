@@ -58,6 +58,10 @@ def main():
     run('cmake', '--build', build, '--parallel', args.jobs)
     if not cross:
         run('ctest', '--test-dir', build, '--output-on-failure')
+    if args.system == 'linux':
+        run('python3', ROOT/'scripts/check_linux_firefox_abi.py',
+            build/'libcie_linux_pkcs11.so', build/'libcie_web.so',
+            build/'backend/libcie-pkcs11.so', '--report', build/'firefox-snap-abi.json')
     output.mkdir(parents=True, exist_ok=True)
     fetcher = build/'backend/cie_sign_sdk'/('cie_crl_fetch'+('.exe' if args.system == 'windows' else ''))
     copy_binary(fetcher, output/fetcher.name)
@@ -129,6 +133,9 @@ def main():
         file_cache_crypto="AES-256-CBC+HMAC-SHA256-encrypt-then-MAC", local_key_in_private_file=True,
         web_authentication_abi=1, web_authentication_hardware_validated=False,
         linux_firefox_pkcs11=(args.system == 'linux'), linux_web_full_pin_only=(args.system == 'linux'),
+        linux_firefox_snap_core24_abi_verified=(args.system == 'linux'),
+        linux_firefox_snap_public_certificates_only=(args.system == 'linux'),
+        snap_permissions_modified=False,
         browser_registration_performed=False,
         pin_change=True, puk_unblock=True, persistent_pairing_invalidation=True, nonblocking_pairing_cleanup=True,
         files={str(p.relative_to(output)):sha(p) for p in output.rglob('*') if p.is_file() and p.name!='backend-manifest.json'})

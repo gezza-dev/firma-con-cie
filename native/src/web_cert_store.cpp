@@ -15,6 +15,7 @@
 #if defined(__linux__) && !defined(CIE_WEB_TEST_STORE)
 #include <dlfcn.h>
 #include <filesystem>
+#include "../platform/linux/web/snap_public_store.h"
 #endif
 namespace cie_web_store {
 #if defined(_WIN32) && !defined(CIE_WEB_TEST_STORE)
@@ -126,13 +127,14 @@ std::vector<uint8_t> read(const std::string& id){
 }
 bool provisioned(const std::string& id,const uint8_t* der,uint32_t size){
  if(!der||!size||size>8192)return false;
- try{return read(id)==std::vector<uint8_t>(der,der+size);}catch(...){return false;}
+ try{return read(id)==std::vector<uint8_t>(der,der+size)&&cie_linux_snap::matches_if_installed(id,der,size);}catch(...){return false;}
 }
 void write(const std::string& id,const uint8_t* der,uint32_t size){
  cie_pairing::checkId(id);if(!der||!size||size>8192)throw std::runtime_error("web_invalid_certificate");
  cie_cache::Bytes value(der,der+size);cie_cache::Store store(true);store.write("web",id,value);
+ cie_linux_snap::publish(id,der,size);
 }
-void erase(const std::string& id){cie_pairing::checkId(id);cie_cache::Store store;store.erase("web",id);}
+void erase(const std::string& id){cie_pairing::checkId(id);cie_linux_snap::erase(id);cie_cache::Store store;store.erase("web",id);}
 int32_t test(const std::string&){return -1;} // Explicit authentication belongs to Firefox.
 #else
 std::vector<std::string> list(){return {};}

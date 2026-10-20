@@ -146,6 +146,25 @@ flutter build linux --release
 
 Conservare l’intera directory `build/linux/<architettura>/release/bundle`. Il runner copia le librerie private in `cie_native`; pcsc-lite e driver compatibili devono essere disponibili sul sistema destinatario. La cache cifrata degli abbinamenti è condivisa e ha test software e prove reali Linux. Il provider di accesso Firefox PKCS#11 è incluso; il test reale di accesso è stato confermato riuscito dall’utente. La build non registra il modulo nel browser: la configurazione resta manuale. Vedere [LINUX_FIREFOX.md](LINUX_FIREFOX.md). L’assemblaggio DSS/JVM Linux resta incompleto. Per il solo bridge Linux serve OpenSSL 3 (`libssl-dev`); la build completa usa la copia privata del prefisso quando specificato.
 
+### Compatibilità Firefox Snap
+
+La ricetta Linux disabilita il rilevamento curl di `memset_explicit` per usare
+il suo fallback non eliminabile `explicit_bzero`. Dopo la compilazione nativa,
+`check_linux_firefox_abi.py` verifica il provider e le due librerie CIE richieste
+rispetto a core24 (glibc 2.39, GLIBCXX 3.4.33, CXXABI 1.3.15). Il controllo
+non modifica i binari: una dipendenza troppo recente richiede una toolchain
+Ubuntu 24.04/core24 compatibile. Non includere una glibc privata nel bundle.
+
+La copia del certificato pubblico per Snap viene preparata dall’app al
+completamento della configurazione Web; PIN e chiavi della cache non vengono
+pubblicati. Build e test non registrano il modulo, non avviano Firefox e non
+collegano l’interfaccia `pcscd`. I comandi del collaudo NSS nel confinamento
+Snap, con carta simulata o PC/SC bloccato, sono in [LINUX_FIREFOX.md](LINUX_FIREFOX.md).
+
+Nel collaudo manuale separato del 20 ottobre 2026, dopo la preparazione del
+certificato pubblico e l’abilitazione autorizzata di `firefox:pcscd`, l’utente
+ha confermato l’accesso riuscito con Firefox Snap e PIN completo.
+
 ### Scaling dei caratteri Linux
 
 Il runner espone su `cie.id/linux_text_scaling` la risoluzione logica effettiva

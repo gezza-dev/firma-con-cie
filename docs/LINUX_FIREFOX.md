@@ -12,7 +12,9 @@ configurazione e prova con PIN completo. È una conferma del collaudo manuale,
 distinta dai test automatici con carta simulata. Versione e confezionamento
 del browser, sito effettivamente usato e protocollo TLS non sono stati
 comunicati né verificati indipendentemente. Il risultato non estende il
-supporto a tutti i siti, lettori, browser o alle build Snap/Flatpak.
+supporto a tutti i siti, lettori o browser. Successivamente, nella stessa data,
+l’utente ha confermato anche il login reale con Firefox Snap e PIN completo,
+dopo la preparazione del certificato pubblico e l’abilitazione di `pcscd`.
 La sola presenza della libreria nel bundle continua a non dimostrare che
 Firefox l’abbia caricata o che un sito la accetti.
 
@@ -39,9 +41,74 @@ adiacenti sono necessarie anche quando l’app non è aperta. Il solo file `.so`
 non è un pacchetto autonomo. La rimozione della registrazione Firefox resta
 un’azione distinta dalla rimozione del certificato locale nell’app.
 
-Questo documento non esegue la configurazione. Le build Snap/Flatpak e gli altri
-browser richiedono verifiche separate di accessibilità della libreria e PC/SC.
+Questo documento non esegue la configurazione. Flatpak e gli altri browser
+richiedono verifiche separate di accessibilità della libreria e PC/SC.
 Non viene dichiarato supporto per Chrome/Chromium in questa integrazione.
+
+## Firefox Snap su Ubuntu
+
+Il provider supporta l’istanza standard `firefox` basata su `core24` con PIN
+completo di otto cifre. La build corregge la dipendenza da `GLIBC_2.43`
+introdotta dal rilevamento di `memset_explicit` in curl su host recenti:
+su Linux curl usa il proprio fallback sicuro `explicit_bzero`. Non si
+modificano glibc, AppArmor o il sandbox. `scripts/build_native.py` controlla
+le versioni ELF richieste dai tre moduli del provider: massimo glibc 2.39,
+GLIBCXX 3.4.33 e CXXABI 1.3.15. Una toolchain o dipendenza incompatibile
+interrompe la preparazione del runtime; in quel caso ricompilare in un
+ambiente Ubuntu 24.04/core24 compatibile, senza alterare i binari.
+
+Snap non può leggere la cache privata dell’app. Durante la preparazione o
+il completamento del certificato, il bridge pubblica una copia **del solo
+certificato pubblico DER** in:
+
+```text
+~/snap/firefox/common/cie-id-web-v1/<SHA-256-identificativo>.der
+```
+
+La pubblicazione avviene se la cartella `snap/firefox/common` esiste già.
+Non vengono creati profili o modificati file di configurazione Firefox. Le
+directory dedicate sono private (0700), i file sono riservati all’utente
+(0600), la scrittura è atomica e i percorsi vengono aperti senza seguire link
+simbolici. Nessun record di abbinamento, prefisso PIN o chiave della cache
+viene copiato. I certificati sono dati personali anche se pubblici.
+
+Nel contesto Snap il provider legge esclusivamente questa copia DER e non
+apre la cache Web/PIN dell’host. Il motore verifica ancora il legame fra
+certificato, CIE e SOD. Le otto cifre vengono richieste dal browser; non
+esiste un recupero del prefisso PIN. La rimozione della configurazione Web
+elimina anche la sola copia Snap corrispondente, conservando le altre carte.
+
+Per una CIE già abbinata, dopo il primo avvio di Firefox Snap torna nell’app
+aggiornata e usa **Completa la configurazione** se necessario: i dati pubblici
+già verificati consentono di preparare la copia senza un nuovo abbinamento
+o un altro PIN. Il modulo da caricare manualmente rimane quello nel bundle
+completo, da mantenere in un percorso stabile accessibile al browser.
+
+L’interfaccia Snap `firefox:pcscd` deve essere collegata per il successivo uso
+del lettore. L’autorizzazione e il caricamento del modulo rimangono azioni
+manuali distinte: l’app non esegue `snap connect`, non modifica i profili e
+non dichiara verificati i permessi. La compilazione e i test qui descritti
+non li cambiano. Istanze Snap parallele e Flatpak non sono collaudati.
+
+Il collaudo software locale usa Firefox Snap 158.0-2, revisione 9057,
+glibc 2.39 e NSS 3.130: caricamento del provider reale in NSS senza database
+con PC/SC bloccato; scoperta del certificato, rifiuto del PIN parziale senza
+VERIFY, una sola richiesta PIN sintetico completo e firma verificata con
+una carta simulata. I due namespace Web/PIN dell’host simulato sono
+deliberatamente inutilizzabili: il successo verifica l’uso del solo DER Snap.
+Queste verifiche software non usano una CIE reale.
+
+Il successivo collaudo reale del 20 ottobre 2026 è stato confermato riuscito
+dall’utente: «Test di accesso ai siti con Firefox Snap eseguito con successo
+usando il PIN completo». Prima della prova sono stati preparati il DER dai
+dati pubblici già verificati dell’abbinamento e il collegamento autorizzato
+`firefox:pcscd` a `:pcscd`. La preparazione ha verificato la leggibilità del
+DER dentro Snap, i permessi 0700/0600 e la conservazione del record di
+abbinamento e della chiave della cache, senza operazioni sulla carta.
+L’installazione locale verificata è Firefox Snap 158.0-2, revisione 9057.
+Il PIN è rimasto nel flusso del browser; non è stato acquisito dall’agente.
+L’esito del login è una conferma diretta dell’utente, senza osservazione
+indipendente della sessione, del sito o del protocollo TLS.
 
 ## PIN e durata dell’autenticazione
 
@@ -110,8 +177,25 @@ un profilo. Il test è aggiunto da CMake quando `libnss3` è disponibile; richie
 anche il comando `openssl`.
 
 `linux_web_public_store` prova il namespace del certificato pubblico con dati
-sintetici e una cartella temporanea. Il controllo di disponibilità legge solo
+sintetici e una cartella temporanea, incluse pubblicazione/rimozione Snap,
+permessi, formato DER, link e conservazione di un’altra carta.
+`linux_firefox_nss_snap_public` esercita il solo archivio DER Snap con una
+carta simulata. Il controllo di disponibilità legge solo
 la versione del modulo, senza chiamare `C_Initialize` o enumerare lettori.
+
+Per ripetere il collaudo nel confinamento del Firefox Snap installato, senza
+aprire Firefox né profili, con blocco PC/SC obbligatorio per il modulo reale:
+
+```sh
+python3 native/platform/linux/web/tests/test_snap_runtime.py \
+  native/runtime/linux \
+  .build/native-linux/platform/linux/web/libcie_linux_no_card_guard.so \
+  --fake-module .build/native-linux/platform/linux/web/libcie_linux_pkcs11_fake.so \
+  --report reports/firefox-snap-software.json
+```
+
+Il test usa `NSS_NoDB_Init` nel contesto `snap run --shell firefox`; non avvia
+l’app browser. Il provider simulato non collega pcsc-lite o il motore reale.
 
 Per controllare i metadati di un runtime assemblato:
 

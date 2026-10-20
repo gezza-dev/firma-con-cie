@@ -75,6 +75,15 @@ void main() {
     await t.pumpAndSettle();
     expect(find.byType(AlertDialog), findsOneWidget);
     expect(find.text(linuxFirefoxInformationMessage), findsOneWidget);
+    expect(
+      linuxFirefoxInformationMessage,
+      contains('PIN completo di otto cifre'),
+    );
+    expect(linuxFirefoxInformationMessage, contains('Firefox Snap'));
+    expect(
+      linuxFirefoxInformationMessage,
+      contains('non modifica il browser o i permessi Snap'),
+    );
     expect(find.byType(TextField), findsNothing);
     expect(proofs, 0);
     expect(service.enrollments, 0);

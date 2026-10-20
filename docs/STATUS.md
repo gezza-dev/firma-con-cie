@@ -8,7 +8,7 @@ Situazione al 20 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario
 | Middleware e SDK | Compilati ARM64/x86_64; test nativi su ARM64 | Backend MinGW x64 e componenti MSVC; test su Windows | Compilazione/test nativi senza carta |
 | Firma PAdES/CAdES | CIE reale verificata | CIE reale verificata | PDF e P7M con CIE reale e PIN parziale verificati |
 | Abbinamento e PIN parziale | Persistenza e firme reali verificate | Persistenza e firme reali verificate | Abbinamento, persistenza e firme con PIN parziale verificati |
-| Accesso ai siti | CryptoTokenKit e accesso Safari al portale CIE verificati | CSP/KSP e accesso Chrome al portale CIE verificati | Provider Firefox PKCS#11; test reale con Mozilla Firefox riuscito, confermato dall’utente |
+| Accesso ai siti | CryptoTokenKit e accesso Safari al portale CIE verificati | CSP/KSP e accesso Chrome al portale CIE verificati | Test reali Mozilla Firefox e Firefox Snap con PIN completo confermati riusciti dall’utente |
 | Cambio PIN e Sblocco Carta | Test software; collaudo reale da completare | Test software; collaudo reale da completare | Collaudo reale non eseguito |
 | DSS/LTA con JVM privata | Predisposto e testato | Predisposto e testato | Assemblaggio non previsto dallo script attuale |
 
@@ -226,3 +226,42 @@ Restano distinti i test software già eseguiti e i limiti del provider,
 compresa l’assenza di RSA-PSS. La prova non attesta compatibilità generale
 con TLS 1.3, Snap/Flatpak, altri browser, siti o lettori, né tutti i casi di
 errore, rimozione e scadenza della sessione. [Dettagli](LINUX_FIREFOX.md).
+
+## Integrazione Firefox Snap con PIN completo
+
+Il runtime Linux ha un controllo ABI per la base Snap core24 e usa il fallback
+sicuro di curl `explicit_bzero`, evitando il requisito glibc 2.43. Il bridge
+pubblica solo il certificato DER in una cartella privata dedicata sotto
+`snap/firefox/common`; il provider nel contesto Snap legge questa copia
+senza aprire l’archivio Web/PIN dell’host o la sua chiave. Pubblicazione,
+ripristino e rimozione rispettano la separazione fra carte. Per le CIE già
+abbinate il completamento usa i dati pubblici verificati senza autenticare.
+
+Test software su Firefox Snap 158.0-2, revisione 9057, NSS 3.130: provider
+reale caricato in memoria con PC/SC bloccato; con carta simulata sono riusciti
+selezione del certificato, rifiuto del PIN parziale senza VERIFY e firma con
+una sola richiesta di PIN completo sintetico. I dati Web/PIN dell’host
+simulato sono inutilizzabili e rimangono invariati. I test di pubblicazione
+coprono formato, permessi, link e rimozione selettiva.
+
+Durante queste verifiche software non sono stati modificati profili browser,
+permessi Snap o impostazioni di sicurezza; nessuna CIE reale o credenziale
+personale è stata usata.
+
+## Accesso reale ai siti con Firefox Snap (20 ottobre)
+
+Su richiesta dell’utente è stato preparato il solo certificato pubblico DER
+dai dati già verificati dell’abbinamento ed è stato abilitato il collegamento
+`firefox:pcscd` a `:pcscd`, con autenticazione locale. Verificati lettura del
+DER dal confinamento Snap, directory 0700 e file 0600, record di abbinamento
+e chiave della cache invariati. La preparazione non ha richiesto PIN né
+eseguito operazioni sulla carta o modificato profili browser. L’installazione
+locale verificata è Firefox Snap 158.0-2, revisione 9057, su Ubuntu 26.10 x86_64.
+
+L’utente ha poi confermato: «Test di accesso ai siti con Firefox Snap eseguito
+con successo usando il PIN completo». Il collaudo reale Snap è quindi
+registrato come riuscito con PIN completo di otto cifre. L’agente non ha
+acquisito il PIN né osservato indipendentemente il login; sito e protocollo
+TLS non sono stati comunicati. Non sono state avviate ulteriori autenticazioni.
+Restano i limiti del provider e il collaudo separato per altri siti, browser,
+lettori e casi di errore. [Dettagli](LINUX_FIREFOX.md).

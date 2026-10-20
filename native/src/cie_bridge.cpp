@@ -661,7 +661,7 @@ char* cie_bridge_certificate_name(const char* hex){return guarded([&]()->std::st
 char* cie_bridge_web_status(void){return guarded([]()->std::string{
  auto out=std::string("{\"ok\":true,\"available\":")+(cie_web_store::componentAvailable()?"true":"false");
 #if defined(__linux__) && !defined(CIE_WEB_TEST_STORE)
- out+=",\"provider\":\"linux-firefox-pkcs11\",\"browserRegistrationRequired\":true,\"browserConfigurationVerified\":false,\"fullPinRequired\":true";
+ out+=",\"provider\":\"linux-firefox-pkcs11\",\"browserRegistrationRequired\":true,\"browserConfigurationVerified\":false,\"fullPinRequired\":true,\"firefoxSnapSupported\":true,\"snapPermissionsVerified\":false";
 #endif
  return out+"}";
 });}

@@ -31,6 +31,7 @@ status = response(bridge.cie_bridge_web_status())
 assert status['ok'] and status['available'] and status['provider'] == 'linux-firefox-pkcs11'
 assert status['fullPinRequired'] and status['browserRegistrationRequired']
 assert status['browserConfigurationVerified'] is False
+assert status['firefoxSnapSupported'] and status['snapPermissionsVerified'] is False
 result = response(bridge.cie_bridge_web_test(b'TESTLINUX000001'))
 assert result['ok'] is False and result['code'] == 'web_test_requires_firefox'
 assert 'Windows' not in result['message'] and block.CieNoCardCalls() == 0

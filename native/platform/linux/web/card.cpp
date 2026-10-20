@@ -2,6 +2,7 @@
 #include "card.h"
 #include "local_cache.h"
 #include "paired_store.h"
+#include "snap_public_store.h"
 #include <algorithm>
 #include <cstring>
 
@@ -87,9 +88,14 @@ Card::Card(const std::string& reader, const std::string& expected, const std::ve
         id = identifier;
         std::vector<uint8_t> saved = known;
         if (saved.empty()) {
+          if (cie_linux_snap::running()) {
+            saved = cie_linux_snap::read(id);
+            if (saved.empty()) throw Error(CKR_DEVICE_ERROR);
+          } else {
             // Read only the public Web namespace. Never read a PIN-prefix record.
             cie_cache::Store store; auto bytes = store.read("web", id);
             saved.assign(bytes.begin(), bytes.end());
+          }
         }
         if (!saved.empty() && cie_web_set_certificate(session_, saved.data(), uint32_t(saved.size())))
             throw Error(CKR_DEVICE_ERROR);

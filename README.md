@@ -14,7 +14,7 @@ Il progetto è in sviluppo. Questo repository contiene i sorgenti; **non è anco
 | --- | --- |
 | macOS | Bundle Universal Apple Silicon/Intel compilato. Firma PDF/P7M, abbinamento, PIN parziale e accesso Safari con CIE reale verificati su Apple Silicon. L’esecuzione su Intel resta da collaudare. |
 | Windows x64 | Interfaccia e componenti nativi compilati e verificati. Firma PDF/P7M, abbinamento persistente, PIN parziale e accesso Chrome con CIE reale collaudati. |
-| Linux | Backend e interfaccia compilati e testati. Abbinamento persistente e firma PDF/P7M con PIN parziale verificati con CIE reale. Test reale di accesso ai siti con Mozilla Firefox confermato riuscito dall’utente. Il collaudo desktop completo resta da completare. |
+| Linux | Backend e interfaccia compilati e testati. Abbinamento persistente e firma PDF/P7M con PIN parziale verificati con CIE reale. Test reali di accesso ai siti con Mozilla Firefox e Firefox Snap con PIN completo confermati riusciti dall’utente. Collaudo desktop completo da completare. |
 
 Il nuovo archivio su file richiede di abbinare nuovamente le CIE con il PIN completo; non importa i precedenti abbinamenti. Le prove reali macOS/Windows riportate nella tabella riguardano il precedente archivio. Su Linux la nuova cache è stata collaudata anche con abbinamento persistente e firme PDF/P7M con PIN parziale.
 
@@ -29,7 +29,7 @@ Cambio PIN e Sblocco Carta sono implementati con test software: le prove reali s
 - **Firma grafica PDF:** anteprima locale, scelta di pagina e posizione, immagine personalizzata o firma testuale. Nome e Cognome sono letti dal certificato della CIE; data e ora riportano il fuso locale. I pulsanti di conferma restano visibili mentre l’anteprima scorre.
 - **Verifica Firma:** analisi di PDF e P7M anche senza CIE, risultati distinti per integrità, certificato, fiducia, revoca, marche temporali e validità storica; estrazione del contenuto incorporato nei P7M.
 - **Abbinamento locale:** PIN parziale per firmare con carte abbinate; prefisso e dati verificati sono custoditi dal componente nativo in una cache cifrata per utente, condivisa fra macOS, Windows e Linux. [Formato, protezione e limiti](docs/PAIRING.md).
-- **Accesso ai siti:** preparazione del certificato pubblico durante l’abbinamento; estensione CryptoTokenKit su macOS, componente smart card CSP/KSP su Windows e [provider Firefox PKCS#11 sperimentale su Linux](docs/LINUX_FIREFOX.md). Nel browser si usa il PIN completo di otto cifre, anche per carte abbinate.
+- **Accesso ai siti:** preparazione del certificato pubblico durante l’abbinamento; estensione CryptoTokenKit su macOS, componente smart card CSP/KSP su Windows e [provider Firefox PKCS#11 sperimentale su Linux, anche per Firefox Snap](docs/LINUX_FIREFOX.md). Nel browser si usa il PIN completo di otto cifre, anche per carte abbinate. La configurazione Firefox e le autorizzazioni Snap restano manuali.
 - **Cambio PIN e Sblocco Carta:** flussi dedicati con PIN completo o PUK, conferma esplicita e nessun tentativo automatico; stato del collaudo reale indicato sopra.
 - **Guida e Assistenza:** guida inclusa e consultabile offline, collegamenti esterni nel browser predefinito, FAQ e contatti ufficiali per la CIE.
 - **Impostazioni:** schede Generali, Proxy e Log; preferenze persistenti, proxy HTTP/HTTPS e diagnostica facoltativa con esportazione senza credenziali o dati dei documenti.

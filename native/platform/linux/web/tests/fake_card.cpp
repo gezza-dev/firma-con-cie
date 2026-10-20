@@ -3,6 +3,9 @@
 #include "cie_web.h"
 #include "web_policy.h"
 #include "local_cache.h"
+#include "../snap_public_store.h"
+#include <filesystem>
+#include <cstdlib>
 #include <winscard.h>
 #include <openssl/evp.h>
 #include <openssl/rsa.h>
@@ -123,4 +126,18 @@ extern "C" __attribute__((visibility("default"))) void CieTestSeedPublic(){
     // Deliberately unusable PIN-pairing bytes: the Web provider must not read
     // this namespace, reconstruct a prefix or use it to authenticate.
     cie_cache::Bytes invalidPrefix{0xff,0,0};store.write("card",identity(),invalidPrefix);
+}
+
+extern "C" __attribute__((visibility("default"))) void CieTestSeedSnapPublic(){
+    const char* base=std::getenv("CIE_PAIRING_TEST_CACHE");
+    if(!base)throw std::runtime_error("Missing synthetic cache");
+    const auto common=std::filesystem::path(base)/"snap/firefox/common";
+    std::filesystem::create_directories(common);
+    std::filesystem::permissions(common,std::filesystem::perms::owner_all);
+    auto& der=fixture().der;
+    if(!cie_linux_snap::publish(identity(),der.data(),der.size()))throw std::runtime_error("Synthetic Snap publication failed");
+    cie_cache::Store store(true);cie_cache::Bytes invalid{0xff,0,0};
+    // Both host namespaces are unusable. Successful Snap discovery proves that
+    // it uses only the published DER, never the host Web/PIN cache or its key.
+    store.write("web",identity(),invalid);store.write("card",identity(),invalid);
 }

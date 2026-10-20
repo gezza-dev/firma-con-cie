@@ -208,7 +208,10 @@ def main():
                     cmake(source, build, ["-DLIBXML2_WITH_PYTHON=OFF", "-DLIBXML2_WITH_PROGRAMS=OFF",
                           "-DLIBXML2_WITH_TESTS=OFF", "-DLIBXML2_WITH_LZMA=OFF", "-DLIBXML2_WITH_ICU=OFF"], log)
                 elif name == "libcurl":
-                    cmake(source, build, ["-DBUILD_CURL_EXE=OFF", "-DBUILD_TESTING=OFF",
+                    # glibc 2.43 adds fortified memset_explicit. Retain curl's
+                    # non-optimizable explicit_bzero fallback on Linux so the
+                    # module also loads in Firefox Snap's core24 (glibc 2.39).
+                    cmake(source, build, (["-DHAVE_MEMSET_EXPLICIT:BOOL=OFF"] if not is_mac and not is_windows else []) + ["-DBUILD_CURL_EXE=OFF", "-DBUILD_TESTING=OFF",
                           "-DCURL_USE_OPENSSL=ON", "-DUSE_APPLE_SECTRUST=" + ("ON" if is_mac else "OFF"), "-DOPENSSL_ROOT_DIR=" + str(prefix),
                           "-DCURL_USE_LIBPSL=OFF", "-DCURL_USE_LIBSSH2=OFF", "-DUSE_NGHTTP2=OFF",
                           "-DCURL_BROTLI=OFF", "-DCURL_ZSTD=OFF", "-DUSE_LIBIDN2=OFF",

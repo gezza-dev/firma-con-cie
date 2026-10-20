@@ -15,7 +15,7 @@ const linuxFirefoxSetupMessage =
     'Certificato pubblico predisposto. Configura il modulo CIE ID in Firefox e inserisci il PIN completo di otto cifre quando richiesto dal browser. La configurazione di Firefox non è stata verificata.';
 
 const linuxFirefoxInformationMessage =
-    'Per accedere ai siti con Firefox, prepara il certificato dall’applicazione e configura il modulo CIE ID nel browser. Firefox richiede il PIN completo di otto cifre. Questa finestra non avvia prove sulla carta e non modifica il browser.';
+    'Per accedere ai siti con Firefox, prepara il certificato dall’applicazione e configura il modulo CIE ID nel browser. Firefox richiede il PIN completo di otto cifre. Con Firefox Snap occorre anche autorizzare l’accesso al lettore. L’applicazione prepara solo il certificato pubblico: non modifica il browser o i permessi Snap e non avvia prove sulla carta.';
 
 typedef WebPublisher = Future<void> Function(
   String card,
