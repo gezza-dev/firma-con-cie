@@ -113,3 +113,26 @@ dall'utente. Nessun ritentativo automatico. Il successivo collaudo completo
 con Chrome Windows, CIE livello 3 e lettore ha aperto l'area personale del
 portale ufficiale: esito confermato dall'utente e presenza del comando Esci
 verificata senza acquisire dati personali della pagina.
+
+### Compatibilità delle richieste RSA di Firefox
+
+Il minidriver accetta anche un DigestInfo SHA-256/384/512 già codificato, con
+padding PKCS1 e `pszAlgId == NULL`, oppure `aiHashAlg == 0` nel formato legacy.
+È la forma usata dal [backend Windows di osclientcerts](https://searchfox.org/firefox-main/source/security/manager/ssl/osclientcerts/src/backend_windows.rs).
+Il DER deve essere canonico e viene inoltrato senza aggiungere un secondo
+DigestInfo. Hash grezzi, blocchi RSA arbitrari, SHA-1, PSS e dati malformati
+restano rifiutati; le richieste di dimensione non autenticano e non firmano.
+Il rifiuto precedente è riprodotto con carta simulata: 115 controlli isolati
+passano con la correzione. Il 21 ottobre 2026, dopo l'aggiornamento del componente
+con UAC e il riavvio completo di Firefox 158.0.1 su Windows, l'utente ha
+confermato l'apertura dell'area personale del portale CIE con PIN completo.
+La traccia numerica del minidriver conferma autenticazioni e firme riuscite
+con algoritmo separato assente. Il protocollo TLS del tentativo reale non è
+stato rilevato. Non sono stati aggiunti moduli PKCS#11 o cambiate preferenze
+di sicurezza del browser; altri siti/versioni restano da collaudare.
+
+Il 21 ottobre l'utente ha confermato anche il collaudo riuscito dell'accesso con
+Microsoft Edge su Windows usando il componente installato. La conferma è
+manuale; versione di Edge e protocollo TLS non sono stati rilevati
+indipendentemente. La [verifica RSA-PSS](RSA_PSS_FEASIBILITY.md) mantiene le
+capacità dichiarate PKCS#1 v1.5 e porta a 124 i controlli isolati del minidriver.

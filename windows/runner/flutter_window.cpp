@@ -57,7 +57,7 @@ FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
                               LPARAM const lparam) noexcept {
   // Notify Flutter/plugins first (including DPI updates), then always apply
   // native fitting for geometry messages even if a plugin returns a result.
-  const bool sizing_message = message == WM_DPICHANGED || message == WM_GETMINMAXINFO ||
+  const bool sizing_message = message == WM_SIZE || message == WM_DPICHANGED || message == WM_GETMINMAXINFO ||
                               message == WM_DISPLAYCHANGE || message == WM_SETTINGCHANGE ||
                               message == WM_EXITSIZEMOVE;
   if (flutter_controller_) {
@@ -75,5 +75,10 @@ FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
       break;
   }
 
-  return Win32Window::MessageHandler(hwnd, message, wparam, lparam);
+  const auto result = Win32Window::MessageHandler(hwnd, message, wparam, lparam);
+  if (message == WM_EXITSIZEMOVE && flutter_controller_) {
+    // Request a final frame after the native modal sizing loop has finished.
+    flutter_controller_->ForceRedraw();
+  }
+  return result;
 }

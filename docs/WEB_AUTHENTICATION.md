@@ -3,8 +3,10 @@
 ## Stato attuale di CIE ID Desktop
 
 La sintesi aggiornata è in [STATUS.md](STATUS.md). L'accesso reale al portale CIE
-è stato verificato con Safari su macOS Apple Silicon e Chrome su Windows x64.
-Su entrambi si usa il PIN completo di otto cifre. L'attivazione Windows al primo
+è stato verificato con Safari su macOS Apple Silicon e Chrome/Firefox su Windows
+x64. L'utente ha confermato il 21 ottobre anche il collaudo riuscito con Microsoft
+Edge su Windows; versione del browser e protocollo TLS non sono stati rilevati
+indipendentemente. Per l'accesso si usa il PIN completo di otto cifre. L'attivazione Windows al primo
 abbinamento è descritta in [WINDOWS_WEB_FIRST_USE.md](WINDOWS_WEB_FIRST_USE.md).
 Le note successive conservano anche passaggi e limiti storici del porting.
 
@@ -43,6 +45,12 @@ arbitrari, DigestInfo non canonici, SHA-1, decifratura e RSA-PSS. Non dichiarare
 supporto TLS 1.3, che richiede RSA-PSS per firme RSA di autenticazione: serve
 un collaudo per ogni sito/browser e la compatibilità dipende dal protocollo
 offerto dal servizio. Non vengono cambiate le impostazioni TLS dei browser.
+
+La [verifica di fattibilità RSA-PSS del 21 ottobre 2026](RSA_PSS_FEASIBILITY.md)
+non ha individuato un percorso documentato PSS/RSA senza padding per la chiave
+client nel profilo CIE e nel middleware attuale. Il supporto PSS per la verifica
+del SOD e per altre funzioni del chip non dimostra la possibilità di firmare PSS
+con la chiave di accesso ai siti. Le capacità dichiarate restano PKCS#1 v1.5.
 
 ## Configurazione del certificato
 

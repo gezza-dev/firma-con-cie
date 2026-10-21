@@ -21,6 +21,7 @@ namespace {
 #endif
 
 constexpr const wchar_t kWindowClassName[] = L"FLUTTER_RUNNER_WIN32_WINDOW";
+constexpr UINT kResizeChildContent = WM_APP + 0x43;
 
 /// Registry key for app theme preference.
 ///
@@ -263,13 +264,12 @@ Win32Window::MessageHandler(HWND hwnd,
         FitToCurrentWorkArea();
       return result;
     }
-    case WM_SIZE: {
-      RECT rect = GetClientArea();
-      if (child_content_ != nullptr) {
-        // Size and position the child window.
-        MoveWindow(child_content_, rect.left, rect.top, rect.right - rect.left,
-                   rect.bottom - rect.top, TRUE);
-      }
+    case WM_SIZE:
+      if (wparam != SIZE_MINIMIZED) ResizeChildContent();
+      return 0;
+
+    case kResizeChildContent: {
+      ResizeChildContent();
       return 0;
     }
 
@@ -285,6 +285,36 @@ Win32Window::MessageHandler(HWND hwnd,
   }
 
   return DefWindowProc(window_handle_, message, wparam, lparam);
+}
+
+void Win32Window::ResizeChildContent() {
+  if (!window_handle_ || !child_content_ || IsIconic(window_handle_)) return;
+  if (resizing_child_) {
+    // Use a posted update, rather than recursing or spinning in this callback.
+    // Read the current client area when it runs: intermediate sizes can be
+    // superseded during a border drag or a DPI/workarea change.
+    child_resize_pending_ = true;
+    return;
+  }
+  const RECT frame = GetClientArea();
+  if (frame.right <= frame.left || frame.bottom <= frame.top) return;
+  RECT child{};
+  if (GetWindowRect(child_content_, &child)) {
+    MapWindowPoints(nullptr, window_handle_, reinterpret_cast<POINT*>(&child), 2);
+    if (EqualRect(&frame, &child)) return;
+  }
+  resizing_child_ = true;
+  // Do not call UpdateWindow synchronously (MoveWindow(..., TRUE) does so).
+  // Flutter presents the new frame itself; copied old pixels must not cover
+  // the newly exposed area while the render surface is changing size.
+  SetWindowPos(child_content_, nullptr, frame.left, frame.top,
+               frame.right - frame.left, frame.bottom - frame.top,
+               SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOCOPYBITS);
+  resizing_child_ = false;
+  if (child_resize_pending_) {
+    child_resize_pending_ = false;
+    PostMessage(window_handle_, kResizeChildContent, 0, 0);
+  }
 }
 
 void Win32Window::FitToCurrentWorkArea() {
@@ -322,10 +352,7 @@ Win32Window* Win32Window::GetThisFromHandle(HWND const window) noexcept {
 void Win32Window::SetChildContent(HWND content) {
   child_content_ = content;
   SetParent(content, window_handle_);
-  RECT frame = GetClientArea();
-
-  MoveWindow(content, frame.left, frame.top, frame.right - frame.left,
-             frame.bottom - frame.top, true);
+  ResizeChildContent();
 
   SetFocus(child_content_);
 }

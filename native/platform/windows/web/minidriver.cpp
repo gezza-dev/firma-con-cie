@@ -160,22 +160,30 @@ DWORD WINAPI signData(PCARD_DATA d,PCARD_SIGNING_INFO info){auto result=boundary
  info->pbSignedData=nullptr;info->cbSignedData=0;
  if(info->dwSigningFlags&~(CARD_PADDING_INFO_PRESENT|CARD_BUFFER_SIZE_ONLY|CARD_PADDING_PKCS1))return SCARD_E_INVALID_PARAMETER;
  if((info->dwSigningFlags&CARD_PADDING_PKCS1)&&(!(info->dwSigningFlags&CARD_PADDING_INFO_PRESENT)||info->dwPaddingType!=CARD_PADDING_PKCS1))return SCARD_E_UNSUPPORTED_FEATURE;
- unsigned algorithm=0;
+ unsigned algorithm=0;bool preencoded=false;
  if(info->dwVersion==CARD_SIGNING_INFO_BASIC_VERSION||
     (info->dwVersion==CARD_SIGNING_INFO_CURRENT_VERSION&&!(info->dwSigningFlags&CARD_PADDING_INFO_PRESENT))){
   if(info->dwSigningFlags&CARD_PADDING_INFO_PRESENT)return SCARD_E_INVALID_PARAMETER;
   algorithm=info->aiHashAlg==CALG_SHA_256?1:info->aiHashAlg==CALG_SHA_384?2:info->aiHashAlg==CALG_SHA_512?3:0;
+  preencoded=info->aiHashAlg==0;
  }else if(info->dwVersion==CARD_SIGNING_INFO_CURRENT_VERSION){
   if(!(info->dwSigningFlags&CARD_PADDING_INFO_PRESENT)||info->dwPaddingType!=CARD_PADDING_PKCS1||!info->pPaddingInfo)return SCARD_E_UNSUPPORTED_FEATURE;
-  auto padding=static_cast<BCRYPT_PKCS1_PADDING_INFO*>(info->pPaddingInfo);if(!padding->pszAlgId)return SCARD_E_UNSUPPORTED_FEATURE;
-  algorithm=!wcscmp(padding->pszAlgId,BCRYPT_SHA256_ALGORITHM)?1:!wcscmp(padding->pszAlgId,BCRYPT_SHA384_ALGORITHM)?2:!wcscmp(padding->pszAlgId,BCRYPT_SHA512_ALGORITHM)?3:0;
+  auto padding=static_cast<BCRYPT_PKCS1_PADDING_INFO*>(info->pPaddingInfo);
+  preencoded=padding->pszAlgId==nullptr;
+  if(!preencoded)algorithm=!wcscmp(padding->pszAlgId,BCRYPT_SHA256_ALGORITHM)?1:!wcscmp(padding->pszAlgId,BCRYPT_SHA384_ALGORITHM)?2:!wcscmp(padding->pszAlgId,BCRYPT_SHA512_ALGORITHM)?3:0;
  }else return ERROR_REVISION_MISMATCH;
- unsigned n=algorithm==1?32:algorithm==2?48:algorithm==3?64:0;if(!n)return SCARD_E_UNSUPPORTED_FEATURE;
+ unsigned n=algorithm==1?32:algorithm==2?48:algorithm==3?64:0;if(!n&&!preencoded)return SCARD_E_UNSUPPORTED_FEATURE;
  if(info->dwSigningFlags&CARD_BUFFER_SIZE_ONLY){info->cbSignedData=256;return 0;}
- if(!info->pbData||info->cbData!=n)return SCARD_E_INVALID_PARAMETER;
+ // Firefox osclientcerts supplies the complete DigestInfo with a null hash
+ // algorithm. Accept the same canonical SHA-2 DER supported by the core,
+ // never arbitrary RSA blocks or raw hashes, and do not encode it twice.
+ if(preencoded){if(!cie_web::digestInfo(info->pbData,info->cbData))return SCARD_E_UNSUPPORTED_FEATURE;}
+ else if(!info->pbData||info->cbData!=n)return SCARD_E_INVALID_PARAMETER;
  if(!p->session||!p->authenticated)return SCARD_W_SECURITY_VIOLATION;
- uint8_t encoded[83]={0x30,0,0x30,0x0d,0x06,0x09,0x60,0x86,0x48,1,0x65,3,4,2,0,5,0,4,0};encoded[1]=17+n;encoded[14]=static_cast<uint8_t>(algorithm);encoded[18]=n;memcpy(encoded+19,info->pbData,n);
- uint8_t signature[256];uint32_t size=sizeof(signature);auto s=p->sign(p->session,encoded,19+n,signature,&size);diagnostic("core.sign",static_cast<DWORD>(s));if(s){p->authenticated=false;return mapped(s);}
+ uint8_t encoded[83]={0x30,0,0x30,0x0d,0x06,0x09,0x60,0x86,0x48,1,0x65,3,4,2,0,5,0,4,0};
+ const uint8_t* input=info->pbData;uint32_t inputSize=info->cbData;
+ if(!preencoded){encoded[1]=17+n;encoded[14]=static_cast<uint8_t>(algorithm);encoded[18]=n;memcpy(encoded+19,info->pbData,n);input=encoded;inputSize=19+n;}
+ uint8_t signature[256];uint32_t size=sizeof(signature);auto s=p->sign(p->session,input,inputSize,signature,&size);diagnostic("core.sign",static_cast<DWORD>(s));if(s){p->authenticated=false;return mapped(s);}
  // Cardmod uses little endian RSA signatures; CTK/core use big endian.
  std::reverse(signature,signature+size);return allocated(d,signature,size,&info->pbSignedData,&info->cbSignedData);
  });diagnostic("CardSignData",result,info?info->dwVersion:0,info?info->dwSigningFlags:0,info&&info->dwVersion==CARD_SIGNING_INFO_CURRENT_VERSION?info->dwPaddingType:0,info?info->aiHashAlg:0,info?info->dwKeySpec:0);return result;}

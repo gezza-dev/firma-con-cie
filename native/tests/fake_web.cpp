@@ -6,6 +6,8 @@
 #include "fixtures/web_certificate.h"
 struct CieWebSession {bool authenticated=false,attempted=false;unsigned selection=0;};
 static unsigned signs=0,auths=0,selection=0;
+static uint8_t lastSignInput[83]{};
+static uint32_t lastSignInputSize=0;
 extern "C" {
 uint32_t cie_web_abi_version(){return 1;}
 int32_t cie_web_open(const uint8_t*,uint32_t,CieWebTransmit,void*,const char*,CieWebSession** p){if(!p)return -1;*p=new CieWebSession;(*p)->selection=++selection;return 0;}
@@ -22,8 +24,14 @@ int32_t cie_web_authenticate(CieWebSession* p,char* pin,uint32_t size){
 }
 int32_t cie_web_sign(CieWebSession* p,const uint8_t* data,uint32_t length,uint8_t* out,uint32_t* size){
  if(!p||!cie_web::digestInfo(data,length))return -7;if(!p->authenticated)return -4;
- if(!out||*size<256){*size=256;return out?-6:0;}++signs;for(unsigned i=0;i<256;++i)out[i]=i;*size=256;return 0;
+ if(!out||*size<256){*size=256;return out?-6:0;}++signs;
+ memcpy(lastSignInput,data,length);lastSignInputSize=length;
+ for(unsigned i=0;i<256;++i)out[i]=i;*size=256;return 0;
 }
 CIE_WEB_API unsigned cie_web_fake_signs(){return signs;}
 CIE_WEB_API unsigned cie_web_fake_auths(){return auths;}
+CIE_WEB_API uint32_t cie_web_fake_sign_input(uint8_t* out,uint32_t capacity){
+ if(out&&capacity>=lastSignInputSize)memcpy(out,lastSignInput,lastSignInputSize);
+ return lastSignInputSize;
+}
 }

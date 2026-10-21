@@ -21,6 +21,7 @@ import 'pairing_view.dart';
 import 'web_access.dart';
 import 'signature_appearance.dart';
 import 'document_drop_zone.dart';
+import 'desktop_page_body.dart';
 import 'preferences.dart';
 import 'preferences_view.dart';
 import 'guide_view.dart';
@@ -1574,240 +1575,233 @@ class _PrototypeHomeState extends State<PrototypeHome>
                     child: Text(tr(context, progress)),
                   ),
                 Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(28, 8, 28, 28),
-                    child: Align(
-                      alignment: Alignment.topLeft,
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 900),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            _notification(),
-                            if (page == 0) ..._cardPage(context),
-                            if (page == 1) ..._signPage(context),
-                            if (page == 2) ..._verifyPage(context),
-                            if (page == 5) const GuideView(),
-                            if (page == 6) const AssistanceView(),
-                            if (page == AppDestination.information.index)
-                              InformationView(ready: ready),
-                            if (page == AppDestination.settings.index)
-                              SettingsView(
-                                value: settings,
-                                network: network,
-                                onSave: _saveSettings,
-                                onProbe: service.probeNetwork,
-                                diagnostics: diagnostics,
-                                capabilities: capabilities,
-                                webDiagnostics: unified
-                                    ? enrollment.records.values
-                                          .map((r) => r.diagnosticFlags)
-                                          .toList()
-                                    : null,
-                                enrollmentReadable: unified
-                                    ? enrollment.readable
-                                    : null,
-                                diagnosticDetails: unified
-                                    ? EnrollmentDiagnosticsView(
-                                        records: enrollment.records.values
-                                            .toList(),
-                                        readable: enrollment.readable,
+                  child: DesktopPageBody(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _notification(),
+                        if (page == 0) ..._cardPage(context),
+                        if (page == 1) ..._signPage(context),
+                        if (page == 2) ..._verifyPage(context),
+                        if (page == 5) const GuideView(),
+                        if (page == 6) const AssistanceView(),
+                        if (page == AppDestination.information.index)
+                          InformationView(ready: ready),
+                        if (page == AppDestination.settings.index)
+                          SettingsView(
+                            value: settings,
+                            network: network,
+                            onSave: _saveSettings,
+                            onProbe: service.probeNetwork,
+                            diagnostics: diagnostics,
+                            capabilities: capabilities,
+                            webDiagnostics: unified
+                                ? enrollment.records.values
+                                      .map((r) => r.diagnosticFlags)
+                                      .toList()
+                                : null,
+                            enrollmentReadable: unified
+                                ? enrollment.readable
+                                : null,
+                            diagnosticDetails: unified
+                                ? EnrollmentDiagnosticsView(
+                                    records: enrollment.records.values
+                                        .toList(),
+                                    readable: enrollment.readable,
+                                    busy: busy,
+                                    onRefresh: () => _operation(
+                                      'Aggiornamento stato delle CIE…',
+                                      _refreshPairings,
+                                    ),
+                                  )
+                                : null,
+                            onBusy: _settingsBusy,
+                            configurationValid: settingsValid,
+                            interactionBusy: busy,
+                            preferences: Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.stretch,
+                              children: [
+                                DropdownButtonFormField<String>(
+                                  key: ValueKey(
+                                    'language-${settings.languageCode}',
+                                  ),
+                                  initialValue: settings.languageCode,
+                                  decoration: InputDecoration(
+                                    labelText: tr(
+                                      context,
+                                      "Lingua dell’applicazione",
+                                    ),
+                                  ),
+                                  items: [
+                                    DropdownMenuItem(
+                                      value: 'system',
+                                      child: Text(
+                                        tr(context, 'Segui il sistema'),
+                                      ),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'it',
+                                      child: Text(tr(context, "Italiano")),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'en',
+                                      child: Text(tr(context, "English")),
+                                    ),
+                                  ],
+                                  onChanged: busy || appearanceSaving
+                                      ? null
+                                      : (code) {
+                                          if (code != null) {
+                                            _changeAppearance(
+                                              languageCode: code,
+                                            );
+                                          }
+                                        },
+                                ),
+                                const SizedBox(height: 24),
+                                DropdownButtonFormField<String>(
+                                  key: ValueKey(
+                                    'theme-${settings.themeCode}',
+                                  ),
+                                  initialValue: settings.themeCode,
+                                  decoration: InputDecoration(
+                                    labelText: tr(
+                                      context,
+                                      'Tema dell’applicazione',
+                                    ),
+                                  ),
+                                  items: [
+                                    DropdownMenuItem(
+                                      value: 'system',
+                                      child: Text(
+                                        tr(context, 'Segui il sistema'),
+                                      ),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'light',
+                                      child: Text(tr(context, 'Chiaro')),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'dark',
+                                      child: Text(tr(context, 'Scuro')),
+                                    ),
+                                  ],
+                                  onChanged: busy || appearanceSaving
+                                      ? null
+                                      : (code) {
+                                          if (code != null) {
+                                            _changeAppearance(
+                                              themeCode: code,
+                                            );
+                                          }
+                                        },
+                                ),
+                                const SizedBox(height: 24),
+                                PreferencesView(
+                                  store: preferenceStore,
+                                  value: preferences,
+                                  onChanged: (value) =>
+                                      setState(() => preferences = value),
+                                  onBusy: (value) {
+                                    if (mounted) {
+                                      setState(() {
+                                        busy = value;
+                                        progress = value
+                                            ? 'Salvataggio preferenze…'
+                                            : '';
+                                      });
+                                      unawaited(_coordinateMonitor());
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
+                            advanced: Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.stretch,
+                              children: [
+                                ExpansionTile(
+                                  title: Text(
+                                    tr(context, "Strumenti di collaudo"),
+                                  ),
+                                  children: [
+                                    TextButton.icon(
+                                      onPressed: busy ? null : _useExample,
+                                      icon: const Icon(
+                                        Icons.science_outlined,
+                                      ),
+                                      label: Text(
+                                        tr(
+                                          context,
+                                          "Usa documento di prova",
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if (unified && selected != null)
+                                  ExpansionTile(
+                                    title: Text(
+                                      tr(
+                                        context,
+                                        "Prove avanzate accesso ai siti",
+                                      ),
+                                    ),
+                                    children: [
+                                      WebAccessCard(
+                                        linuxFirefox: Platform.isLinux,
+                                        key: ValueKey(
+                                          'advanced-web-${selected!['cardId']}',
+                                        ),
+                                        service: service,
+                                        reader: selected!['name'] as String,
+                                        card: selected!['cardId'] as String,
+                                        enabled:
+                                            capabilities?['canConfigureWeb'] ==
+                                            true,
                                         busy: busy,
-                                        onRefresh: () => _operation(
-                                          'Aggiornamento stato delle CIE…',
-                                          _refreshPairings,
-                                        ),
-                                      )
-                                    : null,
-                                onBusy: _settingsBusy,
-                                configurationValid: settingsValid,
-                                interactionBusy: busy,
-                                preferences: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    DropdownButtonFormField<String>(
-                                      key: ValueKey(
-                                        'language-${settings.languageCode}',
+                                        publisher: widget.webPublisher,
+                                        onBusy: (value) async {
+                                          if (mounted) {
+                                            setState(() {
+                                              busy = value;
+                                              progress = value
+                                                  ? 'Prova componente di sistema…'
+                                                  : '';
+                                            });
+                                            await _coordinateMonitor();
+                                          }
+                                        },
                                       ),
-                                      initialValue: settings.languageCode,
-                                      decoration: InputDecoration(
-                                        labelText: tr(
-                                          context,
-                                          "Lingua dell’applicazione",
-                                        ),
-                                      ),
-                                      items: [
-                                        DropdownMenuItem(
-                                          value: 'system',
-                                          child: Text(
-                                            tr(context, 'Segui il sistema'),
-                                          ),
-                                        ),
-                                        DropdownMenuItem(
-                                          value: 'it',
-                                          child: Text(tr(context, "Italiano")),
-                                        ),
-                                        DropdownMenuItem(
-                                          value: 'en',
-                                          child: Text(tr(context, "English")),
-                                        ),
-                                      ],
-                                      onChanged: busy || appearanceSaving
-                                          ? null
-                                          : (code) {
-                                              if (code != null) {
-                                                _changeAppearance(
-                                                  languageCode: code,
-                                                );
-                                              }
-                                            },
+                                    ],
+                                  ),
+                              ],
+                            ),
+                          ),
+                        if (page == 3 || page == 4)
+                          PinManagementPage(
+                            key: ValueKey(page),
+                            service: service,
+                            unblock: page == 4,
+                            busy: busy,
+                            available: page == 4
+                                ? canUnblockPin
+                                : canChangePin,
+                            selected: selected == null
+                                ? null
+                                : {
+                                    ...selected!,
+                                    'fullName': _pairedName(
+                                      selected!['cardId'] as String?,
                                     ),
-                                    const SizedBox(height: 24),
-                                    DropdownButtonFormField<String>(
-                                      key: ValueKey(
-                                        'theme-${settings.themeCode}',
-                                      ),
-                                      initialValue: settings.themeCode,
-                                      decoration: InputDecoration(
-                                        labelText: tr(
-                                          context,
-                                          'Tema dell’applicazione',
-                                        ),
-                                      ),
-                                      items: [
-                                        DropdownMenuItem(
-                                          value: 'system',
-                                          child: Text(
-                                            tr(context, 'Segui il sistema'),
-                                          ),
-                                        ),
-                                        DropdownMenuItem(
-                                          value: 'light',
-                                          child: Text(tr(context, 'Chiaro')),
-                                        ),
-                                        DropdownMenuItem(
-                                          value: 'dark',
-                                          child: Text(tr(context, 'Scuro')),
-                                        ),
-                                      ],
-                                      onChanged: busy || appearanceSaving
-                                          ? null
-                                          : (code) {
-                                              if (code != null) {
-                                                _changeAppearance(
-                                                  themeCode: code,
-                                                );
-                                              }
-                                            },
-                                    ),
-                                    const SizedBox(height: 24),
-                                    PreferencesView(
-                                      store: preferenceStore,
-                                      value: preferences,
-                                      onChanged: (value) =>
-                                          setState(() => preferences = value),
-                                      onBusy: (value) {
-                                        if (mounted) {
-                                          setState(() {
-                                            busy = value;
-                                            progress = value
-                                                ? 'Salvataggio preferenze…'
-                                                : '';
-                                          });
-                                          unawaited(_coordinateMonitor());
-                                        }
-                                      },
-                                    ),
-                                  ],
-                                ),
-                                advanced: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    ExpansionTile(
-                                      title: Text(
-                                        tr(context, "Strumenti di collaudo"),
-                                      ),
-                                      children: [
-                                        TextButton.icon(
-                                          onPressed: busy ? null : _useExample,
-                                          icon: const Icon(
-                                            Icons.science_outlined,
-                                          ),
-                                          label: Text(
-                                            tr(
-                                              context,
-                                              "Usa documento di prova",
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    if (unified && selected != null)
-                                      ExpansionTile(
-                                        title: Text(
-                                          tr(
-                                            context,
-                                            "Prove avanzate accesso ai siti",
-                                          ),
-                                        ),
-                                        children: [
-                                          WebAccessCard(
-                                            linuxFirefox: Platform.isLinux,
-                                            key: ValueKey(
-                                              'advanced-web-${selected!['cardId']}',
-                                            ),
-                                            service: service,
-                                            reader: selected!['name'] as String,
-                                            card: selected!['cardId'] as String,
-                                            enabled:
-                                                capabilities?['canConfigureWeb'] ==
-                                                true,
-                                            busy: busy,
-                                            publisher: widget.webPublisher,
-                                            onBusy: (value) async {
-                                              if (mounted) {
-                                                setState(() {
-                                                  busy = value;
-                                                  progress = value
-                                                      ? 'Prova componente di sistema…'
-                                                      : '';
-                                                });
-                                                await _coordinateMonitor();
-                                              }
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                  ],
-                                ),
-                              ),
-                            if (page == 3 || page == 4)
-                              PinManagementPage(
-                                key: ValueKey(page),
-                                service: service,
-                                unblock: page == 4,
-                                busy: busy,
-                                available: page == 4
-                                    ? canUnblockPin
-                                    : canChangePin,
-                                selected: selected == null
-                                    ? null
-                                    : {
-                                        ...selected!,
-                                        'fullName': _pairedName(
-                                          selected!['cardId'] as String?,
-                                        ),
-                                      },
-                                onRun: _operation,
-                                onDetect: _detect,
-                                onPairingsChanged: _refreshPairings,
-                                automaticDetection: unified,
-                              ),
-                          ],
-                        ),
-                      ),
+                                  },
+                            onRun: _operation,
+                            onDetect: _detect,
+                            onPairingsChanged: _refreshPairings,
+                            automaticDetection: unified,
+                          ),
+                      ],
                     ),
                   ),
                 ),
@@ -2270,6 +2264,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
             onPaths: (paths) => _drop(paths, verify: false),
             child: Container(
               width: double.infinity,
+              alignment: Alignment.center,
               padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
               decoration: BoxDecoration(
                 border: Border.all(
@@ -2623,6 +2618,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
         onPaths: (paths) => _drop(paths, verify: true),
         child: Container(
           width: double.infinity,
+          alignment: Alignment.center,
           padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 20),
           decoration: BoxDecoration(
             border: Border.all(color: Theme.of(context).colorScheme.outline),

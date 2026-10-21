@@ -8,6 +8,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <vector>
 static unsigned checks=0;
 static void check(bool value){++checks;if(!value)throw std::runtime_error("minidriver regression at check "+std::to_string(checks));}
 static LPVOID WINAPI allocate(SIZE_T size){return malloc(size);}
@@ -53,6 +54,63 @@ int main(int argc,char** argv){try{
  // that context, checking the provided PIN once rather than trusting old state.
  HMODULE fake=LoadLibraryA((std::string(argv[1]).substr(0,std::string(argv[1]).find_last_of("\\/"))+"/backend/cie_web.dll").c_str());check(fake!=nullptr);
  auto auths=reinterpret_cast<unsigned(*)()>(GetProcAddress(fake,"cie_web_fake_auths"));check(auths!=nullptr);
+ auto signs=reinterpret_cast<unsigned(*)()>(GetProcAddress(fake,"cie_web_fake_signs"));check(signs!=nullptr);
+ auto signInput=reinterpret_cast<uint32_t(*)(uint8_t*,uint32_t)>(GetProcAddress(fake,"cie_web_fake_sign_input"));check(signInput!=nullptr);
+ // Firefox osclientcerts sends a complete DigestInfo to NCryptSignHash, with
+ // PKCS1 padding and pszAlgId=NULL. The KSP can also forward it as aiHashAlg=0.
+ // Accept only canonical SHA-2 encodings; forward the bytes exactly once.
+ const auto encodedAuths=auths();
+ BCRYPT_PKCS1_PADDING_INFO encodedPadding{nullptr};
+ CARD_SIGNING_INFO encodedInfo=info;encodedInfo.pPaddingInfo=&encodedPadding;
+ for(BYTE algorithm:{1,2,3}){
+  const unsigned digestSize=algorithm==1?32:algorithm==2?48:64;
+  std::vector<BYTE> encoded={0x30,0,0x30,0x0d,0x06,0x09,0x60,0x86,0x48,1,0x65,3,4,2,algorithm,5,0,4,0};
+  encoded[1]=static_cast<BYTE>(17+digestSize);encoded[18]=static_cast<BYTE>(digestSize);
+  encoded.resize(19+digestSize,0x5a);encodedInfo.pbData=encoded.data();encodedInfo.cbData=static_cast<DWORD>(encoded.size());
+  for(unsigned form=0;form<3;++form){
+   encodedInfo.dwVersion=form==2?CARD_SIGNING_INFO_BASIC_VERSION:CARD_SIGNING_INFO_CURRENT_VERSION;
+   encodedInfo.dwSigningFlags=form==0?CARD_PADDING_INFO_PRESENT:0;
+   encodedInfo.aiHashAlg=0;
+   const auto beforeSigns=signs();
+   encodedInfo.dwSigningFlags|=CARD_BUFFER_SIZE_ONLY;
+   check(d.pfnCardSignData(&d,&encodedInfo)==0&&encodedInfo.cbSignedData==256&&!encodedInfo.pbSignedData&&signs()==beforeSigns);
+   encodedInfo.dwSigningFlags&=~CARD_BUFFER_SIZE_ONLY;
+   check(d.pfnCardSignData(&d,&encodedInfo)==0&&encodedInfo.cbSignedData==256&&signs()==beforeSigns+1);
+   BYTE forwarded[83]{};check(signInput(forwarded,sizeof(forwarded))==encoded.size()&&!memcmp(forwarded,encoded.data(),encoded.size()));
+   check(encodedInfo.pbSignedData[0]==255&&encodedInfo.pbSignedData[255]==0);release(encodedInfo.pbSignedData);
+  }
+ }
+ encodedInfo.dwVersion=CARD_SIGNING_INFO_CURRENT_VERSION;encodedInfo.dwSigningFlags=CARD_PADDING_INFO_PRESENT;
+ const auto beforeInvalid=signs();
+ // Raw hashes/blocks, missing input, wrong OID, BER, trailing data and PSS
+ // cannot bypass the provider's restricted client-authentication contract.
+ std::vector<BYTE> canonical={0x30,0x31,0x30,0x0d,0x06,0x09,0x60,0x86,0x48,1,0x65,3,4,2,1,5,0,4,0x20};canonical.resize(51,0x5a);
+ auto rejects=[&](std::vector<BYTE> data){encodedInfo.pbData=data.data();encodedInfo.cbData=static_cast<DWORD>(data.size());check(d.pfnCardSignData(&d,&encodedInfo)==SCARD_E_UNSUPPORTED_FEATURE&&signs()==beforeInvalid&&!encodedInfo.pbSignedData);};
+ rejects(std::vector<BYTE>(32,0));rejects(std::vector<BYTE>(256,0));rejects({});
+ for(unsigned offset:{1,8,14,16,18}){auto malformed=canonical;malformed[offset]^=0x01;rejects(malformed);}
+ auto trailing=canonical;trailing.push_back(0);rejects(trailing);
+ encodedInfo.pbData=canonical.data();encodedInfo.cbData=static_cast<DWORD>(canonical.size());encodedInfo.dwPaddingType=CARD_PADDING_PSS;
+ check(d.pfnCardSignData(&d,&encodedInfo)==SCARD_E_UNSUPPORTED_FEATURE&&signs()==beforeInvalid);
+ check(auths()==encodedAuths);
+ // Advertising PSS would make browsers select a signing operation the IAS
+ // authentication key cannot currently perform. Test actual PSS parameters,
+ // including size queries, and ensure rejection leaves PKCS1 usable.
+ DWORD supportedPadding=0;
+ check(d.pfnCardGetProperty(&d,CP_PADDING_SCHEMES,reinterpret_cast<PBYTE>(&supportedPadding),sizeof(supportedPadding),&count,CARD_ASYMMETRIC_OPERATION)==0);
+ check(count==sizeof(supportedPadding)&&supportedPadding==CARD_PADDING_PKCS1);
+ BYTE pssDigest[64]{};
+ for(LPCWSTR hash:{BCRYPT_SHA256_ALGORITHM,BCRYPT_SHA384_ALGORITHM,BCRYPT_SHA512_ALGORITHM}){
+  const DWORD n=!wcscmp(hash,BCRYPT_SHA256_ALGORITHM)?32:!wcscmp(hash,BCRYPT_SHA384_ALGORITHM)?48:64;
+  BCRYPT_PSS_PADDING_INFO pssPadding{hash,n};
+  CARD_SIGNING_INFO pss{};pss.dwVersion=CARD_SIGNING_INFO_CURRENT_VERSION;pss.dwKeySpec=AT_SIGNATURE;
+  pss.dwPaddingType=CARD_PADDING_PSS;pss.pPaddingInfo=&pssPadding;pss.pbData=pssDigest;pss.cbData=n;
+  for(DWORD flags:{CARD_PADDING_INFO_PRESENT,CARD_PADDING_INFO_PRESENT|CARD_BUFFER_SIZE_ONLY}){
+   pss.dwSigningFlags=flags;
+   check(d.pfnCardSignData(&d,&pss)==SCARD_E_UNSUPPORTED_FEATURE&&!pss.pbSignedData&&!pss.cbSignedData&&signs()==beforeInvalid&&auths()==encodedAuths);
+  }
+ }
+ padding.pszAlgId=BCRYPT_SHA256_ALGORITHM;
+ check(d.pfnCardSignData(&d,&info)==0&&info.cbSignedData==256&&signs()==beforeInvalid+1&&auths()==encodedAuths);release(info.pbSignedData);
  // Browser login accepts only eight decimal digits, for both entry points.
  // Reject locally without authenticating the card or consuming PIN attempts.
  auto authCount=auths();BYTE partial[]="5678",nonNumeric[]="1234567x",longPin[]="123456789";DWORD invalidAttempts=0;

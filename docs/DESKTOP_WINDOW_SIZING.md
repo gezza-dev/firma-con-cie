@@ -95,8 +95,37 @@ per verificare l'API C; non sostituisce una build dell'app con l'SDK Windows
 fissato dal progetto. Nessun pacchetto di compilazione è stato installato
 sull'host, nessun binario Windows eseguito e nessuna app avviata.
 
-Restano da eseguire build complete macOS/Windows, verifica Swift/AppKit e
+Al termine delle prove Linux restavano da eseguire build complete macOS/Windows, verifica Swift/AppKit e
 collaudo visivo su entrambe le piattaforme: avvio su schermi piccoli,
 minimizza/ripristina, zoom/massimizzazione, monitor con DPI diversi, rimozione
 monitor e cambi di Dock/taskbar. Questi test non richiedono una CIE.
 Nessuna nuova prova sulla CIE o modifica a browser/permessi è inclusa.
+
+## Collaudo Windows e crescita della finestra (21 ottobre)
+
+La build Windows x64 è stata completata con Flutter 3.47.7. `DesktopPageBody`
+ricalcola larghezza e altezza utile a ogni variazione del viewport, senza il
+precedente limite di larghezza delle pagine. Anche l'anteprima della firma cresce
+con la finestra e mantiene i pulsanti nel footer fisso. L'area di caricamento
+documenti sfrutta lo spazio verticale aggiuntivo.
+
+Nel runner, `WM_SIZE` viene gestito anche se un plugin intercetta il messaggio.
+Il ridimensionamento della finestra figlia usa `SetWindowPos` senza aggiornamento
+sincrono; le richieste rientranti sono accorpate e applicate dopo il callback
+corrente. All'uscita dal trascinamento viene richiesto un fotogramma finale.
+Il test Win32 esercita il runner reale con una finestra figlia sintetica che
+genera messaggi annidati: 926 controlli, inclusi 300 cicli di ridimensionamento.
+
+Sul PC collaudato il renderer predefinito Impeller continuava a mostrare una
+fascia nera e fotogrammi bloccati, mentre input e navigazione restavano attivi.
+La selezione esplicita di Skia nel runner ha risolto il problema nella prova
+manuale: allargamento, restringimento e nuovo allargamento trascinando il bordo,
+seguiti dall'apertura di Verifica Firma. L'utente ha confermato l'esito positivo.
+Il confronto riguarda questa configurazione; prima di riattivare Impeller con
+un nuovo motore occorre ripetere il collaudo.
+
+Analisi Flutter senza problemi; 215 test Flutter superati e tre facoltativi
+saltati. Su MSVC passano due gruppi di test geometrici e 42 controlli dell'host.
+I nuovi test Flutter verificano la crescita e il restringimento della stessa
+finestra e la permanenza dei pulsanti visibili durante lo scorrimento.
+Le prove macOS/AppKit, KDE e i casi Windows con più monitor/DPI restano pendenti.

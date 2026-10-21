@@ -93,9 +93,15 @@ class Win32Window {
   // Clamp a normal window after monitor/workarea changes, without DPI conversion.
   void FitToCurrentWorkArea();
 
+  // Flutter can pump native messages while waiting for a resized frame. Keep
+  // nested WM_SIZE messages from resizing the same child recursively.
+  void ResizeChildContent();
+
   bool quit_on_close_ = false;
   bool start_maximized_ = false;
   bool fitting_window_ = false;
+  bool resizing_child_ = false;
+  bool child_resize_pending_ = false;
   UINT current_dpi_ = 96;
 
   // window handle for top level window.

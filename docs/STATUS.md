@@ -1,19 +1,54 @@
 # Stato del progetto e verifiche
 
-Situazione al 20 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
+Situazione al 21 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
 
 | Ambito | macOS | Windows | Linux |
 | --- | --- | --- | --- |
 | Interfaccia condivisa | Compilata Universal; eseguita su Apple Silicon | Compilata/eseguita x64 | Collaudo desktop da completare |
-| Adattamento finestra | Implementato; build/collaudo AppKit pendenti | Implementato; oggetto Win32 compilato da Linux; build/collaudo app pendenti | Adattamento GNOME confermato dall'utente; collaudo KDE della finestra aggiornata da completare |
+| Adattamento finestra | Implementato; build/collaudo AppKit pendenti | App x64 compilata; ridimensionamento ripetuto e navigazione collaudati con Skia | Adattamento GNOME confermato dall'utente; collaudo KDE della finestra aggiornata da completare |
 | Middleware e SDK | Compilati ARM64/x86_64; test nativi su ARM64 | Backend MinGW x64 e componenti MSVC; test su Windows | Compilazione/test nativi senza carta |
 | Firma PAdES/CAdES | CIE reale verificata | CIE reale verificata | PDF e P7M con CIE reale e PIN parziale verificati |
 | Abbinamento e PIN parziale | Persistenza e firme reali verificate | Persistenza e firme reali verificate | Abbinamento, persistenza e firme con PIN parziale verificati |
-| Accesso ai siti | CryptoTokenKit e accesso Safari al portale CIE verificati | CSP/KSP e accesso Chrome al portale CIE verificati | Test reali Mozilla Firefox e Firefox Snap con PIN completo confermati riusciti dall’utente |
+| Accesso ai siti | CryptoTokenKit e accesso Safari al portale CIE verificati | CSP/KSP e accesso Chrome e Firefox al portale CIE verificati; esito positivo anche con Edge confermato dall'utente | Test reali Mozilla Firefox e Firefox Snap con PIN completo confermati riusciti dall’utente |
 | Cambio PIN e Sblocco Carta | Test software; collaudo reale da completare | Test software; collaudo reale da completare | Collaudo reale non eseguito |
 | DSS/LTA con JVM privata | Predisposto e testato | Predisposto e testato | Assemblaggio non previsto dallo script attuale |
 
 L’esecuzione su un sistema non prova automaticamente la compatibilità con tutti i lettori, le CIE, i browser o i servizi. Il formato LTA non implica da solo una validazione storica positiva: servono prove e una catena di fiducia sufficienti.
+
+## Firefox Windows: login confermato (21 ottobre)
+
+Firefox 158.0.1 ha aperto l'area personale del portale CIE dopo l'aggiornamento
+del minidriver, con PIN completo inserito dall'utente. La correzione accetta il
+DigestInfo SHA-2 canonico già codificato usato da osclientcerts: il test nuovo
+fallisce con il provider precedente, mentre passano 115 controlli isolati con
+la correzione. La traccia reale contiene soltanto metadati numerici e conferma
+autenticazioni e firme riuscite. Si usa il provider smart card Windows senza
+un modulo Firefox aggiuntivo o modifiche alle preferenze di sicurezza.
+[Dettagli e limiti](WINDOWS_WEB_FIRST_USE.md#compatibilità-delle-richieste-rsa-di-firefox).
+
+L'utente ha confermato anche il collaudo riuscito con Microsoft Edge su Windows
+il 21 ottobre. La conferma è manuale; versione di Edge e protocollo TLS non sono
+stati rilevati indipendentemente.
+
+## Ridimensionamento Windows: collaudo riuscito (21 ottobre)
+
+Le pagine e l'anteprima usano lo spazio disponibile anche quando la finestra
+viene allargata. Il runner gestisce i messaggi di ridimensionamento rientranti
+senza richiamare ricorsivamente il ridimensionamento della superficie Flutter.
+Sul sistema provato il blocco dei fotogrammi con fascia nera persisteva con
+Impeller; la selezione esplicita di Skia ha superato il confronto manuale con
+trascinamenti ripetuti e navigazione a Verifica Firma. Passano 215 test Flutter
+(tre facoltativi saltati), 926 controlli del ridimensionamento Win32, due gruppi
+di geometria e 42 controlli dell'host. [Dettagli e limiti](DESKTOP_WINDOW_SIZING.md).
+
+## Fattibilità RSA-PSS (21 ottobre)
+
+La verifica di specifiche e sorgenti non ha individuato un percorso documentato
+RSA-PSS o RSA senza padding per la chiave di autenticazione client del profilo
+CIE attuale. PSS non viene dichiarato né attivato; il componente collaudato con
+Chrome e Firefox resta invariato. Passano 124 controlli isolati del minidriver,
+inclusa la firma PKCS#1 dopo una richiesta PSS rifiutata. Nessuna operazione
+sulla CIE reale. [Riscontri, limiti e verifiche](RSA_PSS_FEASIBILITY.md).
 
 ## Nuova cache degli abbinamenti (20 ottobre)
 

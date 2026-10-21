@@ -13,7 +13,7 @@ Il progetto è in sviluppo. Questo repository contiene i sorgenti; **non è anco
 | Sistema | Stato verificato |
 | --- | --- |
 | macOS | Bundle Universal Apple Silicon/Intel compilato. Firma PDF/P7M, abbinamento, PIN parziale e accesso Safari con CIE reale verificati su Apple Silicon. L’esecuzione su Intel resta da collaudare. |
-| Windows x64 | Interfaccia e componenti nativi compilati e verificati. Firma PDF/P7M, abbinamento persistente, PIN parziale e accesso Chrome con CIE reale collaudati. |
+| Windows x64 | Interfaccia e componenti nativi compilati e verificati. Firma PDF/P7M, abbinamento persistente e PIN parziale collaudati. Accesso al portale CIE con Chrome e Firefox verificato con CIE reale e PIN completo; collaudo riuscito anche con Microsoft Edge confermato dall'utente. |
 | Linux | Backend e interfaccia compilati e testati. Abbinamento persistente e firma PDF/P7M con PIN parziale verificati con CIE reale. Test reali di accesso ai siti con Mozilla Firefox e Firefox Snap con PIN completo confermati riusciti dall’utente. Pacchetto `.deb` locale di test con launcher e icone; collaudo desktop completo da completare. |
 
 Il nuovo archivio su file richiede di abbinare nuovamente le CIE con il PIN completo; non importa i precedenti abbinamenti. Le prove reali macOS/Windows riportate nella tabella riguardano il precedente archivio. Su Linux la nuova cache è stata collaudata anche con abbinamento persistente e firme PDF/P7M con PIN parziale.
@@ -23,9 +23,10 @@ Cambio PIN e Sblocco Carta sono implementati con test software: le prove reali s
 [Stato delle verifiche e limiti](docs/STATUS.md) · [Compilazione](docs/BUILDING.md) · [Licenze](docs/LICENSING.md)
 
 L'[adattamento della finestra all'area utile](docs/DESKTOP_WINDOW_SIZING.md)
-è implementato nei tre runner senza doppio scaling. Il test manuale GNOME è
-riuscito; le nuove modifiche macOS/Windows hanno test software su Linux e
-richiedono ancora build complete e collaudo sulle rispettive piattaforme.
+è implementato nei tre runner senza doppio scaling. I test manuali GNOME e
+Windows sono riusciti; su Windows il renderer Skia risolve il blocco della
+presentazione durante il trascinamento dei bordi osservato con Impeller.
+La build e il collaudo delle nuove modifiche macOS restano da completare.
 
 ## Funzionalità
 

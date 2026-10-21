@@ -8,6 +8,7 @@ import 'package:cie_flutter_prototype/main.dart';
 import 'package:cie_flutter_prototype/app_flow.dart';
 import 'package:cie_flutter_prototype/app_settings.dart';
 import 'package:cie_flutter_prototype/signature_image.dart';
+import 'package:cie_flutter_prototype/page_header.dart';
 
 import 'home_enrollment_test.dart' show UnifiedFake, PublicSystem;
 import 'widget_test.dart' show FakeService;
@@ -88,10 +89,10 @@ void main() {
           t.widget<Text>(heading).data,
           destination == AppDestination.home ? 'CIE ID' : destination.label,
         );
-        final row = find
-            .ancestor(of: heading, matching: find.byType(Row))
+        final header = find
+            .ancestor(of: heading, matching: find.byType(ApplicationPageHeader))
             .first;
-        expect(t.getCenter(heading).dx, closeTo(t.getCenter(row).dx, .1));
+        expect(t.getCenter(heading).dx, closeTo(t.getCenter(header).dx, .1));
         expect(
           find.text('La tua Carta di Identità Elettronica'),
           destination == AppDestination.home ? findsOneWidget : findsNothing,

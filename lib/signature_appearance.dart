@@ -405,7 +405,12 @@ class _AppearanceEditorState extends State<_AppearanceEditor> {
         AppNotification(message: error, error: true, enabled: !working, onDismissed: () { if (mounted) setState(() => error = null); }),
         LayoutBuilder(
           builder: (context, constraints) {
-            final w = math.min(constraints.maxWidth, 380 * aspect),
+            final pageHeight = math.max(
+              380.0,
+              _SignaturePreviewViewport.heightOf(context) -
+                  MediaQuery.textScalerOf(context).scale(240),
+            );
+            final w = math.min(constraints.maxWidth, pageHeight * aspect),
                 h = w / aspect;
             return Center(
               child: SizedBox(
@@ -564,14 +569,22 @@ class SignatureAppearanceDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Dialog(
     child: SizedBox(
-      width: 820,
+      width: double.infinity,
+      height: double.infinity,
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Flexible(child: SingleChildScrollView(child: content)),
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) => _SignaturePreviewViewport(
+                  height: constraints.maxHeight,
+                  child: SingleChildScrollView(child: content),
+                ),
+              ),
+            ),
             const Divider(height: 24),
             actions,
           ],
@@ -579,6 +592,20 @@ class SignatureAppearanceDialog extends StatelessWidget {
       ),
     ),
   );
+}
+
+class _SignaturePreviewViewport extends InheritedWidget {
+  const _SignaturePreviewViewport({required this.height, required super.child});
+
+  final double height;
+
+  static double heightOf(BuildContext context) => context
+      .dependOnInheritedWidgetOfExactType<_SignaturePreviewViewport>()
+      ?.height ?? MediaQuery.sizeOf(context).height;
+
+  @override
+  bool updateShouldNotify(_SignaturePreviewViewport oldWidget) =>
+      height != oldWidget.height;
 }
 
 class _DashedSignatureBorder extends Decoration {
