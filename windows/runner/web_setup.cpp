@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #include "web_setup.h"
-#include <shellapi.h>
 #include <objbase.h>
 #include <thread>
 #include <filesystem>
 #include "../../native/platform/windows/web/setup_policy.h"
 namespace {
 std::wstring wide(const std::string& s){auto n=MultiByteToWideChar(CP_UTF8,MB_ERR_INVALID_CHARS,s.data(),static_cast<int>(s.size()),nullptr,0);if(n<=0)return {};std::wstring out(n,0);MultiByteToWideChar(CP_UTF8,MB_ERR_INVALID_CHARS,s.data(),static_cast<int>(s.size()),out.data(),n);return out;}
-DWORD runSetup(const std::wstring& reader,HWND owner){
+DWORD checkSetup(const std::wstring& reader){
  wchar_t path[32768];auto n=GetModuleFileNameW(nullptr,path,32768);if(!n||n>=32768)return 6;
  auto directory=std::filesystem::path(path).parent_path()/L"web-component";
  auto helper=directory/L"CIE-Web-Setup.exe";
@@ -18,25 +17,19 @@ DWORD runSetup(const std::wstring& reader,HWND owner){
  CloseHandle(child.hThread);DWORD code=6;
  if(WaitForSingleObject(child.hProcess,30000)==WAIT_OBJECT_0)GetExitCodeProcess(child.hProcess,&code);
  else {TerminateProcess(child.hProcess,6);WaitForSingleObject(child.hProcess,5000);}
- CloseHandle(child.hProcess);if(code!=cie_setup::needsElevation)return code;
- // Only this fixed helper is elevated. No PIN, certificate, script or destination
- // path is accepted from Dart, and no command interpreter is started.
- auto parameters=L"--install "+cie_setup::quote(reader);SHELLEXECUTEINFOW info{};info.cbSize=sizeof(info);info.fMask=SEE_MASK_NOCLOSEPROCESS|SEE_MASK_NOASYNC|SEE_MASK_FLAG_NO_UI;info.hwnd=IsWindow(owner)?owner:nullptr;info.lpVerb=L"runas";info.lpFile=helper.c_str();info.lpParameters=parameters.c_str();info.lpDirectory=directory.c_str();info.nShow=SW_HIDE;
- if(!ShellExecuteExW(&info))return GetLastError()==ERROR_CANCELLED?ERROR_CANCELLED:ERROR_INSTALL_FAILURE;
- if(!info.hProcess)return 8;
- WaitForSingleObject(info.hProcess,INFINITE);code=8;GetExitCodeProcess(info.hProcess,&code);CloseHandle(info.hProcess);return code;
+ CloseHandle(child.hProcess);return code;
 }
 }
-WebSetupChannel::WebSetupChannel(flutter::BinaryMessenger* messenger,HWND owner){
+WebSetupChannel::WebSetupChannel(flutter::BinaryMessenger* messenger,HWND){
  channel_=std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(messenger,"cie.id/windows-web-setup",&flutter::StandardMethodCodec::GetInstance());
- channel_->SetMethodCallHandler([this,owner](const auto& call,auto reply){
-  if(call.method_name()=="install"){
+ channel_->SetMethodCallHandler([this](const auto& call,auto reply){
+  if(call.method_name()=="check"){
    if(job_&&job_->code==STILL_ACTIVE){reply->Error("setup_busy");return;}
    const auto* args=std::get_if<flutter::EncodableMap>(call.arguments());const std::string* value=nullptr;
    if(args){auto it=args->find(flutter::EncodableValue("reader"));if(it!=args->end())value=std::get_if<std::string>(&it->second);}
    auto reader=value&&value->size()<=16384?wide(*value):L"";if(!cie_setup::validReader(reader)){reply->Error("setup_reader_required");return;}
    auto job=job_=std::make_shared<Job>();
-   std::thread([job,reader,owner]{HRESULT initialized=CoInitializeEx(nullptr,COINIT_APARTMENTTHREADED);DWORD result=7;try{result=runSetup(reader,owner);}catch(...){result=7;}job->code=result;if(SUCCEEDED(initialized))CoUninitialize();}).detach();
+   std::thread([job,reader]{HRESULT initialized=CoInitializeEx(nullptr,COINIT_APARTMENTTHREADED);DWORD result=7;try{result=checkSetup(reader);}catch(...){result=7;}job->code=result;if(SUCCEEDED(initialized))CoUninitialize();}).detach();
    reply->Success(flutter::EncodableValue(true));return;
   }
   if(call.method_name()=="status"){

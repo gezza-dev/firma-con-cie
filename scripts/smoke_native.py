@@ -12,15 +12,18 @@ import shutil
 import subprocess
 import tempfile
 import sys
+from runtime_test_tools import test_tools_runtime
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--runtime', type=Path, required=True)
+parser.add_argument('--test-tools-runtime', type=Path, help='Verified external development tools; not installed with the app')
 parser.add_argument('--document', type=Path, help='Optional document; reports flags only, never signer names')
 parser.add_argument('--report', type=Path)
 parser.add_argument('--detect-only', action='store_true', help=argparse.SUPPRESS)
 parser.add_argument('--detect', action='store_true', help='Read public card information without a PIN')
 args = parser.parse_args()
 runtime = args.runtime.resolve()
+test_tools = test_tools_runtime(runtime, args.test_tools_runtime)
 system = platform.system()
 suffix = {'Darwin':'.dylib', 'Windows':'.dll', 'Linux':'.so'}[system]
 prefix = '' if system == 'Windows' else 'lib'
@@ -66,7 +69,7 @@ with tempfile.TemporaryDirectory(prefix='cie-port-test-') as temporary:
     folder = Path(temporary)
     # Recreate fixtures on each PC: their test certificate is valid for one hour.
     for name, parameters in [('cie_security_tests', ['--temporal-fixtures', 'temporal-fixtures']), ('cie_handle_tests', []), ('cie_sdk_tests', ['fixtures'])]:
-        result = subprocess.run([str(runtime/'tests'/(name+exe)),*parameters], cwd=folder, env=env, capture_output=True)
+        result = subprocess.run([str(test_tools/'tests'/(name+exe)),*parameters], cwd=folder, env=env, capture_output=True)
         report[name] = dict(passed=result.returncode == 0, returnCode=result.returncode)
         report[name]['stdout'] = result.stdout.decode('utf-8',errors='replace')
         if result.returncode:

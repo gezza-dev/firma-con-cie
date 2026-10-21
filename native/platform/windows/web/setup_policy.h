@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include "card_catalog.h"
 namespace cie_setup {
 inline constexpr wchar_t cardName[]=L"CIE ID Flutter Prototype Web";
 // SCard provider IDs: PRIMARY=1 accepts a GUID, CSP=2 accepts a CSP name.
@@ -12,6 +13,7 @@ enum Code { installed=0, administratorRequired=2, conflict=3, readerUnavailable=
  recoveryRequired=9, needsElevation=10 };
 inline bool ownedName(const std::wstring& value){
  const std::wstring base(cardName);
+ for(const auto& card:cardCatalog)if(value==base+L" "+card.id)return true;
  return value==base||(value.size()==base.size()+17&&value.compare(0,base.size()+1,base+L" ")==0&&
    std::all_of(value.begin()+base.size()+1,value.end(),[](wchar_t c){return (c>=L'0'&&c<=L'9')||(c>=L'a'&&c<=L'f');}));
 }
@@ -27,6 +29,29 @@ inline std::wstring quote(const std::wstring& value){
  }out.append(slashes*2,L'\\');return out+L"\"";
 }
 inline bool validReader(const std::wstring& value){return !value.empty()&&value.size()<=4096&&value.find(L'\0')==std::wstring::npos;}
+
+struct Binding {std::wstring name,csp,ksp,module;};
+// Restore every prior binding on a failed multi-model upgrade. No card or user
+// data is needed, and a foreign name is rejected before the first write.
+template<class Set,class Verify>
+int upgradeBindings(const std::vector<Binding>& previous,const std::wstring& module,Set set,Verify verify){
+ for(const auto& b:previous)if(!ownedName(b.name))return conflict;
+ size_t touched=0;bool good=true;
+ for(const auto& b:previous){
+  ++touched;
+  if(set(b.name,cspProvider,L"Microsoft Base Smart Card Crypto Provider")||
+     set(b.name,kspProvider,L"Microsoft Smart Card Key Storage Provider")||
+     set(b.name,moduleProvider,module)||!verify(b.name)){good=false;break;}
+ }
+ if(good)return installed;
+ bool restored=true;
+ for(size_t i=0;i<touched;++i){const auto& b=previous[i];
+  if(set(b.name,cspProvider,b.csp))restored=false;
+  if(set(b.name,kspProvider,b.ksp))restored=false;
+  if(set(b.name,moduleProvider,b.module))restored=false;
+ }
+ return restored?registrationFailure:recoveryRequired;
+}
 template<class Set,class Forget,class Verify>
 int publishBindings(bool created,Set set,Forget forget,Verify verify,
  const std::wstring& previousCsp,const std::wstring& previousKsp,const std::wstring& previousModule,const std::wstring& module){

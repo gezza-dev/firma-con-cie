@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 
 import 'native_bridge.dart';
+import 'certificate_validity.dart';
 import 'web_access.dart';
 
 typedef WebStatusReader = Future<JsonResult> Function();
@@ -28,6 +29,24 @@ class EnrollmentRecord {
   final bool removalPending;
   String get id => data['card'] as String;
   String get name => data['fullName'] as String? ?? '';
+  CertificateValidity? get certificateValidity => CertificateValidity.fromHex(
+    data['certificateHex'] ??
+        (system['certificateHexByCard'] is Map
+            ? (system['certificateHexByCard'] as Map)[id]
+            : null),
+  );
+  String? certificateWarning(DateTime now) {
+    final validity = certificateValidity;
+    if (validity == null) return null;
+    if (validity.expiredAt(now)) {
+      return 'Il certificato della CIE è scaduto. L’accesso ai siti potrebbe essere rifiutato.';
+    }
+    if (validity.notYetValidAt(now)) {
+      return 'Il certificato della CIE non è ancora valido. Verifica anche la data e l’ora del sistema.';
+    }
+    return null;
+  }
+
   String get cardNumber => data['cardNumber'] as String? ?? '';
   bool get readyForSigning =>
       !removalPending && data['readyForSigning'] == true;

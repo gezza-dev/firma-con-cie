@@ -4,6 +4,7 @@
 #include <winscard.h>
 #include <bcrypt.h>
 #include "cardmod_compat.h"
+#include "web_container_win.h"
 #include <cstdlib>
 #include <iostream>
 #include <stdexcept>
@@ -23,18 +24,35 @@ int main(int argc,char** argv){try{
  check(acquire(&d,0)==ERROR_REVISION_MISMATCH);d.dwVersion=8;check(acquire(&d,0)==0);check(d.dwVersion==7);
  PBYTE bytes=nullptr;DWORD count=0;char cardid[]="cardid";
  check(d.pfnCardReadFile(&d,nullptr,cardid,0,&bytes,&count)==0);check(count==16);release(bytes);
- char mscp[]="mscp",cmap[]="cmapfile";check(d.pfnCardReadFile(&d,mscp,cmap,0,&bytes,&count)==0);check(count==sizeof(CONTAINER_MAP_RECORD));
- auto map=reinterpret_cast<PCONTAINER_MAP_RECORD>(bytes);check(map->wSigKeySizeBits==2048&&map->wKeyExchangeKeySizeBits==0);release(bytes);
+ BYTE cardGuid[16]{};
+ check(d.pfnCardReadFile(&d,nullptr,cardid,0,&bytes,&count)==0&&count==16);memcpy(cardGuid,bytes,16);release(bytes);
+ char mscp[]="mscp",cmap[]="cmapfile";check(d.pfnCardReadFile(&d,mscp,cmap,0,&bytes,&count)==0);check(count==2*sizeof(CONTAINER_MAP_RECORD));
+ auto map=reinterpret_cast<PCONTAINER_MAP_RECORD>(bytes);
+ check(map[0].wSigKeySizeBits==2048&&!map[0].wKeyExchangeKeySizeBits);
+ check(!map[1].wSigKeySizeBits&&map[1].wKeyExchangeKeySizeBits==2048);
+ check(map[0].bFlags==(CONTAINER_MAP_VALID_CONTAINER|CONTAINER_MAP_DEFAULT_CONTAINER)&&map[1].bFlags==CONTAINER_MAP_VALID_CONTAINER);
+ check(wcscmp(map[0].wszGuid,map[1].wszGuid)!=0);GUID originalGuid;memcpy(&originalGuid,cardGuid,16);
+ check(cie_web_store::containerName(originalGuid)==map[0].wszGuid);
+ std::wstring originalName=map[0].wszGuid,aliasName=map[1].wszGuid;release(bytes);
+ // KSP needs a unique key for the browser's legacySpec=0 opening: each name
+ // advertises exactly one role. Names must survive context recreation.
+ check(d.pfnCardReadFile(&d,mscp,cmap,0,&bytes,&count)==0);
+ map=reinterpret_cast<PCONTAINER_MAP_RECORD>(bytes);check(originalName==map[0].wszGuid&&aliasName==map[1].wszGuid);release(bytes);
+ char cacheName[]="cardcf";check(d.pfnCardReadFile(&d,nullptr,cacheName,0,&bytes,&count)==0&&count==sizeof(CARD_CACHE_FILE_FORMAT));
+ auto cache=reinterpret_cast<PCARD_CACHE_FILE_FORMAT>(bytes);check(cache->wContainersFreshness==1&&cache->wFilesFreshness==1&&!cache->bPinsFreshness);release(bytes);
  CARD_CAPABILITIES caps{};caps.dwVersion=CARD_CAPABILITIES_CURRENT_VERSION;check(d.pfnCardQueryCapabilities(&d,&caps)==0);check(!caps.fKeyGen);
  for(DWORD version:{0UL,1UL,2UL,0xffffffffUL}){
   CARD_CAPABILITIES c{};c.dwVersion=version;check(d.pfnCardQueryCapabilities(&d,&c)==0&&c.dwVersion==1);
-  CARD_FREE_SPACE_INFO f{};f.dwVersion=version;check(d.pfnCardQueryFreeSpace(&d,0,&f)==0&&f.dwVersion==1&&f.dwMaxKeyContainers==1);
+  CARD_FREE_SPACE_INFO f{};f.dwVersion=version;check(d.pfnCardQueryFreeSpace(&d,0,&f)==0&&f.dwVersion==1&&f.dwMaxKeyContainers==2);
   CARD_KEY_SIZES k{};k.dwVersion=version;check(d.pfnCardQueryKeySizes(&d,AT_SIGNATURE,0,&k)==0&&k.dwVersion==1&&k.dwMaximumBitlen==2048);
   CARD_FILE_INFO file{};file.dwVersion=version;check(d.pfnCardGetFileInfo(&d,nullptr,cardid,&file)==0&&file.dwVersion==1&&file.cbFileSize==16);
-  CONTAINER_INFO container{};container.dwVersion=version;check(d.pfnCardGetContainerInfo(&d,0,0,&container)==0&&container.dwVersion==1&&container.cbSigPublicKey>0);release(container.pbSigPublicKey);
+  CONTAINER_INFO container{};container.dwVersion=version;check(d.pfnCardGetContainerInfo(&d,0,0,&container)==0&&container.dwVersion==1&&container.cbSigPublicKey>0);check(!container.cbKeyExPublicKey&&!container.pbKeyExPublicKey);
+  CONTAINER_INFO alias{};alias.dwVersion=version;check(d.pfnCardGetContainerInfo(&d,1,0,&alias)==0&&alias.dwVersion==1&&alias.cbKeyExPublicKey==container.cbSigPublicKey&&!alias.cbSigPublicKey&&!alias.pbSigPublicKey);
+  check(reinterpret_cast<BLOBHEADER*>(container.pbSigPublicKey)->aiKeyAlg==CALG_RSA_SIGN&&reinterpret_cast<BLOBHEADER*>(alias.pbKeyExPublicKey)->aiKeyAlg==CALG_RSA_KEYX);
+  check(!memcmp(container.pbSigPublicKey+sizeof(BLOBHEADER),alias.pbKeyExPublicKey+sizeof(BLOBHEADER),container.cbSigPublicKey-sizeof(BLOBHEADER)));release(container.pbSigPublicKey);release(alias.pbKeyExPublicKey);
  }
  check(d.pfnCardQueryCapabilities(&d,nullptr)==SCARD_E_INVALID_PARAMETER);
- CARD_KEY_SIZES wrongKey{};check(d.pfnCardQueryKeySizes(&d,AT_KEYEXCHANGE,0,&wrongKey)==SCARD_E_INVALID_PARAMETER);
+ CARD_KEY_SIZES wrongKey{};check(d.pfnCardQueryKeySizes(&d,AT_KEYEXCHANGE,0,&wrongKey)==0&&wrongKey.dwMaximumBitlen==2048);
  PIN_INFO pin{};check(d.pfnCardGetProperty(&d,CP_CARD_PIN_INFO,reinterpret_cast<PBYTE>(&pin),sizeof(pin),&count,ROLE_USER)==0);check(pin.PinCachePolicy.PinCachePolicyType==PinCacheTimed&&pin.PinCachePolicy.dwPinCachePolicyInfo==60&&pin.PinCachePolicy.dwVersion==PIN_CACHE_POLICY_CURRENT_VERSION);check(!pin.dwChangePermission&&!pin.dwUnblockPermission);
  check(d.pfnCardGetProperty(&d,CP_CARD_PIN_INFO,reinterpret_cast<PBYTE>(&pin),sizeof(pin),&count,ROLE_ADMIN)==SCARD_E_UNSUPPORTED_FEATURE);
  check(d.pfnCardUnblockPin(nullptr,nullptr,nullptr,0,nullptr,0,0,0)==SCARD_E_UNSUPPORTED_FEATURE);
@@ -119,9 +137,25 @@ int main(int argc,char** argv){try{
  check(d.pfnCardAuthenticateEx(&d,ROLE_USER,0,nonNumeric,8,nullptr,nullptr,nullptr)==SCARD_E_INVALID_PARAMETER&&auths()==authCount);
  check(d.pfnCardAuthenticateEx(&d,ROLE_USER,0,longPin,9,nullptr,nullptr,nullptr)==SCARD_E_INVALID_PARAMETER&&auths()==authCount);
  CARD_DATA other=d;other.pvVendorSpecific=nullptr;check(acquire(&other,0)==0);
+ check(other.pfnCardReadFile(&other,mscp,cmap,0,&bytes,&count)==0&&count==2*sizeof(CONTAINER_MAP_RECORD));
+ map=reinterpret_cast<PCONTAINER_MAP_RECORD>(bytes);check(originalName==map[0].wszGuid&&aliasName==map[1].wszGuid);release(bytes);
+ PIN_ID aliasPin=0;check(other.pfnCardGetContainerProperty(&other,1,CCP_PIN_IDENTIFIER,reinterpret_cast<PBYTE>(&aliasPin),sizeof(aliasPin),&count,0)==0&&aliasPin==ROLE_USER);
+ // The property callback must honor the alias index, just like the direct API.
+ CONTAINER_INFO aliasProperty{};check(other.pfnCardGetContainerProperty(&other,1,CCP_CONTAINER_INFO,reinterpret_cast<PBYTE>(&aliasProperty),sizeof(aliasProperty),&count,0)==0&&count==sizeof(aliasProperty)&&aliasProperty.cbKeyExPublicKey>0&&aliasProperty.pbKeyExPublicKey&&!aliasProperty.cbSigPublicKey&&!aliasProperty.pbSigPublicKey);release(aliasProperty.pbKeyExPublicKey);
+ CONTAINER_INFO noContainer{};check(other.pfnCardGetContainerInfo(&other,2,0,&noContainer)==SCARD_E_INVALID_PARAMETER);
+ LPSTR names=nullptr;check(other.pfnCardEnumFiles(&other,mscp,&names,&count,0)==0);
+ const char expectedFiles[]="cmapfile\0ksc00\0kxc01\0";check(count==sizeof(expectedFiles)&&!memcmp(names,expectedFiles,count));release(names);
  PIN_INFO otherPin{};check(other.pfnCardGetProperty(&other,CP_CARD_PIN_INFO,reinterpret_cast<PBYTE>(&otherPin),sizeof(otherPin),&count,ROLE_USER)==0&&otherPin.PinCachePolicy.PinCachePolicyType==PinCacheTimed&&otherPin.PinCachePolicy.dwPinCachePolicyInfo==60);
  auto before=auths();check(d.pfnCardAuthenticateEx(&d,ROLE_USER,0,secret,8,nullptr,nullptr,nullptr)==0&&auths()==before+1);
  padding.pszAlgId=BCRYPT_SHA256_ALGORITHM;check(d.pfnCardSignData(&d,&info)==0);release(info.pbSignedData);
+ // The legacy alias signs through the same authenticated context, with no PIN callback.
+ info.bContainerIndex=1;info.dwKeySpec=AT_KEYEXCHANGE;auto legacyAuths=auths(),legacySigns=signs();
+ check(d.pfnCardSignData(&d,&info)==0&&info.cbSignedData==256&&auths()==legacyAuths&&signs()==legacySigns+1);release(info.pbSignedData);info.bContainerIndex=0;info.dwKeySpec=AT_SIGNATURE;
+ CARD_SIGNING_INFO wrongContainer=info;wrongContainer.bContainerIndex=1;check(d.pfnCardSignData(&d,&wrongContainer)==SCARD_E_INVALID_PARAMETER&&signs()==legacySigns+1);
+ wrongContainer=info;wrongContainer.dwKeySpec=AT_KEYEXCHANGE;check(d.pfnCardSignData(&d,&wrongContainer)==SCARD_E_INVALID_PARAMETER&&signs()==legacySigns+1);
+ check(d.pfnCardRSADecrypt(nullptr,nullptr)==SCARD_E_UNSUPPORTED_FEATURE);
+ char keyCert[]="kxc01",sigCert[]="ksc00";PBYTE a=nullptr,b=nullptr;DWORD an=0,bn=0;
+ check(d.pfnCardReadFile(&d,mscp,keyCert,0,&a,&an)==0&&d.pfnCardReadFile(&d,mscp,sigCert,0,&b,&bn)==0&&an==bn&&!memcmp(a,b,an));release(a);release(b);
  // A repeated explicit callback must verify its input even after success.
  BYTE wrong[]="87654321";before=auths();DWORD attempts=0;
  check(d.pfnCardAuthenticateEx(&d,ROLE_USER,0,wrong,8,nullptr,nullptr,&attempts)==SCARD_W_WRONG_CHV&&attempts==2&&auths()==before+1);

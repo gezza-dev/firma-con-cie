@@ -11,6 +11,7 @@ from pathlib import Path
 p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('--runtime',type=Path,required=True)
 p.add_argument('--provider',type=Path,required=True)
+p.add_argument('--pkcs11',type=Path,help='Optional tested Windows PKCS#11 module')
 p.add_argument('--output',type=Path,required=True)
 a=p.parse_args();runtime=a.runtime.resolve();out=a.output.resolve()
 if out.exists():raise SystemExit('Use a new output directory')
@@ -22,6 +23,8 @@ out.mkdir(parents=True)
 shutil.copy2(a.provider,out/'cie_prototype_minidriver.dll')
 for name in ['cie_web.dll','cie-pkcs11.dll','libgcc_s_seh-1.dll','libstdc++-6.dll','libwinpthread-1.dll']:
  (out/'backend').mkdir(exist_ok=True);shutil.copy2(runtime/name,out/'backend'/name)
+if a.pkcs11:
+ shutil.copy2(a.pkcs11,out/'backend/cie_pkcs11.dll')
 for name in ['LICENSE.txt','LICENSE_AUDIT.md','THIRD_PARTY_NOTICES.md','prototype-LICENSE','prototype-NOTICE.md','LICENSES']:
  source=runtime/'licenses'/name;target=out/'backend/licenses'/name;target.parent.mkdir(exist_ok=True,parents=True)
  if source.is_dir():shutil.copytree(source,target)
@@ -34,5 +37,17 @@ for name,digest in files.items():
  lines.append(' {L'+json.dumps(name,ensure_ascii=True)+',"'+digest+'",'+str((out/name).stat().st_size)+'ULL},')
 lines+=['};','}']
 (out/'setup_payload.h').write_text('\n'.join(lines)+'\n',encoding='utf-8')
-(out/'payload-manifest.json').write_text(json.dumps({'version':version,'files':files},indent=2)+'\n')
+payload={'version':version,'files':files}
+root=Path(__file__).resolve().parents[1]
+if a.pkcs11:
+ sources=['native/platform/linux/web/pkcs11.cpp','native/platform/linux/web/card.cpp',
+  'native/platform/linux/web/card.h','native/platform/linux/web/exports.h',
+  'native/platform/linux/web/pkcs11_api.h','native/platform/windows/pkcs11/CMakeLists.txt',
+  'native/platform/windows/pkcs11/pkcs11.def','native/backend/cie-pkcs11/PKCS11/cryptoki.h',
+  'native/src/local_cache.cpp','native/src/local_cache_crypto.cpp','scripts/build_windows_pkcs11.py']
+ payload['artifacts']={'backend/cie_pkcs11.dll':{
+  'sha256':files['backend/cie_pkcs11.dll'],
+  'source_files':{name:sha(root/name) for name in sources},
+  'cryptoAndWebCoreUnchanged':{name:files['backend/'+name] for name in ['cie-pkcs11.dll','cie_web.dll']}}}
+(out/'payload-manifest.json').write_text(json.dumps(payload,indent=2)+'\n')
 print(json.dumps({'output':str(out),'version':version,'files':len(files)}))

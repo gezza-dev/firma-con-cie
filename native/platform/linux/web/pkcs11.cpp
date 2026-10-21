@@ -2,10 +2,12 @@
 // Derived from RSA Security Inc. PKCS #11 Cryptographic Token Interface
 // (Cryptoki) declarations. Read-only RSA client-authentication token for NSS.
 #include "card.h"
+#include "exports.h"
 #include "web_policy.h"
 #include <openssl/x509.h>
 #include <openssl/core_names.h>
 #include <openssl/rand.h>
+#include <openssl/rsa.h>
 #include <algorithm>
 #include <array>
 #include <chrono>
@@ -17,7 +19,15 @@
 #include <map>
 #include <mutex>
 #include <thread>
+#ifdef _WIN32
+#include <process.h>
+#define getpid _getpid
+#undef CreateMutex
+#define CIE_GET_FUNCTION_LIST CieGetFunctionList
+#else
 #include <unistd.h>
+#define CIE_GET_FUNCTION_LIST C_GetFunctionList
+#endif
 
 namespace {
 using Bytes = std::vector<uint8_t>;
@@ -25,6 +35,7 @@ using Clock = std::chrono::steady_clock;
 constexpr auto idleLimit = std::chrono::seconds(30);
 constexpr CK_OBJECT_HANDLE certificateObject=1, publicObject=2, privateObject=3;
 constexpr CK_MECHANISM_TYPE mechanisms[]={CKM_RSA_PKCS,CKM_SHA256_RSA_PKCS,CKM_SHA384_RSA_PKCS,CKM_SHA512_RSA_PKCS};
+constexpr CK_MECHANISM_TYPE allMechanisms[]={CKM_RSA_PKCS,CKM_SHA256_RSA_PKCS,CKM_SHA384_RSA_PKCS,CKM_SHA512_RSA_PKCS,CKM_SHA256,CKM_SHA384,CKM_SHA512};
 template<class T> Bytes bytes(const T& value) {
     auto p=reinterpret_cast<const uint8_t*>(&value); return {p,p+sizeof(value)};
 }
@@ -48,17 +59,21 @@ struct Session {
     CK_SLOT_ID slot;
     CK_FLAGS flags;
     bool finding=false,signing=false,multipart=false;
+    bool verifying=false,verifyMultipart=false,hashMultipart=false;
+    CK_MECHANISM_TYPE verifyMechanism=0;
+    std::unique_ptr<EVP_MD_CTX,decltype(&EVP_MD_CTX_free)> hashing{nullptr,EVP_MD_CTX_free},verifier{nullptr,EVP_MD_CTX_free};
     std::vector<CK_OBJECT_HANDLE> found;
     size_t position=0;
     CK_MECHANISM_TYPE mechanism=0;
     std::unique_ptr<EVP_MD_CTX,decltype(&EVP_MD_CTX_free)> digest{nullptr,EVP_MD_CTX_free};
     void cancelSign() { signing=false; multipart=false; digest.reset(); }
+    void cancelVerify() { verifying=false;verifyMultipart=false;verifier.reset(); }
 };
 struct State {
     std::mutex mutex;
     std::condition_variable wake;
     bool initialized=false,stop=true,finalizing=false;
-    pid_t process=0;
+    decltype(getpid()) process=0;
     std::thread timer;
     cie_linux::Readers readers;
     std::map<CK_SLOT_ID,Slot> slots;
@@ -210,8 +225,8 @@ CK_RV finalize(CK_VOID_PTR reserved) noexcept {
     state.sessions.clear();state.slots.clear();state.events.clear();state.finalizing=false;return CKR_OK;
 }
 CK_RV info(CK_INFO_PTR out) {return boundary([&]() -> CK_RV {
-    require(out);*out={};out->cryptokiVersion={2,20};out->libraryVersion={0,1};
-    padded(out->manufacturerID,"CIE ID Desktop");padded(out->libraryDescription,"CIE ID Linux Firefox PKCS11");return CKR_OK;
+    require(out);*out={};out->cryptokiVersion={2,20};out->libraryVersion={1,0};
+    padded(out->manufacturerID,"CIE ID Desktop");padded(out->libraryDescription,"CIE ID Desktop PKCS11");return CKR_OK;
 });}
 CK_RV slots(CK_BBOOL present,CK_SLOT_ID_PTR out,CK_ULONG_PTR count) {return boundary([&]() -> CK_RV {
     require(count);state.refresh();std::vector<CK_SLOT_ID> ids;
@@ -236,12 +251,13 @@ CK_RV tokenInfo(CK_SLOT_ID id,CK_TOKEN_INFO_PTR out) {return boundary([&]() -> C
     std::memset(out->utcTime,' ',sizeof(out->utcTime));return CKR_OK;
 });}
 CK_RV mechanismList(CK_SLOT_ID id,CK_MECHANISM_TYPE_PTR out,CK_ULONG_PTR count) {return boundary([&]() -> CK_RV {
-    slotById(id);require(count);auto capacity=*count;*count=std::size(mechanisms);if(!out)return CKR_OK;
-    require(capacity>=std::size(mechanisms),CKR_BUFFER_TOO_SMALL);std::copy(std::begin(mechanisms),std::end(mechanisms),out);return CKR_OK;
+    slotById(id);require(count);auto capacity=*count;*count=std::size(allMechanisms);if(!out)return CKR_OK;
+    require(capacity>=std::size(allMechanisms),CKR_BUFFER_TOO_SMALL);std::copy(std::begin(allMechanisms),std::end(allMechanisms),out);return CKR_OK;
 });}
 CK_RV mechanismInfo(CK_SLOT_ID id,CK_MECHANISM_TYPE type,CK_MECHANISM_INFO_PTR out) {return boundary([&]() -> CK_RV {
-    slotById(id);require(out);require(std::find(std::begin(mechanisms),std::end(mechanisms),type)!=std::end(mechanisms),CKR_MECHANISM_INVALID);
-    *out={2048,2048,CKF_HW|CKF_SIGN};return CKR_OK;
+    slotById(id);require(out);require(std::find(std::begin(allMechanisms),std::end(allMechanisms),type)!=std::end(allMechanisms),CKR_MECHANISM_INVALID);
+    if(type==CKM_SHA256||type==CKM_SHA384||type==CKM_SHA512)*out={0,0,CKF_DIGEST};
+    else *out={2048,2048,CKF_HW|CKF_SIGN|CKF_VERIFY};return CKR_OK;
 });}
 CK_RV openSession(CK_SLOT_ID id,CK_FLAGS flags,CK_VOID_PTR,CK_NOTIFY,CK_SESSION_HANDLE_PTR out) {return boundary([&]() -> CK_RV {
     require(out);*out=0;require(flags&CKF_SERIAL_SESSION,CKR_SESSION_PARALLEL_NOT_SUPPORTED);
@@ -330,7 +346,7 @@ CK_RV findFinal(CK_SESSION_HANDLE id) {return boundary([&]() -> CK_RV {
     auto& s=sessionById(id);require(s.finding,CKR_OPERATION_NOT_INITIALIZED);s.finding=false;s.found.clear();return CKR_OK;
 });}
 const EVP_MD* digestFor(CK_MECHANISM_TYPE m) {
-    return m==CKM_SHA256_RSA_PKCS?EVP_sha256():m==CKM_SHA384_RSA_PKCS?EVP_sha384():m==CKM_SHA512_RSA_PKCS?EVP_sha512():nullptr;
+    return m==CKM_SHA256_RSA_PKCS||m==CKM_SHA256?EVP_sha256():m==CKM_SHA384_RSA_PKCS||m==CKM_SHA384?EVP_sha384():m==CKM_SHA512_RSA_PKCS||m==CKM_SHA512?EVP_sha512():nullptr;
 }
 CK_RV signInit(CK_SESSION_HANDLE id,CK_MECHANISM_PTR mechanism,CK_OBJECT_HANDLE key) {return boundary([&]() -> CK_RV {
     auto& s=sessionById(id);require(mechanism);require(key==privateObject,CKR_KEY_HANDLE_INVALID);
@@ -389,6 +405,73 @@ CK_RV signFinal(CK_SESSION_HANDLE id,CK_BYTE_PTR out,CK_ULONG_PTR size) {return 
 CK_RV randomBytes(CK_SESSION_HANDLE id,CK_BYTE_PTR out,CK_ULONG size) {return boundary([&]() -> CK_RV {
     sessionById(id);require(out && size<=1048576);require(RAND_bytes(out,int(size))==1,CKR_DEVICE_ERROR);return CKR_OK;
 });}
+// Public software operations have independent state and never authenticate or
+// invoke Card::sign. Length queries and short buffers do not consume a digest.
+CK_RV digestInit(CK_SESSION_HANDLE id,CK_MECHANISM_PTR mechanism){return boundary([&]()->CK_RV{
+ auto& s=sessionById(id);require(mechanism);require(!s.hashing,CKR_OPERATION_ACTIVE);
+ require(!mechanism->pParameter&&!mechanism->ulParameterLen,CKR_MECHANISM_PARAM_INVALID);
+ require(mechanism->mechanism==CKM_SHA256||mechanism->mechanism==CKM_SHA384||mechanism->mechanism==CKM_SHA512,CKR_MECHANISM_INVALID);
+ s.hashing.reset(EVP_MD_CTX_new());if(!s.hashing||EVP_DigestInit_ex(s.hashing.get(),digestFor(mechanism->mechanism),nullptr)!=1){s.hashing.reset();return CKR_HOST_MEMORY;}
+ s.hashMultipart=false;return CKR_OK;
+});}
+CK_RV digestOutput(Session& s,CK_BYTE_PTR data,CK_ULONG length,CK_BYTE_PTR out,CK_ULONG_PTR size,bool single){
+ require(bool(s.hashing),CKR_OPERATION_NOT_INITIALIZED);
+ if(!size||(length&&!data)||(single&&s.hashMultipart)){s.hashing.reset();return CKR_ARGUMENTS_BAD;}
+ std::unique_ptr<EVP_MD_CTX,decltype(&EVP_MD_CTX_free)> copy(EVP_MD_CTX_new(),EVP_MD_CTX_free);
+ require(copy&&EVP_MD_CTX_copy_ex(copy.get(),s.hashing.get())==1,CKR_HOST_MEMORY);
+ if(single)require(EVP_DigestUpdate(copy.get(),data,length)==1,CKR_DEVICE_ERROR);
+ std::array<uint8_t,64> value{};unsigned n=0;require(EVP_DigestFinal_ex(copy.get(),value.data(),&n)==1,CKR_DEVICE_ERROR);
+ auto capacity=*size;*size=n;if(!out)return CKR_OK;if(capacity<n)return CKR_BUFFER_TOO_SMALL;
+ std::memcpy(out,value.data(),n);s.hashing.reset();return CKR_OK;
+}
+CK_RV digest(CK_SESSION_HANDLE id,CK_BYTE_PTR data,CK_ULONG length,CK_BYTE_PTR out,CK_ULONG_PTR size){return boundary([&](){return digestOutput(sessionById(id),data,length,out,size,true);});}
+CK_RV digestUpdate(CK_SESSION_HANDLE id,CK_BYTE_PTR data,CK_ULONG length){return boundary([&]()->CK_RV{
+ auto& s=sessionById(id);require(bool(s.hashing),CKR_OPERATION_NOT_INITIALIZED);
+ if((length&&!data)||EVP_DigestUpdate(s.hashing.get(),data,length)!=1){s.hashing.reset();return CKR_ARGUMENTS_BAD;}
+ s.hashMultipart=true;return CKR_OK;
+});}
+CK_RV digestFinal(CK_SESSION_HANDLE id,CK_BYTE_PTR out,CK_ULONG_PTR size){return boundary([&](){return digestOutput(sessionById(id),nullptr,0,out,size,false);});}
+CK_RV verifyInit(CK_SESSION_HANDLE id,CK_MECHANISM_PTR mechanism,CK_OBJECT_HANDLE key){return boundary([&]()->CK_RV{
+ auto& s=sessionById(id);require(mechanism);require(key==publicObject,CKR_KEY_HANDLE_INVALID);require(!s.verifying,CKR_OPERATION_ACTIVE);
+ require(!mechanism->pParameter&&!mechanism->ulParameterLen,CKR_MECHANISM_PARAM_INVALID);
+ require(std::find(std::begin(mechanisms),std::end(mechanisms),mechanism->mechanism)!=std::end(mechanisms),CKR_MECHANISM_INVALID);
+ if(auto* md=digestFor(mechanism->mechanism)){
+  s.verifier.reset(EVP_MD_CTX_new());if(!s.verifier||EVP_DigestInit_ex(s.verifier.get(),md,nullptr)!=1){s.cancelVerify();return CKR_HOST_MEMORY;}
+ }
+ s.verifyMechanism=mechanism->mechanism;s.verifying=true;s.verifyMultipart=false;return CKR_OK;
+});}
+CK_RV verifyValue(Session& s,const Bytes& encoded,CK_BYTE_PTR signature,CK_ULONG size){
+ s.cancelVerify();if(size!=256)return CKR_SIGNATURE_LEN_RANGE;require(signature);
+ if(!cie_web::digestInfo(encoded.data(),uint32_t(encoded.size())))return CKR_DATA_INVALID;
+ const auto* p=s.token->certificate.data();
+ std::unique_ptr<X509,decltype(&X509_free)> cert(d2i_X509(nullptr,&p,long(s.token->certificate.size())),X509_free);
+ require(bool(cert),CKR_DEVICE_ERROR);
+ std::unique_ptr<EVP_PKEY,decltype(&EVP_PKEY_free)> key(X509_get_pubkey(cert.get()),EVP_PKEY_free);
+ std::unique_ptr<EVP_PKEY_CTX,decltype(&EVP_PKEY_CTX_free)> context(EVP_PKEY_CTX_new(key.get(),nullptr),EVP_PKEY_CTX_free);
+ require(context&&EVP_PKEY_verify_init(context.get())>0&&EVP_PKEY_CTX_set_rsa_padding(context.get(),RSA_PKCS1_PADDING)>0,CKR_DEVICE_ERROR);
+ auto result=EVP_PKEY_verify(context.get(),signature,size,encoded.data(),encoded.size());
+ return result==1?CKR_OK:result==0?CKR_SIGNATURE_INVALID:CKR_DEVICE_ERROR;
+}
+CK_RV verify(CK_SESSION_HANDLE id,CK_BYTE_PTR data,CK_ULONG length,CK_BYTE_PTR signature,CK_ULONG size){return boundary([&]()->CK_RV{
+ auto& s=sessionById(id);require(s.verifying,CKR_OPERATION_NOT_INITIALIZED);
+ if((length&&!data)||s.verifyMultipart){s.cancelVerify();return CKR_ARGUMENTS_BAD;}
+ if(s.verifyMechanism==CKM_RSA_PKCS&&length>83){s.cancelVerify();return CKR_DATA_LEN_RANGE;}
+ auto encoded=digestInfo(data,length,s.verifyMechanism);return verifyValue(s,encoded,signature,size);
+});}
+CK_RV verifyUpdate(CK_SESSION_HANDLE id,CK_BYTE_PTR data,CK_ULONG length){return boundary([&]()->CK_RV{
+ auto& s=sessionById(id);require(s.verifying,CKR_OPERATION_NOT_INITIALIZED);
+ if(!s.verifier){s.cancelVerify();return CKR_FUNCTION_NOT_SUPPORTED;}
+ if((length&&!data)||EVP_DigestUpdate(s.verifier.get(),data,length)!=1){s.cancelVerify();return CKR_ARGUMENTS_BAD;}
+ s.verifyMultipart=true;return CKR_OK;
+});}
+CK_RV verifyFinal(CK_SESSION_HANDLE id,CK_BYTE_PTR signature,CK_ULONG size){return boundary([&]()->CK_RV{
+ auto& s=sessionById(id);require(s.verifying,CKR_OPERATION_NOT_INITIALIZED);
+ if(!s.verifier){s.cancelVerify();return CKR_FUNCTION_NOT_SUPPORTED;}
+ std::array<uint8_t,64> value{};unsigned n=0;
+ require(EVP_DigestFinal_ex(s.verifier.get(),value.data(),&n)==1,CKR_DEVICE_ERROR);
+ Bytes encoded={0x30,uint8_t(17+n),0x30,0x0d,0x06,0x09,0x60,0x86,0x48,1,0x65,3,4,2,uint8_t(n==32?1:n==48?2:3),5,0,4,uint8_t(n)};
+ encoded.insert(encoded.end(),value.begin(),value.begin()+n);return verifyValue(s,encoded,signature,size);
+});}
 CK_RV waitEvent(CK_FLAGS flags,CK_SLOT_ID_PTR out,CK_VOID_PTR reserved) noexcept {
     try {
         if(state.process && state.process!=getpid())return CKR_CRYPTOKI_NOT_INITIALIZED;
@@ -403,8 +486,8 @@ template<class T>struct Unsupported;
 template<class R,class... A>struct Unsupported<R(*)(A...)>{static R call(A...){return boundary([]{return CKR_FUNCTION_NOT_SUPPORTED;});}};
 CK_FUNCTION_LIST functionList();
 }
-extern "C" __attribute__((visibility("default"))) uint32_t CieLinuxWebAbiVersion() { return 1; }
-extern "C" __attribute__((visibility("default"))) CK_RV C_GetFunctionList(CK_FUNCTION_LIST_PTR_PTR out) {
+extern "C" CIE_PKCS11_EXPORT uint32_t CieLinuxWebAbiVersion() { return 1; }
+extern "C" CIE_PKCS11_EXPORT CK_RV CIE_GET_FUNCTION_LIST(CK_FUNCTION_LIST_PTR_PTR out) {
     if(!out)return CKR_ARGUMENTS_BAD;
     static CK_FUNCTION_LIST functions=functionList();*out=&functions;return CKR_OK;
 }
@@ -414,19 +497,21 @@ CK_FUNCTION_LIST functionList() {
 #define CK_PKCS11_FUNCTION_INFO(name) list.name=Unsupported<decltype(list.name)>::call;
 #include "../../../backend/cie-pkcs11/PKCS11/pkcs11f.h"
 #undef CK_PKCS11_FUNCTION_INFO
-    list.C_GetFunctionList=C_GetFunctionList;list.C_Initialize=initialize;list.C_Finalize=finalize;list.C_GetInfo=info;
+    list.C_GetFunctionList=CIE_GET_FUNCTION_LIST;list.C_Initialize=initialize;list.C_Finalize=finalize;list.C_GetInfo=info;
     list.C_GetSlotList=slots;list.C_GetSlotInfo=slotInfo;list.C_GetTokenInfo=tokenInfo;
     list.C_GetMechanismList=mechanismList;list.C_GetMechanismInfo=mechanismInfo;
     list.C_OpenSession=openSession;list.C_CloseSession=closeSession;list.C_CloseAllSessions=closeAll;list.C_GetSessionInfo=sessionInfo;
     list.C_Login=login;list.C_Logout=logout;list.C_GetAttributeValue=attributes;list.C_GetObjectSize=objectSize;
     list.C_FindObjectsInit=findInit;list.C_FindObjects=find;list.C_FindObjectsFinal=findFinal;
     list.C_SignInit=signInit;list.C_Sign=sign;list.C_SignUpdate=signUpdate;list.C_SignFinal=signFinal;
+    list.C_DigestInit=digestInit;list.C_Digest=digest;list.C_DigestUpdate=digestUpdate;list.C_DigestFinal=digestFinal;
+    list.C_VerifyInit=verifyInit;list.C_Verify=verify;list.C_VerifyUpdate=verifyUpdate;list.C_VerifyFinal=verifyFinal;
     list.C_GenerateRandom=randomBytes;list.C_WaitForSlotEvent=waitEvent;return list;
 }
 }
 #ifdef CIE_PAIRING_TEST_SERVICE
 // Only the separately linked software-test module exports this clock hook.
-extern "C" __attribute__((visibility("default"))) void CieTestExpire() {
+extern "C" CIE_PKCS11_EXPORT void CieTestExpire() {
     std::lock_guard<std::mutex> lock(state.mutex);
     for(auto& [id,slot]:state.slots)if(slot.token)slot.token->deadline=Clock::time_point{};
     state.expire();

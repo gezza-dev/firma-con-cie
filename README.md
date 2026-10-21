@@ -8,7 +8,7 @@ CIE ID offre un’interfaccia condivisa per usare la CIE con un lettore smart ca
 
 ## Stato del progetto
 
-Il progetto è in sviluppo. Questo repository contiene i sorgenti; **non è ancora disponibile una release binaria di CIE ID Desktop**. Le release di CIE ID Universal appartengono a un progetto distinto.
+Il progetto è in sviluppo. Questo repository contiene i sorgenti; **non è ancora disponibile una release binaria pubblica di CIE ID Desktop**. È predisposto un [installer Windows x64 locale di test](docs/WINDOWS_INSTALLER.md), che include app e componente Web e conserva i dati personali. Le release di CIE ID Universal appartengono a un progetto distinto.
 
 | Sistema | Stato verificato |
 | --- | --- |
@@ -49,7 +49,7 @@ Le verifiche attuali, le marche temporali e la validità storica hanno esiti sep
 Per firma, abbinamento e accesso ai siti servono una CIE, il relativo PIN e un lettore compatibile con il sistema. La sola verifica di documenti non richiede carta o lettore.
 
 1. Avvia **CIE ID**, collega il lettore e appoggia la carta: il riconoscimento è automatico.
-2. Nella Home usa **Abbina CIE**. L’abbinamento prepara anche il certificato per l’accesso ai siti. Su Windows l’attivazione del componente può richiedere l’autorizzazione amministrativa prima della richiesta PIN.
+2. Nella Home usa **Abbina CIE**. L’abbinamento prepara anche il certificato per l’accesso ai siti. Su Windows il componente viene installato con l'app dal pacchetto di installazione: UAC è richiesto dall'installer, mentre l'abbinamento esegue soltanto un controllo senza privilegi amministrativi.
 3. In **Firma Elettronica** scegli la CIE, il documento, il formato e l’eventuale segno grafico; inserisci il PIN solo nel campo protetto e scegli dove salvare il risultato. È possibile firmare anche senza abbinare la carta.
 4. In **Verifica Firma** seleziona o trascina un PDF/P7M. I dettagli spiegano separatamente gli esiti dei diversi controlli.
 5. Per un sito Web apri il browser e scegli l’accesso con lettore/CIE. Il sistema presenta il certificato e richiede il PIN completo nella propria finestra protetta. Dopo la configurazione non occorre tenere aperta l’interfaccia dell’app.

@@ -1,0 +1,12 @@
+{
+  "profile": "windows-desktop-runtime-v1",
+  "excludeDirectories": {
+    "cie_native/tests/": "Native regression executables, fake libraries and Python test drivers",
+    "cie_native/ltv/tests/": "Java regression test harness",
+    "cie_native/provenance/": "Development assembly records retained in the external build report"
+  },
+  "excludeFiles": {
+    "cie_native/ltv/jre/windows-x86_64/lib/jawt.lib": "Link-time import library; the runtime DLL remains included",
+    "cie_native/ltv/jre/windows-x86_64/lib/jvm.lib": "Link-time import library; the runtime DLL remains included"
+  }
+}

@@ -257,6 +257,24 @@ if(BUILD_TESTING)
  endif()
  # Invoked explicitly: not part of automatic CTest, never accesses real records.
  if(WIN32)
+ add_library(cie_windows_first_enrollment_tests SHARED
+   # No real card/store: production logic is wrapped only in these test TUs.
+   tests/windows_first_enrollment_bridge.cpp tests/windows_first_enrollment_store.cpp
+   src/paired_store.cpp src/pairing_invalidation.cpp ${CIE_FILE_CACHE_SOURCES})
+ target_include_directories(cie_windows_first_enrollment_tests PRIVATE include src)
+ target_compile_definitions(cie_windows_first_enrollment_tests PRIVATE CIE_PAIRING_TEST_SERVICE CIE_PAIRING_TEST_STATE NOMINMAX WIN32_LEAN_AND_MEAN)
+ cie_link_file_cache(cie_windows_first_enrollment_tests)
+ target_link_libraries(cie_windows_first_enrollment_tests PRIVATE winscard ws2_32 crypt32 ncrypt)
+ add_library(cie_windows_first_enrollment_adapter SHARED tests/windows_first_enrollment_adapter.cpp)
+ target_compile_definitions(cie_windows_first_enrollment_adapter PRIVATE NOMINMAX WIN32_LEAN_AND_MEAN)
+ target_include_directories(cie_windows_first_enrollment_adapter PRIVATE include src)
+ add_library(cie_windows_first_enrollment_component SHARED tests/windows_first_enrollment_component.cpp)
+ set_target_properties(cie_windows_first_enrollment_component PROPERTIES PREFIX "" OUTPUT_NAME cie_prototype_minidriver
+   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/first-enrollment-component")
+ add_test(NAME windows_first_enrollment_publication COMMAND "${Python3_EXECUTABLE}"
+   "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_windows_first_enrollment.py"
+   "$<TARGET_FILE:cie_windows_first_enrollment_tests>" "$<TARGET_FILE:fake_backend>"
+   "$<TARGET_FILE:cie_windows_first_enrollment_adapter>" "$<TARGET_FILE:cie_windows_first_enrollment_component>")
  add_executable(cie_web_store_tests tests/web_cert_store_tests.cpp src/web_cert_store.cpp ${CIE_FILE_CACHE_SOURCES})
  cie_link_file_cache(cie_web_store_tests)
   target_include_directories(cie_web_store_tests PRIVATE src)

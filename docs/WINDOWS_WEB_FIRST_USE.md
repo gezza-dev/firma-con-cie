@@ -1,4 +1,4 @@
-# Attivazione Windows al primo abbinamento
+# Componente Windows e configurazione dell’accesso ai siti
 
 Per l'accesso ai siti il componente Windows richiede sempre tutte le otto cifre
 del PIN, come macOS, anche per carte abbinate. Non ricostruisce il PIN dal
@@ -21,33 +21,31 @@ isolati controllano il contratto della policy. Altri browser/siti restano da ver
 
 Riferimento: [policy PIN del Base CSP/KSP Microsoft](https://learn.microsoft.com/en-us/windows-hardware/drivers/smartcard/card-pin-operations).
 
-Il runner Windows include `web-component/CIE-Web-Setup.exe`. Quando si preme
-Abbina CIE, il monitor viene sospeso e il helper controlla il pacchetto e la
-registrazione della carta selezionata. Se la versione corretta è già installata
-non richiede UAC. Altrimenti il runner avvia solo quel helper con `runas` e
-attende il risultato senza bloccare Flutter. Il dialogo PIN appare dopo il
-completamento. Abbinamento e certificati restano nel profilo dell’utente normale,
-anche se UAC viene autorizzato usando un diverso account amministratore.
+## Installazione dal pacchetto Windows
 
-Il rifiuto di UAC non avvia autenticazioni né ritentativi. L’utente può annullare
-oppure scegliere esplicitamente Continua solo per firmare. Per una CIE già
-abbinata, Attiva accesso ai siti installa il componente e ripubblica i dati
-pubblici salvati senza chiedere nuovamente il PIN; la carta deve essere presente.
+Il [pacchetto Windows x64](WINDOWS_INSTALLER.md) installa app e componente nella
+stessa sessione UAC. Non occorrono carta, lettore o PIN: sono registrati i
+[12 ATR e le maschere ufficiali verificati](WINDOWS_CARD_CATALOG.md).
+Gli aggiornamenti preservano gli archivi personali e migrano le registrazioni
+compatibili del progetto, senza sovrascrivere altri middleware.
 
-Il helper copia esclusivamente il payload con dimensioni e SHA-256 fissati nel
-suo eseguibile, sotto Program Files in una cartella identificata dal contenuto.
-Imposta ACL protette, rifiuta reparse point/hard link dei file e mantiene aperti
-i file verificati durante l’installazione. Nessun percorso di destinazione,
-script, PIN o credenziale è accettato dal processo elevato. La lettura pubblica
-usa solo SELECT, READ BINARY e GET RESPONSE, al massimo 16 comandi. Non esegue
-autenticazioni, scritture o reset della CIE.
+Il runner avvia soltanto il helper con `--check <lettore>`, senza `runas` né
+richieste amministrative. Il controllo precede il dialogo PIN. Se il componente
+manca, l'app indica di eseguire l'installer; l'utente può annullare oppure
+scegliere esplicitamente Continua solo per firmare. Per una CIE già abbinata,
+Completa accesso ai siti ripubblica i dati pubblici salvati senza un altro PIN.
+L'abbinamento e i certificati restano nel profilo dell'utente normale, anche se
+UAC dell'installer è autorizzato con un diverso account amministratore.
 
-La registrazione usa le API Smart Card di Windows e l’ATR esatto della carta.
-Le registrazioni di altri componenti causano un arresto con spiegazione; non
-sono sostituite. Modelli aggiuntivi ricevono nomi separati. Se l’aggiornamento
-della registrazione fallisce, il helper tenta il ripristino e conserva i file.
-I certificati di fiducia e le configurazioni dell’app originale non sono gestiti
-da questo installer.
+Il helper dell'installer usa soltanto payload con dimensioni e SHA-256 fissati,
+in Program Files, con ACL protette e cartelle immutabili identificate dal
+contenuto. Non sovrascrive binari caricati. Non accetta destinazioni, script,
+PIN o credenziali. L'installazione legge e aggiorna soltanto il database Calais
+a 64 bit; non chiama PC/SC e non dipende dal servizio Smart Card. Il controllo
+`--check` usato dall'app legge l'ATR della carta selezionata senza inviare APDU.
+L'aggiornamento delle registrazioni di più modelli ripristina
+quelle precedenti se una scrittura fallisce. Registrazioni estranee non vengono
+sostituite. Cache, preferenze, certificati utente e browser sono conservati.
 
 ## Preparazione della build
 
@@ -60,20 +58,23 @@ da questo installer.
    `-DCIE_WEB_SETUP_MANIFEST=<output>/setup_payload.h`, compilare il target
    `cie_web_setup` e copiarne `CIE-Web-Setup.exe` nella cartella del payload.
 5. `CIE-Web-Setup.exe --validate-package` verifica solo i file, senza UAC,
-   lettore, registrazioni o scritture di sistema. Non usare `--check` o
-   `--install` come test software su una macchina con carta reale.
+   lettore, registrazioni o scritture di sistema. `--plan-package` verifica anche
+   i conflitti leggendo il registro, senza carta, UAC o scritture. Non usare
+   `--check` come prova senza carta; `--install-package` e `--unregister-package`
+   modificano le sole registrazioni del progetto e richiedono l'installer elevato.
 6. Eseguire i test Flutter e `flutter build windows --release`. L’intera
    cartella Release è necessaria; il solo eseguibile non è distribuibile.
+7. Preparare l’installer completo come descritto in [WINDOWS_INSTALLER.md](WINDOWS_INSTALLER.md).
 
 ## Validazione e limiti
 
-Test software: ordine installazione/PIN, rifiuto UAC, prosecuzione esplicita solo
+Test software: controllo del componente prima del PIN, componente mancante, prosecuzione esplicita solo
 firma, recupero senza PIN e pacchetto alterato/mancante. Test nativi isolati:
 quoting dei lettori, conflitti di proprietà, whitelist APDU, errori e rollback
 delle registrazioni e minidriver con trasporto simulato.
 
 Il nuovo installer e il minidriver sono componenti sperimentali del prototipo,
-non firmati digitalmente per una distribuzione di produzione. UAC, installazione
+non firmati digitalmente per una distribuzione di produzione. UAC dell’installer completo, installazione
 effettiva, caricamento nel KSP e login nel browser richiedono collaudo reale
 separato: i test automatici non li attestano. La prima implementazione era stata
 verificata solo con test software; i collaudi successivi sono registrati nei

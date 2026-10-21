@@ -5,6 +5,15 @@
 #include "snap_public_store.h"
 #include <algorithm>
 #include <cstring>
+#if defined(_WIN32) && !defined(CIE_PAIRING_TEST_SERVICE)
+#include "../../pcsc_utf8.h"
+#undef SCardListReaders
+#undef SCardConnect
+#undef SCardGetStatusChange
+#define SCardListReaders cie_pcsc::list
+#define SCardConnect cie_pcsc::connect
+#define SCardGetStatusChange cie_pcsc::change
+#endif
 
 namespace cie_linux {
 namespace {
@@ -88,10 +97,13 @@ Card::Card(const std::string& reader, const std::string& expected, const std::ve
         id = identifier;
         std::vector<uint8_t> saved = known;
         if (saved.empty()) {
+          #ifndef _WIN32
           if (cie_linux_snap::running()) {
             saved = cie_linux_snap::read(id);
             if (saved.empty()) throw Error(CKR_DEVICE_ERROR);
-          } else {
+          } else
+#endif
+          {
             // Read only the public Web namespace. Never read a PIN-prefix record.
             cie_cache::Store store; auto bytes = store.read("web", id);
             saved.assign(bytes.begin(), bytes.end());

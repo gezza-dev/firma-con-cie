@@ -46,5 +46,22 @@ int main(){unsigned checks=0;auto check=[&](bool v){++checks;if(!v)throw std::ru
  check(cie_setup::publishBindings(true,[](unsigned,const std::wstring&){return 0;},[&]{forgot=true;return true;},[]{return false;},L"",L"",L"",L"new")==cie_setup::registrationFailure);
  check(forgot);
  check(cie_setup::publishBindings(true,[](unsigned,const std::wstring&){return 0;},[]{return true;},[]{return true;},L"",L"",L"",L"new")==0);
+ const std::vector<cie_setup::Binding> bindings{
+  {cie_setup::cardName,L"old csp 1",L"old ksp 1",L"old module 1"},
+  {std::wstring(cie_setup::cardName)+L" 0123456789abcdef",L"old csp 2",L"old ksp 2",L"old module 2"}};
+ for(int failed=0;failed<=6;++failed){
+  std::map<std::pair<std::wstring,unsigned>,std::wstring> before;
+  for(const auto& b:bindings){before[{b.name,2}]=b.csp;before[{b.name,3}]=b.ksp;before[{b.name,0x80000001}]=b.module;}
+  auto state=before;int calls=0;
+  const auto result=cie_setup::upgradeBindings(bindings,L"new module",[&](const auto& name,unsigned type,const auto& value){if(++calls==failed)return 5;state[{name,type}]=value;return 0;},[](const auto&){return true;});
+  check(result==(failed?cie_setup::registrationFailure:0));
+  if(failed)check(state==before);
+  else for(const auto& b:bindings)check(state[{b.name,0x80000001}]==L"new module");
+ }
+ unsigned writes=0;
+ check(cie_setup::upgradeBindings({{L"Foreign provider",L"",L"",L""}},L"new",[&](const auto&,unsigned,const auto&){++writes;return 0;},[](const auto&){return true;})==cie_setup::conflict);
+ check(writes==0);
+ check(cie_setup::upgradeBindings({},L"new",[&](const auto&,unsigned,const auto&){++writes;return 0;},[](const auto&){return true;})==0&&writes==0);
+ check(cie_setup::upgradeBindings(bindings,L"new",[](const auto&,unsigned,const auto&){return 5;},[](const auto&){return false;})==cie_setup::recoveryRequired);
  std::cout<<checks<<" setup policy checks passed; no UAC, PCSC, registry or credentials\n";return 0;
  }catch(const std::exception& e){std::cerr<<e.what()<<'\n';return 1;}}

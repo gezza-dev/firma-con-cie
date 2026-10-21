@@ -1,0 +1,68 @@
+{
+  "upstream": "https://github.com/italia/cie-middleware",
+  "commit": "8dd385e9b867c98fa099df689e427cfd6cb06d44",
+  "sourcePath": "CSP/CSP/StoreProvider.cpp",
+  "sourceSha256": "d971757cdcad9443bf238aa3105e09bad91d38c64fb52b6a5521dcdbf50f5011",
+  "registrations": [
+    {
+      "id": "CIE_1",
+      "atr": "3b8f800180318065b0850300ef120fff82900073",
+      "mask": "ffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "id": "CIE_2",
+      "atr": "3b8f800180318065b085040011120fff8290008a",
+      "mask": "ffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "id": "CIE_3",
+      "atr": "3b8e80018031806549544e5850120f00000000",
+      "mask": "ffffffffffffffffffffffffffffff00000000"
+    },
+    {
+      "id": "CIE_4",
+      "atr": "3b8b80018066475000b8007f8290002e",
+      "mask": "ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "id": "CIE_5",
+      "atr": "3b80800101",
+      "mask": "ffffffffff"
+    },
+    {
+      "id": "CIE_6",
+      "atr": "3b8b80018066475000b80094829000c5",
+      "mask": "ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "id": "CIE_7",
+      "atr": "3b8f80018031806549544a3442120fff8290008b",
+      "mask": "ffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "id": "CIE_8",
+      "atr": "3b8f80018031806549544a3441120fff82900088",
+      "mask": "ffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "id": "CIE_9",
+      "atr": "3b8f80018031806549544a3444120fff8290008d",
+      "mask": "ffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "id": "CIE_10",
+      "atr": "3b8f80018031806549544a3443120fff8290008a",
+      "mask": "ffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "id": "CIE_11",
+      "atr": "3b8f80018031806549544a3449120fff82900080",
+      "mask": "ffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "id": "CIE_12",
+      "atr": "3b8f80018031806549544a344c120fff82900085",
+      "mask": "ffffffffffffffffffffffffffffffffffffffff"
+    }
+  ]
+}

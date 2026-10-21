@@ -3,10 +3,13 @@
 """Test the private offline DSS runtime. Never signs with CIE or uses a PIN."""
 import argparse,hashlib,json,os,platform,subprocess,tempfile
 from pathlib import Path
+from runtime_test_tools import test_tools_runtime
 p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('--runtime',type=Path,required=True);p.add_argument('--report',type=Path,required=True)
+p.add_argument('--test-tools-runtime',type=Path,help='External development harness; production JARs/JVM come from --runtime')
 p.add_argument('--document',type=Path,action='append',default=[]);p.add_argument('--expect-no-lta',action='store_true')
 a=p.parse_args();runtime=a.runtime.resolve();ltv=runtime/'ltv'
+test_tools=test_tools_runtime(runtime,a.test_tools_runtime)
 architecture='windows-x86_64' if platform.system()=='Windows' else 'macos-arm64' if platform.machine()=='arm64' else 'macos-x86_64'
 java=ltv/'jre'/architecture/'bin'/('java.exe' if os.name=='nt' else 'java')
 manifest=json.loads((runtime/'backend-manifest.json').read_text())
@@ -16,7 +19,7 @@ assert java.is_file(),'Private Java runtime missing'
 environment={k:v for k,v in os.environ.items() if k.upper() in ['SYSTEMROOT','WINDIR','TEMP','TMP','HOME','LANG','LC_ALL']}
 classpath=str(ltv/'cie-ltv-worker.jar')+os.pathsep+str(ltv/'lib/*')
 def run(main,args,tests=False):
-    cp=classpath+(os.pathsep+str(ltv/'tests/cie-ltv-tests.jar') if tests else '')
+    cp=classpath+(os.pathsep+str(test_tools/'ltv/tests/cie-ltv-tests.jar') if tests else '')
     return subprocess.run([str(java),'-Xmx512m','-Djava.awt.headless=true','-Dfile.encoding=UTF-8','-cp',cp,main,*map(str,args)],
         env=environment,capture_output=True,timeout=90)
 report={'engine':'EU DSS 6.5.1','offline':True,'runtimeHashesVerified':True,'testRootsInstalled':False,'newCieSignatures':0}

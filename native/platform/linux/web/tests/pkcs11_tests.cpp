@@ -4,10 +4,24 @@
 #include "web_policy.h"
 #include <openssl/x509.h>
 #include <openssl/rsa.h>
+#ifdef _WIN32
+#include <windows.h>
+#include <cstdlib>
+static void* dlopen(const char* name,int){return LoadLibraryA(name);}
+static auto dlsym(void* module,const char* name){return GetProcAddress(static_cast<HMODULE>(module),name);}
+static void dlclose(void* module){FreeLibrary(static_cast<HMODULE>(module));}
+static const char* dlerror(){return "test library load failed";}
+static void chmod(const char*,int){}
+static void setenv(const char* name,const char* value,int){_putenv_s(name,value);SetEnvironmentVariableA(name,value);}
+#define RTLD_LOCAL 0
+#define RTLD_NOW 0
+#else
 #include <dlfcn.h>
 #include <sys/stat.h>
+#endif
 #include <filesystem>
 #include <iostream>
+#include <string>
 #include <thread>
 #include <array>
 #include <vector>
@@ -20,9 +34,9 @@ static void check(bool condition,const char* message){++checks;if(!condition)thr
 int main(int argc,char** argv){try{
     check(argc==2,"test module required");
     auto root=std::filesystem::temp_directory_path()/("cie-linux-pkcs11-"+std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
-    check(std::filesystem::create_directory(root),"isolated directory");chmod(root.c_str(),0700);
+    check(std::filesystem::create_directory(root),"isolated directory");chmod(root.string().c_str(),0700);
     struct Cleanup {std::filesystem::path path;~Cleanup(){std::error_code e;std::filesystem::remove_all(path,e);}} cleanup{root};
-    setenv("CIE_PAIRING_TEST_CACHE",root.c_str(),1);
+    setenv("CIE_PAIRING_TEST_CACHE",root.string().c_str(),1);
     auto module=dlopen(argv[1],RTLD_LOCAL|RTLD_NOW);if(!module)throw std::runtime_error(dlerror());
     auto get=reinterpret_cast<CK_C_GetFunctionList>(dlsym(module,"C_GetFunctionList"));
     auto metric=reinterpret_cast<unsigned(*)(unsigned)>(dlsym(module,"CieTestMetric"));
@@ -45,7 +59,7 @@ int main(int argc,char** argv){try{
     check(metric(2)==0&&metric(3)==0,"discovery never authenticates/signs");
     check(metric(7)==metric(8)&&metric(9)==1,"discovery transaction released/reset");
     CK_MECHANISM_TYPE mechanisms[8]{};count=8;
-    check(f->C_GetMechanismList(slot,mechanisms,&count)==CKR_OK&&count==4,"only four supported mechanisms");
+    check(f->C_GetMechanismList(slot,mechanisms,&count)==CKR_OK&&count==7,"RSA and public SHA2 mechanisms");
     for(unsigned i=0;i<count;++i)check(mechanisms[i]!=CKM_RSA_PKCS_PSS&&mechanisms[i]!=CKM_SHA1_RSA_PKCS,"no PSS/SHA1 advertisement");
     CK_SESSION_HANDLE session=0,second=0;
     check(f->C_OpenSession(slot,0,nullptr,nullptr,&session)==CKR_SESSION_PARALLEL_NOT_SUPPORTED,"serial sessions required");
@@ -65,6 +79,28 @@ int main(int argc,char** argv){try{
     auto der=attribute(1,CKA_VALUE);const unsigned char* cursor=der.data();auto cert=d2i_X509(nullptr,&cursor,long(der.size()));
     check(cert!=nullptr,"public certificate DER");auto publicKey=X509_get_pubkey(cert);X509_free(cert);
     struct FreeKey {EVP_PKEY* p;~FreeKey(){EVP_PKEY_free(p);}} freeKey{publicKey};
+    const unsigned char hashMessage[]="public software operation";
+    for(auto mechanism:{CKM_SHA256,CKM_SHA384,CKM_SHA512}) {
+      CK_MECHANISM m{CK_MECHANISM_TYPE(mechanism),nullptr,0};
+      auto beforeAuth=metric(2),beforeSigns=metric(3);
+      check(f->C_DigestInit(session,&m)==CKR_OK,"public digest init without login");
+      check(f->C_DigestInit(session,&m)==CKR_OPERATION_ACTIVE,"digest state is not overwritten");
+      CK_ULONG n=0;auto data=const_cast<unsigned char*>(hashMessage);
+      check(f->C_Digest(session,data,sizeof(hashMessage)-1,nullptr,&n)==CKR_OK,"public digest length query");
+      auto expectedSize=mechanism==CKM_SHA256?32UL:mechanism==CKM_SHA384?48UL:64UL;
+      check(n==expectedSize,"SHA2 digest length");Bytes output(n);n=1;
+      check(f->C_Digest(session,data,sizeof(hashMessage)-1,output.data(),&n)==CKR_BUFFER_TOO_SMALL&&n==expectedSize,"digest small buffer preserves state");
+      check(f->C_Digest(session,data,sizeof(hashMessage)-1,output.data(),&n)==CKR_OK,"single digest");
+      const EVP_MD* md=mechanism==CKM_SHA256?EVP_sha256():mechanism==CKM_SHA384?EVP_sha384():EVP_sha512();
+      Bytes expected(64);unsigned length=0;EVP_Digest(data,sizeof(hashMessage)-1,expected.data(),&length,md,nullptr);expected.resize(length);
+      check(output==expected,"digest matches independent OpenSSL result");
+      check(f->C_DigestFinal(session,output.data(),&n)==CKR_OPERATION_NOT_INITIALIZED,"digest result is consumed");
+      check(f->C_DigestInit(session,&m)==CKR_OK,"multipart public digest init");
+      check(f->C_DigestUpdate(session,data,5)==CKR_OK&&f->C_DigestUpdate(session,data+5,sizeof(hashMessage)-6)==CKR_OK,"multipart digest updates");
+      n=0;check(f->C_DigestFinal(session,nullptr,&n)==CKR_OK&&n==expectedSize,"digest final length query");
+      check(f->C_DigestFinal(session,output.data(),&n)==CKR_OK&&output==expected,"multipart matches single digest");
+      check(metric(2)==beforeAuth&&metric(3)==beforeSigns,"public digest never authenticates or signs");
+    }
     CK_ATTRIBUTE secret{CKA_PRIVATE_EXPONENT,nullptr,0};
     check(f->C_GetAttributeValue(session,3,&secret,1)==CKR_ATTRIBUTE_SENSITIVE&&secret.ulValueLen==CK_UNAVAILABLE_INFORMATION,"private material inaccessible");
     CK_ATTRIBUTE mixed[2]={{CKA_LABEL,nullptr,0},{0x7fffffff,nullptr,0}};
@@ -100,6 +136,7 @@ int main(int argc,char** argv){try{
     Bytes signature(256);size=1;
     check(f->C_Sign(session,encoded.data(),encoded.size(),signature.data(),&size)==CKR_BUFFER_TOO_SMALL&&size==256&&metric(3)==0,"small buffer does not sign or terminate");
     check(f->C_Sign(session,encoded.data(),encoded.size(),signature.data(),&size)==CKR_OK&&metric(3)==1,"single real synthetic signature");verify(encoded,signature);
+    auto firstSignature=signature;
     check(f->C_Sign(session,encoded.data(),encoded.size(),signature.data(),&size)==CKR_OPERATION_NOT_INITIALIZED,"signature cannot be replayed");
     check(f->C_SignInit(session,&raw,3)==CKR_OK,"raw rejection init");Bytes arbitrary(32,0x42);
     check(f->C_Sign(session,arbitrary.data(),arbitrary.size(),signature.data(),&size)==CKR_DATA_INVALID&&metric(3)==1,"arbitrary RSA input rejected before signing");
@@ -107,6 +144,7 @@ int main(int argc,char** argv){try{
     check(f->C_Sign(session,nullptr,1,signature.data(),&size)==CKR_ARGUMENTS_BAD,"invalid signing arguments rejected");
     check(f->C_Sign(session,encoded.data(),encoded.size(),signature.data(),&size)==CKR_OPERATION_NOT_INITIALIZED,"invalid arguments end the operation");
     const unsigned char message[]="synthetic NSS TLS request";
+    std::vector<std::pair<CK_MECHANISM_TYPE,Bytes>> signedMessages;
     for(auto mechanism:{CKM_SHA256_RSA_PKCS,CKM_SHA384_RSA_PKCS,CKM_SHA512_RSA_PKCS}) {
         CK_MECHANISM m{CK_MECHANISM_TYPE(mechanism),nullptr,0};
         check(f->C_SignInit(second,&m,3)==CKR_OK,"multipart init");
@@ -117,7 +155,7 @@ int main(int argc,char** argv){try{
         const EVP_MD* md=mechanism==CKM_SHA256_RSA_PKCS?EVP_sha256():mechanism==CKM_SHA384_RSA_PKCS?EVP_sha384():EVP_sha512();
         unsigned n=0;Bytes digest(64);EVP_Digest(message,sizeof(message)-1,digest.data(),&n,md,nullptr);digest.resize(n);
         Bytes dg={0x30,uint8_t(17+n),0x30,0x0d,0x06,0x09,0x60,0x86,0x48,1,0x65,3,4,2,uint8_t(n==32?1:n==48?2:3),5,0,4,uint8_t(n)};
-        dg.insert(dg.end(),digest.begin(),digest.end());verify(dg,signature);
+        dg.insert(dg.end(),digest.begin(),digest.end());verify(dg,signature);signedMessages.push_back({m.mechanism,signature});
     }
     auto auths=metric(2);check(auths==1,"multiple signatures do not resend PIN");
     check(f->C_SetPIN(session,pin,8,pin,8)==CKR_FUNCTION_NOT_SUPPORTED,"PIN mutation disabled");
@@ -128,6 +166,25 @@ int main(int argc,char** argv){try{
     check(metric(2)==auths,"expiry never reauthenticates automatically");
     check(f->C_Login(session,CKU_USER,pin,8)==CKR_OK&&metric(2)==auths+1,"new explicit full-PIN login after expiry");
     check(f->C_Logout(session)==CKR_OK,"explicit logout");
+    auto publicAuths=metric(2),publicSigns=metric(3);
+    check(f->C_VerifyInit(session,&raw,3)==CKR_KEY_HANDLE_INVALID,"verification rejects a private key handle");
+    check(f->C_VerifyInit(session,&raw,2)==CKR_OK,"public verification without login");
+    check(f->C_Verify(session,encoded.data(),static_cast<CK_ULONG>(encoded.size()),firstSignature.data(),256)==CKR_OK,"raw DigestInfo signature verified");
+    auto corrupt=firstSignature;corrupt[0]^=1;
+    check(f->C_VerifyInit(session,&raw,2)==CKR_OK,"invalid signature init");
+    check(f->C_Verify(session,encoded.data(),static_cast<CK_ULONG>(encoded.size()),corrupt.data(),256)==CKR_SIGNATURE_INVALID,"tampered signature rejected");
+    check(f->C_VerifyInit(session,&raw,2)==CKR_OK,"short signature init");
+    check(f->C_Verify(session,encoded.data(),static_cast<CK_ULONG>(encoded.size()),firstSignature.data(),255)==CKR_SIGNATURE_LEN_RANGE,"short signature rejected");
+    for(auto& entry:signedMessages){
+      CK_MECHANISM m{entry.first,nullptr,0};auto data=const_cast<unsigned char*>(message);
+      check(f->C_VerifyInit(session,&m,2)==CKR_OK,"hashed verification init");
+      check(f->C_Verify(session,data,sizeof(message)-1,entry.second.data(),256)==CKR_OK,"hashed signature verification");
+      check(f->C_VerifyInit(session,&m,2)==CKR_OK,"multipart verification init");
+      check(f->C_VerifyUpdate(session,data,5)==CKR_OK&&f->C_VerifyUpdate(session,data+5,sizeof(message)-6)==CKR_OK,"multipart verification updates");
+      check(f->C_VerifyFinal(session,entry.second.data(),256)==CKR_OK,"multipart signature verification");
+      check(f->C_VerifyFinal(session,entry.second.data(),256)==CKR_OPERATION_NOT_INITIALIZED,"verification is consumed");
+    }
+    check(metric(2)==publicAuths&&metric(3)==publicSigns,"public verification never authenticates or signs");
     check(f->C_Login(session,CKU_USER,pin,8)==CKR_OK&&metric(2)==auths+2,"explicit login after logout");
     auths=metric(2);
     check(f->C_CloseAllSessions(slot)==CKR_OK,"close expired sessions");session=open();

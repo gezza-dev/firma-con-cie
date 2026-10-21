@@ -27,7 +27,12 @@
 #pragma pack(push, cryptoki, 1)
 #endif
 
-#if !defined(WIN32) && !defined(_WIN32)
+#if defined(CIE_PKCS11_TABLE_ONLY)
+/* The new provider exports C_GetFunctionList; other callbacks are table-only. */
+#define CK_IMPORT_SPEC
+#define CK_EXPORT_SPEC
+#define CK_CALL_SPEC __cdecl
+#elif !defined(WIN32) && !defined(_WIN32)
 #define CK_IMPORT_SPEC
 #define CK_EXPORT_SPEC
 #define CK_CALL_SPEC

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // Test-only PC/SC and Web engine; never links to or calls physical hardware.
 #include "cie_web.h"
+#include "../exports.h"
 #include "web_policy.h"
 #include "local_cache.h"
 #include "../snap_public_store.h"
@@ -36,8 +37,8 @@ Fixture& fixture(){static Fixture value;return value;}
 }
 struct CieWebSession {bool authenticated=false,attempted=false;std::string id;};
 extern "C" {
-__attribute__((visibility("default"))) unsigned CieTestMetric(unsigned index){return index<metrics.size()?metrics[index].load():0;}
-__attribute__((visibility("default"))) void CieTestControl(unsigned kind,unsigned value){
+CIE_PKCS11_EXPORT unsigned CieTestMetric(unsigned index){return index<metrics.size()?metrics[index].load():0;}
+CIE_PKCS11_EXPORT void CieTestControl(unsigned kind,unsigned value){
     if(kind==0){present=true;changed=false;busy=false;failSign=false;reset=false;locked=false;for(auto& value:metrics)value=0;}
     if(kind==1)present=value;
     if(kind==2)changed=value;
@@ -85,8 +86,8 @@ int32_t cie_web_sign(CieWebSession* session,const uint8_t* data,uint32_t length,
     bool ok=ctx&&EVP_PKEY_sign_init(ctx)>0&&EVP_PKEY_CTX_set_rsa_padding(ctx,RSA_PKCS1_PADDING)>0&&EVP_PKEY_sign(ctx,out,&n,data,length)>0;
     EVP_PKEY_CTX_free(ctx);*size=n;return ok?0:CIE_WEB_CARD;
 }
-const SCARD_IO_REQUEST g_rgSCardT0Pci={SCARD_PROTOCOL_T0,sizeof(SCARD_IO_REQUEST)};
-const SCARD_IO_REQUEST g_rgSCardT1Pci={SCARD_PROTOCOL_T1,sizeof(SCARD_IO_REQUEST)};
+extern const SCARD_IO_REQUEST g_rgSCardT0Pci={SCARD_PROTOCOL_T0,sizeof(SCARD_IO_REQUEST)};
+extern const SCARD_IO_REQUEST g_rgSCardT1Pci={SCARD_PROTOCOL_T1,sizeof(SCARD_IO_REQUEST)};
 LONG SCardEstablishContext(DWORD,LPCVOID,LPCVOID,LPSCARDCONTEXT out){++metrics[4];*out=1;return SCARD_S_SUCCESS;}
 LONG SCardReleaseContext(SCARDCONTEXT){++metrics[5];return 0;}
 LONG SCardListReaders(SCARDCONTEXT,LPCSTR,LPSTR out,LPDWORD count){
@@ -116,11 +117,11 @@ LONG SCardStatus(SCARDHANDLE,LPSTR,LPDWORD,LPDWORD state,LPDWORD protocol,LPBYTE
 }
 LONG SCardTransmit(SCARDHANDLE,const SCARD_IO_REQUEST*,LPCBYTE,DWORD,SCARD_IO_REQUEST*,LPBYTE,LPDWORD){++metrics[11];return SCARD_E_NOT_TRANSACTED;}
 }
-extern "C" __attribute__((visibility("default"))) unsigned CieTestCertificate(unsigned char* out,unsigned capacity){
+extern "C" CIE_PKCS11_EXPORT unsigned CieTestCertificate(unsigned char* out,unsigned capacity){
     auto& der=fixture().der;if(out && capacity>=der.size())std::memcpy(out,der.data(),der.size());return der.size();
 }
 
-extern "C" __attribute__((visibility("default"))) void CieTestSeedPublic(){
+extern "C" CIE_PKCS11_EXPORT void CieTestSeedPublic(){
     cie_cache::Store store(true);auto& der=fixture().der;
     cie_cache::Bytes cert(der.begin(),der.end());store.write("web",identity(),cert);
     // Deliberately unusable PIN-pairing bytes: the Web provider must not read
@@ -128,7 +129,8 @@ extern "C" __attribute__((visibility("default"))) void CieTestSeedPublic(){
     cie_cache::Bytes invalidPrefix{0xff,0,0};store.write("card",identity(),invalidPrefix);
 }
 
-extern "C" __attribute__((visibility("default"))) void CieTestSeedSnapPublic(){
+#ifndef _WIN32
+extern "C" CIE_PKCS11_EXPORT void CieTestSeedSnapPublic(){
     const char* base=std::getenv("CIE_PAIRING_TEST_CACHE");
     if(!base)throw std::runtime_error("Missing synthetic cache");
     const auto common=std::filesystem::path(base)/"snap/firefox/common";
@@ -141,3 +143,5 @@ extern "C" __attribute__((visibility("default"))) void CieTestSeedSnapPublic(){
     // it uses only the published DER, never the host Web/PIN cache or its key.
     store.write("web",identity(),invalid);store.write("card",identity(),invalid);
 }
+
+#endif // !_WIN32: Snap test fixture

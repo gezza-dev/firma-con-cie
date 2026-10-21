@@ -3,10 +3,13 @@
 """Shared historical CRL tests and optional production document verification. No PIN."""
 import argparse,hashlib,json,os,platform,subprocess
 from pathlib import Path
+from runtime_test_tools import test_tools_runtime
 p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('--runtime',type=Path,required=True);p.add_argument('--report',type=Path,required=True)
+p.add_argument('--test-tools-runtime',type=Path,help='External development harness; production JARs/JVM come from --runtime')
 p.add_argument('--document',type=Path,action='append',default=[])
 a=p.parse_args();runtime=a.runtime.resolve();ltv=runtime/'ltv'
+test_tools=test_tools_runtime(runtime,a.test_tools_runtime)
 manifest=json.loads((runtime/'backend-manifest.json').read_text())
 for name,digest in manifest['files'].items():
     assert hashlib.sha256((runtime/name).read_bytes()).hexdigest()==digest,'Runtime checksum mismatch: '+name
@@ -17,7 +20,7 @@ environment={k:v for k,v in os.environ.items() if k.upper() in ['SYSTEMROOT','WI
 lock=json.loads((runtime/'licenses/ltv/dependencies.lock.json').read_text())['jars']
 cp=os.pathsep.join(map(str,[ltv/'cie-ltv-worker.jar',*[ltv/'lib'/n for n in lock]]))
 report={'runtimeHashesVerified':True,'engine':'EU DSS 6.5.1','productionCodeShared':True,'newCieSignatures':0,'documents':[]}
-result=subprocess.run([str(java),'-Xmx512m','-Djava.awt.headless=true','-cp',cp+os.pathsep+str(ltv/'tests/cie-ltv-tests.jar'),
+result=subprocess.run([str(java),'-Xmx512m','-Djava.awt.headless=true','-cp',cp+os.pathsep+str(test_tools/'ltv/tests/cie-ltv-tests.jar'),
     'it.cieid.ltv.HistoricalCrlTest'],env=environment,capture_output=True,timeout=120)
 lines=result.stdout.decode('utf-8',errors='replace').splitlines()
 report['selfTests']={'exitCode':result.returncode,'passedCases':sum(s.startswith('PASS ') for s in lines),'cases':[s[5:] for s in lines if s.startswith('PASS ')]}

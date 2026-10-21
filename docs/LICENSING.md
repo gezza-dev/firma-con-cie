@@ -43,6 +43,13 @@ Le 89 dipendenze risolte, comprese quelle SDK/dev, sono identificate in `pubspec
 
 Le DLL private MinGW libgcc/libstdc++ mantengono GPL e GCC Runtime Library Exception, con attribuzioni MinGW/winpthreads in [LICENSES/mingw](../LICENSES/mingw). Il CPDK Microsoft è una dipendenza di compilazione da ottenere separatamente; installer e header non sono redistribuiti in questo repository. Gli SDK di Apple e Microsoft rimangono soggetti ai propri termini.
 
+Il [pacchetto Windows locale](WINDOWS_INSTALLER.md) include il redistributable
+Microsoft Visual C++ x64 originale e firmato, fornito con Visual Studio Build
+Tools. Non comprende compilatori o header Microsoft. Inno Setup 7.1.0 è usato
+per compilare il pacchetto; sorgente `.iss` e versione del tool sono registrati
+in `packaging/windows`. Le licenze dell'app, delle librerie e della JVM restano
+incluse nel bundle e mantengono i propri obblighi di distribuzione.
+
 ## DSS, dipendenze Java e JVM
 
 EU DSS 6.5.1 è usato come worker Java con JAR separati. I 50 JAR sono fissati in [dependencies.lock.json](../native/ltv/dependencies.lock.json); [LICENSES/ltv](../LICENSES/ltv/README.md) conserva la licenza ufficiale DSS LGPL-2.1 e gli avvisi estratti dagli altri JAR verificati. Le dipendenze mantengono le proprie licenze, non acquisiscono tutte LGPL o BSD.

@@ -64,8 +64,8 @@ void main() {
       service: FfiCieService(BridgePaths.discover()),
       preferences: FilePreferencesStore(),
       settings: FileSettingsStore(),
-      windowsWebInstaller: Platform.isWindows
-          ? installWindowsWebComponent
+      windowsWebComponentChecker: Platform.isWindows
+          ? checkWindowsWebComponent
           : null,
     ),
   );
@@ -84,7 +84,7 @@ class CiePrototype extends StatefulWidget {
     this.webStatusReader = readWebSystemStatus,
     this.webSettingsOpener = openWebSystemSettings,
     this.webComponentActivator = activateWebComponent,
-    this.windowsWebInstaller,
+    this.windowsWebComponentChecker,
   });
   final PreferencesStore? preferences;
   final SettingsStore? settings;
@@ -96,7 +96,7 @@ class CiePrototype extends StatefulWidget {
   final WebStatusReader webStatusReader;
   final WebSettingsOpener webSettingsOpener;
   final WebComponentActivator webComponentActivator;
-  final WindowsWebInstaller? windowsWebInstaller;
+  final WindowsWebComponentChecker? windowsWebComponentChecker;
   @override
   State<CiePrototype> createState() => _CiePrototypeState();
 }
@@ -154,7 +154,7 @@ class _CiePrototypeState extends State<CiePrototype> {
           webStatusReader: widget.webStatusReader,
           webSettingsOpener: widget.webSettingsOpener,
           webComponentActivator: widget.webComponentActivator,
-          windowsWebInstaller: widget.windowsWebInstaller,
+          windowsWebComponentChecker: widget.windowsWebComponentChecker,
         ),
       ),
     ),
@@ -174,7 +174,7 @@ class PrototypeHome extends StatefulWidget {
     this.webStatusReader = readWebSystemStatus,
     this.webSettingsOpener = openWebSystemSettings,
     this.webComponentActivator = activateWebComponent,
-    this.windowsWebInstaller,
+    this.windowsWebComponentChecker,
   });
   final PreferencesStore? preferences;
   final SettingsStore? settings;
@@ -186,7 +186,7 @@ class PrototypeHome extends StatefulWidget {
   final WebStatusReader webStatusReader;
   final WebSettingsOpener webSettingsOpener;
   final WebComponentActivator webComponentActivator;
-  final WindowsWebInstaller? windowsWebInstaller;
+  final WindowsWebComponentChecker? windowsWebComponentChecker;
   @override
   State<PrototypeHome> createState() => _PrototypeHomeState();
 }
@@ -912,7 +912,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
 
   Future<void> _completeEnrollment(EnrollmentRecord record) async {
     if (busy || modalInteraction) return;
-    if (widget.windowsWebInstaller != null &&
+    if (widget.windowsWebComponentChecker != null &&
         record.hasPublicData &&
         record.readyForSigning) {
       final matching = readers
@@ -942,7 +942,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
         record.readyForSigning &&
         record.webProvisioned &&
         !record.componentAvailable &&
-        widget.windowsWebInstaller == null) {
+        widget.windowsWebComponentChecker == null) {
       await _showWebCompletionStatus(
         EnrollmentRecord.componentActivationMessage,
       );
@@ -977,17 +977,17 @@ class _PrototypeHomeState extends State<PrototypeHome>
     String reader, {
     required bool signingOnly,
   }) async {
-    final installer = widget.windowsWebInstaller;
-    if (installer == null) return true;
+    final checker = widget.windowsWebComponentChecker;
+    if (checker == null) return true;
     JsonResult result = {'ok': false};
-    await _operation('Preparazione accesso ai siti. Windows può richiedere i privilegi amministrativi…', () async {
-      result = await installer(reader);
+    await _operation('Verifica del componente per l’accesso ai siti…', () async {
+      result = await checker(reader);
     });
     if (!mounted) return false;
     if (result['ok'] == true) return true;
     final message =
         result['message'] as String? ??
-        'Installazione del componente Windows non completata. Nessun PIN è stato inviato e non viene eseguito un nuovo tentativo automatico.';
+        'Il componente per l’accesso ai siti non è disponibile. Esegui il pacchetto di installazione di CIE ID Desktop. Gli abbinamenti e le impostazioni saranno conservati.';
     return await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
@@ -2081,6 +2081,14 @@ class _PrototypeHomeState extends State<PrototypeHome>
                   children: [
                     Text(tr(context, record.status)),
                     Text(tr(context, record.webStatus)),
+                    if (record.certificateValidity case final validity?)
+                      Text(tr(context, 'Scadenza del certificato CIE: {p0}', [
+                        MaterialLocalizations.of(context).formatShortDate(validity.notAfter.toLocal()),
+                      ])),
+                    if (record.certificateWarning(DateTime.now()) case final warning?)
+                      Text(tr(context, warning), style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      )),
                     const SizedBox(height: 12),
                     Wrap(
                       spacing: 12,
@@ -2114,8 +2122,8 @@ class _PrototypeHomeState extends State<PrototypeHome>
                                       !record.componentAvailable
                                   ? tr(
                                       context,
-                                      widget.windowsWebInstaller != null
-                                          ? 'Attiva accesso ai siti'
+                                      widget.windowsWebComponentChecker != null
+                                          ? 'Completa accesso ai siti'
                                           : 'Informazioni accesso ai siti',
                                     )
                                   : record.hasPublicData &&

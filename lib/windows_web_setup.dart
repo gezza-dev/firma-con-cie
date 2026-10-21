@@ -5,13 +5,13 @@ import 'package:flutter/services.dart';
 
 import 'native_bridge.dart';
 
-typedef WindowsWebInstaller = Future<JsonResult> Function(String reader);
+typedef WindowsWebComponentChecker = Future<JsonResult> Function(String reader);
 
-Future<JsonResult> installWindowsWebComponent(String reader) async {
+Future<JsonResult> checkWindowsWebComponent(String reader) async {
   if (!Platform.isWindows) return {'ok': true};
   const channel = MethodChannel('cie.id/windows-web-setup');
   try {
-    await channel.invokeMethod<bool>('install', {'reader': reader});
+    await channel.invokeMethod<bool>('check', {'reader': reader});
     while (true) {
       await Future<void>.delayed(const Duration(milliseconds: 200));
       final state = await channel.invokeMapMethod<String, dynamic>('status');
@@ -21,15 +21,14 @@ Future<JsonResult> installWindowsWebComponent(String reader) async {
       return {
         'ok': false,
         'nativeCode': code,
-        'code': code == 1223 ? 'web_setup_cancelled' : 'web_setup_failed',
+        'code': code == 10 ? 'web_component_missing' : 'web_setup_failed',
         'message': switch (code) {
-          1223 => 'Installazione annullata nella richiesta di autorizzazione di Windows. Gli abbinamenti esistenti sono conservati.',
-          2 => 'Windows non ha concesso i privilegi amministrativi necessari per attivare l’accesso ai siti.',
-          3 => 'Un altro componente gestisce già questa carta. L’installazione è stata interrotta senza sostituire i componenti esistenti.',
+          2 || 10 => 'Il componente per l’accesso ai siti non è disponibile. Esegui il pacchetto di installazione di CIE ID Desktop. Gli abbinamenti e le impostazioni saranno conservati.',
+          3 => 'Un altro componente gestisce già questa carta. Nessun componente esistente è stato sostituito.',
           4 || 5 => 'Mantieni la CIE sul lettore selezionato e chiudi le altre applicazioni che la stanno utilizzando. Nessun PIN è stato inviato.',
-          6 => 'Il pacchetto del componente Windows manca o non supera il controllo di integrità. Usa una copia completa dell’applicazione.',
+          6 => 'Il componente Windows manca o non supera il controllo di integrità. Esegui nuovamente il pacchetto di installazione di CIE ID Desktop.',
           9 => 'La configurazione del componente richiede una verifica. I file sono stati conservati per evitare di interrompere componenti già registrati.',
-          _ => 'Installazione del componente Windows non completata. Nessun PIN è stato inviato e non viene eseguito un nuovo tentativo automatico.',
+          _ => 'Verifica del componente Windows non riuscita. Esegui nuovamente il pacchetto di installazione di CIE ID Desktop. Nessun PIN è stato inviato.',
         },
       };
     }
@@ -37,13 +36,13 @@ Future<JsonResult> installWindowsWebComponent(String reader) async {
     return {
       'ok': false,
       'code': 'web_setup_failed',
-      'message': 'Installazione del componente Windows non completata. Nessun PIN è stato inviato e non viene eseguito un nuovo tentativo automatico.',
+      'message': 'Verifica del componente Windows non riuscita. Esegui nuovamente il pacchetto di installazione di CIE ID Desktop. Nessun PIN è stato inviato.',
     };
   } on MissingPluginException {
     return {
       'ok': false,
       'code': 'web_setup_unavailable',
-      'message': 'Il pacchetto del componente Windows manca o non supera il controllo di integrità. Usa una copia completa dell’applicazione.',
+      'message': 'Il componente Windows manca o non supera il controllo di integrità. Esegui nuovamente il pacchetto di installazione di CIE ID Desktop.',
     };
   }
 }

@@ -101,16 +101,24 @@ DWORD WINAPI readFile(PCARD_DATA d,LPSTR directory,LPSTR name,DWORD flags,PBYTE*
  if(!provider(d)||!name||!out||!count||flags)return SCARD_E_INVALID_PARAMETER;*out=nullptr;*count=0;auto p=provider(d);
  if(!directory||!*directory){
   if(!strcmp(name,"cardid"))return allocated(d,p->guid,16,out,count);
-  if(!strcmp(name,"cardcf")){CARD_CACHE_FILE_FORMAT cache{};cache.bVersion=CARD_CACHE_FILE_CURRENT_VERSION;return allocated(d,&cache,sizeof(cache),out,count);}
+  if(!strcmp(name,"cardcf")){CARD_CACHE_FILE_FORMAT cache{};cache.bVersion=CARD_CACHE_FILE_CURRENT_VERSION;cache.wContainersFreshness=1;cache.wFilesFreshness=1;return allocated(d,&cache,sizeof(cache),out,count);}
   if(!strcmp(name,"cardapps")){char apps[8]={'m','s','c','p',0,0,0,0};return allocated(d,apps,8,out,count);}
  }else if(!strcmp(directory,"mscp")){
   if(!strcmp(name,"cmapfile")){
    auto status=p->readCertificate();if(status)return status;
-   CONTAINER_MAP_RECORD map{};GUID g;memcpy(&g,p->guid,sizeof(g));
-   auto name=cie_web_store::containerName(g);memcpy(map.wszGuid,name.c_str(),(name.size()+1)*sizeof(wchar_t));
-   map.bFlags=CONTAINER_MAP_VALID_CONTAINER|CONTAINER_MAP_DEFAULT_CONTAINER;map.wSigKeySizeBits=2048;return allocated(d,&map,sizeof(map),out,count);
+   // NCryptOpenKey(name, legacySpec=0), used by browsers, must resolve one
+   // key. Advertising both legacy roles under that name makes KSP return
+   // NTE_BAD_KEYSET. Preserve the published signing name and give the legacy
+   // alias a separate, stable name/index; both use the same physical key.
+   CONTAINER_MAP_RECORD maps[2]{};GUID g;memcpy(&g,p->guid,sizeof(g));
+   auto name=cie_web_store::containerName(g);memcpy(maps[0].wszGuid,name.c_str(),(name.size()+1)*sizeof(wchar_t));
+   maps[0].bFlags=CONTAINER_MAP_VALID_CONTAINER|CONTAINER_MAP_DEFAULT_CONTAINER;maps[0].wSigKeySizeBits=2048;
+   auto alias=cie_web_store::containerName(cie_web_store::containerGuid(p->id+"/legacy-keyexchange-v1"));
+   memcpy(maps[1].wszGuid,alias.c_str(),(alias.size()+1)*sizeof(wchar_t));
+   maps[1].bFlags=CONTAINER_MAP_VALID_CONTAINER;maps[1].wKeyExchangeKeySizeBits=2048;
+   return allocated(d,maps,sizeof(maps),out,count);
   }
-  if(!strcmp(name,"ksc00")){auto s=p->readCertificate();if(s)return s;return allocated(d,p->cert.data(),static_cast<DWORD>(p->cert.size()),out,count);}
+  if(!strcmp(name,"ksc00")||!strcmp(name,"kxc01")){auto s=p->readCertificate();if(s)return s;return allocated(d,p->cert.data(),static_cast<DWORD>(p->cert.size()),out,count);}
  }
  return SCARD_E_FILE_NOT_FOUND;
  });}
@@ -141,11 +149,11 @@ DWORD WINAPI deauthenticate(PCARD_DATA d,PIN_SET pins,DWORD flags){
 // Except CARD_DATA, version 0 means version 1. Newer callers may request a
 // higher revision; negotiate down to our supported version rather than reject.
 DWORD WINAPI capabilities(PCARD_DATA d,PCARD_CAPABILITIES value){if(!provider(d)||!value)return SCARD_E_INVALID_PARAMETER;value->dwVersion=CARD_CAPABILITIES_CURRENT_VERSION;value->fCertificateCompression=FALSE;value->fKeyGen=FALSE;return 0;}
-DWORD WINAPI freeSpace(PCARD_DATA d,DWORD flags,PCARD_FREE_SPACE_INFO value){if(!provider(d)||flags||!value)return SCARD_E_INVALID_PARAMETER;value->dwVersion=CARD_FREE_SPACE_INFO_CURRENT_VERSION;value->dwBytesAvailable=0;value->dwKeyContainersAvailable=0;value->dwMaxKeyContainers=1;return 0;}
-DWORD WINAPI keySizes(PCARD_DATA d,DWORD spec,DWORD flags,PCARD_KEY_SIZES value){if(!provider(d)||flags||spec!=AT_SIGNATURE||!value)return SCARD_E_INVALID_PARAMETER;value->dwVersion=CARD_KEY_SIZES_CURRENT_VERSION;value->dwMinimumBitlen=value->dwMaximumBitlen=value->dwDefaultBitlen=2048;value->dwIncrementalBitlen=0;return 0;}
+DWORD WINAPI freeSpace(PCARD_DATA d,DWORD flags,PCARD_FREE_SPACE_INFO value){if(!provider(d)||flags||!value)return SCARD_E_INVALID_PARAMETER;value->dwVersion=CARD_FREE_SPACE_INFO_CURRENT_VERSION;value->dwBytesAvailable=0;value->dwKeyContainersAvailable=0;value->dwMaxKeyContainers=2;return 0;}
+DWORD WINAPI keySizes(PCARD_DATA d,DWORD spec,DWORD flags,PCARD_KEY_SIZES value){if(!provider(d)||flags||(spec!=AT_SIGNATURE&&spec!=AT_KEYEXCHANGE)||!value)return SCARD_E_INVALID_PARAMETER;value->dwVersion=CARD_KEY_SIZES_CURRENT_VERSION;value->dwMinimumBitlen=value->dwMaximumBitlen=value->dwDefaultBitlen=2048;value->dwIncrementalBitlen=0;return 0;}
 DWORD WINAPI enumFiles(PCARD_DATA d,LPSTR directory,LPSTR* out,PDWORD count,DWORD flags){
  if(!provider(d)||flags||!out||!count)return SCARD_E_INVALID_PARAMETER;*out=nullptr;*count=0;
- const char root[]="cardid\0cardcf\0cardapps\0",mscp[]="cmapfile\0ksc00\0";
+ const char root[]="cardid\0cardcf\0cardapps\0",mscp[]="cmapfile\0ksc00\0kxc01\0";
  if(!directory||!*directory)return allocated(d,root,sizeof(root),reinterpret_cast<PBYTE*>(out),count);
  if(!strcmp(directory,"mscp"))return allocated(d,mscp,sizeof(mscp),reinterpret_cast<PBYTE*>(out),count);
  return SCARD_E_DIR_NOT_FOUND;
@@ -156,7 +164,7 @@ DWORD WINAPI fileInfo(PCARD_DATA d,LPSTR directory,LPSTR name,PCARD_FILE_INFO va
  if(status)return status;d->pfnCspFree(bytes);value->dwVersion=CARD_FILE_INFO_CURRENT_VERSION;value->cbFileSize=size;value->AccessCondition=EveryoneReadUserWriteAc;return 0;
 }
 DWORD WINAPI signData(PCARD_DATA d,PCARD_SIGNING_INFO info){auto result=boundary([&]()->DWORD{
- auto p=provider(d);if(!p||!info||info->bContainerIndex||info->dwKeySpec!=AT_SIGNATURE)return SCARD_E_INVALID_PARAMETER;
+ auto p=provider(d);if(!p||!info||info->bContainerIndex>1||info->dwKeySpec!=(info->bContainerIndex==0?AT_SIGNATURE:AT_KEYEXCHANGE))return SCARD_E_INVALID_PARAMETER;
  info->pbSignedData=nullptr;info->cbSignedData=0;
  if(info->dwSigningFlags&~(CARD_PADDING_INFO_PRESENT|CARD_BUFFER_SIZE_ONLY|CARD_PADDING_PKCS1))return SCARD_E_INVALID_PARAMETER;
  if((info->dwSigningFlags&CARD_PADDING_PKCS1)&&(!(info->dwSigningFlags&CARD_PADDING_INFO_PRESENT)||info->dwPaddingType!=CARD_PADDING_PKCS1))return SCARD_E_UNSUPPORTED_FEATURE;
@@ -188,14 +196,17 @@ DWORD WINAPI signData(PCARD_DATA d,PCARD_SIGNING_INFO info){auto result=boundary
  std::reverse(signature,signature+size);return allocated(d,signature,size,&info->pbSignedData,&info->cbSignedData);
  });diagnostic("CardSignData",result,info?info->dwVersion:0,info?info->dwSigningFlags:0,info&&info->dwVersion==CARD_SIGNING_INFO_CURRENT_VERSION?info->dwPaddingType:0,info?info->aiHashAlg:0,info?info->dwKeySpec:0);return result;}
 DWORD WINAPI containerInfo(PCARD_DATA d,BYTE index,DWORD flags,PCONTAINER_INFO info){return boundary([&]()->DWORD{
- auto p=provider(d);if(!p||index||flags||!info)return SCARD_E_INVALID_PARAMETER;
+ auto p=provider(d);if(!p||index>1||flags||!info)return SCARD_E_INVALID_PARAMETER;
  auto s=p->readCertificate();if(s)return s;
  auto cert=CertCreateCertificateContext(X509_ASN_ENCODING,p->cert.data(),static_cast<DWORD>(p->cert.size()));if(!cert)return SCARD_E_INVALID_PARAMETER;
  struct Free{PCCERT_CONTEXT p;~Free(){CertFreeCertificateContext(p);}} free{cert};
  DWORD size=0;if(!CryptDecodeObject(X509_ASN_ENCODING,RSA_CSP_PUBLICKEYBLOB,cert->pCertInfo->SubjectPublicKeyInfo.PublicKey.pbData,cert->pCertInfo->SubjectPublicKeyInfo.PublicKey.cbData,0,nullptr,&size))return SCARD_F_INTERNAL_ERROR;
  PBYTE bytes=static_cast<PBYTE>(d->pfnCspAlloc(size));if(!bytes)return ERROR_NOT_ENOUGH_MEMORY;
  if(!CryptDecodeObject(X509_ASN_ENCODING,RSA_CSP_PUBLICKEYBLOB,cert->pCertInfo->SubjectPublicKeyInfo.PublicKey.pbData,cert->pCertInfo->SubjectPublicKeyInfo.PublicKey.cbData,0,bytes,&size)){d->pfnCspFree(bytes);return SCARD_F_INTERNAL_ERROR;}
- reinterpret_cast<BLOBHEADER*>(bytes)->aiKeyAlg=CALG_RSA_SIGN;*info={};info->dwVersion=CONTAINER_INFO_CURRENT_VERSION;info->pbSigPublicKey=bytes;info->cbSigPublicKey=size;return 0;
+ reinterpret_cast<BLOBHEADER*>(bytes)->aiKeyAlg=index==0?CALG_RSA_SIGN:CALG_RSA_KEYX;
+ *info={};info->dwVersion=CONTAINER_INFO_CURRENT_VERSION;
+ if(index==0){info->pbSigPublicKey=bytes;info->cbSigPublicKey=size;}
+ else{info->pbKeyExPublicKey=bytes;info->cbKeyExPublicKey=size;}return 0;
  });}
 DWORD copied(const void* value,DWORD size,PBYTE out,DWORD capacity,PDWORD count){if(!count)return SCARD_E_INVALID_PARAMETER;*count=size;if(!out||capacity<size)return ERROR_INSUFFICIENT_BUFFER;memcpy(out,value,size);return 0;}
 DWORD WINAPI property(PCARD_DATA d,LPCWSTR name,PBYTE out,DWORD capacity,PDWORD count,DWORD flags){
@@ -218,9 +229,9 @@ DWORD WINAPI property(PCARD_DATA d,LPCWSTR name,PBYTE out,DWORD capacity,PDWORD 
  return SCARD_E_UNSUPPORTED_FEATURE;
 }
 DWORD WINAPI containerProperty(PCARD_DATA d,BYTE index,LPCWSTR name,PBYTE out,DWORD size,PDWORD count,DWORD flags){
- if(index||flags||!name)return SCARD_E_INVALID_PARAMETER;
+ if(index>1||flags||!name)return SCARD_E_INVALID_PARAMETER;
  if(!wcscmp(name,CCP_PIN_IDENTIFIER)){PIN_ID pin=ROLE_USER;return copied(&pin,sizeof(pin),out,size,count);}
- if(!wcscmp(name,CCP_CONTAINER_INFO)){if(!count)return SCARD_E_INVALID_PARAMETER;*count=sizeof(CONTAINER_INFO);if(!out||size<*count)return ERROR_INSUFFICIENT_BUFFER;auto info=reinterpret_cast<PCONTAINER_INFO>(out);info->dwVersion=CONTAINER_INFO_CURRENT_VERSION;return containerInfo(d,0,0,info);}
+ if(!wcscmp(name,CCP_CONTAINER_INFO)){if(!count)return SCARD_E_INVALID_PARAMETER;*count=sizeof(CONTAINER_INFO);if(!out||size<*count)return ERROR_INSUFFICIENT_BUFFER;auto info=reinterpret_cast<PCONTAINER_INFO>(out);info->dwVersion=CONTAINER_INFO_CURRENT_VERSION;return containerInfo(d,index,0,info);}
  return SCARD_E_UNSUPPORTED_FEATURE;
 }
 DWORD WINAPI setProperty(PCARD_DATA d,LPCWSTR name,PBYTE data,DWORD size,DWORD flags){

@@ -3,9 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 ThemeData cieTheme(Brightness brightness) {
+  final caption = brightness == Brightness.dark
+      ? const Color(0xff8dceff)
+      : const Color(0xff0076a8);
+  // Share the existing azure accent with every Material control, including
+  // radios, sliders, switches, progress indicators and focused input borders.
   final scheme = ColorScheme.fromSeed(
-    seedColor: const Color(0xff4c65ad),
+    seedColor: const Color(0xff0076a8),
     brightness: brightness,
+    primary: caption,
   );
   final theme = ThemeData(
     useMaterial3: true,
@@ -19,9 +25,6 @@ ThemeData cieTheme(Brightness brightness) {
     ),
   );
   // Keep the azure captions readable on both surfaces and filled buttons.
-  final caption = brightness == Brightness.dark
-      ? const Color(0xff8dceff)
-      : const Color(0xff0076a8);
   WidgetStateProperty<Color?> enabledColor(Color color) =>
       WidgetStateProperty.resolveWith(
         (states) => states.contains(WidgetState.disabled) ? null : color,

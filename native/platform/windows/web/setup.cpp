@@ -13,8 +13,7 @@
 #include <array>
 #include <memory>
 #include "setup_policy.h"
-#include "card_identification.h"
-#include "cie_web.h"
+#include "setup_registry.h"
 #include "setup_payload.h"
 namespace fs=std::filesystem;
 using cie_setup::Code;
@@ -67,61 +66,69 @@ bool ownedModule(const std::wstring& text,const fs::path& root){
  auto path=fs::path(text).lexically_normal();if(!path.is_absolute()||path.filename()!=L"cie_prototype_minidriver.dll")return false;
  auto relative=path.lexically_relative(root);return !relative.empty()&&*relative.begin()!=L"..";
 }
-struct Card {SCARDCONTEXT context=0;SCARDHANDLE card=0;bool locked=false;DWORD protocol=0;BYTE atr[64]{};DWORD atrSize=64;cie_identification::ReadCommands commands;
- ~Card(){if(locked)SCardEndTransaction(card,SCARD_LEAVE_CARD);if(card)SCardDisconnect(card,SCARD_LEAVE_CARD);if(context)SCardReleaseContext(context);}
+struct Card {SCARDCONTEXT context=0;SCARDHANDLE card=0;DWORD protocol=0;BYTE atr[64]{};DWORD atrSize=64;
+ ~Card(){if(card)SCardDisconnect(card,SCARD_LEAVE_CARD);if(context)SCardReleaseContext(context);}
  void connect(const std::wstring& reader){if(SCardEstablishContext(SCARD_SCOPE_SYSTEM,nullptr,nullptr,&context)||SCardConnectW(context,reader.c_str(),SCARD_SHARE_SHARED,SCARD_PROTOCOL_T1,&card,&protocol))throw 4;
  wchar_t name[4096];DWORD length=4096,state=0;if(SCardStatusW(card,name,&length,&state,&protocol,atr,&atrSize)||!atrSize||atrSize>64)throw 5;}
- static int32_t transmit(void* ctx,const uint8_t* bytes,uint32_t size,uint8_t* out,uint32_t* length){auto& s=*static_cast<Card*>(ctx);if(!s.commands.accept(bytes,size))return CIE_WEB_TRANSPORT;DWORD n=*length;auto result=SCardTransmit(s.card,SCARD_PCI_T1,bytes,size,nullptr,out,&n);*length=n;return result?CIE_WEB_TRANSPORT:0;}
+
 };
-void discover(Card& card,const fs::path& folder){
- if(SCardBeginTransaction(card.card))throw 5;card.locked=true;
- auto module=LoadLibraryExW((folder/L"backend"/L"cie_web.dll").c_str(),nullptr,LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR|LOAD_LIBRARY_SEARCH_SYSTEM32);if(!module)throw 6;
- struct Free{HMODULE h;~Free(){FreeLibrary(h);}} free{module};
- auto open=reinterpret_cast<decltype(&cie_web_open)>(GetProcAddress(module,"cie_web_open"));auto close=reinterpret_cast<decltype(&cie_web_close)>(GetProcAddress(module,"cie_web_close"));auto version=reinterpret_cast<decltype(&cie_web_abi_version)>(GetProcAddress(module,"cie_web_abi_version"));
- if(!open||!close||!version||version()!=1)throw 6;
- CieWebSession* session=nullptr;auto status=open(card.atr,card.atrSize,Card::transmit,&card,nullptr,&session);if(session)close(session);if(status)throw 5;
- SCardEndTransaction(card.card,SCARD_LEAVE_CARD);card.locked=false;
-}
-int setup(bool install,const std::wstring& reader){
- const fs::path source(executableDirectory());validate(source);if(install&&!elevated())return 2;
- Card card;card.connect(reader);auto names=matching(card.context,card.atr);if(cie_setup::foreignMatch(names)||names.size()>1)return 3;
- const auto root=installationRoot();const auto target=root/cie_setup_payload::version;
- for(const auto& n:names)if(!ownedModule(provider(card.context,n,0x80000001),root)||provider(card.context,n,3)!=MS_SMART_CARD_KEY_STORAGE_PROVIDER)return 3;
- bool current=!names.empty();for(const auto& n:names)current=current&&fs::path(provider(card.context,n,0x80000001))==target/L"cie_prototype_minidriver.dll"&&provider(card.context,n,SCARD_PROVIDER_CSP)==MS_SCARD_PROV_W;
- if(current){try{validate(target);return 0;}catch(...){return 9;}}
- if(!install)return 10;
- std::vector<std::unique_ptr<Handle>> guards;
+using Guards=std::vector<std::unique_ptr<Handle>>;
+Guards installFiles(const fs::path& source,const fs::path& root,const fs::path& target){
+ Guards guards;
  for(const auto& path:{root.parent_path(),root,target,target/L"backend"})guards.push_back(secureDirectory(path));
- // Never replace loaded binaries. Version directories are immutable and hash-bound.
+ // Keep previous versions intact: browser processes may still have them loaded.
  for(const auto& entry:cie_setup_payload::files){auto destination=target/entry.path;
   fs::path parent=target;for(const auto& part:fs::path(entry.path).parent_path()){parent/=part;guards.push_back(secureDirectory(parent));}
   if(fs::exists(destination)){if(hashFile(destination,entry.size)!=entry.sha256)throw 9;}
   else if(!CopyFileW((source/entry.path).c_str(),destination.c_str(),TRUE))throw 7;
   guards.push_back(secureDirectory(destination,false));
  }
- validate(target);discover(card,target);
- std::wstring name;if(names.empty()){
-  name=cie_setup::cardName;
-  auto all=matching(card.context,nullptr);
-  if(std::find(all.begin(),all.end(),name)!=all.end()){name+=L" ";const char hex[]="0123456789abcdef";BYTE hash[32];DWORD n=32;if(!CryptHashCertificate(0,CALG_SHA_256,0,card.atr,card.atrSize,hash,&n))throw 8;for(unsigned i=0;i<8;++i){name+=hex[hash[i]>>4];name+=hex[hash[i]&15];}}
-  if(std::find(all.begin(),all.end(),name)!=all.end())return 3;
- }else name=names.front();
- // Refuse races: another registration may have appeared during public discovery.
- auto again=matching(card.context,card.atr);if(cie_setup::foreignMatch(again)||again!=names)return 3;
- bool created=names.empty();std::wstring oldCsp,oldKsp,oldModule;
- if(created){std::vector<BYTE> mask(card.atrSize,0xff);if(SCardIntroduceCardTypeW(card.context,name.c_str(),nullptr,nullptr,0,card.atr,mask.data(),card.atrSize))return 8;}
- else {oldCsp=provider(card.context,name,SCARD_PROVIDER_CSP);oldKsp=provider(card.context,name,3);oldModule=provider(card.context,name,0x80000001);}
- auto set=[&](DWORD type,const std::wstring& value){return SCardSetCardTypeProviderNameW(card.context,name.c_str(),type,value.c_str());};
- auto module=(target/L"cie_prototype_minidriver.dll").wstring();
- return cie_setup::publishBindings(created,set,[&]{return SCardForgetCardTypeW(card.context,name.c_str())==SCARD_S_SUCCESS;},
-  [&]{return provider(card.context,name,0x80000001)==module&&provider(card.context,name,3)==MS_SMART_CARD_KEY_STORAGE_PROVIDER&&provider(card.context,name,SCARD_PROVIDER_CSP)==MS_SCARD_PROV_W;},oldCsp,oldKsp,oldModule,module);
+ validate(target);return guards;
+}
+int checkSetup(const std::wstring& reader){
+ const fs::path source(executableDirectory());validate(source);
+ Card card;card.connect(reader);auto names=matching(card.context,card.atr);
+ if(cie_setup::foreignMatch(names))return 3;
+ const auto root=installationRoot(),target=root/cie_setup_payload::version;
+ for(const auto& n:names)if(!ownedModule(provider(card.context,n,0x80000001),root)||provider(card.context,n,3)!=MS_SMART_CARD_KEY_STORAGE_PROVIDER)return 3;
+ if(names.empty())return 10;
+ for(const auto& n:names)if(fs::path(provider(card.context,n,0x80000001))!=target/L"cie_prototype_minidriver.dll"||provider(card.context,n,SCARD_PROVIDER_CSP)!=MS_SCARD_PROV_W)return 10;
+ try{validate(target);return 0;}catch(...){return 9;}
+}
+cie_setup::RegistryStore cardDatabase(){return {HKEY_LOCAL_MACHINE,L"SOFTWARE\\Microsoft\\Cryptography\\Calais\\SmartCards"};}
+// Only the package installer writes this fixed machine database. No PC/SC
+// context or card operation occurs, including on PCs with no reader/service.
+int installPackage(bool planOnly=false){
+ const fs::path source(executableDirectory());validate(source);if(!planOnly&&!elevated())return 2;
+ const auto root=installationRoot(),target=root/cie_setup_payload::version;
+ auto store=cardDatabase();const auto plan=cie_setup::planCatalog(store.read(),(target/L"cie_prototype_minidriver.dll").wstring(),[&](const auto& path){return ownedModule(path,root);});
+ if(plan.code||planOnly)return plan.code;
+ auto guards=installFiles(source,root,target);
+ return cie_setup::applyCatalog(store,plan);
+}
+int unregisterPackage(){
+ if(!elevated())return 2;
+ auto store=cardDatabase();const auto root=installationRoot();const auto before=store.read();
+ // Validate ownership of every key before any removal; rollback the complete
+ // owned set if deletion fails. User certificates/caches are never consulted.
+ cie_setup::CatalogPlan plan;
+ // Foreign middleware may have been installed later. It must not prevent the
+ // removal of our own registrations, and it must never be changed.
+ for(const auto& item:before)if(cie_setup::ownedName(item.first)){
+  const auto& v=item.second;
+  if(!ownedModule(cie_setup::stringValue(v,L"80000001"),root)||cie_setup::stringValue(v,L"Crypto Provider")!=MS_SCARD_PROV_W||cie_setup::stringValue(v,L"Smart Card Key Storage Provider")!=MS_SMART_CARD_KEY_STORAGE_PROVIDER)return 3;
+ }
+ plan.code=0;plan.before=before;plan.after.clear();return cie_setup::applyCatalog(store,plan);
 }
 }
 int wmain(int argc,wchar_t** argv){
  SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_SYSTEM32);
  try{
   if(argc==2&&!wcscmp(argv[1],L"--validate-package")){validate(executableDirectory());return 0;}
-  if(argc!=3||(!cie_setup::validReader(argv[2]))||(wcscmp(argv[1],L"--check")&&wcscmp(argv[1],L"--install")))return 6;
-  return setup(!wcscmp(argv[1],L"--install"),argv[2]);
+  if(argc==2&&!wcscmp(argv[1],L"--install-package"))return installPackage();
+  if(argc==2&&!wcscmp(argv[1],L"--plan-package"))return installPackage(true);
+  if(argc==2&&!wcscmp(argv[1],L"--unregister-package"))return unregisterPackage();
+  if(argc!=3||!cie_setup::validReader(argv[2])||wcscmp(argv[1],L"--check"))return 6;
+  return checkSetup(argv[2]);
  }catch(int code){return code;}catch(...){return 7;}
 }

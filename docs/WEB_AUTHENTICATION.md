@@ -6,8 +6,7 @@ La sintesi aggiornata è in [STATUS.md](STATUS.md). L'accesso reale al portale C
 è stato verificato con Safari su macOS Apple Silicon e Chrome/Firefox su Windows
 x64. L'utente ha confermato il 21 ottobre anche il collaudo riuscito con Microsoft
 Edge su Windows; versione del browser e protocollo TLS non sono stati rilevati
-indipendentemente. Per l'accesso si usa il PIN completo di otto cifre. L'attivazione Windows al primo
-abbinamento è descritta in [WINDOWS_WEB_FIRST_USE.md](WINDOWS_WEB_FIRST_USE.md).
+indipendentemente. Per l'accesso si usa il PIN completo di otto cifre. L'installazione Windows è descritta in [WINDOWS_INSTALLER.md](WINDOWS_INSTALLER.md).
 Le note successive conservano anche passaggi e limiti storici del porting.
 
 Il 20 ottobre 2026 l’utente ha confermato anche l’esito positivo del test reale
@@ -64,8 +63,9 @@ un aggiornamento esplicito con PIN completo. Procedura, fasi e limiti:
 La vecchia configurazione separata resta solo in **Impostazioni → Prove avanzate
 accesso ai siti**, per diagnosi e compatibilità. Le API legacy non vengono
 concatenate all’abbinamento unico. Il componente di sistema deve essere attivo;
-Windows richiede ancora il collaudo KSP/browser. Non si installa automaticamente
-il minidriver e non si sostituiscono associazioni di certificati estranee.
+Su Windows il pacchetto di installazione gestisce il minidriver con UAC;
+l’app esegue soltanto un controllo senza elevazione. Le associazioni di
+certificati estranee vengono conservate.
 
 - macOS: il runner conserva il solo DER pubblico nelle preferenze del prototipo
   e ne pubblica una copia in un App Group dedicato, condiviso soltanto con la
@@ -241,7 +241,11 @@ cmake -S native/platform/windows/web -B build-web \
 cmake --build build-web --config Release
 ```
 
-Il pacchetto privato contiene `cie_prototype_minidriver.dll`, helper di
+La procedura diagnostica storica seguente precede l'installer corrente:
+il [pacchetto Windows](WINDOWS_INSTALLER.md) ora registra il catalogo ufficiale
+senza carta/lettore, con un'unica UAC e conservando i dati personali.
+
+Il precedente pacchetto privato contiene `cie_prototype_minidriver.dll`, helper di
 registrazione, `backend/` privato e `Manage-WebToken.ps1`. L’azione predefinita
 **Plan** legge soltanto stato, firma Authenticode e registrazioni corrispondenti.
 **Install** richiede PowerShell amministratore, controlla i checksum, prepara

@@ -2,6 +2,36 @@
 
 Situazione al 21 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
 
+Aggiornamento successivo al confronto ufficiale: compatibilità CryptoAPI
+`AT_KEYEXCHANGE`, modulo PKCS#11 Windows con digest/verifica pubblica condivisi
+con Linux, scadenza del certificato nella Home e ricerca manuale delle release
+del progetto. App/installer Windows 1.0.0 ricompilati: 220 test Flutter, 3
+integrazioni facoltative saltate e 894 controlli isolati tra provider, catalogo,
+setup e installer, inclusa la successiva regressione Chrome. PIN e motori
+crittografici conservati. Dopo l'installazione del componente corretto,
+l'utente conferma l'accesso riuscito al portale CIE da Chrome, Edge e Firefox
+su Windows. Le suite automatiche usano componenti simulati e non inviano PIN
+alla CIE reale; i collaudi browser sono eseguiti personalmente dall'utente.
+[Implementazione, percorsi e limiti](MIDDLEWARE_COMPATIBILITY_UPDATE.md).
+
+Correzione successiva per Chrome: riprodotto `No_client_certificate` prima del
+PIN, con apertura KSP silenziosa fallita (`NTE_BAD_KEYSET`) quando firma e
+alias CryptoAPI condividevano il nome. I due ruoli ora hanno nomi e indici
+distinti, conservando il contenitore di firma già pubblicato. Passano i tre
+CTest Windows, inclusi 161 controlli del minidriver. Dopo l'aggiornamento
+dell'installer con UAC (exit 0), la stessa apertura silenziosa della chiave
+KSP è riuscita; verificate le 12 registrazioni e il checksum del componente
+installato. Il nuovo accesso completo da Chrome è confermato dall'utente:
+con PIN completo e dopo «Prosegui» nella pagina di rilascio attributi si apre
+l'area riservata. Il log opt-in conferma esito 0 per autenticazioni e firme.
+L'utente ha poi confermato il nuovo collaudo positivo anche con Edge e Firefox.
+La precedente pagina bianca dopo il consenso non si è ripresentata nella
+prova diagnostica; la sua causa non è stata stabilita. Il launcher abilita
+solo la registrazione numerica del componente, senza modificare impostazioni
+di sicurezza, profilo del browser o codice installato.
+Il controllo ripetibile
+`scripts/check_windows_web_key.py` apre la chiave senza firma, PIN o riparazioni.
+
 | Ambito | macOS | Windows | Linux |
 | --- | --- | --- | --- |
 | Interfaccia condivisa | Compilata Universal; eseguita su Apple Silicon | Compilata/eseguita x64 | Collaudo desktop da completare |
@@ -9,11 +39,38 @@ Situazione al 21 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario
 | Middleware e SDK | Compilati ARM64/x86_64; test nativi su ARM64 | Backend MinGW x64 e componenti MSVC; test su Windows | Compilazione/test nativi senza carta |
 | Firma PAdES/CAdES | CIE reale verificata | CIE reale verificata | PDF e P7M con CIE reale e PIN parziale verificati |
 | Abbinamento e PIN parziale | Persistenza e firme reali verificate | Persistenza e firme reali verificate | Abbinamento, persistenza e firme con PIN parziale verificati |
-| Accesso ai siti | CryptoTokenKit e accesso Safari al portale CIE verificati | CSP/KSP e accesso Chrome e Firefox al portale CIE verificati; esito positivo anche con Edge confermato dall'utente | Test reali Mozilla Firefox e Firefox Snap con PIN completo confermati riusciti dall’utente |
+| Accesso ai siti | CryptoTokenKit e accesso Safari al portale CIE verificati | CSP/KSP aggiornato: accesso al portale CIE con Chrome, Edge e Firefox confermato dall'utente dopo la correzione dei contenitori | Test reali Mozilla Firefox e Firefox Snap con PIN completo confermati riusciti dall’utente |
 | Cambio PIN e Sblocco Carta | Test software; collaudo reale da completare | Test software; collaudo reale da completare | Collaudo reale non eseguito |
 | DSS/LTA con JVM privata | Predisposto e testato | Predisposto e testato | Assemblaggio non previsto dallo script attuale |
 
 L’esecuzione su un sistema non prova automaticamente la compatibilità con tutti i lettori, le CIE, i browser o i servizi. Il formato LTA non implica da solo una validazione storica positiva: servono prove e una catena di fiducia sufficienti.
+
+## Installer Windows x64 (21 ottobre)
+
+Il pacchetto locale di test include l'app completa, il componente Web e il
+prerequisito Microsoft Visual C++ x64. Installazione e aggiornamento del
+componente sono spostati nell'installer con UAC; l'app controlla la presenza
+del componente senza elevazione durante l'abbinamento. Cache, impostazioni,
+immagini e certificati utente vengono conservati anche dalla disinstallazione.
+Anche la prima registrazione funziona senza lettore, CIE o PIN, usando i 12 ATR
+e le maschere del middleware ufficiale verificati al commit `8dd385e`.
+Il collaudo usa il
+motore Inno reale con componente simulato in una destinazione isolata; UAC e
+login dopo l'installazione del pacchetto completo restano da collaudare sul PC.
+La distribuzione esclude 39 file di test/sviluppo e conserva integralmente
+licenze e dipendenze operative: installer 142,5 MB invece di 175,5 MB,
+cartella Release circa 381,7 MB invece di 496,9 MB. Superati 49 controlli dell'installer
+isolato e le prove del bundle ridotto per PDF/P7M, LTA, revoca storica e rete.
+Il catalogo/registro supera 410 controlli, incluse scritture reali in una chiave
+HKCU isolata, migrazione, conflitti, maschere e ripristino; nessuna scrittura nel
+database di sistema durante queste prove.
+Corretta anche la distribuzione del ponte nativo: il vecchio binario non
+riconosceva i nomi `CIE_n`, pur con installazione riuscita. Il ponte aggiornato
+riconosce il componente installato; passano 13 gruppi CTest e 205 controlli sui
+documenti con il backend originale. Il packager rifiuta runtime con regole del
+catalogo obsolete. Il completamento pubblico dell'abbinamento già presente è
+riuscito senza autenticazioni sulla carta.
+[Preparazione, conservazione dei dati e limiti](WINDOWS_INSTALLER.md).
 
 ## Firefox Windows: login confermato (21 ottobre)
 
