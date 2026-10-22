@@ -199,6 +199,7 @@ class DiagnosticCieService
         PairingService,
         WebAccessService,
         CardObservationService,
+        CancellableCardObservation,
         EnrollmentService,
         CertificateNameService {
   DiagnosticCieService(this.delegate, this.recorder);
@@ -255,6 +256,14 @@ class DiagnosticCieService
   Future<JsonResult> observeCards() => delegate is CardObservationService
       ? (delegate as CardObservationService).observeCards()
       : Future.value({'ok': false, 'code': 'observation_unavailable'});
+
+  @override
+  Future<void> cancelCardObservation() async {
+    if (delegate is CancellableCardObservation) {
+      await (delegate as CancellableCardObservation).cancelCardObservation();
+    }
+  }
+
   Future<JsonResult> _enrollment(
     String op,
     Future<JsonResult> Function(EnrollmentService) action,

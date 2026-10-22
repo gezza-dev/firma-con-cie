@@ -48,7 +48,7 @@ Future<void> showAppNotification(
               Icon(
                 error ? Icons.cancel_outlined : Icons.info_outline,
                 color: error
-                    ? Colors.red
+                    ? Theme.of(dialogContext).colorScheme.error
                     : Theme.of(dialogContext).colorScheme.primary,
               ),
               const SizedBox(width: 12),

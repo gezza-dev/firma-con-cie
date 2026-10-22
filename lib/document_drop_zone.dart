@@ -37,7 +37,9 @@ class _DocumentDropZoneState extends State<DocumentDropZone> {
     child: Container(
       decoration: BoxDecoration(
         border: Border.all(
-          color: hover && widget.enabled ? Colors.blue : Colors.transparent,
+          color: hover && widget.enabled
+              ? Theme.of(context).colorScheme.primary
+              : Colors.transparent,
           width: 2,
         ),
         borderRadius: BorderRadius.circular(14),

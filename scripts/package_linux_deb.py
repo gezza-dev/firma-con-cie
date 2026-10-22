@@ -57,7 +57,7 @@ def validate_bundle(bundle):
     actual = {p.relative_to(native).as_posix() for p in files(native)}
     if actual != set(manifest['files']) | {'backend-manifest.json'}:
         raise ValueError('Unmanifested native runtime file')
-    for name in ('CIE-ID', 'cie_native/cie_crl_fetch'):
+    for name in ('CIE-ID', 'cie_native/cie_crl_fetch', 'cie_native/cie_card_observer'):
         if not os.access(bundle / name, os.X_OK):
             raise ValueError('Executable permission missing: ' + name)
     return manifest

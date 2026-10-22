@@ -38,7 +38,8 @@ def main():
     release = q / 'synthetic-release'
     (release / 'web-component/backend').mkdir(parents=True)
     for name in ('CIE-ID.exe', 'flutter_windows.dll', 'pdfium.dll', 'data/app.so',
-                 'cie_native/ltv/cie-ltv-worker.jar', 'cie_native/cie_bridge.dll', 'cie_native/licenses/NOTICE.txt',
+                 'cie_native/ltv/cie-ltv-worker.jar', 'cie_native/cie_bridge.dll',
+                 'cie_native/cie_card_observer.exe', 'cie_native/licenses/NOTICE.txt',
                  'cie_native/tests/fake_backend.dll', 'cie_native/tests/test_bridge.py',
                  'cie_native/ltv/tests/cie-ltv-tests.jar', 'cie_native/provenance/assembly-final.json',
                  'cie_native/ltv/jre/windows-x86_64/lib/jvm.lib',

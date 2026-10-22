@@ -143,6 +143,9 @@ endif()
 # Dart share this layout; no library is installed in the operating system.
 set(CIE_RUNTIME "${CMAKE_CURRENT_SOURCE_DIR}/../native/runtime/linux")
 if(EXISTS "${CIE_RUNTIME}/backend-manifest.json")
+  if(NOT EXISTS "${CIE_RUNTIME}/cie_card_observer")
+    message(FATAL_ERROR "Rebuild the native runtime: missing private card observer")
+  endif()
   install(DIRECTORY "${CIE_RUNTIME}/" DESTINATION "${CMAKE_INSTALL_PREFIX}/cie_native"
     USE_SOURCE_PERMISSIONS COMPONENT Runtime)
 endif()

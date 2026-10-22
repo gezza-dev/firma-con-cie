@@ -38,6 +38,28 @@ flutter test --no-pub
 
 Questi test usano servizi simulati. Tre test del backend documentale sono opt-in: vedere la sezione Test. La UI può compilare senza runtime, ma firma, lettura CIE e verifica nativa richiedono le librerie descritte sotto.
 
+## Processo di rilevamento della carta
+
+Il rilevamento pubblico usa il programma privato `cie_card_observer` (`.exe`
+su Windows), prodotto da `scripts/build_native.py` con la stessa toolchain del
+backend. Va distribuito accanto al bridge; non è un servizio di sistema.
+Il processo conserva lo stato di osservazione fra i sondaggi, viene interrotto
+dopo cinque secondi senza risposta e viene arrestato quando il monitor è sospeso
+o l’app si chiude. Dopo un timeout i sondaggi automatici osservano una pausa di
+otto secondi. La perdita del primo piano e la minimizzazione della finestra
+non sospendono il rilevamento; lo sospendono operazioni, dialoghi, sospensione
+del sistema e chiusura. Non esiste un ripiego PC/SC nell’isolate della GUI.
+Il protocollo ammette soltanto `observe` e `detect`: nessun PIN, documento,
+abbinamento o operazione privata attraversa questo processo. Il supervisor
+termina anche alla chiusura del canale del genitore, pur con PC/SC bloccato.
+
+`flutter test test/card_observation_process_test.dart` compila ed esegue un
+worker sintetico con il Dart SDK della toolchain. Verifica timeout, chiusura,
+crash, output malformato/eccessivo e assenza di processi residui senza lettore.
+CTest verifica anche il supervisor C++ reale con un bridge simulato bloccato.
+Ricompilare il runtime prima di ricostruire o confezionare l’app: i controlli
+di packaging rifiutano un runtime privo del nuovo eseguibile.
+
 ## macOS Universal
 
 Servono Xcode completo con supporto ai cataloghi `.icon` (Xcode 26 o successivo), SDK macOS, CMake/Ninja e gli strumenti della tabella. Il deployment target dell’app e del backend è macOS 12.0. Il toolchain di compilazione può richiedere un macOS più recente.

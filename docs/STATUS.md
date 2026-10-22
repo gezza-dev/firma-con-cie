@@ -1,6 +1,63 @@
 # Stato del progetto e verifiche
 
-Situazione al 21 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
+Situazione al 22 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
+
+Correzione del blocco PC/SC su macOS: il campionamento del processo ha mostrato
+`SCardGetStatusChange` fermo in una richiesta XPC e la chiusura Flutter in attesa
+dell’isolate FFI. Il rilevamento automatico e manuale usa ora un eseguibile
+C++ privato, con supervisor e client Dart condivisi fra macOS, Windows e Linux.
+Timeout di cinque secondi, pausa automatica di otto secondi dopo un timeout,
+arresto su sospensione/chiusura e uscita anche quando si chiude il canale del
+genitore. Il wrapper diagnostico inoltra l’annullamento. Il processo non accetta
+PIN, firme o altre operazioni private. Nessun ripiego nel processo della GUI.
+La build richiede di confezionare il nuovo eseguibile accanto al bridge.
+
+Verifiche macOS: 230 test Flutter superati, tre integrazioni facoltative saltate,
+analisi pulita e 26 CTest nativi superati. I test eseguono processi sintetici
+bloccati, crash, protocolli errati/output eccessivo, annullamento durante l’avvio,
+chiusura dell’app e controllo dei figli terminati. Il supervisor C++ reale è
+provato con un bridge simulato bloccato, anche alla scomparsa del genitore.
+Una copia separata della GUI macOS, con lettore simulato bloccato e senza
+estensione CTK, è uscita mentre il figlio era ancora in attesa; entrambi i
+processi sono terminati. Verificati anche il timeout e la pausa fra i sondaggi.
+Questa modifica non comprende una ricompilazione o un collaudo sui PC Windows
+e Linux; tali verifiche vanno ripetute sui rispettivi sistemi. Non sono state
+eseguite autenticazioni, Cambio PIN o Sblocco Carta sulla CIE reale.
+
+Le miniature delle CIE abbinate nella Home e nella selezione di Firma
+Elettronica condividono il controllo della presenza: colore per la carta
+rilevata, scala di grigi per le altre o quando il rilevamento non è disponibile.
+Il confronto usa l'identificativo pubblico della CIE o il numero carta salvato,
+senza autenticazione. In Firma Elettronica le carte assenti restano selezionabili
+per preparare il documento. La Home presenta il pulsante di abbinamento sempre
+nella stessa posizione e lo disabilita se manca una nuova CIE disponibile.
+
+Allineati il messaggio di presenza e il pulsante di abbinamento della Home
+al bordo visibile della miniatura e ai dettagli della carta. Il rilevamento
+pubblico prosegue anche quando la finestra perde il primo piano o è minimizzata;
+resta sospeso durante operazioni, dialoghi, sospensione del sistema e chiusura.
+Il processo separato conserva timeout e annullamento, senza ricevere il PIN.
+
+Palette Material 3 condivisa basata sul blu del logo `#4C65AD`, nelle varianti
+chiara e scura. Pulsanti, campi, selezioni, menu, superfici e dialoghi usano
+i ruoli coordinati del `ColorScheme` e gli stati Material per disabilitazione,
+passaggio del mouse, focus e pressione. Eliminati i colori azzurri imposti
+separatamente ai pulsanti; il bordo del trascinamento e le icone di errore
+seguono la palette. Conservati struttura delle schermate, dimensione delle
+voci laterali, selezione del tema e sfondi abbinati alle icone esistenti.
+I controlli automatici verificano contrasto dei testi e dei bordi, stati dei
+pulsanti e corrispondenza degli sfondi delle icone in entrambi i temi.
+Analisi pulita e 250 test Flutter superati, con tre integrazioni facoltative
+saltate. I test dei controlli coprono le varianti di piattaforma macOS,
+Windows e Linux; build Universal macOS firmata Apple Development e verificata
+con controllo approfondito della firma. Collaudo visivo dei due temi eseguito
+nelle Impostazioni, ripristinando poi la preferenza chiara già selezionata.
+
+Personalizzazione successiva del tema scuro: gli accenti dei controlli usano
+una palette Material verde chiaro, conservando superfici, testi neutri e colori
+di errore. La palette del tema chiaro resta invariata. I controlli di contrasto
+e degli stati dei pulsanti coprono anche questa variante verde. Analisi pulita
+e 251 test Flutter superati, con tre integrazioni facoltative saltate.
 
 Aggiornamento successivo al confronto ufficiale: compatibilità CryptoAPI
 `AT_KEYEXCHANGE`, modulo PKCS#11 Windows con digest/verifica pubblica condivisi

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 import 'dart:async';
+import 'dart:ui' show AppExitResponse;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -98,6 +99,20 @@ class UnifiedFake extends FakeService
         },
       ],
     };
+  }
+}
+
+class CancellableUnifiedFake extends UnifiedFake
+    implements CancellableCardObservation {
+  int cancellations = 0;
+  @override
+  Future<void> cancelCardObservation() async {
+    cancellations++;
+    final old = pending;
+    pending = null;
+    if (old != null && !old.isCompleted) {
+      old.complete({'ok': false, 'code': 'observation_cancelled'});
+    }
   }
 }
 
@@ -205,6 +220,29 @@ void main() {
       monitor.dispose();
       await t.pump(const Duration(seconds: 5));
       expect(service.observations, 3);
+    },
+  );
+  testWidgets(
+    'application exit cancels public observation without PIN or private calls',
+    (t) async {
+      final service = CancellableUnifiedFake()
+        ..pending = Completer<JsonResult>();
+      await t.pumpWidget(
+        CiePrototype(
+          service: service,
+          settings: MemorySettingsStore(),
+          webStatusReader: () async => {},
+        ),
+      );
+      await t.pumpAndSettle();
+      expect(service.observations, greaterThan(0));
+      final response = t.binding.handleRequestAppExit();
+      await t.pumpAndSettle();
+      expect(await response, AppExitResponse.exit);
+      expect(service.cancellations, greaterThan(0));
+      expect(service.enrollCalls, 0);
+      expect(service.signCalls, 0);
+      await t.pumpWidget(const SizedBox.shrink());
     },
   );
   testWidgets(

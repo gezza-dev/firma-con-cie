@@ -111,6 +111,9 @@ install(FILES "${AOT_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_DATA_DIR}"
 # Dart share this layout; no library is installed in the operating system.
 set(CIE_RUNTIME "${CMAKE_CURRENT_SOURCE_DIR}/../native/runtime/windows")
 if(EXISTS "${CIE_RUNTIME}/backend-manifest.json")
+  if(NOT EXISTS "${CIE_RUNTIME}/cie_card_observer.exe")
+    message(FATAL_ERROR "Rebuild the native runtime: missing private card observer")
+  endif()
   install(DIRECTORY "${CIE_RUNTIME}/" DESTINATION "${CMAKE_INSTALL_PREFIX}/cie_native" COMPONENT Runtime)
 endif()
 set(CIE_WEB_COMPONENT "${CMAKE_CURRENT_SOURCE_DIR}/../native/runtime/windows-web-component")

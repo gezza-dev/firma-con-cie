@@ -2,53 +2,86 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-ThemeData cieTheme(Brightness brightness) {
-  final caption = brightness == Brightness.dark
-      ? const Color(0xff8dceff)
-      : const Color(0xff0076a8);
-  // Share the existing azure accent with every Material control, including
-  // radios, sliders, switches, progress indicators and focused input borders.
-  final scheme = ColorScheme.fromSeed(
-    seedColor: const Color(0xff0076a8),
-    brightness: brightness,
-    primary: caption,
+// Shared Material 3 palette: logo blue in light mode, pale green accents in
+// dark mode. All three desktop platforms use the same component color roles.
+const cieLogoBlue = Color(0xff4c65ad);
+const cieDarkGreenSeed = Color(0xff7bbf8e);
+
+ColorScheme _darkGreenControls(ColorScheme base) {
+  final green = ColorScheme.fromSeed(
+    seedColor: cieDarkGreenSeed,
+    brightness: Brightness.dark,
+    dynamicSchemeVariant: DynamicSchemeVariant.tonalSpot,
   );
+  // Change interactive accents as paired Material roles, retaining the current
+  // window/card surfaces, neutral text and red error colors.
+  return base.copyWith(
+    primary: green.primary,
+    onPrimary: green.onPrimary,
+    primaryContainer: green.primaryContainer,
+    onPrimaryContainer: green.onPrimaryContainer,
+    primaryFixed: green.primaryFixed,
+    primaryFixedDim: green.primaryFixedDim,
+    onPrimaryFixed: green.onPrimaryFixed,
+    onPrimaryFixedVariant: green.onPrimaryFixedVariant,
+    secondary: green.secondary,
+    onSecondary: green.onSecondary,
+    secondaryContainer: green.secondaryContainer,
+    onSecondaryContainer: green.onSecondaryContainer,
+    secondaryFixed: green.secondaryFixed,
+    secondaryFixedDim: green.secondaryFixedDim,
+    onSecondaryFixed: green.onSecondaryFixed,
+    onSecondaryFixedVariant: green.onSecondaryFixedVariant,
+    tertiary: green.tertiary,
+    onTertiary: green.onTertiary,
+    tertiaryContainer: green.tertiaryContainer,
+    onTertiaryContainer: green.onTertiaryContainer,
+    tertiaryFixed: green.tertiaryFixed,
+    tertiaryFixedDim: green.tertiaryFixedDim,
+    onTertiaryFixed: green.onTertiaryFixed,
+    onTertiaryFixedVariant: green.onTertiaryFixedVariant,
+    inversePrimary: green.inversePrimary,
+    surfaceTint: green.surfaceTint,
+  );
+}
+
+ThemeData cieTheme(Brightness brightness) {
+  final base = ColorScheme.fromSeed(
+    seedColor: cieLogoBlue,
+    brightness: brightness,
+    dynamicSchemeVariant: DynamicSchemeVariant.tonalSpot,
+    // Keep the light window background matched to the existing app icon base.
+    surface: brightness == Brightness.light ? const Color(0xfff7f8fc) : null,
+  );
+  final scheme = brightness == Brightness.dark
+      ? _darkGreenControls(base)
+      : base;
   final theme = ThemeData(
     useMaterial3: true,
     brightness: brightness,
     colorScheme: scheme,
-    scaffoldBackgroundColor: brightness == Brightness.light
-        ? const Color(0xfff7f8fc)
-        : scheme.surface,
+    scaffoldBackgroundColor: scheme.surface,
     inputDecorationTheme: const InputDecorationTheme(
       border: OutlineInputBorder(),
     ),
-  );
-  // Keep the azure captions readable on both surfaces and filled buttons.
-  WidgetStateProperty<Color?> enabledColor(Color color) =>
-      WidgetStateProperty.resolveWith(
-        (states) => states.contains(WidgetState.disabled) ? null : color,
-      );
-  final outlineStyle = ButtonStyle(foregroundColor: enabledColor(caption));
-  final filledStyle = ButtonStyle(
-    foregroundColor: enabledColor(const Color(0xff8dceff)),
-    backgroundColor: enabledColor(const Color(0xff14394f)),
   );
   final baseMenuLabel = theme.typography.englishLike
       .merge(theme.textTheme)
       .labelMedium!;
   final menuLabel = baseMenuLabel.copyWith(
     fontSize: baseMenuLabel.fontSize! + 1,
-    color: scheme.onSurface,
   );
+  // Buttons, inputs, dialogs and selection controls use Material defaults,
+  // including paired foreground/background colors and disabled/hover states.
+  // Preserve the existing rail typography and layout.
   return theme.copyWith(
-    textButtonTheme: TextButtonThemeData(style: outlineStyle),
-    outlinedButtonTheme: OutlinedButtonThemeData(style: outlineStyle),
-    filledButtonTheme: FilledButtonThemeData(style: filledStyle),
-    elevatedButtonTheme: ElevatedButtonThemeData(style: filledStyle),
     navigationRailTheme: NavigationRailThemeData(
-      selectedLabelTextStyle: menuLabel,
-      unselectedLabelTextStyle: menuLabel,
+      selectedLabelTextStyle: menuLabel.copyWith(
+        color: scheme.onSecondaryContainer,
+      ),
+      unselectedLabelTextStyle: menuLabel.copyWith(
+        color: scheme.onSurfaceVariant,
+      ),
     ),
   );
 }

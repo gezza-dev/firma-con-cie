@@ -61,6 +61,9 @@ embedded = target/'Contents/Frameworks/CIEPrototype'
 embedded.mkdir(parents=True)
 for library in runtime.glob('*.dylib'):
     shutil.copyfile(library, embedded/library.name)
+observer = runtime/'cie_card_observer'
+if not observer.is_file(): raise SystemExit('Rebuild the runtime: missing private card observer')
+shutil.copy2(observer, embedded/observer.name)
 notices = target/'Contents/Resources/CIEPrototype'
 shutil.copytree(runtime/'licenses', notices/'backend')
 shutil.copytree(ROOT/'LICENSES', notices/'flutter-dependencies')
@@ -73,6 +76,7 @@ for key in ['com.apple.FinderInfo', 'com.apple.ResourceFork']:
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 for library in embedded.glob('*.dylib'):
     subprocess.run(['codesign', '--force', '--sign', args.identity, str(library)], check=True)
+subprocess.run(['codesign', '--force', '--sign', args.identity, str(embedded/observer.name)], check=True)
 # JVM launchers and native libraries stay private in Resources. Sign each
 # Mach-O for its own architecture; Dart chooses the matching JVM at runtime.
 if (notices/'ltv').exists():
@@ -93,7 +97,7 @@ bundled_manifest['runtime_path_from_bundle'] = 'Contents/Frameworks/CIEPrototype
 bundled_manifest['source_runtime_manifest_sha256'] = hashlib.sha256(
     (runtime/'backend-manifest.json').read_bytes()).hexdigest()
 bundled_manifest['files'] = {p.name: hashlib.sha256(p.read_bytes()).hexdigest()
-    for p in sorted(embedded.glob('*.dylib'))}
+    for p in sorted(embedded.iterdir()) if p.is_file()}
 manifest_text = json.dumps(bundled_manifest, indent=2)+'\n'
 (notices/'backend-manifest.json').write_text(manifest_text)
 for framework in (target/'Contents/Frameworks').glob('*.framework'):

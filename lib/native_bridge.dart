@@ -10,6 +10,7 @@ import 'package:ffi/ffi.dart';
 import 'long_term_validation.dart';
 import 'document_model.dart';
 import 'network_settings.dart';
+import 'card_observation_process.dart';
 export 'document_model.dart';
 
 typedef JsonResult = Map<String, dynamic>;
@@ -200,6 +201,10 @@ abstract interface class CardObservationService {
   Future<JsonResult> observeCards();
 }
 
+abstract interface class CancellableCardObservation {
+  Future<void> cancelCardObservation();
+}
+
 abstract interface class CertificateNameService {
   Future<JsonResult> certificateName(String certificateHex);
 }
@@ -220,10 +225,25 @@ class FfiCieService
         PairingService,
         WebAccessService,
         CardObservationService,
+        CancellableCardObservation,
         EnrollmentService,
         CertificateNameService {
-  FfiCieService(this.paths);
+  FfiCieService(this.paths, {CardObservationProcess? observationProcess})
+    : observationProcess =
+          observationProcess ??
+          CardObservationProcess(
+            '${File(paths.bridge).absolute.parent.path}/cie_card_observer${Platform.isWindows ? '.exe' : ''}',
+            [
+              File(paths.middleware).absolute.path,
+              paths.cardAdapter.isEmpty
+                  ? ''
+                  : File(paths.cardAdapter).absolute.path,
+            ],
+          );
   final BridgePaths paths;
+  final CardObservationProcess observationProcess;
+  @override
+  Future<void> cancelCardObservation() => observationProcess.cancel();
   SessionNetworkConfig _network = const SessionNetworkConfig();
   bool _networkReady = true;
   @override
@@ -288,6 +308,9 @@ class FfiCieService
       final config = paths;
       final network = overrideNetwork ?? _network;
       network.validate();
+      if (operation == 'observe' || operation == 'detect') {
+        return await observationProcess.query(manual: operation == 'detect');
+      }
       if (operation == 'verify') {
         return await verifyDocumentSnapshot(
           args.single,

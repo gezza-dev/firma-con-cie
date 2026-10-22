@@ -41,7 +41,7 @@ run('cmake', '-S', ROOT/'native', '-B', build, '-G', 'Ninja', '-DCMAKE_BUILD_TYP
     '-DCIE_MIDDLEWARE_SOURCE='+str(source), '-DCIE_MIDDLEWARE_LIBRARY='+str(middleware),
     '-DCIE_DEPENDENCY_INCLUDE='+str(args.dependency_include.resolve()))
 run('cmake', '--build', build)
-for name in ['libcie_bridge.dylib', 'libcie_card_adapter.dylib']:
+for name in ['libcie_bridge.dylib', 'libcie_card_adapter.dylib', 'cie_card_observer']:
     shutil.copy2(build/name, runtime/name)
 shutil.copy2(middleware, runtime/middleware.name)
 # Preserve all backend license notices in the local distributable runtime.
@@ -54,7 +54,9 @@ revision = subprocess.check_output(['git', '-C', str(source), 'rev-parse', 'HEAD
 manifest = dict(backend_release='v1.5.2', header_checkout=revision,
     original_middleware_sha256=original_hash, architectures=args.architectures.split(';'),
     bridge_abi=1, full_pin_signing=True, enrollment=False, enrollment_cache_access=False,
-    files={p.name:sha(p) for p in sorted(runtime.glob('*.dylib'))})
+    card_observation_process=True, card_observation_protocol=1,
+    files={p.name:sha(p) for p in sorted(runtime.iterdir())
+           if p.is_file() and (p.suffix == '.dylib' or p.name == 'cie_card_observer')})
 (runtime/'backend-manifest.json').write_text(json.dumps(manifest, indent=2)+'\n')
 assert sha(middleware) == original_hash, 'Original middleware unexpectedly changed'
 print('Runtime prepared:', runtime)

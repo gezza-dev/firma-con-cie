@@ -44,18 +44,20 @@ void main() {
       );
       await t.pumpAndSettle();
       expect(find.text('Prima Carta'), findsOneWidget);
-      await t.tap(find.byKey(const ValueKey('add-another-card')));
-      await t.pumpAndSettle();
       expect(
-        find.textContaining('Le altre carte rimangono memorizzate'),
-        findsOneWidget,
+        t
+            .widget<FilledButton>(
+              find.byKey(const ValueKey('add-another-card')),
+            )
+            .onPressed,
+        isNull,
       );
       expect(find.byType(TextField), findsNothing);
       expect(service.enrollCalls, 0);
       service.insert('NEW');
       await t.pump(const Duration(seconds: 1));
       await t.pumpAndSettle();
-      await t.tap(find.text('Abbina CIE'));
+      await t.tap(find.text('Abbina un’altra CIE'));
       await t.pumpAndSettle();
       await t.enterText(find.byType(TextField), '12345678');
       await t.tap(find.text('Abbina'));

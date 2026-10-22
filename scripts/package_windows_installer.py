@@ -39,7 +39,8 @@ def safe_file(root, name):
 
 def validate_release(release):
     for name in ('CIE-ID.exe', 'flutter_windows.dll', 'pdfium.dll', 'data/app.so',
-                 'web-component/CIE-Web-Setup.exe', 'cie_native/ltv/cie-ltv-worker.jar'):
+                 'web-component/CIE-Web-Setup.exe', 'cie_native/ltv/cie-ltv-worker.jar',
+                 'cie_native/cie_card_observer.exe'):
         safe_file(release, name)
     counts = {}
     for folder, manifest_name in (('cie_native', 'backend-manifest.json'), ('web-component', 'payload-manifest.json')):

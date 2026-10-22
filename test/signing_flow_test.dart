@@ -236,7 +236,7 @@ void main() {
       expect(output.readAsStringSync(), 'previous signed bytes');
       expect(
         t.widget<Icon>(find.byIcon(Icons.cancel_outlined)).color,
-        Colors.red,
+        Theme.of(t.element(find.byIcon(Icons.cancel_outlined))).colorScheme.error,
       );
       expect(
         t.widget<TextField>(find.byType(TextField)).controller!.text,

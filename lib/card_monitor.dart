@@ -7,7 +7,8 @@ import 'package:flutter/foundation.dart';
 import 'native_bridge.dart';
 
 // Shared lifecycle: one bounded PC/SC observation in flight, none while private
-// work, a modal, or an inactive application owns the interaction. Never a PIN.
+// work, a modal, or OS suspension owns the interaction. Desktop background
+// observation stays active; this process never receives a PIN.
 class CardMonitor extends ChangeNotifier {
   CardMonitor(
     this.service, {
@@ -35,6 +36,9 @@ class CardMonitor extends ChangeNotifier {
     }
     _timer?.cancel();
     if (value) {
+      if (service is CancellableCardObservation) {
+        await (service as CancellableCardObservation).cancelCardObservation();
+      }
       await _flight;
       return;
     }
@@ -103,6 +107,11 @@ class CardMonitor extends ChangeNotifier {
     _disposed = true;
     _generation++;
     _timer?.cancel();
+    if (service is CancellableCardObservation) {
+      unawaited(
+        (service as CancellableCardObservation).cancelCardObservation(),
+      );
+    }
     super.dispose();
   }
 }

@@ -5,6 +5,7 @@ import 'app_notification.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'dart:async';
+import 'dart:ui' show AppExitResponse;
 
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
@@ -271,20 +272,33 @@ class _PrototypeHomeState extends State<PrototypeHome>
     publisher: widget.webPublisher,
     systemStatus: widget.webStatusReader,
   );
-  bool unified = false, modalInteraction = false, activeApplication = true;
+  bool unified = false, modalInteraction = false, observationSuspended = false;
   String? homeMessage;
   int notificationRevision = 0;
-  bool addingCard = false;
+  bool exiting = false;
   Future<void> _coordinateMonitor() async {
     await monitor?.setPaused(
-      busy || modalInteraction || !activeApplication || !ready,
+      exiting || busy || modalInteraction || observationSuspended || !ready,
     );
   }
 
   @override
+  Future<AppExitResponse> didRequestAppExit() async {
+    exiting = true;
+    await monitor?.setPaused(true);
+    if (widget.service is CancellableCardObservation) {
+      await (widget.service as CancellableCardObservation).cancelCardObservation();
+    }
+    return AppExitResponse.exit;
+  }
+
+  @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    activeApplication = state == AppLifecycleState.resumed;
-    if (activeApplication) {
+    // Desktop focus loss/minimization must not stop public card detection.
+    // Suspend only when the OS suspends/detaches the app, or during operations.
+    observationSuspended = state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached;
+    if (state == AppLifecycleState.resumed) {
       unawaited(_resumeWebStatus());
     } else {
       unawaited(_coordinateMonitor());
@@ -766,22 +780,6 @@ class _PrototypeHomeState extends State<PrototypeHome>
     );
   }
 
-  Future<void> _addAnotherCard() async {
-    if (busy || modalInteraction) return;
-    setState(() => addingCard = true);
-    final candidates = readers
-        .where(
-          (r) =>
-              r['isCie'] == true &&
-              r['occupied'] != true &&
-              !pairedCards.contains(r['cardId']),
-        )
-        .toList();
-    if (candidates.length == 1) {
-      await _pairCard(Map<String, dynamic>.from(candidates.single));
-    }
-  }
-
   Future<void> _enrollCard(JsonResult card) async {
     if (busy || modalInteraction) return;
     if (card['occupied'] == true) {
@@ -839,7 +837,6 @@ class _PrototypeHomeState extends State<PrototypeHome>
         secret = null;
         await _refreshPairings();
         if (!mounted) return;
-        if (result['ok'] == true) addingCard = false;
         homeMessage =
             enrollment.message ??
             (result['ok'] == true
@@ -1971,204 +1968,241 @@ class _PrototypeHomeState extends State<PrototypeHome>
               ),
           ],
         ];
-  List<Widget> _unifiedHome(BuildContext context) => [
-    _heading(
-      context,
-      enrollment.records.isEmpty ? 'Abbina la tua CIE' : 'Le tue CIE',
-      'Collega il lettore e appoggia la CIE. Il riconoscimento è automatico e non richiede il PIN.',
-    ),
-    const SizedBox(height: 18),
-    Card(
-      child: Padding(
-        padding: const EdgeInsets.all(22),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              tr(
-                context,
-                homeCardStatus(
-                  readers: readers,
-                  checked: cardsChecked,
-                  error: monitor?.code,
-                ),
-              ),
-            ),
-            for (final card in readers.where(
-              (r) =>
-                  r['isCie'] == true &&
-                  !(enrollment.records[r['cardId']]?.readyForSigning ?? false),
-            )) ...[
-              const SizedBox(height: 14),
-              FilledButton.icon(
-                onPressed: busy ? null : () => _pairCard(card),
-                icon: const Icon(Icons.add_card),
-                label: Text(
-                  readers.where((r) => r['isCie'] == true).length > 1
-                      ? tr(context, "Abbina CIE · {p0}", [card['name']])
-                      : tr(context, "Abbina CIE"),
-                ),
-              ),
-            ],
-          ],
-        ),
+  bool _readerMatchesPairedCard(JsonResult reader, String id) {
+    if (reader['present'] != true || reader['isCie'] != true) return false;
+    // Idle discovery exposes the public service identifier. It already binds
+    // each saved printed card number to that exact CIE; do not read a protected
+    // certificate or request a PIN merely to update the card thumbnails.
+    if (reader['cardId'] == id) return true;
+    final number = (reader['cardNumber'] as String? ?? '').trim().toUpperCase();
+    return number.isNotEmpty &&
+        number == enrollment.records[id]?.cardNumber.trim().toUpperCase();
+  }
+
+  bool _pairedCardPresent(String id) =>
+      cardsChecked &&
+      monitor?.code == null &&
+      readers.any((reader) => _readerMatchesPairedCard(reader, id));
+
+  bool _homeCanPair(JsonResult reader) =>
+      cardsChecked &&
+      monitor?.code == null &&
+      reader['present'] == true &&
+      reader['isCie'] == true &&
+      reader['occupied'] != true &&
+      reader['cardId'] is String &&
+      (reader['cardId'] as String).isNotEmpty &&
+      !enrollment.records.values.any(
+        (record) => _readerMatchesPairedCard(reader, record.id),
+      );
+
+  Widget _homePairButton(
+    BuildContext context,
+    JsonResult? card, {
+    bool multiple = false,
+  }) {
+    final another = enrollment.records.isNotEmpty;
+    final caption = tr(context, another ? 'Abbina un’altra CIE' : 'Abbina CIE');
+    return FilledButton.icon(
+      key: multiple
+          ? ValueKey('pair-card-${card!['cardId']}')
+          : ValueKey(another ? 'add-another-card' : 'pair-card'),
+      onPressed:
+          !busy &&
+              !modalInteraction &&
+              ready &&
+              enrollment.readable &&
+              card != null &&
+              _homeCanPair(card)
+          ? () => _pairCard(card)
+          : null,
+      icon: const Icon(Icons.add_card),
+      label: Text(
+        multiple
+            ? tr(context, '{p0} · {p1}', [caption, card!['name']])
+            : caption,
       ),
-    ),
-    if (enrollment.records.isNotEmpty && !addingCard)
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: OutlinedButton.icon(
-          key: const ValueKey('add-another-card'),
-          onPressed: busy ? null : _addAnotherCard,
-          icon: const Icon(Icons.add_card),
-          label: Text(tr(context, "Abbina un’altra CIE")),
-        ),
+    );
+  }
+
+  List<Widget> _unifiedHome(BuildContext context) {
+    final candidates = readers.where(_homeCanPair).toList();
+    return [
+      _heading(
+        context,
+        enrollment.records.isEmpty ? 'Abbina la tua CIE' : 'Le tue CIE',
+        'Collega il lettore e appoggia la CIE. Il riconoscimento è automatico e non richiede il PIN.',
       ),
-    if (addingCard)
+      const SizedBox(height: 18),
       Card(
         child: Padding(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.fromLTRB(
+            22 + 144 * CieCardIllustration.artworkLeftFraction, 22, 22, 22,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                tr(context, "Abbina un’altra CIE"),
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 8),
               Text(
                 tr(
                   context,
-                  "Rimuovi dal lettore la carta già abbinata e appoggia quella da aggiungere. Quando viene riconosciuta, premi «Abbina CIE». Le altre carte rimangono memorizzate.",
+                  homeCardStatus(
+                    readers: readers,
+                    checked: cardsChecked,
+                    error: monitor?.code,
+                  ),
                 ),
               ),
-              TextButton(
-                onPressed: busy
-                    ? null
-                    : () => setState(() => addingCard = false),
-                child: Text(tr(context, "Annulla")),
-              ),
+              if (candidates.length <= 1) ...[
+                const SizedBox(height: 14),
+                _homePairButton(
+                  context,
+                  candidates.isEmpty ? null : candidates.single,
+                ),
+              ],
+              if (candidates.length > 1)
+                for (final card in candidates) ...[
+                  const SizedBox(height: 14),
+                  _homePairButton(context, card, multiple: true),
+                ],
             ],
           ),
         ),
       ),
-    if (!pairingsReadable)
+      if (!pairingsReadable)
+        Text(
+          tr(
+            context,
+            "Archivio protetto non leggibile. Gli abbinamenti esistenti sono conservati; il PIN parziale non è disponibile.",
+          ),
+        ),
+      for (final record in enrollment.records.values)
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(22),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                PairedCardIdentity(
+                  key: ValueKey('paired-card-identity-${record.id}'),
+                  name: record.name,
+                  number: record.cardNumber,
+                  present: _pairedCardPresent(record.id),
+                ),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.only(
+                    left: 144 * CieCardIllustration.artworkLeftFraction,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(tr(context, record.status)),
+                      Text(tr(context, record.webStatus)),
+                      if (record.certificateValidity case final validity?)
+                        Text(
+                          tr(context, 'Scadenza del certificato CIE: {p0}', [
+                            MaterialLocalizations.of(context)
+                                .formatShortDate(validity.notAfter.toLocal()),
+                          ]),
+                        ),
+                      if (record.certificateWarning(DateTime.now())
+                          case final warning?)
+                        Text(
+                          tr(context, warning),
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 8,
+                        children: [
+                          if (!record.removalPending &&
+                              (!record.readyForSigning ||
+                                  !record.hasPublicData ||
+                                  !record.webProvisioned ||
+                                  !record.componentAvailable))
+                            OutlinedButton(
+                              onPressed: busy
+                                  ? null
+                                  : () =>
+                                        record.needsComponentActivation &&
+                                            record.readyForSigning &&
+                                            record.hasPublicData
+                                        ? _activateWebComponent(record)
+                                        : record.needsSystemSettings &&
+                                              record.readyForSigning &&
+                                              record.hasPublicData
+                                        ? _openWebSettings()
+                                        : _completeEnrollment(record),
+                              child: Text(
+                                record.needsComponentActivation &&
+                                        record.readyForSigning &&
+                                        record.hasPublicData
+                                    ? tr(context, 'Attiva accesso ai siti')
+                                    : record.needsSystemSettings &&
+                                          record.readyForSigning &&
+                                          record.hasPublicData
+                                    ? tr(
+                                        context,
+                                        'Apri Impostazioni di Sistema',
+                                      )
+                                    : record.hasPublicData &&
+                                          record.readyForSigning &&
+                                          record.webProvisioned &&
+                                          !record.componentAvailable
+                                    ? tr(
+                                        context,
+                                        widget.windowsWebComponentChecker !=
+                                                null
+                                            ? 'Completa accesso ai siti'
+                                            : 'Informazioni accesso ai siti',
+                                      )
+                                    : record.hasPublicData &&
+                                          record.readyForSigning
+                                    ? tr(context, "Completa accesso ai siti")
+                                    : tr(context, "Completa abbinamento"),
+                              ),
+                            ),
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              alignment: Alignment.centerLeft,
+                            ),
+                            onPressed: busy ? null : () => _unpair(record.id),
+                            child: Text(
+                              tr(
+                                context,
+                                record.removalPending
+                                    ? "Riprova rimozione"
+                                    : "Rimuovi CIE",
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      if (enrollment.records.isNotEmpty)
+        TextButton(
+          onPressed: busy ? null : () => _unpair(''),
+          child: Text(tr(context, "Rimuovi tutte le CIE")),
+        ),
+      const SizedBox(height: 12),
       Text(
         tr(
           context,
-          "Archivio protetto non leggibile. Gli abbinamenti esistenti sono conservati; il PIN parziale non è disponibile.",
+          "L’abbinamento consente di firmare con le ultime quattro cifre del PIN e predispone l’accesso ai siti. Per accedere ai siti, il browser richiede tutte le otto cifre del PIN nella finestra protetta del sistema.",
         ),
       ),
-    for (final record in enrollment.records.values)
-      Card(
-        child: Padding(
-          padding: const EdgeInsets.all(22),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              PairedCardIdentity(
-                key: ValueKey('paired-card-identity-${record.id}'),
-                name: record.name,
-                number: record.cardNumber,
-              ),
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.only(
-                  left: 144 * CieCardIllustration.artworkLeftFraction,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(tr(context, record.status)),
-                    Text(tr(context, record.webStatus)),
-                    if (record.certificateValidity case final validity?)
-                      Text(tr(context, 'Scadenza del certificato CIE: {p0}', [
-                        MaterialLocalizations.of(context).formatShortDate(validity.notAfter.toLocal()),
-                      ])),
-                    if (record.certificateWarning(DateTime.now()) case final warning?)
-                      Text(tr(context, warning), style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                      )),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 8,
-                      children: [
-                        if (!record.removalPending &&
-                            (!record.readyForSigning ||
-                                !record.hasPublicData ||
-                                !record.webProvisioned ||
-                                !record.componentAvailable))
-                          OutlinedButton(
-                            onPressed: busy
-                                ? null
-                                : () => record.needsComponentActivation &&
-                                        record.readyForSigning && record.hasPublicData
-                                    ? _activateWebComponent(record)
-                                    : record.needsSystemSettings &&
-                                        record.readyForSigning && record.hasPublicData
-                                    ? _openWebSettings()
-                                    : _completeEnrollment(record),
-                            child: Text(
-                              record.needsComponentActivation &&
-                                      record.readyForSigning && record.hasPublicData
-                                  ? tr(context, 'Attiva accesso ai siti')
-                                  : record.needsSystemSettings &&
-                                      record.readyForSigning && record.hasPublicData
-                                  ? tr(context, 'Apri Impostazioni di Sistema')
-                                  : record.hasPublicData &&
-                                      record.readyForSigning &&
-                                      record.webProvisioned &&
-                                      !record.componentAvailable
-                                  ? tr(
-                                      context,
-                                      widget.windowsWebComponentChecker != null
-                                          ? 'Completa accesso ai siti'
-                                          : 'Informazioni accesso ai siti',
-                                    )
-                                  : record.hasPublicData &&
-                                        record.readyForSigning
-                                  ? tr(context, "Completa accesso ai siti")
-                                  : tr(context, "Completa abbinamento"),
-                            ),
-                          ),
-                        TextButton(
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            alignment: Alignment.centerLeft,
-                          ),
-                          onPressed: busy ? null : () => _unpair(record.id),
-                          child: Text(
-                            tr(
-                              context,
-                              record.removalPending
-                                  ? "Riprova rimozione"
-                                  : "Rimuovi CIE",
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    if (enrollment.records.isNotEmpty)
-      TextButton(
-        onPressed: busy ? null : () => _unpair(''),
-        child: Text(tr(context, "Rimuovi tutte le CIE")),
-      ),
-    const SizedBox(height: 12),
-    Text(
-      tr(
-        context,
-        "L’abbinamento consente di firmare con le ultime quattro cifre del PIN e predispone l’accesso ai siti. Per accedere ai siti, il browser richiede tutte le otto cifre del PIN nella finestra protetta del sistema.",
-      ),
-    ),
-  ];
+    ];
+  }
   List<Widget> _signPage(BuildContext context) {
     final step = currentSigningStep;
     final target = signingTarget;
@@ -2229,7 +2263,10 @@ class _PrototypeHomeState extends State<PrototypeHome>
           for (final id in pairedCards)
             Card(
               child: ListTile(
-                leading: const CieCardIllustration(width: 72),
+                leading: CieCardIllustration(
+                  width: 72,
+                  inColor: _pairedCardPresent(id),
+                ),
                 key: ValueKey('signing-card-$id'),
                 title: Text(_pairedName(id) ?? tr(context, "Carta abbinata")),
                 subtitle: Column(

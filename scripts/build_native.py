@@ -65,6 +65,8 @@ def main():
     output.mkdir(parents=True, exist_ok=True)
     fetcher = build/'backend/cie_sign_sdk'/('cie_crl_fetch'+('.exe' if args.system == 'windows' else ''))
     copy_binary(fetcher, output/fetcher.name)
+    observer = build/('cie_card_observer'+('.exe' if args.system == 'windows' else ''))
+    copy_binary(observer, output/observer.name)
     # Refresh a reused private DSS runtime with this exact native transport.
     if (output/'ltv/fetcher').is_dir():
         copy_binary(fetcher, output/'ltv/fetcher'/fetcher.name)
@@ -127,7 +129,8 @@ def main():
         upstream=json.loads((ROOT/'native/backend-upstream.json').read_text())['commit'],
         source_files=sources, dependency_lock=json.loads((ROOT/'native/backend/scripts/dependencies.lock.json').read_text()),
         cross_compiled=cross, tests_executed_on_build_host=not cross,
-        full_pin_signing=True, enrollment=True, enrollment_version=2, automatic_idle_card_observation=True, enrollment_scope="private-prototype-current-user",
+        full_pin_signing=True, enrollment=True, enrollment_version=2, automatic_idle_card_observation=True,
+        card_observation_process=True, card_observation_protocol=1, enrollment_scope="private-prototype-current-user",
         protected_pin_prefix=True, partial_pin_signing=True, enrollment_cache_access=False,
         pairing_storage="per-user-file-cache-v3", os_credential_store=False, legacy_pairings_imported=False,
         file_cache_crypto="AES-256-CBC+HMAC-SHA256-encrypt-then-MAC", local_key_in_private_file=True,
