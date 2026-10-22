@@ -23,12 +23,12 @@ Future<JsonResult> checkWindowsWebComponent(String reader) async {
         'nativeCode': code,
         'code': code == 10 ? 'web_component_missing' : 'web_setup_failed',
         'message': switch (code) {
-          2 || 10 => 'Il componente per l’accesso ai siti non è disponibile. Esegui il pacchetto di installazione di CIE ID Desktop. Gli abbinamenti e le impostazioni saranno conservati.',
+          2 || 10 => 'Il componente per l’accesso ai siti non è disponibile. Esegui il pacchetto di installazione di Firma con CIE. Gli abbinamenti e le impostazioni saranno conservati.',
           3 => 'Un altro componente gestisce già questa carta. Nessun componente esistente è stato sostituito.',
           4 || 5 => 'Mantieni la CIE sul lettore selezionato e chiudi le altre applicazioni che la stanno utilizzando. Nessun PIN è stato inviato.',
-          6 => 'Il componente Windows manca o non supera il controllo di integrità. Esegui nuovamente il pacchetto di installazione di CIE ID Desktop.',
+          6 => 'Il componente Windows manca o non supera il controllo di integrità. Esegui nuovamente il pacchetto di installazione di Firma con CIE.',
           9 => 'La configurazione del componente richiede una verifica. I file sono stati conservati per evitare di interrompere componenti già registrati.',
-          _ => 'Verifica del componente Windows non riuscita. Esegui nuovamente il pacchetto di installazione di CIE ID Desktop. Nessun PIN è stato inviato.',
+          _ => 'Verifica del componente Windows non riuscita. Esegui nuovamente il pacchetto di installazione di Firma con CIE. Nessun PIN è stato inviato.',
         },
       };
     }
@@ -36,13 +36,13 @@ Future<JsonResult> checkWindowsWebComponent(String reader) async {
     return {
       'ok': false,
       'code': 'web_setup_failed',
-      'message': 'Verifica del componente Windows non riuscita. Esegui nuovamente il pacchetto di installazione di CIE ID Desktop. Nessun PIN è stato inviato.',
+      'message': 'Verifica del componente Windows non riuscita. Esegui nuovamente il pacchetto di installazione di Firma con CIE. Nessun PIN è stato inviato.',
     };
   } on MissingPluginException {
     return {
       'ok': false,
       'code': 'web_setup_unavailable',
-      'message': 'Il componente Windows manca o non supera il controllo di integrità. Esegui nuovamente il pacchetto di installazione di CIE ID Desktop.',
+      'message': 'Il componente Windows manca o non supera il controllo di integrità. Esegui nuovamente il pacchetto di installazione di Firma con CIE.',
     };
   }
 }

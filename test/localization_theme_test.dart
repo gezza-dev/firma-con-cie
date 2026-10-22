@@ -48,6 +48,8 @@ void main() {
       'Card number: Informazioni',
     );
     expect(en.text('Tentativi residui: 2'), 'Remaining attempts: 2');
+    expect(en.text('Aggiorna'), 'Update');
+    expect(en.text('Aggiorna accesso ai siti'), 'Update website access');
     expect(
       en.text('Percorso personale: /Users/Nome'),
       'Percorso personale: /Users/Nome',

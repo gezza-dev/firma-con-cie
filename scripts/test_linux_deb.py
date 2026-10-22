@@ -42,17 +42,17 @@ def check(package, report):
         assert payload == manifest['files']
         assert all(name.startswith(('opt/cie-id-desktop/', 'usr/bin/', 'usr/share/')) for name in payload)
         assert not any('tests' in Path(name).parts or '.key' == Path(name).name for name in payload)
-        launcher = extracted / 'usr/bin/CIE-ID'
+        launcher = extracted / 'usr/bin/Firma con CIE'
         assert launcher.stat().st_mode & 0o111
         run('sh', '-n', launcher)
-        assert launcher.read_text() == '#!/bin/sh\nexec /opt/cie-id-desktop/CIE-ID "$@"\n'
+        assert launcher.read_text() == '#!/bin/sh\nexec "/opt/cie-id-desktop/Firma con CIE" "$@"\n'
         desktop = extracted / 'usr/share/applications' / (APP_ID + '.desktop')
         run('desktop-file-validate', desktop)
-        assert 'Exec=/usr/bin/CIE-ID\n' in desktop.read_text()
-        assert 'TryExec=/usr/bin/CIE-ID\n' in desktop.read_text()
+        assert 'Exec="/usr/bin/Firma con CIE"\n' in desktop.read_text()
+        assert 'TryExec=/usr/bin/Firma con CIE\n' in desktop.read_text()
         assert 'Icon=' + APP_ID + '\n' in desktop.read_text()
         app = extracted / 'opt/cie-id-desktop'
-        assert '/it/giancarloezza/cieid/cie-id.png' in run('gresource', 'list', app / 'CIE-ID').stdout
+        assert '/it/giancarloezza/cieid/cie-id.png' in run('gresource', 'list', app / 'Firma con CIE').stdout
         icons = list((extracted / 'usr/share/icons/hicolor').glob('*/apps/' + APP_ID + '.png'))
         assert len(icons) == 9
         # Resolve the installed icon name using GTK's actual icon theme loader,

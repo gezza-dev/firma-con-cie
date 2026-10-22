@@ -233,6 +233,66 @@ void main() {
     });
   }
 
+  for (final mismatch in ['path_mismatch', 'version_mismatch']) {
+    testWidgets('component $mismatch repairs without pairing or PIN', (
+      t,
+    ) async {
+      size(t);
+      final service = pairedService();
+      final system = ActivationSystem()..available = false;
+      system.cards.add('TEST');
+      var repairs = 0;
+      Future<Map<String, dynamic>> status() async => {
+        ...await system.status(),
+        'activationState': system.available ? 'enabled' : mismatch,
+        'componentNeedsUpdate': !system.available,
+        'componentPathMatches': system.available || mismatch != 'path_mismatch',
+        'componentVersionMatches':
+            system.available || mismatch != 'version_mismatch',
+        'canActivateComponent': !system.available,
+      };
+      await t.pumpWidget(
+        CiePrototype(
+          service: service,
+          settings: MemorySettingsStore(),
+          webPublisher: system.publish,
+          webStatusReader: status,
+          webComponentActivator: () async {
+            repairs++;
+            system.available = true;
+            return {'ok': true};
+          },
+        ),
+      );
+      await t.pumpAndSettle();
+      expect(find.text('Aggiorna accesso ai siti'), findsOneWidget);
+      expect(find.textContaining('deve essere aggiornato'), findsOneWidget);
+      await t.tap(find.text('Aggiorna accesso ai siti'));
+      await t.pumpAndSettle();
+      expect(repairs, 0);
+      expect(find.byType(TextField), findsNothing);
+      await t.tap(find.text('Aggiorna'));
+      await t.pumpAndSettle();
+      expect(repairs, 1);
+      expect(service.enrollCalls, 0);
+      expect(service.completeCalls, 0);
+      expect(service.signCalls, 0);
+      expect(system.publications, 0);
+      expect(service.records['TEST']!['readyForSigning'], isTrue);
+      expect(find.textContaining('Componente aggiornato.'), findsOneWidget);
+      await t.tap(find.text('OK'));
+      await t.pumpAndSettle();
+      expect(find.text('Aggiorna accesso ai siti'), findsNothing);
+      expect(
+        find.text('Accesso ai siti configurato: apri il sito nel browser.'),
+        findsOneWidget,
+      );
+      await t.pump(const Duration(seconds: 10));
+      expect(repairs, 1);
+      await t.pumpWidget(const SizedBox());
+    });
+  }
+
   testWidgets(
     'activation bridge takes no card, PIN or caller-selected command',
     (t) async {

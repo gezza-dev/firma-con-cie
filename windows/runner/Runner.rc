@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "gezza-dev" "\0"
-            VALUE "FileDescription", "CIE ID" "\0"
+            VALUE "FileDescription", "Firma con CIE" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "CIE-ID" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 gezza-dev. All rights reserved." "\0"
-            VALUE "OriginalFilename", "CIE-ID.exe" "\0"
-            VALUE "ProductName", "CIE ID" "\0"
+            VALUE "OriginalFilename", "Firma con CIE.exe" "\0"
+            VALUE "ProductName", "Firma con CIE" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

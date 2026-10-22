@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:path_provider/path_provider.dart';
+import 'application_storage.dart';
 
 import 'network_settings.dart';
 export 'network_settings.dart';
@@ -31,7 +31,7 @@ class FileSettingsStore implements SettingsStore {
     final root = Directory.fromUri(
       (_provided ??
               Directory(
-                '${(await getApplicationSupportDirectory()).path}/settings',
+                '${(await getPersistentApplicationSupportDirectory()).path}/settings',
               ))
           .absolute
           .uri,

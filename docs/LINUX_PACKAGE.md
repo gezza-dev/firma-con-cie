@@ -35,8 +35,8 @@ sudo apt install ./cie-id-desktop_0.1.0~test20261020.2_amd64.deb
 ```
 
 - App e librerie private: `/opt/cie-id-desktop`.
-- Comando di avvio: `/usr/bin/CIE-ID`; conserva lingua e ambiente del desktop.
-- Voce nel menu: **CIE ID**, con lo stesso application ID GTK/Wayland del
+- Comando di avvio: `/usr/bin/Firma con CIE`; conserva lingua e ambiente del desktop.
+- Voce nel menu: **Firma con CIE**, con lo stesso application ID GTK/Wayland del
   file `.desktop` in `/usr/share/applications`.
 - Icone statiche chiare: `/usr/share/icons/hicolor`, da 16 a 1024 pixel.
   Le varianti scure restano nei sorgenti; il launcher non cambia icona con il tema.

@@ -27,7 +27,7 @@ with tempfile.TemporaryDirectory(prefix='cie-linux-nss-software-') as folder:
     fake.CieTestCertificate.restype = C.c_uint
     der = C.create_string_buffer(fake.CieTestCertificate(None, 0))
     assert fake.CieTestCertificate(der, len(der)) == len(der)
-    label = 'CIE ID ' + hashlib.sha256(der.raw).hexdigest()[:16]
+    label = 'Firma con CIE ' + hashlib.sha256(der.raw).hexdigest()[:16]
     if with_snap:
         fake.CieTestSeedSnapPublic()
     elif with_cache:

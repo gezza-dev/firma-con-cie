@@ -37,7 +37,7 @@ def main():
 
     release = q / 'synthetic-release'
     (release / 'web-component/backend').mkdir(parents=True)
-    for name in ('CIE-ID.exe', 'flutter_windows.dll', 'pdfium.dll', 'data/app.so',
+    for name in ('Firma con CIE.exe', 'flutter_windows.dll', 'pdfium.dll', 'data/app.so',
                  'cie_native/ltv/cie-ltv-worker.jar', 'cie_native/cie_bridge.dll',
                  'cie_native/cie_card_observer.exe', 'cie_native/licenses/NOTICE.txt',
                  'cie_native/tests/fake_backend.dll', 'cie_native/tests/test_bridge.py',
@@ -153,7 +153,7 @@ def main():
     check('No reader, CIE or PIN is needed' in before_text, 'installer still requests a card')
     check('ComponentMissing' not in (q / 'v1/build/CIE-ID.iss').read_text(encoding='utf-8-sig'), 'card-required message remains')
     run('install', install_args(first['installer'], 'install'))
-    check((install / 'CIE-ID.exe').read_bytes() == (release / 'CIE-ID.exe').read_bytes(), 'fresh install file')
+    check((install / 'Firma con CIE.exe').read_bytes() == (release / 'Firma con CIE.exe').read_bytes(), 'fresh install file')
     check(all(not (install / name).exists() for name in audit['excludedFiles']), 'fresh install contains test files')
     # Simulate files left by the previous full development installer.
     for name in audit['excludedFiles']:
@@ -165,7 +165,7 @@ def main():
     # Preserve unknown files: uninstall must use its file log, never a tree wipe.
     unknown = install / 'user-added.txt'
     unknown.write_bytes(b'preserve unknown file')
-    (release / 'CIE-ID.exe').write_bytes(b'new synthetic executable')
+    (release / 'Firma con CIE.exe').write_bytes(b'new synthetic executable')
     second = build(release, q / 'v2', '0.1.1', a.iscc.resolve(), a.fake_helper.resolve(), test_root=install)
     run('component-install-failure', install_args(second['installer'], 'component-install-failure'), False,
         {'CIE_INSTALLER_TEST_FAIL': '--install-package'})
@@ -173,16 +173,16 @@ def main():
     run('upgrade', install_args(second['installer'], 'upgrade'))
     check(all(not (install / name).exists() for name in audit['excludedFiles']), 'upgrade left known test files')
     check(unknown_test.read_bytes() == b'preserve unknown test-folder file', 'upgrade removed unknown test-folder file')
-    check((install / 'CIE-ID.exe').read_bytes() == b'new synthetic executable', 'upgrade did not replace app')
+    check((install / 'Firma con CIE.exe').read_bytes() == b'new synthetic executable', 'upgrade did not replace app')
     check(unknown.read_bytes() == b'preserve unknown file', 'upgrade removed unknown file')
     run('repair', install_args(second['installer'], 'repair'))
     uninstaller = install / 'uninstall/unins000.exe'
     check(uninstaller.is_file(), 'uninstaller missing')
     run('unregister-failure', [uninstaller, '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART'], False,
         {'CIE_INSTALLER_TEST_FAIL': '--unregister-package'})
-    check((install / 'CIE-ID.exe').exists(), 'failed unregister removed app files')
+    check((install / 'Firma con CIE.exe').exists(), 'failed unregister removed app files')
     run('uninstall', [uninstaller, '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/LOG=' + str(q / 'uninstall.log')])
-    check(not (install / 'CIE-ID.exe').exists(), 'uninstall left app executable')
+    check(not (install / 'Firma con CIE.exe').exists(), 'uninstall left app executable')
     check(unknown.read_bytes() == b'preserve unknown file', 'uninstall removed unknown file')
     check(unknown_test.read_bytes() == b'preserve unknown test-folder file', 'uninstall removed unknown test-folder file')
     calls = (q / 'helper-calls.txt').read_text().splitlines()

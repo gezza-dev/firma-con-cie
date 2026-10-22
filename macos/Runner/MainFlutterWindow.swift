@@ -60,13 +60,15 @@ class MainFlutterWindow: NSWindow {
           result(["ok": false, "code": "web_component_missing"]); return
         }
         DispatchQueue.global(qos: .userInitiated).async {
-          let activated = WebComponentActivation.activate(bundled: true)
+          let activated = WebComponentActivation.activate(embedded: WebComponentActivation.embeddedURL)
           let election = WebComponentActivation.election()
           DispatchQueue.main.async {
             let driverPresent = TKTokenDriver.Configuration.driverConfigurations[classID] != nil
-            let state = WebComponentActivation.state(bundled: true, driverPresent: driverPresent, election: election)
-            result(["ok": activated && state == "enabled", "activationState": state,
-              "code": activated && state == "enabled" ? "web_component_enabled" : "web_component_activation_failed"])
+            let assessment = WebComponentActivation.assess(embedded: WebComponentActivation.embeddedURL, driverPresent: driverPresent, election: election)
+            var response = assessment.diagnostics
+            response["ok"] = activated && assessment.state == "enabled"
+            response["code"] = activated && assessment.state == "enabled" ? "web_component_enabled" : "web_component_activation_failed"
+            result(response)
           }
         }
         return
@@ -114,22 +116,20 @@ class MainFlutterWindow: NSWindow {
              let keys = values as? [[CFString: Any]], keys.contains(where: { ($0[kSecAttrTokenID] as? String)?.hasPrefix(classID + ":") == true }) { observed.append(id) }
         }
         let driverPresent = TKTokenDriver.Configuration.driverConfigurations[classID] != nil
-        let bundled = Bundle.main.builtInPlugInsURL.map {
-          FileManager.default.fileExists(atPath: $0.appendingPathComponent("CIEPrototypeToken.appex").path)
-        } ?? false
+        let embedded = WebComponentActivation.embeddedURL
         let certificates = certificateHex, publishedIDs = published.sorted(), observedIDs = observed.sorted()
         DispatchQueue.global(qos: .utility).async {
-          let state = WebComponentActivation.state(bundled: bundled, driverPresent: driverPresent,
-            election: bundled ? WebComponentActivation.election() : nil)
-          let available = state == "enabled" || (state == "unknown" && driverPresent)
-          let needsSettings = state == "disabled" || state == "unavailable"
-          DispatchQueue.main.async {
-            result(["available": available, "activationState": state,
-              "canActivateComponent": needsSettings && bundled,
-              "canOpenSystemSettings": needsSettings, "certificateHexByCard": certificates,
-              "configuredCards": Array(certificates.keys).sorted(), "publishedCards": publishedIDs,
-              "observedCards": available ? observedIDs : []])
-          }
+          let assessment = WebComponentActivation.assess(embedded: embedded, driverPresent: driverPresent,
+            election: WebComponentActivation.election())
+          let available = assessment.state == "enabled"
+          let needsSettings = ["disabled", "unavailable", "unknown"].contains(assessment.state)
+          var response = assessment.diagnostics
+          response.merge(["available": available,
+            "canActivateComponent": (needsSettings || assessment.needsUpdate) && assessment.expected != nil,
+            "canOpenSystemSettings": needsSettings, "certificateHexByCard": certificates,
+            "configuredCards": Array(certificates.keys).sorted(), "publishedCards": publishedIDs,
+            "observedCards": available ? observedIDs : []]) { _, new in new }
+          DispatchQueue.main.async { result(response) }
         }
         return
       }
@@ -202,20 +202,9 @@ class MainFlutterWindow: NSWindow {
     notifications.addObserver(self, selector: #selector(windowAreaChanged(_:)),
                               name: NSApplication.didChangeScreenParametersNotification,
                               object: nil)
-    self.title = "CIE ID"
+    self.title = "Firma con CIE"
     self.titleVisibility = .hidden
-    if let close = self.standardWindowButton(.closeButton), let titlebar = close.superview, let content = self.contentView {
-      let label = NSTextField(labelWithString: self.title)
-      label.font = NSFont.systemFont(ofSize: 13, weight: .medium)
-      label.alignment = .center
-      label.translatesAutoresizingMaskIntoConstraints = false
-      label.setAccessibilityIdentifier("CIEWindowTitle")
-      titlebar.addSubview(label)
-      NSLayoutConstraint.activate([
-        label.centerXAnchor.constraint(equalTo: content.centerXAnchor),
-        label.centerYAnchor.constraint(equalTo: close.centerYAnchor)
-      ])
-    }
+    // Keep the window identity for accessibility; the titlebar has no label.
   }
   deinit {
     NotificationCenter.default.removeObserver(self)

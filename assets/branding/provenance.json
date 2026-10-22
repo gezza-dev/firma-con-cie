@@ -1,33 +1,25 @@
 {
-  "reference_project": "gezza-dev/cie-id-macos-universal",
-  "reference_asset": "CIE ID/Assets.xcassets/AppIcon.appiconset/icon_512@2x.png",
-  "reference_sha256": "2a42c0ee3a769b1b861fab8a7c771fbc3ea5238f276a36687511fa30888118b4",
-  "edit": "Two deterministic SVG/native appearance variants matching Flutter scaffold backgrounds: light #F7F8FC, dark #121318. Base and circular border share each theme color; CIE logo source artwork preserved; centered circle scale 0.73.",
-  "date": "2026-10-19",
-  "composition_reference": "Screenshot 2026-10-19 alle 11.55.49.png",
-  "composition_reference_sha256": "c9129b0257f4d2b7b64216946ae2dded384af7ca0888d0ce2bb07a4409badd68",
+  "artwork": "Original document and signature, selected proposal B",
+  "date": "2026-10-22",
+  "tool": "OpenAI image_gen, built-in",
+  "official_logo_used": false,
+  "selected_proposal": "source/selected-proposal-B.png",
+  "selected_proposal_sha256": "353a04d4c960a03da142915b4e3ccdad2410e7ec3ecab45e3e3fb39bb661126c",
+  "foreground_source": "source/document-signature.png",
+  "foreground_sha256": "7a599d4d4c802e55311e12d41fcf2556e8ffef88dc498dfc36d169c26a0b31cd",
+  "prompts": "imagegen-prompt.txt",
   "native_source": "macos/Runner/AppIcon.icon",
-  "svg_source": "assets/branding/source/CIE-ID.svg",
   "composition": {
     "canvas": 1024,
-    "circle_scale": 0.73,
-    "background_alpha": 255,
-    "svg_corner_radius": 224,
-    "theme_colors": {
+    "foregroundScale": 0.88,
+    "cornerRadius": 224,
+    "default": "light",
+    "themes": {
       "light": "#F7F8FC",
       "dark": "#121318"
     },
-    "circle_content_radius": 492
+    "colorSource": "lib/app_theme.dart: light and dark scaffoldBackgroundColor",
+    "colorSourceVerified": "2026-10-22"
   },
-  "circle_source_sha256": "19faa9dd6371463b518b9f1e898acb9c1838f3615ad8f5a1e89552a0f2e3f99a",
-  "master_sha256": "1e0b05d18d6a35ded5963d8a77af42e8be7aa5322f190c23f4bcf0253c101c99",
-  "previous_generated_composite_sha256": "88184c24c8d24d871749e66556c1265c92ff50dd2cbde28b5d877cd97137bbb7",
-  "native_background_layers": [
-    "appearance-specific full-bleed solid fills",
-    "opaque Base-light.svg/Base-dark.svg; no glass"
-  ],
-  "theme_master_sha256": {
-    "light": "1e0b05d18d6a35ded5963d8a77af42e8be7aa5322f190c23f4bcf0253c101c99",
-    "dark": "c6d4b5e8cd28ef7ea5dec5677ca47f346d7902be3f8256230c902a286f567f6c"
-  }
+  "license": "LICENSE.txt"
 }

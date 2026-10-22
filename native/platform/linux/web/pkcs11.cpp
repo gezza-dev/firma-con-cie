@@ -158,7 +158,7 @@ std::shared_ptr<Token> tokenFor(Slot& slot) {
     require(n>0,CKR_TOKEN_NOT_RECOGNIZED);token->serial.resize(n);auto* out=token->serial.data();i2d_ASN1_INTEGER(serial,&out);
     token->objectId.resize(32);unsigned length=0;
     require(EVP_Digest(token->certificate.data(),token->certificate.size(),token->objectId.data(),&length,EVP_sha256(),nullptr)==1 && length==32,CKR_DEVICE_ERROR);
-    constexpr char hex[]="0123456789abcdef";token->label="CIE ID ";
+    constexpr char hex[]="0123456789abcdef";token->label="Firma con CIE ";
     for(size_t i=0;i<8;++i){token->label+=hex[token->objectId[i]>>4];token->label+=hex[token->objectId[i]&15];}
     token->start=date(X509_get0_notBefore(cert.get()));token->end=date(X509_get0_notAfter(cert.get()));
     // Public discovery never leaves an authenticated connection open while a
@@ -226,7 +226,7 @@ CK_RV finalize(CK_VOID_PTR reserved) noexcept {
 }
 CK_RV info(CK_INFO_PTR out) {return boundary([&]() -> CK_RV {
     require(out);*out={};out->cryptokiVersion={2,20};out->libraryVersion={1,0};
-    padded(out->manufacturerID,"CIE ID Desktop");padded(out->libraryDescription,"CIE ID Desktop PKCS11");return CKR_OK;
+    padded(out->manufacturerID,"Firma con CIE");padded(out->libraryDescription,"Firma con CIE PKCS11");return CKR_OK;
 });}
 CK_RV slots(CK_BBOOL present,CK_SLOT_ID_PTR out,CK_ULONG_PTR count) {return boundary([&]() -> CK_RV {
     require(count);state.refresh();std::vector<CK_SLOT_ID> ids;
@@ -236,12 +236,12 @@ CK_RV slots(CK_BBOOL present,CK_SLOT_ID_PTR out,CK_ULONG_PTR count) {return boun
 });}
 CK_RV slotInfo(CK_SLOT_ID id,CK_SLOT_INFO_PTR out) {return boundary([&]() -> CK_RV {
     require(out);state.refresh();auto& slot=slotById(id);*out={};
-    padded(out->slotDescription,slot.reader);padded(out->manufacturerID,"CIE ID Desktop");
+    padded(out->slotDescription,slot.reader);padded(out->manufacturerID,"Firma con CIE");
     out->flags=CKF_REMOVABLE_DEVICE|CKF_HW_SLOT|(!slot.atr.empty()?CKF_TOKEN_PRESENT:0);return CKR_OK;
 });}
 CK_RV tokenInfo(CK_SLOT_ID id,CK_TOKEN_INFO_PTR out) {return boundary([&]() -> CK_RV {
     require(out);state.refresh();auto token=tokenFor(slotById(id));*out={};
-    padded(out->label,token->label);padded(out->manufacturerID,"CIE ID Desktop");padded(out->model,"CIE RSA 2048");
+    padded(out->label,token->label);padded(out->manufacturerID,"Firma con CIE");padded(out->model,"CIE RSA 2048");
     std::memset(out->serialNumber,' ',sizeof(out->serialNumber));std::memcpy(out->serialNumber,token->label.data()+7,16);
     out->flags=CKF_TOKEN_INITIALIZED|CKF_USER_PIN_INITIALIZED|CKF_LOGIN_REQUIRED|CKF_WRITE_PROTECTED;
     out->ulMaxSessionCount=64;out->ulMaxRwSessionCount=0;

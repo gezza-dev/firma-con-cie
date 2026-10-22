@@ -42,7 +42,7 @@ class _LicenseInformationState extends State<_LicenseInformation> {
       await File('${directory.path}/Licenze-interfaccia.txt')
           .writeAsString(text);
       for (final entry in {
-        'Licenza-CIE-ID.txt': 'assets/licenses/prototype-LICENSE.txt',
+        'Licenza-Firma-con-CIE.txt': 'assets/licenses/prototype-LICENSE.txt',
         'Licenza-middleware.txt': 'assets/licenses/native-LICENSE.txt',
         'Illustrazione-CIE-avvisi.txt': 'assets/licenses/cie-card-NOTICE.txt',
         'Avvisi-componenti-nativi.txt': 'assets/licenses/native-NOTICES.txt',
@@ -74,7 +74,7 @@ class _LicenseInformationState extends State<_LicenseInformation> {
           Text(
             tr(
               context,
-              "CIE ID include il middleware CIE e componenti di terze parti. Le licenze, le attribuzioni e gli avvisi originali sono conservati integralmente nei file distribuiti con l’applicazione.",
+              "Firma con CIE include il middleware CIE e componenti di terze parti. Le licenze, le attribuzioni e gli avvisi originali sono conservati integralmente nei file distribuiti con l’applicazione.",
             ),
           ),
           const SizedBox(height: 12),

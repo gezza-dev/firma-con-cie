@@ -1,14 +1,14 @@
-# CIE ID Desktop
+# Firma con CIE
 
 Applicazione desktop indipendente per la firma elettronica tramite Carta d’Identità Elettronica italiana (CIE). L'applicazione è compatibile con i sistemi Windows, macOS e Linux.
 
-CIE ID offre un’interfaccia condivisa per usare la CIE con un lettore smart card: abbinare le carte, firmare documenti, verificare firme e accedere ai siti che supportano l’autenticazione CIE. L’interfaccia è realizzata in Flutter/Dart; middleware e SDK di firma sono C/C++, con integrazioni specifiche dei sistemi operativi.
+Firma con CIE offre un’interfaccia condivisa per usare la CIE con un lettore smart card: abbinare le carte, firmare documenti, verificare firme e accedere ai siti che supportano l’autenticazione CIE. L’interfaccia è realizzata in Flutter/Dart; middleware e SDK di firma sono C/C++, con integrazioni specifiche dei sistemi operativi.
 
 **Questo non è un prodotto ufficiale dell’Istituto Poligrafico e Zecca dello Stato italiano e non è supportato da IPZS.** Il progetto deriva dal lavoro di [CIE ID Universal](https://github.com/gezza-dev/cie-id-macos-universal) e dal middleware originale [italia/cie-middleware-macos](https://github.com/italia/cie-middleware-macos). La nuova applicazione ha identificativi e archivi separati dall’app precedente.
 
 ## Stato del progetto
 
-Il progetto è in sviluppo. Questo repository contiene i sorgenti; **non è ancora disponibile una release binaria pubblica di CIE ID Desktop**. È predisposto un [installer Windows x64 locale di test](docs/WINDOWS_INSTALLER.md), che include app e componente Web e conserva i dati personali. Le release di CIE ID Universal appartengono a un progetto distinto.
+Il progetto è in sviluppo. Questo repository contiene i sorgenti; **non è ancora disponibile una release binaria pubblica di Firma con CIE**. È predisposto un [installer Windows x64 locale di test](docs/WINDOWS_INSTALLER.md), che include app e componente Web e conserva i dati personali. Le release di CIE ID Universal appartengono a un progetto distinto.
 
 | Sistema | Stato verificato |
 | --- | --- |
@@ -48,7 +48,7 @@ Le verifiche attuali, le marche temporali e la validità storica hanno esiti sep
 
 Per firma, abbinamento e accesso ai siti servono una CIE, il relativo PIN e un lettore compatibile con il sistema. La sola verifica di documenti non richiede carta o lettore.
 
-1. Avvia **CIE ID**, collega il lettore e appoggia la carta: il riconoscimento è automatico.
+1. Avvia **Firma con CIE**, collega il lettore e appoggia la carta: il riconoscimento è automatico.
 2. Nella Home usa **Abbina CIE**. L’abbinamento prepara anche il certificato per l’accesso ai siti. Su Windows il componente viene installato con l'app dal pacchetto di installazione: UAC è richiesto dall'installer, mentre l'abbinamento esegue soltanto un controllo senza privilegi amministrativi.
 3. In **Firma Elettronica** scegli la CIE, il documento, il formato e l’eventuale segno grafico; inserisci il PIN solo nel campo protetto e scegli dove salvare il risultato. È possibile firmare anche senza abbinare la carta.
 4. In **Verifica Firma** seleziona o trascina un PDF/P7M. I dettagli spiegano separatamente gli esiti dei diversi controlli.

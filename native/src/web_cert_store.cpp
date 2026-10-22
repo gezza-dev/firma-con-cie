@@ -82,7 +82,7 @@ void write(const std::string& id,const uint8_t* der,uint32_t size){cie_pairing::
  BYTE random[16];if(BCryptGenRandom(nullptr,random,sizeof(random),BCRYPT_USE_SYSTEM_PREFERRED_RNG))throw std::runtime_error("web_store_unavailable");
  auto marker=markerBase(id);const char hex[]="0123456789abcdef";for(auto b:random){marker+=hex[b>>4];marker+=hex[b&15];}
  CRYPT_DATA_BLOB tag{static_cast<DWORD>(marker.size()),reinterpret_cast<BYTE*>(marker.data())};
- wchar_t label[]=L"CIE ID · Accesso ai siti";CRYPT_DATA_BLOB friendly{sizeof(label),reinterpret_cast<BYTE*>(label)};
+ wchar_t label[]=L"Firma con CIE · Accesso ai siti";CRYPT_DATA_BLOB friendly{sizeof(label),reinterpret_cast<BYTE*>(label)};
  if(!CertSetCertificateContextProperty(created,CERT_KEY_PROV_INFO_PROP_ID,0,&provider)||!CertSetCertificateContextProperty(created,markerProperty,0,&tag)||!CertSetCertificateContextProperty(created,CERT_FRIENDLY_NAME_PROP_ID,0,&friendly))throw std::runtime_error("web_store_unavailable");
  PCCERT_CONTEXT added=nullptr;
  // Windows MY persists one entry per certificate. Refuse foreign associations

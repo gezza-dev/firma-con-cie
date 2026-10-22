@@ -18,9 +18,9 @@
 		<string>en</string>
 	</array>
 	<key>CFBundleName</key>
-	<string>CIE ID</string>
+	<string>Firma con CIE</string>
 	<key>CFBundleDisplayName</key>
-	<string>CIE ID</string>
+	<string>Firma con CIE</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

@@ -9,7 +9,8 @@ Questo documento riguarda lo snapshot sorgente di CIE ID Desktop. Non attribuisc
 | Nuovo codice condiviso Dart, ponte C e adattatori del progetto | BSD-3-Clause, indicata negli SPDX e in [LICENSE](../LICENSE) |
 | Middleware e SDK importati | BSD-3-Clause principale IPZS e licenze individuali dei file; [avvisi](../native/backend/THIRD_PARTY_NOTICES.md) |
 | Utility UUC che dichiarano LGPL | GNU Library GPL 2.0 o successiva secondo le intestazioni originali; [testo incluso](../native/backend/LICENSES/gnu/COPYING.LIB) |
-| Icone derivate e miniatura della carta | BSD e attribuzioni originali conservate; [icone](../assets/branding/README.md), [miniatura](../assets/licenses/cie-card-NOTICE.txt) |
+| Icona documento e firma | Disegno originale generato con image_gen; termini BSD-3-Clause nella misura applicabile, [provenienza e formati](../assets/branding/README.md) |
+| Miniatura della carta | BSD e attribuzioni originali conservate; [avviso](../assets/licenses/cie-card-NOTICE.txt) |
 | Certificati CA pubblici | Non sono codice BSD del progetto: provenienza, checksum e policy in [trust](../native/backend/cie_sign_sdk/trust/README.md) e [PKI Difesa](../native/backend/cie_sign_sdk/trust/difesa/README.md) |
 
 Il testo principale BSD e il copyright IPZS sono conservati senza sostituirli. I nomi CIE/IPZS e le risorse derivate non indicano approvazione del progetto e la licenza del codice non costituisce una concessione generale sui marchi.

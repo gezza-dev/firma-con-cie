@@ -4,6 +4,7 @@
 import argparse
 import hashlib
 import json
+import os
 import plistlib
 import re
 import shutil
@@ -14,13 +15,23 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--flutter', default='flutter')
 parser.add_argument('--identity', default='-', help='Optional Apple Development identity; default ad hoc')
 parser.add_argument('--destination', type=Path,
-    default=Path.home()/'Developer/Builds/CIE-ID/flutter-prototype/macos')
+    default=Path.home()/'Developer/Builds/CIE-ID/firma-con-cie')
 parser.add_argument('--build-workspace', type=Path,
+    default=Path.home()/'Developer/Builds/CIE-ID/workspace-macos',
     help='Use a local non-cloud folder to avoid Finder metadata in code signatures')
 parser.add_argument('--runtime', type=Path, default=ROOT/'native/runtime/macos', help='Private runtime to embed, including the shared-source backend')
 parser.add_argument('--skip-build', action='store_true', help='Reassemble the existing prototype build only')
 parser.add_argument('--web-extension',type=Path,help='Optional separately built prototype CryptoTokenKit appex')
 args = parser.parse_args()
+if args.web_extension:
+    extension = args.web_extension.resolve()
+    extension_info = plistlib.loads((extension/'Contents/Info.plist').read_bytes())
+    executable_name = extension_info.get('CFBundleExecutable', '')
+    if not executable_name or Path(executable_name).name != executable_name:
+        raise SystemExit('Invalid CryptoTokenKit executable name')
+    executable = extension/'Contents/MacOS'/executable_name
+    if not executable.is_file() or not os.access(executable, os.X_OK):
+        raise SystemExit('CryptoTokenKit executable is missing or not executable; preserve file permissions when copying the component')
 runtime = args.runtime.resolve()
 manifest = json.loads((runtime/'backend-manifest.json').read_text())
 for name, digest in manifest['files'].items():
@@ -48,12 +59,12 @@ for key in ['com.apple.FinderInfo', 'com.apple.ResourceFork']:
 if not args.skip_build:
     subprocess.run([args.flutter, 'pub', 'get', '--enforce-lockfile'], cwd=workspace, check=True)
     subprocess.run([args.flutter, 'build', 'macos', '--release', '--no-pub'], cwd=workspace, check=True)
-source = workspace/'build/macos/Build/Products/Release/CIE-ID.app'
+source = workspace/'build/macos/Build/Products/Release/Firma con CIE.app'
 args.destination.mkdir(parents=True, exist_ok=True)
-target = args.destination/'CIE-ID.app'
+target = args.destination/'Firma con CIE.app'
 if target.exists():
     # This script owns only its prototype bundle, never the existing CIE ID app.
-    if target.is_symlink() or target.name != 'CIE-ID.app':
+    if target.is_symlink() or target.name != 'Firma con CIE.app':
         raise SystemExit('Unexpected destination')
     shutil.rmtree(target)
 shutil.copytree(source, target, symlinks=True)

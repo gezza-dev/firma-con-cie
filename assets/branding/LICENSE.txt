@@ -1,6 +1,15 @@
+Firma con CIE — document and signature application icon
+
+Original artwork generated with OpenAI image_gen for this project on
+2026-10-22 and selected by the project maintainer (proposal B).
+The maintainer makes the artwork and its light/dark desktop exports
+available under the BSD 3-Clause terms below, to the extent applicable.
+The generated artwork is not the official CIE/IPZS application logo.
+No IPZS endorsement or trademark rights are granted by this notice.
+
 BSD 3-Clause License
 
-Copyright (c) 2017, Istituto Poligrafico e Zecca dello Stato
+Copyright (c) 2026, Firma con CIE contributors
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

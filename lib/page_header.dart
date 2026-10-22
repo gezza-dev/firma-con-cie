@@ -27,7 +27,7 @@ class ApplicationPageHeader extends StatelessWidget {
               tr(
                 context,
                 destination == AppDestination.home
-                    ? 'CIE ID'
+                    ? 'Firma con CIE'
                     : destination.label,
               ),
               key: const ValueKey('page-title'),

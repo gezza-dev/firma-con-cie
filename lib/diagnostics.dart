@@ -147,7 +147,7 @@ class DiagnosticRecorder {
     bool? enrollmentReadable,
   }) => {
     'schema': 1,
-    'application': 'CIE ID',
+    'application': 'Firma con CIE',
     'prototypeVersion': '0.1.0',
     'operatingSystem': Platform.operatingSystem,
     'architecture': Abi.current().toString(),
@@ -180,6 +180,8 @@ class DiagnosticRecorder {
                 'publicDataSaved',
                 'webCertificatePublished',
                 'systemComponentAvailable',
+                'componentPathMatches',
+                'componentVersionMatches',
                 'webIdentityObserved',
               ])
                 if (flags.containsKey(key)) key: flags[key],

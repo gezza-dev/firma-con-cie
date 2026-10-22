@@ -161,6 +161,34 @@ senza autenticare la carta. Un errore non causa un ciclo di tentativi: restano
 disponibili abbinamento e completamento manuale. Le CIE in rimozione non vengono
 riconfigurate. Il controllo non attesta un login riuscito nel browser.
 
+### Aggiornamenti del componente macOS
+
+Lo stato dell’accesso ai siti è disponibile solo quando il record selezionato da
+PlugInKit corrisponde all’estensione inclusa nell’app aperta: percorso canonico,
+versione pubblica e numero di build devono coincidere. Un record non leggibile o
+ambiguo non viene considerato attivo. I collegamenti simbolici allo stesso
+bundle vengono risolti prima del confronto. La presenza di una chiave pubblicata
+non basta per attestare la corrispondenza del componente.
+
+In caso di discrepanza, la Home propone «Aggiorna accesso ai siti». Dopo conferma,
+l’app registra esclusivamente la propria estensione incorporata e ne richiede
+l’attivazione, poi rilegge il registro. Non elimina copie dell’app o registrazioni
+di altri percorsi, non modifica altre estensioni e non rimuove abbinamenti o
+certificati. Una versione del componente più recente di quella inclusa nell’app
+non viene sostituita: occorre aprire la versione più recente dell’app. Controlli
+e aggiornamento non richiedono il PIN e non firmano richieste di prova.
+
+A ogni modifica del componente incrementare sia `CFBundleShortVersionString`
+sia `CFBundleVersion` in `scripts/build_web_macos.py`. Distribuire il bundle
+completo e sostituire la precedente app in Applicazioni. Il registro indica il
+componente selezionato per i nuovi avvii, non la versione di un processo già in
+memoria: dopo l’aggiornamento, rimuovere e riappoggiare la CIE e riaprire il
+browser per terminare eventuali sessioni precedenti. Non vengono terminati
+processi di sistema o ripetute autenticazioni automaticamente.
+
+La diagnostica esporta solo gli indicatori di corrispondenza, senza percorsi
+locali che potrebbero contenere il nome dell’utente.
+
 Test software mirati: `flutter test test/macos_web_activation_test.dart`.
 Il classificatore nativo può essere verificato senza cambiare impostazioni:
 

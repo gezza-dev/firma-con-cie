@@ -38,7 +38,7 @@ def safe_file(root, name):
 
 
 def validate_release(release):
-    for name in ('CIE-ID.exe', 'flutter_windows.dll', 'pdfium.dll', 'data/app.so',
+    for name in ('Firma con CIE.exe', 'flutter_windows.dll', 'pdfium.dll', 'data/app.so',
                  'web-component/CIE-Web-Setup.exe', 'cie_native/ltv/cie-ltv-worker.jar',
                  'cie_native/cie_card_observer.exe'):
         safe_file(release, name)
@@ -157,26 +157,26 @@ def prepare(release, output, version, vc_redist, *, test_root=None):
     web, counts = validate_release(release)
     script = work / 'CIE-ID.iss'
     shutil.copy2(ROOT / 'packaging/windows/CIE-ID.iss', script)
-    name = 'CIE-ID-Desktop-' + version + '-Windows-x64-Setup'
+    name = 'Firma-con-CIE-' + version + '-Windows-x64-Setup'
     if test_root:
         name += '-ISOLATED-TEST'
     before = work / 'before.txt'
     before.write_text(
-        'CIE ID Desktop\n\n'
+        'Firma con CIE\n\n'
         'Italiano\nL’installer installa l’app e il componente di accesso ai siti. '
         'Non occorre collegare il lettore o appoggiare la CIE e non viene richiesto il PIN. '
         'Sono registrati gli ATR e le maschere dei 12 modelli del middleware ufficiale. '
         'Gli aggiornamenti preservano le registrazioni compatibili esistenti.\n'
         'Abbinamenti, impostazioni e immagini personali vengono conservati, anche durante la disinstallazione. '
         'Non è necessario avviare l’app prima di ogni accesso dal browser.\n'
-        'È incluso Microsoft Visual C++ Redistributable x64. CIE ID Desktop è un progetto indipendente, non un prodotto ufficiale IPZS.\n\n'
+        'È incluso Microsoft Visual C++ Redistributable x64. Firma con CIE è un progetto indipendente, non un prodotto ufficiale IPZS.\n\n'
         'English\nSetup installs the app and website access component. '
         'No reader, CIE or PIN is needed during installation. '
         'The ATRs and masks of the 12 official middleware card models are registered. '
         'Updates preserve compatible existing registrations.\n'
         'Pairings, settings and personal images are preserved, including when uninstalling. '
         'The app does not need to stay open for browser authentication.\n'
-        'Microsoft Visual C++ Redistributable x64 is included. CIE ID Desktop is an independent project, not an official IPZS product.\n',
+        'Microsoft Visual C++ Redistributable x64 is included. Firma con CIE is an independent project, not an official IPZS product.\n',
         encoding='utf-8-sig')
     files = {f.relative_to(release).as_posix(): sha(f) for f in sorted(release.rglob('*')) if f.is_file()}
     manifest_path = work / 'installation-manifest.json'

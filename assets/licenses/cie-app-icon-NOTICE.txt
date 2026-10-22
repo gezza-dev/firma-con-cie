@@ -1,14 +1,12 @@
-CIE ID application icon
+Firma con CIE application icon — document and signature
 
-Derived from the IPZS CIE middleware icon reused by CIE ID Universal:
-CIE ID/Assets.xcassets/AppIcon.appiconset/icon_512@2x.png.
-Modification, 2026-10-19: circular logo with black border (previously edited
-with built-in image_gen), centered at 73% on full-bleed opaque themed bases.
-Light base and circular border: #F7F8FC; dark base and border: #121318,
-matching the Flutter interface backgrounds. The composition uses editable
-SVG and a native macOS .icon document with appearance-specific resources;
-PNG/ICO/ICNS exports have transparent corners beyond the rounded silhouette.
-Original copyright and BSD-3-Clause terms are preserved in native-LICENSE.txt.
-This independent application is not an official IPZS product and is not
-endorsed or supported by IPZS.
-Source provenance, generation prompt and export manifest: assets/branding/.
+Original blue document, mint-green pen and signature artwork generated
+with the built-in OpenAI image_gen tool and selected by the maintainer.
+This replaces the previous icon derived from the official CIE/IPZS logo.
+Light/dark bases match the application surfaces: #F7F8FC and #121318.
+Foreground artwork and geometry are identical in both variants.
+Artwork and exports are made available under BSD-3-Clause, to the extent
+applicable. The complete terms are included in cie-app-icon-LICENSE.txt.
+Generation prompts, source PNG, composition and export checksums are
+recorded in assets/branding/. No official endorsement is implied.
+The separate CIE card thumbnail retains its own original notice.

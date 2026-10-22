@@ -68,7 +68,7 @@
 		331C80D7294CF71000263BE5 /* RunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunnerTests.swift; sourceTree = "<group>"; };
 		333000ED22D3DE5D00554162 /* Warnings.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Warnings.xcconfig; sourceTree = "<group>"; };
 		335BBD1A22A9A15E00E9071D /* GeneratedPluginRegistrant.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GeneratedPluginRegistrant.swift; sourceTree = "<group>"; };
-		33CC10ED2044A3C60003C045 /* CIE-ID.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "CIE-ID.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		33CC10ED2044A3C60003C045 /* Firma con CIE.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Firma con CIE.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		33CC10F02044A3C60003C045 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		33CC10F22044A3C60003C045 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = Runner/Assets.xcassets; sourceTree = "<group>"; };
 		AA1910190000000000000002 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; name = AppIcon.icon; path = Runner/AppIcon.icon; sourceTree = "<group>"; };
@@ -140,7 +140,7 @@
 		33CC10EE2044A3C60003C045 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				33CC10ED2044A3C60003C045 /* CIE-ID.app */,
+				33CC10ED2044A3C60003C045 /* Firma con CIE.app */,
 				331C80D5294CF71000263BE5 /* RunnerTests.xctest */,
 			);
 			name = Products;
@@ -232,7 +232,7 @@
 				78A3181F2AECB46A00862997 /* FlutterGeneratedPluginSwiftPackage */,
 			);
 			productName = Runner;
-			productReference = 33CC10ED2044A3C60003C045 /* CIE-ID.app */;
+			productReference = 33CC10ED2044A3C60003C045 /* Firma con CIE.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -411,7 +411,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = it.giancarloezza.prototype.cieFlutterPrototype.RunnerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CIE-ID.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CIE-ID";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Firma con CIE.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Firma con CIE";
 			};
 			name = Debug;
 		};
@@ -425,7 +425,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = it.giancarloezza.prototype.cieFlutterPrototype.RunnerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CIE-ID.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CIE-ID";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Firma con CIE.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Firma con CIE";
 			};
 			name = Release;
 		};
@@ -439,7 +439,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = it.giancarloezza.prototype.cieFlutterPrototype.RunnerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CIE-ID.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CIE-ID";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Firma con CIE.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Firma con CIE";
 			};
 			name = Profile;
 		};

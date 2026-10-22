@@ -438,9 +438,6 @@ void Win32Window::PaintCaption(HDC dc) {
   DwmGetWindowAttribute(window_handle_, DWMWA_USE_IMMERSIVE_DARK_MODE,
                        &dark, sizeof(dark));
   const COLORREF background = dark ? RGB(32, 32, 32) : RGB(243, 243, 243);
-  const COLORREF foreground = dark
-      ? (active_caption_ ? RGB(255, 255, 255) : RGB(170, 170, 170))
-      : (active_caption_ ? RGB(0, 0, 0) : RGB(100, 100, 100));
   HDC buffer = nullptr;
   BP_PAINTPARAMS parameters{};
   parameters.cbSize = sizeof(parameters);
@@ -451,39 +448,16 @@ void Win32Window::PaintCaption(HDC dc) {
   HBRUSH brush = CreateSolidBrush(background);
   FillRect(buffer, &caption, brush);
   DeleteObject(brush);
-  NONCLIENTMETRICS metrics{};
-  metrics.cbSize = sizeof(metrics);
-  HFONT font = nullptr;
-  if (SystemParametersInfoForDpi(SPI_GETNONCLIENTMETRICS, sizeof(metrics),
-                                  &metrics, 0, current_dpi_))
-    font = CreateFontIndirect(&metrics.lfCaptionFont);
-  HGDIOBJ old_font = SelectObject(buffer, font ? font : GetStockObject(DEFAULT_GUI_FONT));
-  SetBkMode(buffer, TRANSPARENT);
-  SetTextColor(buffer, foreground);
   const int icon_size = GetSystemMetricsForDpi(SM_CXSMICON, current_dpi_);
   HICON icon = reinterpret_cast<HICON>(GetClassLongPtr(window_handle_, GCLP_HICON));
   if (icon) DrawIconEx(buffer, Scale(8, current_dpi_),
       caption.top + (caption.bottom - caption.top - icon_size) / 2, icon,
       icon_size, icon_size, 0, nullptr, DI_NORMAL);
-  // Symmetric space keeps the text centered on the entire window, rather
-  // than the asymmetric gap between the left icon and the native buttons.
-  int reserve = Scale(150, current_dpi_);
+  // The caption keeps only the icon and native window controls. The window
+  // identity remains available to the taskbar and accessibility APIs.
   RECT buttons{};
-  if (SUCCEEDED(DwmGetWindowAttribute(window_handle_, DWMWA_CAPTION_BUTTON_BOUNDS,
-                                      &buttons, sizeof(buttons))) && buttons.left > 0) {
-    RECT outer{};
-    GetWindowRect(window_handle_, &outer);
-    reserve = std::max(reserve, int(outer.right - outer.left - buttons.left));
-  }
-  // The top resize strip is part of the visible caption. Excluding it would
-  // push the text down in normal windows, but not in maximized windows.
-  RECT text{reserve, caption.top, std::max(LONG(reserve), caption.right - reserve), caption.bottom};
-  wchar_t title[256]{};
-  GetWindowText(window_handle_, title, 256);
-  DrawText(buffer, title, -1, &text, DT_CENTER | DT_VCENTER | DT_SINGLELINE |
-                                    DT_END_ELLIPSIS | DT_NOPREFIX);
-  SelectObject(buffer, old_font);
-  if (font) DeleteObject(font);
+  DwmGetWindowAttribute(window_handle_, DWMWA_CAPTION_BUTTON_BOUNDS,
+                        &buttons, sizeof(buttons));
   if (paint) {
     BufferedPaintSetAlpha(paint, nullptr, 255);
     // Leave native caption buttons transparent to DWM. An opaque client

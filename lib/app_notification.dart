@@ -25,7 +25,7 @@ class _NotificationQueue {
 Future<void> showAppNotification(
   BuildContext context, {
   required String message,
-  String title = 'CIE ID',
+  String title = 'Firma con CIE',
   String? details,
   bool error = false,
   String buttonLabel = 'OK',
@@ -96,7 +96,7 @@ class AppNotification extends StatefulWidget {
     this.message,
     this.event,
     this.details,
-    this.title = 'CIE ID',
+    this.title = 'Firma con CIE',
     this.error = false,
     this.enabled = true,
     this.onDismissed,

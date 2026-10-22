@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:path_provider/path_provider.dart';
+import 'application_storage.dart';
 
 import 'signature_image.dart';
 
@@ -116,7 +116,7 @@ class FilePreferencesStore implements PreferencesStore, CardImagePreferences {
     final configured =
         _provided ??
         Directory(
-          '${(await getApplicationSupportDirectory()).path}/signature-preferences',
+          '${(await getPersistentApplicationSupportDirectory()).path}/signature-preferences',
         );
     final root = Directory.fromUri(configured.absolute.uri);
     await root.create(recursive: true);

@@ -4,6 +4,9 @@ project(cie_flutter_prototype LANGUAGES CXX)
 
 # The name of the executable created for the application. Change this to change
 # the on-disk name of your application.
+set(BINARY_NAME "Firma con CIE")
+set(APP_EXECUTABLE_NAME "${BINARY_NAME}")
+# Keep an internal target without spaces for generated Flutter plugin rules.
 set(BINARY_NAME "CIE-ID")
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent
@@ -51,6 +54,7 @@ add_subdirectory(${FLUTTER_MANAGED_DIR})
 
 # Application build; see runner/CMakeLists.txt.
 add_subdirectory("runner")
+set_target_properties(${BINARY_NAME} PROPERTIES OUTPUT_NAME "${APP_EXECUTABLE_NAME}")
 
 
 # Generated plugin build rules, which manage building the plugins and adding

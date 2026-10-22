@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: BSD-3-Clause
-"""Export light/dark desktop icons from editable SVG sources (Pillow >= 10)."""
+"""Export light/dark desktop icons from the document/signature artwork (Pillow >= 10)."""
 import argparse
 import base64
 import hashlib
@@ -31,27 +31,19 @@ def srgb(color):
 
 
 def write_sources(config):
-    """Compose the existing artwork with vector bases and colored thin rings."""
+    """Compose one original foreground with the two application theme bases."""
     size = config['canvas']
-    scale = config['circleScale']
-    center = size / 2
+    scale = config['foregroundScale']
     margin = size * (1 - scale) / 2
-    encoded = base64.b64encode((ASSETS / 'source/CIE-ID-circle.png').read_bytes()).decode('ascii')
+    encoded = base64.b64encode((ASSETS / 'source/document-signature.png').read_bytes()).decode('ascii')
     native = ROOT / 'macos/Runner/AppIcon.icon'
     native_assets = native / 'Assets'
     native_assets.mkdir(parents=True, exist_ok=True)
-    for theme, color in config['themes'].items():
-        # A vector ring replaces the old black border without repainting the
-        # blue field, lettering or face. Both variants use identical geometry.
-        body = (
-            f'<circle cx="{center}" cy="{center}" r="{center}" fill="{color}"/>\n'
-            f'<defs><clipPath id="content"><circle cx="{center}" cy="{center}" '
-            f'r="{config["circleContentRadius"]}"/></clipPath></defs>\n'
-            f'<image width="{size}" height="{size}" clip-path="url(#content)" '
+    body = (f'<image width="{size}" height="{size}" '
             f'xlink:href="data:image/png;base64,{encoded}"/>')
-        circle = svg(body, size)
-        (ASSETS / f'source/CIE-ID-circle-{theme}.svg').write_text(circle, encoding='utf-8')
-        (native_assets / f'Circle-{theme}.svg').write_text(circle, encoding='utf-8')
+    (native_assets / 'Document-signature.svg').write_text(svg(body, size), encoding='utf-8')
+    for theme, color in config['themes'].items():
+        # The foreground is identical in both themes: only the base changes.
         base = f'<rect width="{size}" height="{size}" fill="{color}"/>'
         (native_assets / f'Base-{theme}.svg').write_text(svg(base, size), encoding='utf-8')
         flat = svg(
@@ -69,11 +61,11 @@ def write_sources(config):
             {'appearance': appearance, 'value': {'solid': srgb(dark)}}
             for appearance in ('dark', 'tinted')],
         'groups': [{
-            'name': 'CIE ID',
+            'name': 'Firma con CIE',
             # Icon Composer orders the frontmost layer first.
             'layers': [
-                {'image-name-specializations': variants('Circle'),
-                 'name': 'Logo CIE ID', 'glass': False, 'opacity': 1,
+                {'image-name': 'Document-signature.svg',
+                 'name': 'Documento e firma', 'glass': False, 'opacity': 1,
                  'position': {'scale': scale, 'translation-in-points': [0, 0]}},
                 {'image-name-specializations': variants('Base'),
                  'name': 'Base opaca del tema', 'glass': False, 'opacity': 1}],
@@ -82,8 +74,8 @@ def write_sources(config):
             'translucency': {'enabled': False, 'value': 0}}],
         'supported-platforms': {'squares': ['macOS']}}
     (native / 'icon.json').write_text(json.dumps(document, indent=2) + '\n')
-    # Remove only obsolete, script-owned resources; original artwork is kept.
-    for name in ('Black.svg', 'CIE-ID-circle.png'):
+    # Retire script-owned resources of the former official-derived logo.
+    for name in ('Black.svg', 'CIE-ID-circle.png', 'Circle-light.svg', 'Circle-dark.svg'):
         (native_assets / name).unlink(missing_ok=True)
     return native
 
@@ -91,7 +83,7 @@ def write_sources(config):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--render-source', action='store_true',
-                        help='Render both editable SVG masters using macOS sips')
+                        help='Render both composed SVG masters using macOS sips')
     args = parser.parse_args()
     config = json.loads((ASSETS / 'themes.json').read_text())
     native = write_sources(config)
@@ -161,7 +153,7 @@ def main():
     packaged = ASSETS / 'macos/AppIcon.icon'
     shutil.copytree(native, packaged, dirs_exist_ok=True,
                     ignore=shutil.ignore_patterns('.DS_Store'))
-    for name in ('Black.svg', 'CIE-ID-circle.png'):
+    for name in ('Black.svg', 'CIE-ID-circle.png', 'Circle-light.svg', 'Circle-dark.svg'):
         (packaged / 'Assets' / name).unlink(missing_ok=True)
     outputs.extend(p for p in native.rglob('*') if p.is_file() and p.name != '.DS_Store')
     outputs.extend(p for p in packaged.rglob('*') if p.is_file() and p.name != '.DS_Store')
@@ -169,15 +161,20 @@ def main():
 
     desktop = ASSETS / f'linux/{APP_ID}.desktop'
     desktop.write_text(
-        '[Desktop Entry]\nType=Application\nName=CIE ID\n'
+        '[Desktop Entry]\nType=Application\nName=Firma con CIE\n'
         'Comment=Electronic identity card and document signing\n'
         'Comment[it]=Carta di identità elettronica e firma dei documenti\n'
-        f'Exec=CIE-ID\nTryExec=CIE-ID\nIcon={APP_ID}\nTerminal=false\n'
+        f'Exec="Firma con CIE"\nTryExec=Firma con CIE\nIcon={APP_ID}\nTerminal=false\n'
         f'Categories=Utility;Security;\nStartupWMClass={APP_ID}\n'
         'Keywords=CIE;smartcard;signature;PDF;\n'
         'Keywords[it]=CIE;carta;identità;firma;PDF;\n', encoding='utf-8')
     outputs.append(desktop)
-    shutil.copyfile(ROOT / 'assets/licenses/native-LICENSE.txt', ASSETS / 'LICENSE-upstream.txt')
+    shutil.copyfile(ASSETS / 'LICENSE.txt', ASSETS / 'linux/icon-LICENSE.txt')
+    outputs.extend([ASSETS / 'LICENSE.txt', ASSETS / 'linux/icon-LICENSE.txt',
+                    ASSETS / 'provenance.json', ASSETS / 'imagegen-prompt.txt',
+                    ASSETS / 'README.md',
+                    ROOT / 'assets/licenses/cie-app-icon-NOTICE.txt',
+                    ROOT / 'assets/licenses/cie-app-icon-LICENSE.txt'])
     manifest = {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest()
                 for path in sorted(set(outputs))}
     (ASSETS / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')

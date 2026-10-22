@@ -89,7 +89,9 @@ void main() {
         final heading = find.byKey(const ValueKey('page-title'));
         expect(
           t.widget<Text>(heading).data,
-          destination == AppDestination.home ? 'CIE ID' : destination.label,
+          destination == AppDestination.home
+              ? 'Firma con CIE'
+              : destination.label,
         );
         final header = find
             .ancestor(of: heading, matching: find.byType(ApplicationPageHeader))

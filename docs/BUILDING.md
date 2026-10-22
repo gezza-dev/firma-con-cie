@@ -1,4 +1,4 @@
-# Compilare CIE ID Desktop
+# Compilare Firma con CIE
 
 L'adattamento delle finestre macOS/Windows usa il modulo C in
 `native/desktop`, da conservare insieme agli altri sorgenti. Test eseguibili
@@ -98,15 +98,47 @@ python3 scripts/build_web_macos.py \
   --identity "$CIE_SIGNING_IDENTITY" --team-id "$CIE_TEAM_ID"
 python3 scripts/build_macos.py \
   --runtime native/runtime/macos-complete \
-  --destination "$HOME/Developer/Builds/CIE-ID/macos" \
-  --build-workspace "$HOME/Developer/Builds/CIE-ID/workspace" \
+  --destination "$HOME/Developer/Builds/CIE-ID/firma-con-cie" \
+  --build-workspace "$HOME/Developer/Builds/CIE-ID/workspace-macos" \
   --identity "$CIE_SIGNING_IDENTITY" \
   --web-extension .build/web-macos/CIEPrototypeToken.appex
 ```
 
-Il bundle risultante è `CIE-ID.app`, con librerie private, avvisi e CTK. La copia di compilazione deve essere fuori dalla cartella dei sorgenti. Lo script non registra o attiva l’estensione e non esegue prove sulla carta. Se si cambiano bundle identifier o App Group occorre allineare host, estensione e archivi; gli identificativi storici sono intenzionalmente conservati.
+Le destinazioni predefinite di `build_macos.py` sono `~/Developer/Builds/CIE-ID/firma-con-cie` per il bundle e `~/Developer/Builds/CIE-ID/workspace-macos` per i file generati. Il workspace non contiene i dati personali dell’app. Per le ricompilazioni locali si può conservare l’estensione firmata in `~/Developer/Builds/CIE-ID/components/macos/CIEPrototypeToken.appex` e passarla esplicitamente con `--web-extension`. La copia deve conservare i permessi di esecuzione (per esempio con `ditto`): la sola verifica della firma digitale non rileva la perdita di tali permessi. La compilazione e il confezionamento del DMG controllano anche che i programmi necessari siano eseguibili.
+
+Il bundle risultante è `Firma con CIE.app`, con librerie private, avvisi e CTK. La copia di compilazione deve essere fuori dalla cartella dei sorgenti. Lo script non registra o attiva l’estensione e non esegue prove sulla carta. Se si cambiano bundle identifier o App Group occorre allineare host, estensione e archivi; gli identificativi storici sono intenzionalmente conservati.
 
 Senza CryptoTokenKit si possono omettere `build_web_macos.py` e `--web-extension`, usando la firma ad hoc predefinita per le sole prove locali. Tale bundle non offre automaticamente l’accesso Web. Apple Development non è notarizzazione: distribuzione Developer ID e notarizzazione sono passaggi separati.
+
+### DMG firmato per le prove
+
+Per confezionare il bundle Universal già firmato, completo di middleware,
+observer e CryptoTokenKit:
+
+```sh
+python3 -m venv .build/dmg-tools
+.build/dmg-tools/bin/python -m pip install ds_store==1.3.1
+.build/dmg-tools/bin/python scripts/package_macos_dmg.py \
+  --app "$HOME/Developer/Builds/CIE-ID/firma-con-cie/Firma con CIE.app" \
+  --identity "$CIE_SIGNING_IDENTITY" \
+  --output "$HOME/Developer/Builds/CIE-ID/Firma con CIE.dmg" \
+  --report reports/macos-development-dmg.json
+```
+
+Il volume **Firma con CIE** contiene soltanto l’app e il collegamento
+**Applicazioni**; la finestra Finder usa una disposizione a due icone con
+dimensione 640×420. Per installare, trascinare l’app su Applicazioni.
+La posizione iniziale è vicina all’angolo superiore sinistro e viene adattata
+ai limiti dello schermo da Finder. Non dipende dalla risoluzione o dalla
+posizione di Dock e barra dei menu del Mac di compilazione. La ricetta salva
+`WindowBounds={{100, 100000}, {640, 420}}`: la coordinata verticale alta
+lascia a Finder l’adattamento al bordo superiore del display di apertura.
+La posizione effettiva resta sotto il controllo di Finder.
+La ricetta verifica firma e architetture del bundle, integrità dell’immagine,
+contenuto montato e copia estratta, senza modificare l’app originale o gli
+abbinamenti. Rifiuta di sovrascrivere un DMG esistente. La firma del DMG usa
+l’identità indicata; il pacchetto di prova Apple Development non viene
+notarizzato né pubblicato automaticamente.
 
 ## Windows x64
 
@@ -147,7 +179,7 @@ flutter pub get --enforce-lockfile
 flutter build windows --release
 ```
 
-L’output è `build/windows/x64/runner/Release/CIE-ID.exe`. Distribuire l’intera cartella Release, che contiene `cie_native`, risorse Flutter, PDFium e payload Web. Il solo `.exe` non basta. I comandi di compilazione non devono registrare driver né autenticare la carta; il helper esegue l’installazione solo su azione esplicita nell’app con UAC. [Flusso e collaudi Windows](WINDOWS_WEB_FIRST_USE.md).
+L’output è `build/windows/x64/runner/Release/Firma con CIE.exe`. Distribuire l’intera cartella Release, che contiene `cie_native`, risorse Flutter, PDFium e payload Web. Il solo `.exe` non basta. I comandi di compilazione non devono registrare driver né autenticare la carta; il helper esegue l’installazione solo su azione esplicita nell’app con UAC. [Flusso e collaudi Windows](WINDOWS_WEB_FIRST_USE.md).
 
 Questa ricetta non firma Authenticode il prodotto. L’esecuzione in processi protetti e una distribuzione Windows richiedono verifiche e firma distinte.
 

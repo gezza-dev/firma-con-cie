@@ -46,7 +46,7 @@ hanno anche le proprie destinazioni di installazione.
 
 ## Installazione e aggiornamento
 
-Avviare `CIE-ID-Desktop-0.1.0-Windows-x64-Setup.exe` e confermare UAC. App e
+Avviare `Firma-con-CIE-0.1.0-Windows-x64-Setup.exe` e confermare UAC. App e
 componente vengono installati nella stessa sessione amministrativa. Il
 prerequisito Microsoft viene eseguito senza un'altra elevazione e senza
 riavviare automaticamente Windows. Sono disponibili italiano e inglese.
@@ -72,10 +72,10 @@ La fase finale completa la registrazione con ripristino in caso di errore;
 un errore viene riportato come installazione non completata, senza cancellare
 gli archivi personali. La riesecuzione dell'installer consente di riprovare.
 
-L'app è in `Program Files\CIE ID Desktop`; il componente mantiene la propria
+L'app è in `Program Files\Firma con CIE`; il componente mantiene la propria
 cartella immutabile in `Program Files\CIE ID Flutter Prototype\WebToken\<hash>`.
 Le vecchie versioni non vengono sovrascritte: possono essere ancora caricate
-nei browser. L'installer può chiedere di chiudere CIE ID prima di aggiornarla.
+nei browser. L'installer può chiedere di chiudere Firma con CIE prima di aggiornarla. Il nuovo nome pubblico non cambia l’identificativo dell’installer né gli archivi personali preesistenti.
 Il collegamento sul desktop è facoltativo; quello nel menu Start è incluso.
 L'avvio a fine installazione è facoltativo e usa il token dell'utente originario.
 

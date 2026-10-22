@@ -21,15 +21,15 @@ class AppDelegate: FlutterAppDelegate {
     guard let root = NSApp.mainMenu, let applicationItem = root.items.first,
           let applicationMenu = applicationItem.submenu else { return }
     for item in root.items where item !== applicationItem { root.removeItem(item) }
-    applicationItem.title = "CIE ID"
-    applicationMenu.title = "CIE ID"
+    applicationItem.title = "Firma con CIE"
+    applicationMenu.title = "Firma con CIE"
     for item in applicationMenu.items {
       if item.isAlternate {
         applicationMenu.removeItem(item)
       } else if item.action == #selector(NSApplication.orderFrontStandardAboutPanel(_:)) {
-        item.title = language == "it" ? "Informazioni su CIE ID" : "About CIE ID"
+        item.title = language == "it" ? "Informazioni su Firma con CIE" : "About Firma con CIE"
       } else if item.action == #selector(NSApplication.terminate(_:)) || item.action == #selector(quitCie(_:)) {
-        item.title = language == "it" ? "Esci da CIE ID" : "Quit CIE ID"
+        item.title = language == "it" ? "Esci da Firma con CIE" : "Quit Firma con CIE"
         // A dedicated action avoids AppKit inserting the alternate "Quit and
         // Keep Windows" item. Termination still follows the standard NSApp path.
         item.action = #selector(quitCie(_:))

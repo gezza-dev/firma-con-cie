@@ -20,27 +20,15 @@
   ],
   "groups": [
     {
-      "name": "CIE ID",
+      "name": "Firma con CIE",
       "layers": [
         {
-          "image-name-specializations": [
-            {
-              "value": "Circle-light.svg"
-            },
-            {
-              "appearance": "dark",
-              "value": "Circle-dark.svg"
-            },
-            {
-              "appearance": "tinted",
-              "value": "Circle-dark.svg"
-            }
-          ],
-          "name": "Logo CIE ID",
+          "image-name": "Document-signature.svg",
+          "name": "Documento e firma",
           "glass": false,
           "opacity": 1,
           "position": {
-            "scale": 0.73,
+            "scale": 0.88,
             "translation-in-points": [
               0,
               0

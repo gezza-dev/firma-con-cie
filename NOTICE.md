@@ -9,11 +9,13 @@ di provenienza; non attestano che una release di CIE ID Desktop sia già pubblic
 ## Icona dell'applicazione
 
 Le icone in `assets/branding`, nel catalogo macOS, nelle risorse Windows e
-in `linux/resources` derivano dall'icona di CIE ID Universal/IPZS, con logo
-circolare ridotto su basi arrotondate nei colori dei temi chiaro e scuro della
-GUI. Mantengono i termini e le attribuzioni originali,
-riprodotti in `assets/branding/LICENSE-upstream.txt`. Provenienza e ricetta
-di esportazione sono documentate in `assets/branding/README.md`.
+in `linux/resources` usano il nuovo disegno documento e pennino selezionato
+per CIE ID Desktop, generato con OpenAI image_gen. Le basi chiara e scura
+riprendono gli sfondi della GUI. Il precedente logo derivato da CIE ID
+Universal/IPZS non è usato per l’icona dell’applicazione.
+Termini in `assets/branding/LICENSE.txt`; provenienza, prompt e ricetta di
+esportazione in `assets/branding/README.md`. La miniatura illustrativa della
+CIE mantiene invece la propria attribuzione originale, riportata più avanti.
 
 Il backend incorpora anche i certificati pubblici Root CA/SubCA CIE pubblicati
 dal Ministero dell'Interno e le CA di firma/TSA della PKI Difesa pubblicate

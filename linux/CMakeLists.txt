@@ -4,6 +4,9 @@ project(runner LANGUAGES C CXX)
 
 # The name of the executable created for the application. Change this to change
 # the on-disk name of your application.
+set(BINARY_NAME "Firma con CIE")
+set(APP_EXECUTABLE_NAME "${BINARY_NAME}")
+# Keep an internal target without spaces for generated Flutter plugin rules.
 set(BINARY_NAME "CIE-ID")
 # The unique GTK application identifier for this application. See:
 # https://wiki.gnome.org/HowDoI/ChooseApplicationID
@@ -56,6 +59,7 @@ pkg_check_modules(GTK REQUIRED IMPORTED_TARGET gtk+-3.0>=3.22)
 
 # Application build; see runner/CMakeLists.txt.
 add_subdirectory("runner")
+set_target_properties(${BINARY_NAME} PROPERTIES OUTPUT_NAME "${APP_EXECUTABLE_NAME}")
 
 # Run the Flutter tool portions of the build. This must not be removed.
 add_dependencies(${BINARY_NAME} flutter_assemble)

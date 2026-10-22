@@ -6,7 +6,7 @@
 #ifndef InstallerTest
 AppId={{7D9C31E3-F685-48E7-88BF-152BF8D331F2}
 PrivilegesRequired=admin
-DefaultDirName={autopf}\CIE ID Desktop
+DefaultDirName={autopf}\Firma con CIE
 #else
 AppId=CIE-ID-Installer-Isolated-Test
 PrivilegesRequired=lowest
@@ -15,11 +15,11 @@ DisableDirPage=yes
 CreateUninstallRegKey=no
 UninstallFilesDir={app}\uninstall
 #endif
-AppName=CIE ID Desktop
+AppName=Firma con CIE
 AppVersion={#AppVersion}
 AppPublisher=gezza-dev
 AppPublisherURL=https://github.com/gezza-dev/cie-id-desktop
-DefaultGroupName=CIE ID Desktop
+DefaultGroupName=Firma con CIE
 DisableProgramGroupPage=yes
 ArchitecturesAllowed=x64os
 ArchitecturesInstallIn64BitMode=x64os
@@ -27,7 +27,7 @@ MinVersion=10.0
 OutputDir={#OutputPath}
 OutputBaseFilename={#OutputName}
 SetupIconFile={#AppIcon}
-UninstallDisplayIcon={app}\CIE-ID.exe
+UninstallDisplayIcon={app}\Firma con CIE.exe
 LicenseFile={#ProjectLicense}
 InfoBeforeFile={#BeforeFile}
 Compression=lzma2/normal
@@ -35,10 +35,10 @@ SolidCompression=yes
 ; Setup and Uninstall read the user's Windows light/dark preference at startup.
 WizardStyle=modern dynamic
 CloseApplications=yes
-CloseApplicationsFilter=CIE-ID.exe
+CloseApplicationsFilter=Firma con CIE.exe,CIE-ID.exe
 RestartApplications=no
 DisableWelcomePage=no
-UninstallDisplayName=CIE ID Desktop
+UninstallDisplayName=Firma con CIE
 SetupLogging=yes
 
 [Languages]
@@ -60,18 +60,25 @@ Source: "{#BuildManifest}"; DestDir: "{app}"; DestName: "installation-manifest.j
 
 [Icons]
 #ifndef InstallerTest
-Name: "{autoprograms}\CIE ID Desktop"; Filename: "{app}\CIE-ID.exe"; WorkingDir: "{app}"
-Name: "{autodesktop}\CIE ID Desktop"; Filename: "{app}\CIE-ID.exe"; WorkingDir: "{app}"; Tasks: desktopicon
+Name: "{autoprograms}\Firma con CIE"; Filename: "{app}\Firma con CIE.exe"; WorkingDir: "{app}"
+Name: "{autodesktop}\Firma con CIE"; Filename: "{app}\Firma con CIE.exe"; WorkingDir: "{app}"; Tasks: desktopicon
 #endif
 
 [InstallDelete]
+; Retire the previous executable and shortcuts during an in-place upgrade.
+; Only names owned by the previous desktop installer are affected.
+Type: files; Name: "{app}\CIE-ID.exe"
+#ifndef InstallerTest
+Type: files; Name: "{autoprograms}\CIE ID Desktop.lnk"
+Type: files; Name: "{autodesktop}\CIE ID Desktop.lnk"
+#endif
 ; Exact development-file names only; unknown files and user profiles are kept.
 #include "development-cleanup.iss"
 
 [Run]
 #ifndef InstallerTest
 ; Always return to the initiating user's token, including alternate-account UAC.
-Filename: "{app}\CIE-ID.exe"; Description: "{cm:LaunchProgram,CIE ID}"; Flags: nowait postinstall skipifsilent runasoriginaluser unchecked; Check: ComponentReady
+Filename: "{app}\Firma con CIE.exe"; Description: "{cm:LaunchProgram,Firma con CIE}"; Flags: nowait postinstall skipifsilent runasoriginaluser unchecked; Check: ComponentReady
 #endif
 
 [CustomMessages]

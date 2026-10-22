@@ -403,7 +403,7 @@ class _SettingsViewState extends State<SettingsView> {
           message: message,
           error: failed,
           enabled: !busy,
-          title: failed ? 'Operazione non completata' : 'CIE ID',
+          title: failed ? 'Operazione non completata' : 'Firma con CIE',
           onDismissed: () {
             if (mounted) setState(() => message = null);
           },

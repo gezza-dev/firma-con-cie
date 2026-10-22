@@ -14,7 +14,7 @@ const prototypeIssues = 'https://github.com/gezza-dev/cie-id-desktop/issues';
 
 typedef LinkOpener = Future<bool> Function(Uri uri);
 const guideLinks = {
-  'CIE ID Desktop: progetto e documentazione':
+  'Firma con CIE: progetto e documentazione':
       'https://github.com/gezza-dev/cie-id-desktop',
   'Software CIE ufficiale':
       'https://www.cartaidentita.interno.gov.it/info-utili/software-cie-2/',
@@ -86,7 +86,7 @@ class _GuideViewState extends State<GuideView> {
       Text(
         tr(
           context,
-          "Guida all’uso di CIE ID su Windows, macOS e Linux. È inclusa nell’app e si può consultare anche senza connessione. I collegamenti esterni si aprono nel browser predefinito e richiedono Internet.",
+          "Guida all’uso di Firma con CIE su Windows, macOS e Linux. È inclusa nell’app e si può consultare anche senza connessione. I collegamenti esterni si aprono nel browser predefinito e richiedono Internet.",
         ),
       ),
       const SizedBox(height: 12),

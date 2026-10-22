@@ -12,10 +12,10 @@ import 'native_bridge.dart';
 import 'pairing_view.dart';
 
 const linuxFirefoxSetupMessage =
-    'Certificato pubblico predisposto. Configura il modulo CIE ID in Firefox e inserisci il PIN completo di otto cifre quando richiesto dal browser. La configurazione di Firefox non è stata verificata.';
+    'Certificato pubblico predisposto. Configura il modulo Firma con CIE in Firefox e inserisci il PIN completo di otto cifre quando richiesto dal browser. La configurazione di Firefox non è stata verificata.';
 
 const linuxFirefoxInformationMessage =
-    'Per accedere ai siti con Firefox, prepara il certificato dall’applicazione e configura il modulo CIE ID nel browser. Firefox richiede il PIN completo di otto cifre. Con Firefox Snap occorre anche autorizzare l’accesso al lettore. L’applicazione prepara solo il certificato pubblico: non modifica il browser o i permessi Snap e non avvia prove sulla carta.';
+    'Per accedere ai siti con Firefox, prepara il certificato dall’applicazione e configura il modulo Firma con CIE nel browser. Firefox richiede il PIN completo di otto cifre. Con Firefox Snap occorre anche autorizzare l’accesso al lettore. L’applicazione prepara solo il certificato pubblico: non modifica il browser o i permessi Snap e non avvia prove sulla carta.';
 
 typedef WebPublisher = Future<void> Function(
   String card,
@@ -268,7 +268,7 @@ class _WebAccessCardState extends State<WebAccessCard> {
           tr(
             context,
             widget.linuxFirefox
-                ? "Su Linux l’accesso ai siti usa il modulo CIE ID per Firefox. Il browser richiede tutte le otto cifre del PIN, anche se la CIE è abbinata. L’applicazione non modifica la configurazione di Firefox."
+                ? "Su Linux l’accesso ai siti usa il modulo Firma con CIE per Firefox. Il browser richiede tutte le otto cifre del PIN, anche se la CIE è abbinata. L’applicazione non modifica la configurazione di Firefox."
                 : "Configurazione separata dall’abbinamento per firmare documenti. Il certificato pubblico viene conservato dal sistema; il PIN non viene salvato da questa procedura. Per accedere ai siti, sia su macOS sia su Windows, inserisci tutte le otto cifre del PIN nella finestra protetta del sistema, anche se la CIE è abbinata.",
           ),
         ),

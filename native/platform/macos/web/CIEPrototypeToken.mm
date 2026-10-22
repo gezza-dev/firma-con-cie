@@ -288,7 +288,7 @@ static CIEWebContext *Open(TKSmartCard *card,NSString *expected,NSError **error)
  if(!certificate){Fail(error,TKErrorCodeCorruptedData,@"Certificato CIE non valido.");return nil;}
  TKTokenKeychainCertificate *cert=[[TKTokenKeychainCertificate alloc]initWithCertificate:certificate objectID:@"cie-auth-cert"];
  TKTokenKeychainKey *key=[[TKTokenKeychainKey alloc]initWithCertificate:certificate objectID:@"cie-auth-key"];
- CFRelease(certificate);key.canSign=YES;key.canDecrypt=NO;key.suitableForLogin=NO;key.label=@"CIE ID · Accesso ai siti";
+ CFRelease(certificate);key.canSign=YES;key.canDecrypt=NO;key.suitableForLogin=NO;key.label=@"Firma con CIE · Accesso ai siti";
  key.constraints=@{@(TKTokenOperationSignData):@"CIE-PIN8"};
  key.applicationTag=[token.configuration.instanceID dataUsingEncoding:NSUTF8StringEncoding];
  [token.keychainContents fillWithItems:@[cert,key]];os_log(OS_LOG_DEFAULT,"CIE prototype: physical certificate and key published");return token;

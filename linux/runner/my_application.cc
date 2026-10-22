@@ -21,6 +21,15 @@ static void first_frame_cb(MyApplication* self, FlView* view) {
   gtk_widget_show(gtk_widget_get_toplevel(GTK_WIDGET(view)));
 }
 
+// Traditional X11 decorations draw the GtkWindow title themselves. Keep that
+// caption empty even if Flutter updates the application-switcher description.
+static void clear_caption_title(GObject* object, GParamSpec*, gpointer) {
+  GtkWindow* window = GTK_WINDOW(object);
+  if (g_strcmp0(gtk_window_get_title(window), "") != 0) {
+    gtk_window_set_title(window, "");
+  }
+}
+
 // Implements GApplication::activate.
 static void my_application_activate(GApplication* application) {
   MyApplication* self = MY_APPLICATION(application);
@@ -32,7 +41,7 @@ static void my_application_activate(GApplication* application) {
   if (icon != nullptr) {
     gtk_window_set_icon(window, icon);
   } else {
-    g_warning("Could not load CIE ID window icon: %s", icon_error->message);
+    g_warning("Could not load Firma con CIE window icon: %s", icon_error->message);
   }
 
   // Use a header bar when running in GNOME as this is the common style used
@@ -55,11 +64,14 @@ static void my_application_activate(GApplication* application) {
   if (use_header_bar) {
     GtkHeaderBar* header_bar = GTK_HEADER_BAR(gtk_header_bar_new());
     gtk_widget_show(GTK_WIDGET(header_bar));
-    gtk_header_bar_set_title(header_bar, "CIE ID");
+    // An explicit empty custom widget prevents GTK from copying the window
+    // title into the visible header, including after Flutter title updates.
+    gtk_header_bar_set_custom_title(header_bar, gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
     gtk_header_bar_set_show_close_button(header_bar, TRUE);
     gtk_window_set_titlebar(window, GTK_WIDGET(header_bar));
   } else {
-    gtk_window_set_title(window, "CIE ID");
+    gtk_window_set_title(window, "");
+    g_signal_connect(window, "notify::title", G_CALLBACK(clear_caption_title), nullptr);
   }
 
   cie_window_sizing_attach(window);
@@ -162,7 +174,7 @@ MyApplication* my_application_new() {
   // corresponding .desktop file. This ensures better integration by allowing
   // the application to be recognized beyond its binary name.
   g_set_prgname(APPLICATION_ID);
-  g_set_application_name("CIE ID");
+  g_set_application_name("Firma con CIE");
 
   return MY_APPLICATION(g_object_new(my_application_get_type(),
                                      "application-id", APPLICATION_ID, "flags",

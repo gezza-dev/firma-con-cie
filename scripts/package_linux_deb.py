@@ -38,7 +38,7 @@ def files(tree):
 
 def validate_bundle(bundle):
     if not bundle.is_dir() or set(p.name for p in bundle.iterdir()) != {
-            'CIE-ID', 'lib', 'data', 'cie_native', 'share'}:
+            'Firma con CIE', 'lib', 'data', 'cie_native', 'share'}:
         raise ValueError('Expected a complete Linux release bundle')
     for p in bundle.rglob('*'):
         mode = p.lstat().st_mode
@@ -57,7 +57,7 @@ def validate_bundle(bundle):
     actual = {p.relative_to(native).as_posix() for p in files(native)}
     if actual != set(manifest['files']) | {'backend-manifest.json'}:
         raise ValueError('Unmanifested native runtime file')
-    for name in ('CIE-ID', 'cie_native/cie_crl_fetch', 'cie_native/cie_card_observer'):
+    for name in ('Firma con CIE', 'cie_native/cie_crl_fetch', 'cie_native/cie_card_observer'):
         if not os.access(bundle / name, os.X_OK):
             raise ValueError('Executable permission missing: ' + name)
     return manifest
@@ -102,14 +102,14 @@ def package(bundle, output, version):
         (app / 'cie_native/backend-manifest.json').write_text(json.dumps(packaged, indent=2) + '\n')
         bindir = stage / 'usr/bin'
         bindir.mkdir(parents=True)
-        launcher = bindir / 'CIE-ID'
-        launcher.write_text('#!/bin/sh\nexec /opt/cie-id-desktop/CIE-ID "$@"\n')
+        launcher = bindir / 'Firma con CIE'
+        launcher.write_text('#!/bin/sh\nexec "/opt/cie-id-desktop/Firma con CIE" "$@"\n')
         launcher.chmod(0o755)
         applications = stage / 'usr/share/applications'
         applications.mkdir(parents=True)
         desktop = applications / (APP_ID + '.desktop')
         text = (ROOT / 'assets/branding/linux' / desktop.name).read_text()
-        text = text.replace('Exec=CIE-ID\n', 'Exec=/usr/bin/CIE-ID\n')
+        text = text.replace('Exec="Firma con CIE"\n', 'Exec="/usr/bin/Firma con CIE"\n').replace('TryExec=Firma con CIE\n', 'TryExec=/usr/bin/Firma con CIE\n')
         desktop.write_text(text)
         run('desktop-file-validate', desktop)
         icons = stage / 'usr/share/icons/hicolor'
@@ -123,7 +123,7 @@ def package(bundle, output, version):
         # These notices cover Flutter, PDFium, the icon and bundled native code.
         # The full dependency notice trees remain adjacent in cie_native/licenses.
         shutil.copy2(ROOT / 'assets/licenses/cie-app-icon-NOTICE.txt', doc / 'icon-NOTICE.txt')
-        shutil.copy2(ROOT / 'assets/branding/LICENSE-upstream.txt', doc / 'icon-LICENSE.txt')
+        shutil.copy2(ROOT / 'assets/branding/LICENSE.txt', doc / 'icon-LICENSE.txt')
         # Normalize copied build-directory permissions; no setuid, writable
         # system files or user-specific caches are installed by this package.
         for p in stage.rglob('*'):
@@ -148,7 +148,7 @@ def package(bundle, output, version):
             f'Installed-Size: {installed_size}\nDepends: {dep}\nRecommends: libccid\n'
             'Section: utils\nPriority: optional\n'
             'Homepage: https://github.com/gezza-dev/cie-id-desktop\n'
-            'Description: CIE ID Desktop - local Linux test build\n'
+            'Description: Firma con CIE - local Linux test build\n'
             ' Independent desktop application for Italian CIE cards and document signing.\n'
             ' Includes the full-PIN Firefox PKCS#11 provider. Browser setup is manual.\n'
             ' Local test package; Linux DSS/LTA runtime is not included.\n')

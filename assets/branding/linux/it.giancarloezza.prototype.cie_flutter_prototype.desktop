@@ -1,10 +1,10 @@
 [Desktop Entry]
 Type=Application
-Name=CIE ID
+Name=Firma con CIE
 Comment=Electronic identity card and document signing
 Comment[it]=Carta di identità elettronica e firma dei documenti
-Exec=CIE-ID
-TryExec=CIE-ID
+Exec="Firma con CIE"
+TryExec=Firma con CIE
 Icon=it.giancarloezza.prototype.cie_flutter_prototype
 Terminal=false
 Categories=Utility;Security;

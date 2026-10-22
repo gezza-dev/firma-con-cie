@@ -21,7 +21,7 @@ executable=contents/'MacOS/CIEPrototypeToken';executable.parent.mkdir(parents=Tr
 frameworks=contents/'Frameworks';frameworks.mkdir()
 for name in ['libcie_web.dylib','libcie-pkcs11.dylib']:shutil.copy2(runtime/name,frameworks/name)
 bundle='it.giancarloezza.CIEID.FlutterPrototype.WebToken'
-info=dict(CFBundleIdentifier=bundle,CFBundleExecutable='CIEPrototypeToken',CFBundleName='CIE ID · Accesso ai siti',CFBundleDisplayName='CIE ID · Accesso ai siti',CFBundlePackageType='XPC!',CFBundleVersion='12',CFBundleShortVersionString='0.1.11',CFBundleDevelopmentRegion='it',CFBundleLocalizations=['it'],LSMinimumSystemVersion='12.0',NSExtension=dict(NSExtensionPointIdentifier='com.apple.ctk-tokens',NSExtensionAttributes={'com.apple.ctk.class-id':bundle,'com.apple.ctk.driver-class':'CIEPrototypeTokenDriver','com.apple.ctk.token-type':'smartcard'}))
+info=dict(CFBundleIdentifier=bundle,CFBundleExecutable='CIEPrototypeToken',CFBundleName='Firma con CIE · Accesso ai siti',CFBundleDisplayName='Firma con CIE · Accesso ai siti',CFBundlePackageType='XPC!',CFBundleVersion='14',CFBundleShortVersionString='0.1.13',CFBundleDevelopmentRegion='it',CFBundleLocalizations=['it'],LSMinimumSystemVersion='12.0',NSExtension=dict(NSExtensionPointIdentifier='com.apple.ctk-tokens',NSExtensionAttributes={'com.apple.ctk.class-id':bundle,'com.apple.ctk.driver-class':'CIEPrototypeTokenDriver','com.apple.ctk.token-type':'smartcard'}))
 # Discover via the driver/ATR: automatic AID preselection skipped this CIE.
 # Each token request opens one TKSmartCard session; IAS selects MF/IAS/CIE.
 info['CIEWebPublicAppGroup']=public_group

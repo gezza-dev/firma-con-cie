@@ -52,7 +52,7 @@ void main() {
     for (final item in {
       'CIE middleware e SDK': 'assets/licenses/native-LICENSE.txt',
       'Dipendenze native CIE': 'assets/licenses/native-NOTICES.txt',
-      'CIE ID': 'assets/licenses/prototype-LICENSE.txt',
+      'Firma con CIE': 'assets/licenses/prototype-LICENSE.txt',
       'Illustrazione CIE · IPZS': 'assets/licenses/cie-card-NOTICE.txt',
     }.entries) {
       yield LicenseEntryWithLineBreaks([
@@ -133,7 +133,7 @@ class _CiePrototypeState extends State<CiePrototype> {
       controller: appearance,
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'CIE ID',
+        title: 'Firma con CIE',
         locale: language.locale,
         supportedLocales: CieLocalizations.supportedLocales,
         localizationsDelegates: [
@@ -287,7 +287,8 @@ class _PrototypeHomeState extends State<PrototypeHome>
     exiting = true;
     await monitor?.setPaused(true);
     if (widget.service is CancellableCardObservation) {
-      await (widget.service as CancellableCardObservation).cancelCardObservation();
+      await (widget.service as CancellableCardObservation)
+          .cancelCardObservation();
     }
     return AppExitResponse.exit;
   }
@@ -296,7 +297,8 @@ class _PrototypeHomeState extends State<PrototypeHome>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // Desktop focus loss/minimization must not stop public card detection.
     // Suspend only when the OS suspends/detaches the app, or during operations.
-    observationSuspended = state == AppLifecycleState.paused ||
+    observationSuspended =
+        state == AppLifecycleState.paused ||
         state == AppLifecycleState.detached;
     if (state == AppLifecycleState.resumed) {
       unawaited(_resumeWebStatus());
@@ -308,11 +310,14 @@ class _PrototypeHomeState extends State<PrototypeHome>
   bool refreshingWebStatus = false, waitingForWebSettings = false;
   void _updateWebSettingsMessage() {
     if (waitingForWebSettings &&
-        !enrollment.records.values.any((record) => record.needsSystemSettings)) {
+        !enrollment.records.values.any(
+          (record) => record.needsSystemSettings,
+        )) {
       waitingForWebSettings = false;
       homeMessage = enrollment.message;
     }
   }
+
   Future<void> _resumeWebStatus() async {
     if (refreshingWebStatus || busy || modalInteraction || !unified) {
       unawaited(_coordinateMonitor());
@@ -867,11 +872,36 @@ class _PrototypeHomeState extends State<PrototypeHome>
       confirmed = await showDialog<bool>(
         context: context,
         builder: (_) => AlertDialog(
-          title: Text(tr(context, 'Attiva accesso ai siti')),
-          content: Text(tr(context, 'Verrà riattivato soltanto il componente CIE ID di questa applicazione. L’abbinamento è conservato e non viene richiesto il PIN. Le altre estensioni non vengono modificate.')),
+          title: Text(
+            tr(
+              context,
+              record.needsComponentUpdate
+                  ? 'Aggiorna accesso ai siti'
+                  : 'Attiva accesso ai siti',
+            ),
+          ),
+          content: Text(
+            tr(
+              context,
+              record.needsComponentUpdate
+                  ? 'Verrà registrato il componente incluso in questa versione di Firma con CIE. L’abbinamento e il certificato pubblico sono conservati; non viene richiesto il PIN. Le altre estensioni non vengono modificate.'
+                  : 'Verrà riattivato soltanto il componente Firma con CIE di questa applicazione. L’abbinamento è conservato e non viene richiesto il PIN. Le altre estensioni non vengono modificate.',
+            ),
+          ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr(context, 'Annulla'))),
-            FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(tr(context, 'Attiva'))),
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(tr(context, 'Annulla')),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(
+                tr(
+                  context,
+                  record.needsComponentUpdate ? 'Aggiorna' : 'Attiva',
+                ),
+              ),
+            ),
           ],
         ),
       );
@@ -882,14 +912,21 @@ class _PrototypeHomeState extends State<PrototypeHome>
     if (confirmed != true || !mounted) return;
     await _operation('Attivazione accesso ai siti…', () async {
       JsonResult result;
-      try { result = await widget.webComponentActivator(); }
-      catch (_) { result = {'ok': false}; }
+      try {
+        result = await widget.webComponentActivator();
+      } catch (_) {
+        result = {'ok': false};
+      }
       await enrollment.refreshSystem();
       final updated = enrollment.records[record.id];
       if (result['ok'] == true && updated?.componentAvailable == true) {
-        homeMessage = enrollment.message ?? (updated!.webProvisioned
-            ? 'Accesso ai siti attivato. Apri il sito nel browser. Non occorre ripetere l’abbinamento.'
-            : 'Componente CIE ID attivato. Premi Completa accesso ai siti per terminare senza reinserire il PIN.');
+        homeMessage =
+            enrollment.message ??
+            (record.needsComponentUpdate
+                ? 'Componente aggiornato. L’abbinamento è conservato. Prima del prossimo accesso, rimuovi e riappoggia la CIE e riapri il browser per terminare la sessione precedente.'
+                : updated!.webProvisioned
+                ? 'Accesso ai siti attivato. Apri il sito nel browser. Non occorre ripetere l’abbinamento.'
+                : 'Componente Firma con CIE attivato. Premi Completa accesso ai siti per terminare senza reinserire il PIN.');
       } else {
         homeMessage = 'Attivazione non completata. L’abbinamento è conservato e puoi continuare a firmare. Puoi riprovare su tua iniziativa; non occorre reinserire il PIN.';
       }
@@ -899,12 +936,18 @@ class _PrototypeHomeState extends State<PrototypeHome>
   Future<void> _openWebSettings() async {
     if (busy || modalInteraction) return;
     bool opened;
-    try { opened = await widget.webSettingsOpener(); } catch (_) { opened = false; }
+    try {
+      opened = await widget.webSettingsOpener();
+    } catch (_) {
+      opened = false;
+    }
     if (!mounted) return;
     waitingForWebSettings = opened;
-    setState(() => homeMessage = opened
-        ? 'In Impostazioni di Sistema apri Generali → Elementi login ed estensioni e abilita il componente CIE ID per le smart card. Torna poi nell’app: non occorre ripetere il PIN.'
-        : 'Non è stato possibile aprire le Impostazioni di Sistema. Aprile dal menu Apple e cerca le estensioni per smart card. L’abbinamento è conservato; non occorre ripetere il PIN.');
+    setState(
+      () => homeMessage = opened
+          ? 'In Impostazioni di Sistema apri Generali → Elementi login ed estensioni e abilita il componente Firma con CIE per le smart card. Torna poi nell’app: non occorre ripetere il PIN.'
+          : 'Non è stato possibile aprire le Impostazioni di Sistema. Aprile dal menu Apple e cerca le estensioni per smart card. L’abbinamento è conservato; non occorre ripetere il PIN.',
+    );
   }
 
   Future<void> _completeEnrollment(EnrollmentRecord record) async {
@@ -977,14 +1020,17 @@ class _PrototypeHomeState extends State<PrototypeHome>
     final checker = widget.windowsWebComponentChecker;
     if (checker == null) return true;
     JsonResult result = {'ok': false};
-    await _operation('Verifica del componente per l’accesso ai siti…', () async {
-      result = await checker(reader);
-    });
+    await _operation(
+      'Verifica del componente per l’accesso ai siti…',
+      () async {
+        result = await checker(reader);
+      },
+    );
     if (!mounted) return false;
     if (result['ok'] == true) return true;
     final message =
         result['message'] as String? ??
-        'Il componente per l’accesso ai siti non è disponibile. Esegui il pacchetto di installazione di CIE ID Desktop. Gli abbinamenti e le impostazioni saranno conservati.';
+        'Il componente per l’accesso ai siti non è disponibile. Esegui il pacchetto di installazione di Firma con CIE. Gli abbinamenti e le impostazioni saranno conservati.';
     return await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
@@ -1011,8 +1057,12 @@ class _PrototypeHomeState extends State<PrototypeHome>
     await _coordinateMonitor();
     if (!mounted) return;
     try {
-      await showAppNotification(context, message: message,
-        title: 'Accesso ai siti con CIE', buttonLabel: 'Chiudi');
+      await showAppNotification(
+        context,
+        message: message,
+        title: 'Accesso ai siti con CIE',
+        buttonLabel: 'Chiudi',
+      );
     } finally {
       modalInteraction = false;
       unawaited(_coordinateMonitor());
@@ -1467,24 +1517,33 @@ class _PrototypeHomeState extends State<PrototypeHome>
     final shownError = error;
     return AppNotification(
       key: const ValueKey('application-notification'),
-      message: shownHome ?? shownError?['message'] as String? ??
+      message:
+          shownHome ??
+          shownError?['message'] as String? ??
           (shownError == null ? null : 'Operazione non completata'),
       event: (shownHome ?? shownError, notificationRevision),
-      title: shownHome == null && shownError != null ? 'Operazione non completata' : 'CIE ID',
+      title: shownHome == null && shownError != null
+          ? 'Operazione non completata'
+          : 'Firma con CIE',
       error: shownHome == null && shownError != null,
       enabled: !busy && !modalInteraction,
-      details: shownError == null ? null : [
-        if (shownError['code'] != null) '${shownError['code']}',
-        if (shownError['nativeCode'] != null) tr(context, 'Codice nativo: {p0}', [shownError['nativeCode']]),
-      ].join('\n'),
-      onDismissed: shownHome == null ? null : () {
-        if (mounted && homeMessage == shownHome) {
-          setState(() {
-            homeMessage = null;
-            if (identical(error, shownError)) error = null;
-          });
-        }
-      },
+      details: shownError == null
+          ? null
+          : [
+              if (shownError['code'] != null) '${shownError['code']}',
+              if (shownError['nativeCode'] != null)
+                tr(context, 'Codice nativo: {p0}', [shownError['nativeCode']]),
+            ].join('\n'),
+      onDismissed: shownHome == null
+          ? null
+          : () {
+              if (mounted && homeMessage == shownHome) {
+                setState(() {
+                  homeMessage = null;
+                  if (identical(error, shownError)) error = null;
+                });
+              }
+            },
     );
   }
 
@@ -1501,313 +1560,308 @@ class _PrototypeHomeState extends State<PrototypeHome>
         unawaited(_coordinateMonitor());
       },
       child: Scaffold(
-      body: Row(
-        children: [
-          NavigationRail(
-            scrollable: true,
-            extended: MediaQuery.sizeOf(context).width > 930,
-            selectedIndex: page,
-            onDestinationSelected: flow.busy || verifyFlow.exporting
-                ? null
-                : (value) => _navigate(AppDestination.values[value]),
-            leading: const Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
-              child: CieCardIllustration(width: 64),
-            ),
-            destinations: [
-              NavigationRailDestination(
-                icon: Icon(Icons.contactless_outlined),
-                label: Text(tr(context, "Home")),
+        body: Row(
+          children: [
+            NavigationRail(
+              scrollable: true,
+              extended: MediaQuery.sizeOf(context).width > 930,
+              selectedIndex: page,
+              onDestinationSelected: flow.busy || verifyFlow.exporting
+                  ? null
+                  : (value) => _navigate(AppDestination.values[value]),
+              leading: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: CieCardIllustration(width: 64),
               ),
-              NavigationRailDestination(
-                icon: Icon(Icons.draw_outlined),
-                label: Text(tr(context, "Firma Elettronica")),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.fact_check_outlined),
-                label: Text(tr(context, "Verifica Firma")),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.password_outlined),
-                label: Text(tr(context, "Cambia PIN")),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.lock_open_outlined),
-                label: Text(tr(context, "Sblocca Carta")),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.menu_book_outlined),
-                label: Text(tr(context, "Guida")),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.support_agent_outlined),
-                label: Text(tr(context, "Assistenza")),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.info_outline),
-                label: Text(tr(context, "Informazioni")),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.settings_outlined),
-                label: Text(tr(context, "Impostazioni")),
-              ),
-            ],
-          ),
-          const VerticalDivider(width: 1),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                ApplicationPageHeader(
-                  destination: AppDestination.values[page],
-                  showBack: page == AppDestination.sign.index,
-                  onBack: page == AppDestination.sign.index && signingCanBack
-                      ? _goBack
-                      : null,
+              destinations: [
+                NavigationRailDestination(
+                  icon: Icon(Icons.contactless_outlined),
+                  label: Text(tr(context, "Home")),
                 ),
-                if (busy) const LinearProgressIndicator(),
-                if (busy)
-                  Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Text(tr(context, progress)),
-                  ),
-                Expanded(
-                  child: DesktopPageBody(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _notification(),
-                        if (page == 0) ..._cardPage(context),
-                        if (page == 1) ..._signPage(context),
-                        if (page == 2) ..._verifyPage(context),
-                        if (page == 5) const GuideView(),
-                        if (page == 6) const AssistanceView(),
-                        if (page == AppDestination.information.index)
-                          InformationView(ready: ready),
-                        if (page == AppDestination.settings.index)
-                          SettingsView(
-                            value: settings,
-                            network: network,
-                            onSave: _saveSettings,
-                            onProbe: service.probeNetwork,
-                            diagnostics: diagnostics,
-                            capabilities: capabilities,
-                            webDiagnostics: unified
-                                ? enrollment.records.values
-                                      .map((r) => r.diagnosticFlags)
-                                      .toList()
-                                : null,
-                            enrollmentReadable: unified
-                                ? enrollment.readable
-                                : null,
-                            diagnosticDetails: unified
-                                ? EnrollmentDiagnosticsView(
-                                    records: enrollment.records.values
-                                        .toList(),
-                                    readable: enrollment.readable,
-                                    busy: busy,
-                                    onRefresh: () => _operation(
-                                      'Aggiornamento stato delle CIE…',
-                                      _refreshPairings,
-                                    ),
-                                  )
-                                : null,
-                            onBusy: _settingsBusy,
-                            configurationValid: settingsValid,
-                            interactionBusy: busy,
-                            preferences: Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.stretch,
-                              children: [
-                                DropdownButtonFormField<String>(
-                                  key: ValueKey(
-                                    'language-${settings.languageCode}',
-                                  ),
-                                  initialValue: settings.languageCode,
-                                  decoration: InputDecoration(
-                                    labelText: tr(
-                                      context,
-                                      "Lingua dell’applicazione",
-                                    ),
-                                  ),
-                                  items: [
-                                    DropdownMenuItem(
-                                      value: 'system',
-                                      child: Text(
-                                        tr(context, 'Segui il sistema'),
-                                      ),
-                                    ),
-                                    DropdownMenuItem(
-                                      value: 'it',
-                                      child: Text(tr(context, "Italiano")),
-                                    ),
-                                    DropdownMenuItem(
-                                      value: 'en',
-                                      child: Text(tr(context, "English")),
-                                    ),
-                                  ],
-                                  onChanged: busy || appearanceSaving
-                                      ? null
-                                      : (code) {
-                                          if (code != null) {
-                                            _changeAppearance(
-                                              languageCode: code,
-                                            );
-                                          }
-                                        },
-                                ),
-                                const SizedBox(height: 24),
-                                DropdownButtonFormField<String>(
-                                  key: ValueKey(
-                                    'theme-${settings.themeCode}',
-                                  ),
-                                  initialValue: settings.themeCode,
-                                  decoration: InputDecoration(
-                                    labelText: tr(
-                                      context,
-                                      'Tema dell’applicazione',
-                                    ),
-                                  ),
-                                  items: [
-                                    DropdownMenuItem(
-                                      value: 'system',
-                                      child: Text(
-                                        tr(context, 'Segui il sistema'),
-                                      ),
-                                    ),
-                                    DropdownMenuItem(
-                                      value: 'light',
-                                      child: Text(tr(context, 'Chiaro')),
-                                    ),
-                                    DropdownMenuItem(
-                                      value: 'dark',
-                                      child: Text(tr(context, 'Scuro')),
-                                    ),
-                                  ],
-                                  onChanged: busy || appearanceSaving
-                                      ? null
-                                      : (code) {
-                                          if (code != null) {
-                                            _changeAppearance(
-                                              themeCode: code,
-                                            );
-                                          }
-                                        },
-                                ),
-                                const SizedBox(height: 24),
-                                PreferencesView(
-                                  store: preferenceStore,
-                                  value: preferences,
-                                  onChanged: (value) =>
-                                      setState(() => preferences = value),
-                                  onBusy: (value) {
-                                    if (mounted) {
-                                      setState(() {
-                                        busy = value;
-                                        progress = value
-                                            ? 'Salvataggio preferenze…'
-                                            : '';
-                                      });
-                                      unawaited(_coordinateMonitor());
-                                    }
-                                  },
-                                ),
-                              ],
-                            ),
-                            advanced: Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.stretch,
-                              children: [
-                                ExpansionTile(
-                                  title: Text(
-                                    tr(context, "Strumenti di collaudo"),
-                                  ),
-                                  children: [
-                                    TextButton.icon(
-                                      onPressed: busy ? null : _useExample,
-                                      icon: const Icon(
-                                        Icons.science_outlined,
-                                      ),
-                                      label: Text(
-                                        tr(
-                                          context,
-                                          "Usa documento di prova",
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                if (unified && selected != null)
-                                  ExpansionTile(
-                                    title: Text(
-                                      tr(
-                                        context,
-                                        "Prove avanzate accesso ai siti",
-                                      ),
-                                    ),
-                                    children: [
-                                      WebAccessCard(
-                                        linuxFirefox: Platform.isLinux,
-                                        key: ValueKey(
-                                          'advanced-web-${selected!['cardId']}',
-                                        ),
-                                        service: service,
-                                        reader: selected!['name'] as String,
-                                        card: selected!['cardId'] as String,
-                                        enabled:
-                                            capabilities?['canConfigureWeb'] ==
-                                            true,
-                                        busy: busy,
-                                        publisher: widget.webPublisher,
-                                        onBusy: (value) async {
-                                          if (mounted) {
-                                            setState(() {
-                                              busy = value;
-                                              progress = value
-                                                  ? 'Prova componente di sistema…'
-                                                  : '';
-                                            });
-                                            await _coordinateMonitor();
-                                          }
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                              ],
-                            ),
-                          ),
-                        if (page == 3 || page == 4)
-                          PinManagementPage(
-                            key: ValueKey(page),
-                            service: service,
-                            unblock: page == 4,
-                            busy: busy,
-                            available: page == 4
-                                ? canUnblockPin
-                                : canChangePin,
-                            selected: selected == null
-                                ? null
-                                : {
-                                    ...selected!,
-                                    'fullName': _pairedName(
-                                      selected!['cardId'] as String?,
-                                    ),
-                                  },
-                            onRun: _operation,
-                            onDetect: _detect,
-                            onPairingsChanged: _refreshPairings,
-                            automaticDetection: unified,
-                          ),
-                      ],
-                    ),
-                  ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.draw_outlined),
+                  label: Text(tr(context, "Firma Elettronica")),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.fact_check_outlined),
+                  label: Text(tr(context, "Verifica Firma")),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.password_outlined),
+                  label: Text(tr(context, "Cambia PIN")),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.lock_open_outlined),
+                  label: Text(tr(context, "Sblocca Carta")),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.menu_book_outlined),
+                  label: Text(tr(context, "Guida")),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.support_agent_outlined),
+                  label: Text(tr(context, "Assistenza")),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.info_outline),
+                  label: Text(tr(context, "Informazioni")),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.settings_outlined),
+                  label: Text(tr(context, "Impostazioni")),
                 ),
               ],
             ),
-          ),
-        ],
+            const VerticalDivider(width: 1),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  ApplicationPageHeader(
+                    destination: AppDestination.values[page],
+                    showBack: page == AppDestination.sign.index,
+                    onBack: page == AppDestination.sign.index && signingCanBack
+                        ? _goBack
+                        : null,
+                  ),
+                  if (busy) const LinearProgressIndicator(),
+                  if (busy)
+                    Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Text(tr(context, progress)),
+                    ),
+                  Expanded(
+                    child: DesktopPageBody(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _notification(),
+                          if (page == 0) ..._cardPage(context),
+                          if (page == 1) ..._signPage(context),
+                          if (page == 2) ..._verifyPage(context),
+                          if (page == 5) const GuideView(),
+                          if (page == 6) const AssistanceView(),
+                          if (page == AppDestination.information.index)
+                            InformationView(ready: ready),
+                          if (page == AppDestination.settings.index)
+                            SettingsView(
+                              value: settings,
+                              network: network,
+                              onSave: _saveSettings,
+                              onProbe: service.probeNetwork,
+                              diagnostics: diagnostics,
+                              capabilities: capabilities,
+                              webDiagnostics: unified
+                                  ? enrollment.records.values
+                                        .map((r) => r.diagnosticFlags)
+                                        .toList()
+                                  : null,
+                              enrollmentReadable: unified
+                                  ? enrollment.readable
+                                  : null,
+                              diagnosticDetails: unified
+                                  ? EnrollmentDiagnosticsView(
+                                      records: enrollment.records.values
+                                          .toList(),
+                                      readable: enrollment.readable,
+                                      busy: busy,
+                                      onRefresh: () => _operation(
+                                        'Aggiornamento stato delle CIE…',
+                                        _refreshPairings,
+                                      ),
+                                    )
+                                  : null,
+                              onBusy: _settingsBusy,
+                              configurationValid: settingsValid,
+                              interactionBusy: busy,
+                              preferences: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  DropdownButtonFormField<String>(
+                                    key: ValueKey(
+                                      'language-${settings.languageCode}',
+                                    ),
+                                    initialValue: settings.languageCode,
+                                    decoration: InputDecoration(
+                                      labelText: tr(
+                                        context,
+                                        "Lingua dell’applicazione",
+                                      ),
+                                    ),
+                                    items: [
+                                      DropdownMenuItem(
+                                        value: 'system',
+                                        child: Text(
+                                          tr(context, 'Segui il sistema'),
+                                        ),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: 'it',
+                                        child: Text(tr(context, "Italiano")),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: 'en',
+                                        child: Text(tr(context, "English")),
+                                      ),
+                                    ],
+                                    onChanged: busy || appearanceSaving
+                                        ? null
+                                        : (code) {
+                                            if (code != null) {
+                                              _changeAppearance(
+                                                languageCode: code,
+                                              );
+                                            }
+                                          },
+                                  ),
+                                  const SizedBox(height: 24),
+                                  DropdownButtonFormField<String>(
+                                    key: ValueKey(
+                                      'theme-${settings.themeCode}',
+                                    ),
+                                    initialValue: settings.themeCode,
+                                    decoration: InputDecoration(
+                                      labelText: tr(
+                                        context,
+                                        'Tema dell’applicazione',
+                                      ),
+                                    ),
+                                    items: [
+                                      DropdownMenuItem(
+                                        value: 'system',
+                                        child: Text(
+                                          tr(context, 'Segui il sistema'),
+                                        ),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: 'light',
+                                        child: Text(tr(context, 'Chiaro')),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: 'dark',
+                                        child: Text(tr(context, 'Scuro')),
+                                      ),
+                                    ],
+                                    onChanged: busy || appearanceSaving
+                                        ? null
+                                        : (code) {
+                                            if (code != null) {
+                                              _changeAppearance(
+                                                themeCode: code,
+                                              );
+                                            }
+                                          },
+                                  ),
+                                  const SizedBox(height: 24),
+                                  PreferencesView(
+                                    store: preferenceStore,
+                                    value: preferences,
+                                    onChanged: (value) =>
+                                        setState(() => preferences = value),
+                                    onBusy: (value) {
+                                      if (mounted) {
+                                        setState(() {
+                                          busy = value;
+                                          progress = value
+                                              ? 'Salvataggio preferenze…'
+                                              : '';
+                                        });
+                                        unawaited(_coordinateMonitor());
+                                      }
+                                    },
+                                  ),
+                                ],
+                              ),
+                              advanced: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  ExpansionTile(
+                                    title: Text(
+                                      tr(context, "Strumenti di collaudo"),
+                                    ),
+                                    children: [
+                                      TextButton.icon(
+                                        onPressed: busy ? null : _useExample,
+                                        icon: const Icon(
+                                          Icons.science_outlined,
+                                        ),
+                                        label: Text(
+                                          tr(context, "Usa documento di prova"),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  if (unified && selected != null)
+                                    ExpansionTile(
+                                      title: Text(
+                                        tr(
+                                          context,
+                                          "Prove avanzate accesso ai siti",
+                                        ),
+                                      ),
+                                      children: [
+                                        WebAccessCard(
+                                          linuxFirefox: Platform.isLinux,
+                                          key: ValueKey(
+                                            'advanced-web-${selected!['cardId']}',
+                                          ),
+                                          service: service,
+                                          reader: selected!['name'] as String,
+                                          card: selected!['cardId'] as String,
+                                          enabled:
+                                              capabilities?['canConfigureWeb'] ==
+                                              true,
+                                          busy: busy,
+                                          publisher: widget.webPublisher,
+                                          onBusy: (value) async {
+                                            if (mounted) {
+                                              setState(() {
+                                                busy = value;
+                                                progress = value
+                                                    ? 'Prova componente di sistema…'
+                                                    : '';
+                                              });
+                                              await _coordinateMonitor();
+                                            }
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                ],
+                              ),
+                            ),
+                          if (page == 3 || page == 4)
+                            PinManagementPage(
+                              key: ValueKey(page),
+                              service: service,
+                              unblock: page == 4,
+                              busy: busy,
+                              available: page == 4
+                                  ? canUnblockPin
+                                  : canChangePin,
+                              selected: selected == null
+                                  ? null
+                                  : {
+                                      ...selected!,
+                                      'fullName': _pairedName(
+                                        selected!['cardId'] as String?,
+                                      ),
+                                    },
+                              onRun: _operation,
+                              onDetect: _detect,
+                              onPairingsChanged: _refreshPairings,
+                              automaticDetection: unified,
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
-    ),
     ),
   );
   List<Widget> _cardPage(BuildContext context) => unified
@@ -1897,7 +1951,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
                           ),
                         ),
                       WebAccessCard(
-                                            linuxFirefox: Platform.isLinux,
+                        linuxFirefox: Platform.isLinux,
                         key: ValueKey(
                           'web-${reader['name']}-${reader['cardId']}',
                         ),
@@ -2037,7 +2091,10 @@ class _PrototypeHomeState extends State<PrototypeHome>
       Card(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(
-            22 + 144 * CieCardIllustration.artworkLeftFraction, 22, 22, 22,
+            22 + 144 * CieCardIllustration.artworkLeftFraction,
+            22,
+            22,
+            22,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -2119,6 +2176,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
                         runSpacing: 8,
                         children: [
                           if (!record.removalPending &&
+                              !record.needsAppUpdate &&
                               (!record.readyForSigning ||
                                   !record.hasPublicData ||
                                   !record.webProvisioned ||
@@ -2140,7 +2198,12 @@ class _PrototypeHomeState extends State<PrototypeHome>
                                 record.needsComponentActivation &&
                                         record.readyForSigning &&
                                         record.hasPublicData
-                                    ? tr(context, 'Attiva accesso ai siti')
+                                    ? tr(
+                                        context,
+                                        record.needsComponentUpdate
+                                            ? 'Aggiorna accesso ai siti'
+                                            : 'Attiva accesso ai siti',
+                                      )
                                     : record.needsSystemSettings &&
                                           record.readyForSigning &&
                                           record.hasPublicData
@@ -2203,6 +2266,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
       ),
     ];
   }
+
   List<Widget> _signPage(BuildContext context) {
     final step = currentSigningStep;
     final target = signingTarget;
@@ -2256,7 +2320,10 @@ class _PrototypeHomeState extends State<PrototypeHome>
           ),
         if (step == SigningStep.card) ...[
           Text(
-            tr(context, "Seleziona la CIE con cui firmare tra quelle in elenco"),
+            tr(
+              context,
+              "Seleziona la CIE con cui firmare tra quelle in elenco",
+            ),
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 12),
@@ -2757,15 +2824,21 @@ class _PrototypeHomeState extends State<PrototypeHome>
     ],
     AppNotification(
       event: extraction,
-      message: extraction == null ? null : extraction!['ok'] == true
+      message: extraction == null
+          ? null
+          : extraction!['ok'] == true
           ? 'Documento estratto e salvato.'
           : verificationProblemMessage(extraction!, extraction: true),
       error: extraction?['ok'] == false,
-      details: extraction?['ok'] == true ? (extraction?['output'] as String?) : [
-        if (extraction?['message'] is String) tr(context, extraction!['message'] as String),
-        if (extraction?['code'] != null) '${extraction!['code']}',
-        if (extraction?['nativeCode'] != null) tr(context, 'Codice nativo: {p0}', [extraction!['nativeCode']]),
-      ].join('\n'),
+      details: extraction?['ok'] == true
+          ? (extraction?['output'] as String?)
+          : [
+              if (extraction?['message'] is String)
+                tr(context, extraction!['message'] as String),
+              if (extraction?['code'] != null) '${extraction!['code']}',
+              if (extraction?['nativeCode'] != null)
+                tr(context, 'Codice nativo: {p0}', [extraction!['nativeCode']]),
+            ].join('\n'),
       enabled: !verifyFlow.exporting,
     ),
   ];

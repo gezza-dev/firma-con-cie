@@ -55,6 +55,9 @@ class EnrollmentRecord {
       system['available'] as bool? ?? data['systemComponentAvailable'] == true;
   bool get needsBrowserRegistration =>
       system['browserRegistrationRequired'] == true;
+  bool get needsAppUpdate => system['componentHostOutdated'] == true;
+  bool get needsComponentUpdate =>
+      !componentAvailable && system['componentNeedsUpdate'] == true;
   bool get needsComponentActivation =>
       !componentAvailable && system['canActivateComponent'] == true;
   bool get needsSystemSettings =>
@@ -82,8 +85,12 @@ class EnrollmentRecord {
       ? 'Premi Riprova rimozione. Non occorre abbinare o configurare nuovamente la carta.'
       : !hasPublicData
       ? 'Completa l’abbinamento per accedere ai siti.'
+      : needsAppUpdate
+      ? 'È presente un componente più recente. Apri la versione più recente di Firma con CIE. L’abbinamento è conservato.'
+      : needsComponentUpdate
+      ? 'Il componente per l’accesso ai siti deve essere aggiornato. L’abbinamento è conservato; non occorre reinserire il PIN.'
       : needsComponentActivation
-      ? 'Per accedere ai siti, attiva il componente CIE ID. L’abbinamento per firmare è conservato.'
+      ? 'Per accedere ai siti, attiva il componente Firma con CIE. L’abbinamento per firmare è conservato.'
       : needsSystemSettings
       ? 'Per accedere ai siti, abilita il componente nelle Impostazioni di Sistema. L’abbinamento per firmare è conservato.'
       : !webProvisioned
@@ -100,6 +107,10 @@ class EnrollmentRecord {
     'webCertificatePublished': webProvisioned,
     'systemComponentAvailable': componentAvailable,
     'webIdentityObserved': identityObserved,
+    if (system.containsKey('componentPathMatches'))
+      'componentPathMatches': system['componentPathMatches'] == true,
+    if (system.containsKey('componentVersionMatches'))
+      'componentVersionMatches': system['componentVersionMatches'] == true,
   };
 }
 
