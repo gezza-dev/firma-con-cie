@@ -2,6 +2,8 @@
 
 #include <dwmapi.h>
 #include <flutter_windows.h>
+#include <uxtheme.h>
+#include <windowsx.h>
 
 #include <algorithm>
 
@@ -41,11 +43,13 @@ int Scale(int source, UINT dpi) {
   return static_cast<int>(cie_window_scale_96(source, dpi));
 }
 
-RECT FitToMonitorWorkArea(const RECT& proposed, HMONITOR monitor) {
+RECT FitToMonitorWorkArea(const RECT& proposed, HMONITOR monitor,
+                          bool center = false) {
   MONITORINFO info{};
   info.cbSize = sizeof(info);
   if (!GetMonitorInfo(monitor, &info)) return proposed;
-  const auto fitted = cie_window_fit_rect(
+  const auto fit = center ? cie_window_center_rect : cie_window_fit_rect;
+  const auto fitted = fit(
       {double(proposed.left), double(proposed.top),
        double(proposed.right) - proposed.left, double(proposed.bottom) - proposed.top},
       {double(info.rcWork.left), double(info.rcWork.top),
@@ -149,17 +153,23 @@ void WindowClassRegistrar::UnregisterWindowClass() {
 
 Win32Window::Win32Window() {
   ++g_active_window_count;
+  buffered_paint_initialized_ = SUCCEEDED(BufferedPaintInit());
 }
 
 Win32Window::~Win32Window() {
   --g_active_window_count;
   Destroy();
+  if (buffered_paint_initialized_) BufferedPaintUnInit();
 }
 
 bool Win32Window::Create(const std::wstring& title,
                          const Point& origin,
-                         const Size& size) {
+                         const Size& size,
+                         bool center_in_work_area) {
   Destroy();
+  custom_caption_ = false;
+  caption_frame_height_ = -1;
+  caption_background_ = DWMWA_COLOR_DEFAULT;
 
   const wchar_t* window_class =
       WindowClassRegistrar::GetInstance()->GetWindowClass();
@@ -172,7 +182,7 @@ bool Win32Window::Create(const std::wstring& title,
   const RECT requested{Scale(origin.x, current_dpi_), Scale(origin.y, current_dpi_),
                        Scale(origin.x, current_dpi_) + Scale(size.width, current_dpi_),
                        Scale(origin.y, current_dpi_) + Scale(size.height, current_dpi_)};
-  const RECT fitted = FitToMonitorWorkArea(requested, monitor);
+  const RECT fitted = FitToMonitorWorkArea(requested, monitor, center_in_work_area);
   start_maximized_ = fitted.right - fitted.left < requested.right - requested.left ||
                      fitted.bottom - fitted.top < requested.bottom - requested.top;
 
@@ -187,6 +197,7 @@ bool Win32Window::Create(const std::wstring& title,
   }
 
   UpdateTheme(window);
+  UpdateCaptionFrame();
 
   return OnCreate();
 }
@@ -220,6 +231,66 @@ Win32Window::MessageHandler(HWND hwnd,
                             UINT const message,
                             WPARAM const wparam,
                             LPARAM const lparam) noexcept {
+  if (custom_caption_) {
+    if (message == WM_NCHITTEST) {
+      // After maximization DWM can report the extended caption as client/drag
+      // area even over its visible buttons. Use the OS button rectangles (the
+      // same ones exposed to accessibility), before either drag fallback.
+      TITLEBARINFOEX title{};
+      title.cbSize = sizeof(title);
+      SendMessage(hwnd, WM_GETTITLEBARINFOEX, 0, reinterpret_cast<LPARAM>(&title));
+      const POINT point{GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam)};
+      const struct { int index; LRESULT hit; } buttons[] = {
+          {2, HTMINBUTTON}, {3, HTMAXBUTTON}, {5, HTCLOSE}};
+      for (const auto& button : buttons) {
+        if (!(title.rgstate[button.index] & (STATE_SYSTEM_UNAVAILABLE |
+              STATE_SYSTEM_INVISIBLE | STATE_SYSTEM_OFFSCREEN)) &&
+            PtInRect(&title.rgrect[button.index], point))
+          return button.hit;
+      }
+    }
+    LRESULT dwm_result = 0;
+    if (DwmDefWindowProc(hwnd, message, wparam, lparam, &dwm_result))
+      return dwm_result;
+    if (message == WM_NCCALCSIZE && wparam) {
+      auto* params = reinterpret_cast<NCCALCSIZE_PARAMS*>(lparam);
+      const LONG top = params->rgrc[0].top;
+      DefWindowProc(hwnd, message, wparam, lparam);
+      // Preserve OS side/bottom borders. Only the caption becomes client area.
+      // Maximized windows retain the invisible frame inset above the workarea.
+      params->rgrc[0].top = top + (IsZoomed(hwnd)
+          ? GetSystemMetricsForDpi(SM_CYFRAME, current_dpi_) +
+            GetSystemMetricsForDpi(SM_CXPADDEDBORDER, current_dpi_) : 0);
+      return 0;
+    }
+    if (message == WM_NCHITTEST) {
+      const auto native_hit = DefWindowProc(hwnd, message, wparam, lparam);
+      if (native_hit != HTCLIENT) return native_hit;
+      POINT point{GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam)};
+      ScreenToClient(hwnd, &point);
+      const int border = GetSystemMetricsForDpi(SM_CYFRAME, current_dpi_) +
+                         GetSystemMetricsForDpi(SM_CXPADDEDBORDER, current_dpi_);
+      RECT client{};
+      GetClientRect(hwnd, &client);
+      if (!IsZoomed(hwnd) && point.y >= 0 && point.y < border) {
+        if (point.x < border) return HTTOPLEFT;
+        if (point.x >= client.right - border) return HTTOPRIGHT;
+        return HTTOP;
+      }
+      if (point.y >= 0 && point.y < CaptionHeight()) {
+        if (point.x < Scale(32, current_dpi_)) return HTSYSMENU;
+        return HTCAPTION;
+      }
+      return HTCLIENT;
+    }
+    if (message == WM_PAINT) {
+      PAINTSTRUCT paint{};
+      HDC dc = BeginPaint(hwnd, &paint);
+      PaintCaption(dc);
+      EndPaint(hwnd, &paint);
+      return 0;
+    }
+  }
   switch (message) {
     case WM_GETMINMAXINFO: {
       DefWindowProc(hwnd, message, wparam, lparam);
@@ -247,6 +318,7 @@ Win32Window::MessageHandler(HWND hwnd,
 
     case WM_DPICHANGED: {
       current_dpi_ = LOWORD(wparam) ? LOWORD(wparam) : 96;
+      UpdateCaptionFrame();
       const auto* suggested = reinterpret_cast<RECT*>(lparam);
       // These coordinates are already physical pixels at the new DPI.
       const auto fitted = FitToMonitorWorkArea(
@@ -262,9 +334,16 @@ Win32Window::MessageHandler(HWND hwnd,
       const auto result = DefWindowProc(hwnd, message, wparam, lparam);
       if (message != WM_SETTINGCHANGE || wparam == SPI_SETWORKAREA)
         FitToCurrentWorkArea();
+      if (message == WM_SETTINGCHANGE) {
+        UpdateTheme(hwnd);
+        UpdateCaptionFrame();
+        ResizeChildContent();
+      }
       return result;
     }
     case WM_SIZE:
+      UpdateCaptionFrame();
+      InvalidateCaption();
       if (wparam != SIZE_MINIMIZED) ResizeChildContent();
       return 0;
 
@@ -274,17 +353,153 @@ Win32Window::MessageHandler(HWND hwnd,
     }
 
     case WM_ACTIVATE:
-      if (child_content_ != nullptr) {
+      active_caption_ = LOWORD(wparam) != WA_INACTIVE;
+      UpdateCaptionFrame();
+      InvalidateCaption();
+      if (active_caption_ && child_content_ != nullptr) {
         SetFocus(child_content_);
       }
-      return 0;
+      return DefWindowProc(hwnd, message, wparam, lparam);
 
+    case WM_SETTEXT: {
+      const auto result = DefWindowProc(hwnd, message, wparam, lparam);
+      InvalidateCaption();
+      return result;
+    }
+
+    case WM_THEMECHANGED:
+    case WM_DWMCOMPOSITIONCHANGED:
     case WM_DWMCOLORIZATIONCOLORCHANGED:
       UpdateTheme(hwnd);
+      UpdateCaptionFrame();
+      ResizeChildContent();
+      InvalidateCaption();
       return 0;
   }
 
   return DefWindowProc(window_handle_, message, wparam, lparam);
+}
+
+int Win32Window::CaptionHeight() const {
+  if (!custom_caption_) return 0;
+  return GetSystemMetricsForDpi(SM_CYCAPTION, current_dpi_) +
+      (IsZoomed(window_handle_) ? 0 :
+       GetSystemMetricsForDpi(SM_CYFRAME, current_dpi_) +
+       GetSystemMetricsForDpi(SM_CXPADDEDBORDER, current_dpi_));
+}
+
+void Win32Window::UpdateCaptionFrame() {
+  if (!window_handle_) return;
+  HIGHCONTRAST contrast{};
+  contrast.cbSize = sizeof(contrast);
+  SystemParametersInfo(SPI_GETHIGHCONTRAST, sizeof(contrast), &contrast, 0);
+  BOOL composition = FALSE;
+  DwmIsCompositionEnabled(&composition);
+  const bool enabled = composition && !(contrast.dwFlags & HCF_HIGHCONTRASTON);
+  if (enabled != custom_caption_) {
+    custom_caption_ = enabled;
+    SetWindowPos(window_handle_, nullptr, 0, 0, 0, 0,
+                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE |
+                 SWP_FRAMECHANGED);
+  }
+  const MARGINS margins{0, 0, CaptionHeight(), 0};
+  if (margins.cyTopHeight != caption_frame_height_) {
+    caption_frame_height_ = margins.cyTopHeight;
+    DwmExtendFrameIntoClientArea(window_handle_, &margins);
+  }
+  BOOL dark = FALSE;
+  DwmGetWindowAttribute(window_handle_, DWMWA_USE_IMMERSIVE_DARK_MODE,
+                       &dark, sizeof(dark));
+  const COLORREF background = custom_caption_
+      ? (dark ? RGB(32, 32, 32) : RGB(243, 243, 243)) : DWMWA_COLOR_DEFAULT;
+  // Available on Windows 11; older Windows keeps its native caption color.
+  if (background != caption_background_) {
+    caption_background_ = background;
+    DwmSetWindowAttribute(window_handle_, DWMWA_CAPTION_COLOR,
+                         &background, sizeof(background));
+  }
+  InvalidateCaption();
+}
+
+void Win32Window::InvalidateCaption() {
+  if (!window_handle_ || !custom_caption_) return;
+  RECT caption{};
+  GetClientRect(window_handle_, &caption);
+  caption.bottom = std::min(caption.bottom, LONG(CaptionHeight()));
+  InvalidateRect(window_handle_, &caption, FALSE);
+}
+
+void Win32Window::PaintCaption(HDC dc) {
+  RECT caption{};
+  GetClientRect(window_handle_, &caption);
+  caption.bottom = std::min(caption.bottom, LONG(CaptionHeight()));
+  if (caption.right <= 0 || caption.bottom <= 0) return;
+  BOOL dark = FALSE;
+  DwmGetWindowAttribute(window_handle_, DWMWA_USE_IMMERSIVE_DARK_MODE,
+                       &dark, sizeof(dark));
+  const COLORREF background = dark ? RGB(32, 32, 32) : RGB(243, 243, 243);
+  const COLORREF foreground = dark
+      ? (active_caption_ ? RGB(255, 255, 255) : RGB(170, 170, 170))
+      : (active_caption_ ? RGB(0, 0, 0) : RGB(100, 100, 100));
+  HDC buffer = nullptr;
+  BP_PAINTPARAMS parameters{};
+  parameters.cbSize = sizeof(parameters);
+  parameters.dwFlags = BPPF_ERASE;
+  HPAINTBUFFER paint = BeginBufferedPaint(dc, &caption, BPBF_TOPDOWNDIB,
+                                         &parameters, &buffer);
+  if (!paint) buffer = dc;
+  HBRUSH brush = CreateSolidBrush(background);
+  FillRect(buffer, &caption, brush);
+  DeleteObject(brush);
+  NONCLIENTMETRICS metrics{};
+  metrics.cbSize = sizeof(metrics);
+  HFONT font = nullptr;
+  if (SystemParametersInfoForDpi(SPI_GETNONCLIENTMETRICS, sizeof(metrics),
+                                  &metrics, 0, current_dpi_))
+    font = CreateFontIndirect(&metrics.lfCaptionFont);
+  HGDIOBJ old_font = SelectObject(buffer, font ? font : GetStockObject(DEFAULT_GUI_FONT));
+  SetBkMode(buffer, TRANSPARENT);
+  SetTextColor(buffer, foreground);
+  const int icon_size = GetSystemMetricsForDpi(SM_CXSMICON, current_dpi_);
+  HICON icon = reinterpret_cast<HICON>(GetClassLongPtr(window_handle_, GCLP_HICON));
+  if (icon) DrawIconEx(buffer, Scale(8, current_dpi_),
+      caption.top + (caption.bottom - caption.top - icon_size) / 2, icon,
+      icon_size, icon_size, 0, nullptr, DI_NORMAL);
+  // Symmetric space keeps the text centered on the entire window, rather
+  // than the asymmetric gap between the left icon and the native buttons.
+  int reserve = Scale(150, current_dpi_);
+  RECT buttons{};
+  if (SUCCEEDED(DwmGetWindowAttribute(window_handle_, DWMWA_CAPTION_BUTTON_BOUNDS,
+                                      &buttons, sizeof(buttons))) && buttons.left > 0) {
+    RECT outer{};
+    GetWindowRect(window_handle_, &outer);
+    reserve = std::max(reserve, int(outer.right - outer.left - buttons.left));
+  }
+  // The top resize strip is part of the visible caption. Excluding it would
+  // push the text down in normal windows, but not in maximized windows.
+  RECT text{reserve, caption.top, std::max(LONG(reserve), caption.right - reserve), caption.bottom};
+  wchar_t title[256]{};
+  GetWindowText(window_handle_, title, 256);
+  DrawText(buffer, title, -1, &text, DT_CENTER | DT_VCENTER | DT_SINGLELINE |
+                                    DT_END_ELLIPSIS | DT_NOPREFIX);
+  SelectObject(buffer, old_font);
+  if (font) DeleteObject(font);
+  if (paint) {
+    BufferedPaintSetAlpha(paint, nullptr, 255);
+    // Leave native caption buttons transparent to DWM. An opaque client
+    // buffer here would cover their glyphs even though hit testing still works.
+    RECT native_buttons{std::max(0L, caption.right - Scale(138, current_dpi_)),
+                        0, caption.right, caption.bottom};
+    if (buttons.left > 0) {
+      RECT outer{};
+      GetWindowRect(window_handle_, &outer);
+      POINT origin{};
+      ClientToScreen(window_handle_, &origin);
+      native_buttons.left = std::max(0L, buttons.left - (origin.x - outer.left));
+    }
+    BufferedPaintClear(paint, &native_buttons);
+    EndBufferedPaint(paint, TRUE);
+  }
 }
 
 void Win32Window::ResizeChildContent() {
@@ -358,8 +573,9 @@ void Win32Window::SetChildContent(HWND content) {
 }
 
 RECT Win32Window::GetClientArea() {
-  RECT frame;
+  RECT frame{};
   GetClientRect(window_handle_, &frame);
+  frame.top = std::min(frame.bottom, LONG(CaptionHeight()));
   return frame;
 }
 

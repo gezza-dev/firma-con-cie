@@ -31,6 +31,17 @@ static inline CieWindowRect cie_window_fit_rect(CieWindowRect rect,
   return rect;
 }
 
+// Initial placement only: fit the complete decorated frame before centering.
+// Later display changes should use fit_rect to preserve the user's position.
+static inline CieWindowRect cie_window_center_rect(CieWindowRect rect,
+                                                  CieWindowRect workarea) {
+  rect = cie_window_fit_rect(rect, workarea);
+  if (!cie_window_valid_rect(workarea)) return rect;
+  rect.x = workarea.x + (workarea.width - rect.width) / 2;
+  rect.y = workarea.y + (workarea.height - rect.height) / 2;
+  return rect;
+}
+
 // Only logical Win32 preferences use this conversion, once at creation/minima.
 // WM_DPICHANGED rectangles and monitor workareas must never pass through it.
 static inline double cie_window_scale_96(double logical, unsigned int dpi) {

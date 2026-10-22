@@ -78,8 +78,10 @@ della verifica e del rilevamento restano separati dalle modifiche PIN/PUK.
 ## Invalidazione dell’abbinamento e Portachiavi
 
 Prima di confermare, pagina e dialogo avvisano che l’abbinamento locale verrà
-disabilitato, anche quando il tentativo non riesce. Occorre poi ripetere
+disabilitato. Occorre poi ripetere
 **Abbina CIE** dalla Home con il PIN completo. Lo stesso vale per lo sblocco con PUK.
+L'invalidazione precede l'operazione sulla carta e può quindi restare attiva
+anche se il successivo tentativo non riesce.
 
 Il ponte nativo registra prima un marcatore persistente senza credenziali,
 separato dal Portachiavi/Gestore credenziali e limitato all’utente e a questa app.
@@ -112,3 +114,25 @@ La pagina mostra un solo avviso sull’invalidazione dell’abbinamento, prima d
 pulsante di conferma. Sono stati rimossi il paragrafo sulla complessità del PIN,
 il paragrafo finale sugli altri abbinamenti e la spiegazione tecnica sull’errore
 di pulizia non bloccante; l’eventuale pulizia incompleta resta segnalata nel risultato.
+
+## Testi e collaudo Windows del 22 ottobre 2026
+
+Il messaggio della pagina condivisa è:
+
+> Confermando l’operazione, disabiliti l’abbinamento locale della CIE. Dovrai abbinarla nuovamente dalla Home con il PIN completo.
+
+Il dialogo di conferma usa:
+
+> Confermando l’operazione, disabiliti l’abbinamento locale della CIE. Successivamente dovrai abbinare nuovamente la carta dalla Home con il PIN completo.
+
+I cataloghi italiano/inglese e il catalogo Dart generato sono aggiornati.
+I 18 test mirati delle schermate PIN e della localizzazione sono superati;
+la conferma del dialogo, l'annullamento e le richieste al servizio sono
+esercitati con servizi sintetici. La gestione delle credenziali e
+l'invalidazione dell'abbinamento conservano il comportamento descritto sopra.
+
+L'utente ha inoltre confermato il successo del cambio PIN effettuato
+personalmente sulla CIE reale e del collaudo delle ultime modifiche.
+Il rapporto conserva soltanto questo esito, senza PIN, PUK o identificativi
+della carta. Non è stata eseguita un'altra operazione sulla CIE per preparare
+il commit o il push.

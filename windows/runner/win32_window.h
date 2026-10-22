@@ -33,8 +33,11 @@ class Win32Window {
   // sizes are specified to the OS in physical pixels, hence to ensure a
   // consistent size this function will scale the inputted width and height as
   // as appropriate for the default monitor. The window is invisible until
-  // |Show| is called. Returns true if the window was created successfully.
-  bool Create(const std::wstring& title, const Point& origin, const Size& size);
+  // |Show| is called. If |center_in_work_area| is true, |origin| selects the
+  // monitor and the fitted frame is centered in its work area before display.
+  // Returns true if the window was created successfully.
+  bool Create(const std::wstring& title, const Point& origin, const Size& size,
+              bool center_in_work_area = false);
 
   // Show the current window. Returns true if the window was successfully shown.
   bool Show();
@@ -52,7 +55,7 @@ class Win32Window {
   // If true, closing this window will quit the application.
   void SetQuitOnClose(bool quit_on_close);
 
-  // Return a RECT representing the bounds of the current client area.
+  // Return the content area available to Flutter, below the native caption.
   RECT GetClientArea();
 
  protected:
@@ -97,11 +100,23 @@ class Win32Window {
   // nested WM_SIZE messages from resizing the same child recursively.
   void ResizeChildContent();
 
+  // Keep the OS frame/buttons and native window title, but paint its text at
+  // the horizontal center. High contrast uses the unmodified system caption.
+  int CaptionHeight() const;
+  void UpdateCaptionFrame();
+  void InvalidateCaption();
+  void PaintCaption(HDC dc);
+
   bool quit_on_close_ = false;
   bool start_maximized_ = false;
   bool fitting_window_ = false;
   bool resizing_child_ = false;
   bool child_resize_pending_ = false;
+  bool custom_caption_ = false;
+  bool active_caption_ = true;
+  bool buffered_paint_initialized_ = false;
+  int caption_frame_height_ = -1;
+  COLORREF caption_background_ = 0xFFFFFFFF;
   UINT current_dpi_ = 96;
 
   // window handle for top level window.

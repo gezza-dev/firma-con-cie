@@ -191,8 +191,7 @@ class MainFlutterWindow: NSWindow {
                                 height: CGFloat.greatestFiniteMagnitude)
     self.setContentSize(NSSize(width: 1080, height: 760))
     self.standardWindowButton(.zoomButton)?.isEnabled = true
-    self.center()
-    self.fitWindowToVisibleArea()
+    self.fitWindowToVisibleArea(center: true)
     let notifications = NotificationCenter.default
     for name in [NSWindow.didChangeScreenNotification,
                  NSWindow.didChangeBackingPropertiesNotification,
@@ -226,7 +225,7 @@ class MainFlutterWindow: NSWindow {
     fitWindowToVisibleArea()
   }
 
-  private func fitWindowToVisibleArea() {
+  private func fitWindowToVisibleArea(center: Bool = false) {
     guard !fittingWindow,
           let monitor = self.screen ?? NSScreen.main ?? NSScreen.screens.first else { return }
     let visible = monitor.visibleFrame
@@ -240,11 +239,12 @@ class MainFlutterWindow: NSWindow {
     let content = self.contentRect(forFrameRect: area)
     self.contentMinSize = NSSize(width: min(640, max(1, content.width)),
                                  height: min(400, max(1, content.height)))
-    let fitted = cie_window_fit_rect(
-      CieWindowRect(x: Double(self.frame.minX), y: Double(self.frame.minY),
-                    width: Double(self.frame.width), height: Double(self.frame.height)),
-      CieWindowRect(x: Double(area.minX), y: Double(area.minY),
-                    width: Double(area.width), height: Double(area.height)))
+    let current = CieWindowRect(x: Double(self.frame.minX), y: Double(self.frame.minY),
+                               width: Double(self.frame.width), height: Double(self.frame.height))
+    let workarea = CieWindowRect(x: Double(area.minX), y: Double(area.minY),
+                                width: Double(area.width), height: Double(area.height))
+    let fitted = center ? cie_window_center_rect(current, workarea)
+                        : cie_window_fit_rect(current, workarea)
     let frame = NSRect(x: CGFloat(fitted.x), y: CGFloat(fitted.y),
                        width: CGFloat(fitted.width), height: CGFloat(fitted.height))
     if !NSEqualRects(self.frame, frame) {

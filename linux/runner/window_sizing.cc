@@ -99,6 +99,10 @@ void cie_window_sizing_attach(GtkWindow* window) {
                         [](gpointer state) { delete static_cast<State*>(state); });
   gtk_window_set_resizable(window, TRUE);
   gtk_window_set_default_size(window, preferred_width, preferred_height);
+  // GTK uses the monitor workarea for initial centering, including panels.
+  // This is an initial hint, not CENTER_ALWAYS: subsequent user moves stay free.
+  // Wayland/compositors retain final authority over top-level placement.
+  gtk_window_set_position(window, GTK_WIN_POS_CENTER);
   g_signal_connect(window, "configure-event", G_CALLBACK(configured), nullptr);
   auto* display = gtk_widget_get_display(GTK_WIDGET(window));
   if (!display) return;

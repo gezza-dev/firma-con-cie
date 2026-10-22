@@ -9,6 +9,17 @@ static void same(CieWindowRect a, CieWindowRect b) {
 }
 
 int main(void) {
+  // Asymmetric reserved edges: bottom/top taskbar, side Dock and menu bar.
+  const CieWindowRect preferred = {10, 10, 1280, 720};
+  const CieWindowRect bottom_taskbar = {0, 0, 1920, 1040};
+  const CieWindowRect centered_bottom = {320, 160, 1280, 720};
+  same(cie_window_center_rect(preferred, bottom_taskbar), centered_bottom);
+  const CieWindowRect top_taskbar = {0, 48, 1920, 1032};
+  const CieWindowRect centered_top = {320, 204, 1280, 720};
+  same(cie_window_center_rect(preferred, top_taskbar), centered_top);
+  const CieWindowRect side_dock_menu = {80, 24, 1840, 1056};
+  const CieWindowRect centered_side = {360, 192, 1280, 720};
+  same(cie_window_center_rect(preferred, side_dock_menu), centered_side);
   const CieWindowRect mac_visible = {0, 80, 1280, 696};
   const CieWindowRect mac_preferred_frame = {100, 100, 1080, 788};
   const CieWindowRect mac_expected = {100, 80, 1080, 696};
@@ -29,6 +40,10 @@ int main(void) {
     const CieWindowRect fitted = cie_window_fit_rect(requested, work);
     assert(fitted.width == fmin(width, 1920));
     assert(fitted.height == fmin(height, 1040));
+    const CieWindowRect centered = cie_window_center_rect(requested, work);
+    assert(centered.width == fitted.width && centered.height == fitted.height);
+    assert(centered.x == (work.width - centered.width) / 2);
+    assert(centered.y == (work.height - centered.height) / 2);
     // A WM_DPICHANGED suggestion is already scaled; fitting must be idempotent.
     same(cie_window_fit_rect(fitted, work), fitted);
   }
@@ -44,8 +59,11 @@ int main(void) {
   same(cie_window_fit_rect(fractional, fractional), fractional);
   const CieWindowRect invalid = {0, 0, 0, 0};
   same(cie_window_fit_rect(small, invalid), small);
+  same(cie_window_center_rect(small, invalid), small);
   const CieWindowRect malformed = {NAN, 0, 100, 100};
   same(cie_window_fit_rect(malformed, mac_visible), mac_visible);
+  same(cie_window_center_rect(malformed, mac_visible), mac_visible);
+  same(cie_window_center_rect(preferred, fractional), fractional);
   for (int x = -4000; x <= 4000; x += 1000)
     for (int y = -2000; y <= 2000; y += 1000)
       for (int width = 400; width <= 2000; width += 400) {
@@ -56,8 +74,15 @@ int main(void) {
         assert(fit.x + fit.width <= area.x + area.width);
         assert(fit.y + fit.height <= area.y + area.height);
         same(cie_window_fit_rect(fit, area), fit);
+        const CieWindowRect centered = cie_window_center_rect(candidate, area);
+        assert(centered.x == area.x + (area.width - centered.width) / 2);
+        assert(centered.y == area.y + (area.height - centered.height) / 2);
+        assert(centered.width == fit.width && centered.height == fit.height);
+        same(cie_window_center_rect(centered, area), centered);
+        same(cie_window_fit_rect(centered, area), centered);
       }
   puts("Desktop geometry passed: AppKit points, DPI 96..192, suggested rectangles,"
-       " negative/fractional origins, monitor/workarea reduction and invalid areas.");
+       " negative/fractional origins, reserved edges, initial centering,"
+       " monitor/workarea reduction and invalid areas.");
   return 0;
 }

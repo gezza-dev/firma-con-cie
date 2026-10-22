@@ -119,7 +119,7 @@ class _PinManagementState extends State<PinManagementPage> {
           child: Text(
             tr(
               context,
-              "{p0}\n\nConfermando disabiliti l’abbinamento locale della CIE, anche se l’operazione non riesce. Dopo dovrai abbinare nuovamente la carta dalla Home con il PIN completo.",
+              "{p0}\n\nConfermando l’operazione, disabiliti l’abbinamento locale della CIE. Successivamente dovrai abbinare nuovamente la carta dalla Home con il PIN completo.",
               [tr(context, operationNotice)],
             ),
           ),
@@ -254,7 +254,7 @@ class _PinManagementState extends State<PinManagementPage> {
       Text(
         tr(
           context,
-          "Confermando l’operazione disabiliti l’abbinamento locale della CIE, anche se il cambio PIN o lo sblocco non riesce. Dovrai abbinarla nuovamente dalla Home con il PIN completo.",
+          "Confermando l’operazione, disabiliti l’abbinamento locale della CIE. Dovrai abbinarla nuovamente dalla Home con il PIN completo.",
         ),
       ),
       const SizedBox(height: 16),

@@ -2,6 +2,29 @@
 
 Situazione al 22 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
 
+Aggiornamento desktop Windows del 22 ottobre: avvio della finestra centrato
+nell'area utile del monitor, titolo «CIE ID» centrato su entrambi gli assi e
+pulsanti di sistema mantenuti nativi. Corretta la regressione che, a finestra
+massimizzata, interpretava i clic su Riduci, Ingrandisci/Ripristina e Chiudi
+come trascinamento del titolo. Il test dedicato usa i rettangoli effettivi
+forniti da Windows e supera 114 controlli, compresi due cicli di
+massimizzazione, minimizzazione e ripristino. L'utente conferma il collaudo
+con il mouse di tutti e tre i pulsanti e il successo delle ultime modifiche.
+[Implementazione, regressioni e limiti multipiattaforma](DESKTOP_WINDOW_SIZING.md).
+
+Aggiornati i messaggi della pagina e del dialogo di conferma del cambio PIN,
+con cataloghi italiano/inglese coerenti. Il 22 ottobre l'utente conferma anche
+il successo del cambio PIN sulla CIE reale. Le prove automatiche di questa
+attività usano esclusivamente servizi sintetici; non eseguono altre modifiche
+del PIN o operazioni PUK sulla carta. [Testi, flusso e collaudo](PIN_PUK.md).
+
+Verifica finale dello snapshot Windows prima del commit: analisi Flutter
+senza problemi, 251 test Flutter superati e tre integrazioni facoltative
+saltate. Superati quattro gruppi CTest desktop su MSVC: geometria C/C++,
+ridimensionamento del runner e pulsanti della barra del titolo. Gli installer
+1.0.0 sono stati ricompilati durante il collaudo e conservano le dipendenze,
+le licenze e il componente web; i binari rimangono esclusi dal repository.
+
 Correzione del blocco PC/SC su macOS: il campionamento del processo ha mostrato
 `SCardGetStatusChange` fermo in una richiesta XPC e la chiusura Flutter in attesa
 dell’isolate FFI. Il rilevamento automatico e manuale usa ora un eseguibile
@@ -20,9 +43,14 @@ provato con un bridge simulato bloccato, anche alla scomparsa del genitore.
 Una copia separata della GUI macOS, con lettore simulato bloccato e senza
 estensione CTK, è uscita mentre il figlio era ancora in attesa; entrambi i
 processi sono terminati. Verificati anche il timeout e la pausa fra i sondaggi.
-Questa modifica non comprende una ricompilazione o un collaudo sui PC Windows
-e Linux; tali verifiche vanno ripetute sui rispettivi sistemi. Non sono state
-eseguite autenticazioni, Cambio PIN o Sblocco Carta sulla CIE reale.
+Al momento di quel collaudo macOS, build e prove Windows/Linux restavano da
+eseguire. Il successivo collaudo Windows del 22 ottobre ha ricompilato bridge
+e observer: 15 CTest nativi, 49 controlli dell'installer isolato e smoke test
+del runtime superati. Rimozione e reinserimento della CIE rilevati anche con
+app minimizzata, miniatura grigia/a colori coerente con la presenza, carta
+assente selezionabile per preparare il documento e nessun observer residuo
+dopo la chiusura. Questo collaudo di rilevamento non ha richiesto PIN o firme.
+La verifica del processo su Linux rimane da ripetere sul relativo sistema.
 
 Le miniature delle CIE abbinate nella Home e nella selezione di Firma
 Elettronica condividono il controllo della presenza: colore per la carta

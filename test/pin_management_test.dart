@@ -291,7 +291,7 @@ void main() {
       expect(
         find.descendant(
           of: find.byType(AlertDialog),
-          matching: find.textContaining('Confermando disabiliti'),
+          matching: find.textContaining('Confermando l’operazione, disabiliti'),
         ),
         findsOneWidget,
       );
