@@ -77,7 +77,7 @@ with tempfile.TemporaryDirectory(prefix='cie-first-pairing-') as folder:
         check(result.get('ok') is True and result.get('code') is None)
         check(all(result.get(k) is True for k in ['readyForSigning', 'publicDataSaved', 'webProvisioned', 'systemComponentAvailable']))
         check(lib.test_certificate_count() == 1)
-        check(lib.test_browser_binding() == 15)  # DER, KSP, container, owner marker.
+        check(lib.test_browser_binding() == 31)  # DER, KSP, container, owner marker, public label.
         for _ in range(3):
             record = call('enrollments')['records'][0]
             check(record['webProvisioned'] is True and record['readyForSigning'] is True)

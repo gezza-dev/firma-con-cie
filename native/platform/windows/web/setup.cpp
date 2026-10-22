@@ -14,6 +14,7 @@
 #include <memory>
 #include "setup_policy.h"
 #include "setup_registry.h"
+#include "package_status.h"
 #include "setup_payload.h"
 namespace fs=std::filesystem;
 using cie_setup::Code;
@@ -96,6 +97,13 @@ int checkSetup(const std::wstring& reader){
  try{validate(target);return 0;}catch(...){return 9;}
 }
 cie_setup::RegistryStore cardDatabase(){return {HKEY_LOCAL_MACHINE,L"SOFTWARE\\Microsoft\\Cryptography\\Calais\\SmartCards"};}
+int packageStatus(){
+ validate(executableDirectory());
+ const auto root=installationRoot(),target=root/cie_setup_payload::version;
+ return cie_setup::packageStatus(cardDatabase().read(),(target/L"cie_prototype_minidriver.dll").wstring(),
+  [&](const auto& module){return ownedModule(module,root);},
+  [&]{try{validate(target);return true;}catch(...){return false;}});
+}
 // Only the package installer writes this fixed machine database. No PC/SC
 // context or card operation occurs, including on PCs with no reader/service.
 int installPackage(bool planOnly=false){
@@ -125,6 +133,7 @@ int wmain(int argc,wchar_t** argv){
  SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_SYSTEM32);
  try{
   if(argc==2&&!wcscmp(argv[1],L"--validate-package")){validate(executableDirectory());return 0;}
+  if(argc==2&&!wcscmp(argv[1],L"--status-package"))return packageStatus();
   if(argc==2&&!wcscmp(argv[1],L"--install-package"))return installPackage();
   if(argc==2&&!wcscmp(argv[1],L"--plan-package"))return installPackage(true);
   if(argc==2&&!wcscmp(argv[1],L"--unregister-package"))return unregisterPackage();

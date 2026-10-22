@@ -45,7 +45,7 @@ template<size_t N> void padded(CK_UTF8CHAR (&out)[N], const std::string& value) 
     std::memset(out,' ',N); std::memcpy(out,value.data(),std::min(N,value.size()));
 }
 struct Token {
-    std::string reader,id,label;
+    std::string reader,id,label,tokenSerial;
     Bytes certificate,objectId,modulus,exponent,subject,issuer,serial;
     CK_DATE start{},end{};
     std::unique_ptr<cie_linux::Card> card;
@@ -158,8 +158,9 @@ std::shared_ptr<Token> tokenFor(Slot& slot) {
     require(n>0,CKR_TOKEN_NOT_RECOGNIZED);token->serial.resize(n);auto* out=token->serial.data();i2d_ASN1_INTEGER(serial,&out);
     token->objectId.resize(32);unsigned length=0;
     require(EVP_Digest(token->certificate.data(),token->certificate.size(),token->objectId.data(),&length,EVP_sha256(),nullptr)==1 && length==32,CKR_DEVICE_ERROR);
-    constexpr char hex[]="0123456789abcdef";token->label="Firma con CIE ";
-    for(size_t i=0;i<8;++i){token->label+=hex[token->objectId[i]>>4];token->label+=hex[token->objectId[i]&15];}
+    constexpr char hex[]="0123456789abcdef";
+    for(size_t i=0;i<8;++i){token->tokenSerial+=hex[token->objectId[i]>>4];token->tokenSerial+=hex[token->objectId[i]&15];}
+    token->label="Firma con CIE "+token->tokenSerial;
     token->start=date(X509_get0_notBefore(cert.get()));token->end=date(X509_get0_notAfter(cert.get()));
     // Public discovery never leaves an authenticated connection open while a
     // browser displays its PIN prompt. C_Login creates a fresh bound session.
@@ -242,7 +243,7 @@ CK_RV slotInfo(CK_SLOT_ID id,CK_SLOT_INFO_PTR out) {return boundary([&]() -> CK_
 CK_RV tokenInfo(CK_SLOT_ID id,CK_TOKEN_INFO_PTR out) {return boundary([&]() -> CK_RV {
     require(out);state.refresh();auto token=tokenFor(slotById(id));*out={};
     padded(out->label,token->label);padded(out->manufacturerID,"Firma con CIE");padded(out->model,"CIE RSA 2048");
-    std::memset(out->serialNumber,' ',sizeof(out->serialNumber));std::memcpy(out->serialNumber,token->label.data()+7,16);
+    padded(out->serialNumber,token->tokenSerial);
     out->flags=CKF_TOKEN_INITIALIZED|CKF_USER_PIN_INITIALIZED|CKF_LOGIN_REQUIRED|CKF_WRITE_PROTECTED;
     out->ulMaxSessionCount=64;out->ulMaxRwSessionCount=0;
     out->ulSessionCount=std::count_if(state.sessions.begin(),state.sessions.end(),[&](auto& item){return item.second.token==token;});

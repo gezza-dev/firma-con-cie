@@ -58,6 +58,8 @@ class EnrollmentRecord {
   bool get needsAppUpdate => system['componentHostOutdated'] == true;
   bool get needsComponentUpdate =>
       !componentAvailable && system['componentNeedsUpdate'] == true;
+  bool get needsComponentInstaller =>
+      system['componentInstallerRequired'] == true;
   bool get needsComponentActivation =>
       !componentAvailable && system['canActivateComponent'] == true;
   bool get needsSystemSettings =>
@@ -87,6 +89,8 @@ class EnrollmentRecord {
       ? 'Completa l’abbinamento per accedere ai siti.'
       : needsAppUpdate
       ? 'È presente un componente più recente. Apri la versione più recente di Firma con CIE. L’abbinamento è conservato.'
+      : system['componentStatusMessage'] is String
+      ? system['componentStatusMessage'] as String
       : needsComponentUpdate
       ? 'Il componente per l’accesso ai siti deve essere aggiornato. L’abbinamento è conservato; non occorre reinserire il PIN.'
       : needsComponentActivation

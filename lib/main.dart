@@ -65,6 +65,9 @@ void main() {
       service: FfiCieService(BridgePaths.discover()),
       preferences: FilePreferencesStore(),
       settings: FileSettingsStore(),
+      webStatusReader: Platform.isWindows
+          ? readWindowsWebComponentStatus
+          : readWebSystemStatus,
       windowsWebComponentChecker: Platform.isWindows
           ? checkWindowsWebComponent
           : null,
@@ -2184,10 +2187,13 @@ class _PrototypeHomeState extends State<PrototypeHome>
                             OutlinedButton(
                               onPressed: busy
                                   ? null
-                                  : () =>
-                                        record.needsComponentActivation &&
-                                            record.readyForSigning &&
-                                            record.hasPublicData
+                                  : () => record.needsComponentInstaller
+                                        ? _showWebCompletionStatus(
+                                            record.webStatus,
+                                          )
+                                        : record.needsComponentActivation &&
+                                              record.readyForSigning &&
+                                              record.hasPublicData
                                         ? _activateWebComponent(record)
                                         : record.needsSystemSettings &&
                                               record.readyForSigning &&
@@ -2195,9 +2201,16 @@ class _PrototypeHomeState extends State<PrototypeHome>
                                         ? _openWebSettings()
                                         : _completeEnrollment(record),
                               child: Text(
-                                record.needsComponentActivation &&
-                                        record.readyForSigning &&
-                                        record.hasPublicData
+                                record.needsComponentInstaller
+                                    ? tr(
+                                        context,
+                                        record.needsComponentUpdate
+                                            ? 'Aggiorna accesso ai siti'
+                                            : 'Informazioni accesso ai siti',
+                                      )
+                                    : record.needsComponentActivation &&
+                                          record.readyForSigning &&
+                                          record.hasPublicData
                                     ? tr(
                                         context,
                                         record.needsComponentUpdate

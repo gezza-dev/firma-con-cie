@@ -2,7 +2,37 @@
 
 Situazione al 22 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
 
-Aggiornamento desktop Windows del 22 ottobre: avvio della finestra centrato
+Firma con CIE 1.0.0: completata la verifica Windows del nuovo nome pubblico e
+delle icone. Il titolo resta disponibile per taskbar e accessibilità, mentre
+la barra del titolo visibile mostra soltanto icona e pulsanti nativi.
+Conservati il percorso storico delle impostazioni e delle immagini di firma
+e il seriale PKCS#11 derivato dal certificato, indipendentemente dalla nuova
+etichetta pubblica. I test controllano i byte dei dati salvati e dell'immagine,
+l'etichetta del certificato in un archivio WinCrypt in memoria e la rimozione
+del solo vecchio eseguibile durante l'aggiornamento.
+
+La Home Windows controlla ora la versione esatta del componente Web tramite
+il percorso registrato e gli hash del payload incluso nell'app. La verifica
+asincrona avviene all'avvio e al ritorno in primo piano, senza lettore, PIN,
+elevazione o scritture di configurazione. Quando occorre un aggiornamento,
+la CIE rimane abbinata per firmare e compare «Aggiorna accesso ai siti»;
+il pulsante mostra le istruzioni per l'installer, che continua a gestire UAC.
+Non vengono avviati aggiornamenti, downgrade o nuove pubblicazioni automatiche.
+[Flusso, conservazione e limiti della verifica](WINDOWS_INSTALLER.md).
+
+Collaudo del nuovo controllo: analisi Flutter pulita, 264 test Flutter
+superati e tre integrazioni facoltative saltate; quattro gruppi CTest del
+provider superati, compresi 21 controlli della nuova policy di sola lettura,
+161 del minidriver, 410 del catalogo e 75 della policy setup. Superati i 50
+controlli dell'installer isolato. App e installer Windows 1.0.0 ricompilati;
+il 22 ottobre l'utente conferma il test riuscito delle ultime modifiche.
+Le verifiche automatiche e della Home non hanno autenticato carte, richiesto
+PIN o modificato abbinamenti, impostazioni, certificati o registrazioni Windows.
+Il componente operativo e le dipendenze rimangono quelli già compilati e
+collaudati; per questo controllo sono ricompilati runner Flutter e helper.
+Log, rapporti e binari restano fuori dal repository.
+
+Collaudo desktop Windows precedente del 22 ottobre: avvio della finestra centrato
 nell'area utile del monitor, titolo «CIE ID» centrato su entrambi gli assi e
 pulsanti di sistema mantenuti nativi. Corretta la regressione che, a finestra
 massimizzata, interpretava i clic su Riduci, Ingrandisci/Ripristina e Chiudi

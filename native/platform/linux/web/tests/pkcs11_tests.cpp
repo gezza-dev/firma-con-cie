@@ -51,6 +51,7 @@ int main(int argc,char** argv){try{
     check(f->C_Initialize(nullptr)==CKR_OK,"initialize");
     check(f->C_Initialize(nullptr)==CKR_CRYPTOKI_ALREADY_INITIALIZED,"duplicate initialize");
     check(f->C_GetInfo(&info)==CKR_OK,"module info");
+    check(std::string(reinterpret_cast<char*>(info.manufacturerID),13)=="Firma con CIE","public module name");
     CK_ULONG count=0;check(f->C_GetSlotList(CK_TRUE,nullptr,&count)==CKR_OK&&count==1,"synthetic slot count");
     CK_SLOT_ID slot=0;count=0;check(f->C_GetSlotList(CK_TRUE,&slot,&count)==CKR_BUFFER_TOO_SMALL&&count==1,"slot short buffer");
     check(f->C_GetSlotList(CK_TRUE,&slot,&count)==CKR_OK&&slot,"stable slot");
@@ -78,6 +79,12 @@ int main(int argc,char** argv){try{
     check(attribute(3,CKA_SIGN)==Bytes{1}&&attribute(3,CKA_EXTRACTABLE)==Bytes{0},"one-byte bool attributes");
     auto der=attribute(1,CKA_VALUE);const unsigned char* cursor=der.data();auto cert=d2i_X509(nullptr,&cursor,long(der.size()));
     check(cert!=nullptr,"public certificate DER");auto publicKey=X509_get_pubkey(cert);X509_free(cert);
+    unsigned char identityHash[32]{};unsigned identityLength=0;
+    check(EVP_Digest(der.data(),der.size(),identityHash,&identityLength,EVP_sha256(),nullptr)==1&&identityLength==32,"certificate identity hash");
+    std::string expectedSerial;constexpr char hex[]="0123456789abcdef";
+    for(unsigned i=0;i<8;++i){expectedSerial+=hex[identityHash[i]>>4];expectedSerial+=hex[identityHash[i]&15];}
+    check(std::string(reinterpret_cast<char*>(token.serialNumber),16)==expectedSerial,"serial is unchanged by the public name");
+    check(std::string(reinterpret_cast<char*>(token.label),30)=="Firma con CIE "+expectedSerial,"public token label");
     struct FreeKey {EVP_PKEY* p;~FreeKey(){EVP_PKEY_free(p);}} freeKey{publicKey};
     const unsigned char hashMessage[]="public software operation";
     for(auto mechanism:{CKM_SHA256,CKM_SHA384,CKM_SHA512}) {

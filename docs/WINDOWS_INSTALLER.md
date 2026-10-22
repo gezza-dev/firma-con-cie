@@ -46,7 +46,7 @@ hanno anche le proprie destinazioni di installazione.
 
 ## Installazione e aggiornamento
 
-Avviare `Firma-con-CIE-0.1.0-Windows-x64-Setup.exe` e confermare UAC. App e
+Avviare `Firma-con-CIE-1.0.0-Windows-x64-Setup.exe` e confermare UAC. App e
 componente vengono installati nella stessa sessione amministrativa. Il
 prerequisito Microsoft viene eseguito senza un'altra elevazione e senza
 riavviare automaticamente Windows. Sono disponibili italiano e inglese.
@@ -79,6 +79,93 @@ nei browser. L'installer può chiedere di chiudere Firma con CIE prima di aggior
 Il collegamento sul desktop è facoltativo; quello nel menu Start è incluso.
 L'avvio a fine installazione è facoltativo e usa il token dell'utente originario.
 
+### Nuovo nome pubblico e conservazione degli archivi
+
+L'eseguibile è `Firma con CIE.exe`; descrizione, icona, collegamenti e nome
+dell'installer usano lo stesso nome pubblico. L'AppId dell'installer resta
+`{7D9C31E3-F685-48E7-88BF-152BF8D331F2}`: Inno Setup conserva la destinazione
+di una precedente installazione tramite la propria gestione della directory
+precedente. La directory predefinita `Program Files\Firma con CIE` riguarda
+le installazioni nuove. L'aggiornamento elimina soltanto il vecchio
+`CIE-ID.exe` e i collegamenti storici esplicitamente elencati.
+
+Su Windows impostazioni e preferenze di firma continuano a usare
+`%APPDATA%\gezza-dev\CIE ID`. Il percorso è risolto direttamente: il plugin
+Windows di `path_provider`, prima di restituire la directory derivata da
+ProductName, la crea. Chiamarlo prima di correggere il nome creerebbe quindi
+una seconda cartella vuota. Il resolver dedicato evita anche questo effetto;
+non copia né migra impostazioni o immagini. La cache nativa degli abbinamenti,
+gli identificativi KSP/contenitori e il percorso WebToken restano invariati.
+
+Per le nuove pubblicazioni il certificato ha etichetta
+«Firma con CIE · Accesso ai siti». La verifica isolata usa WinCrypt con un
+archivio in memoria e controlla insieme DER, provider, contenitore, marcatore
+di proprietà ed etichetta. La rinomina non richiede di ripubblicare o riscrivere
+i certificati personali già installati.
+
+Il modulo PKCS#11 condiviso usa il nuovo nome ma conserva il seriale esadecimale
+derivato dal certificato, separatamente dall'etichetta. La regressione verifica
+il seriale rispetto a SHA-256 del DER sintetico: un offset legato alla lunghezza
+del vecchio nome alterava tale seriale dopo la rinomina. PIN, algoritmi e
+identificativi delle chiavi non cambiano.
+
+Il collaudo Windows del 22 ottobre 2026 comprende analisi Flutter, suite
+Flutter completa, 15 gruppi CTest del bridge, tre del provider, quattro
+desktop/geometria e 203 controlli PKCS#11 con carta simulata. I 50 controlli
+dell'installer isolato comprendono la rimozione del vecchio eseguibile.
+Il test di conservazione delle preferenze verifica anche i byte dell'immagine
+di firma e l'assenza di un nuovo archivio. Le nove immagini dell'ICO sono
+confrontate byte per byte con le risorse PE dell'app e dell'installer.
+Le due varianti light/dark sono risorse disponibili; Windows usa l'ICO statico
+scelto in compilazione, senza cambio automatico dell'icona del file.
+
+Il bridge, il minidriver che include `web_cert_store.cpp`, il modulo PKCS#11 e
+il helper sono ricompilati con MSVC x64. Il backend/adattatore MinGW, il motore
+Web, observer e DSS/JVM conservano la loro provenienza originale; questa
+verifica non equivale a una nuova compilazione completa del backend. Non sono
+eseguite installazioni amministrative o modifiche dei browser durante i test.
+La prova reale di rimozione/reinserimento della CIE con app minimizzata riesce
+senza PIN; i controlli su archivi e certificati sono di sola lettura.
+
+## Controllo della versione nella Home Windows
+
+All'avvio e al ritorno in primo piano la Home esegue una verifica asincrona
+del componente registrato, anche senza lettore o CIE. Il helper usa
+`--status-package`: legge il catalogo Calais a 64 bit e verifica che le
+registrazioni selezionino il payload incluso nell'app, identificato dal suo
+hash di versione; controlla anche dimensioni e SHA-256 dei file installati.
+Non confronta il numero dell'ABI della cache con la versione del prodotto.
+
+La verifica distingue versione corrente, diversa/incompleta, file danneggiati,
+componente assente, conflitto e controllo non riuscito. Un errore non viene
+presentato come versione corrente. La Home conserva la CIE abbinata e la
+possibilità di firmare; quando serve aggiornare mostra l'avviso e il pulsante
+«Aggiorna accesso ai siti». Questo pulsante apre soltanto le istruzioni per
+eseguire l'installer. L'elevazione resta nell'installer, su iniziativa dell'utente.
+Le versioni basate su hash non hanno un ordinamento numerico: la verifica
+richiede la corrispondenza al pacchetto dell'app e non esegue downgrade o
+aggiornamenti automatici.
+
+Il controllo non avvia PC/SC, non enumera lettori, non autentica carte e non
+scrive registrazioni, certificati o dati personali. Il ritorno alla Home dopo
+l'installazione aggiorna lo stato senza ripetere il PIN o l'abbinamento.
+La finestra Flutter non attende il processo sulla propria thread UI; il
+processo ha un timeout e viene terminato se non risponde.
+
+Le regressioni comprendono 21 controlli della policy di sola lettura
+(versione corrente, precedente, registrazioni miste/parziali, alterazioni,
+conflitti e metadati estranei preservati) e test Flutter del canale nativo
+e della Home. Il test widget verifica l'avviso senza carta, l'assenza di UAC,
+PIN, nuove pubblicazioni o abbinamenti e l'aggiornamento dello stato dopo
+il ritorno in primo piano.
+
+La verifica finale supera l'analisi Flutter, 264 test Flutter con tre
+integrazioni facoltative saltate, quattro gruppi CTest del provider e 50
+controlli dell'installer isolato. Dopo la ricompilazione di app e installer,
+il 22 ottobre 2026 l'utente conferma il test riuscito delle ultime modifiche.
+Questa conferma non viene estesa a nuovi accessi browser o operazioni sulla
+carta non specificati nel collaudo.
+
 ## Conservazione dei dati
 
 Gli identificativi dell'app e della cache non cambiano. L'installer non importa,
@@ -92,8 +179,9 @@ non migra, non riscrive e non elimina dati nei profili utente:
 Gli archivi sono ancora per utente, anche se l'app viene installata per tutti
 gli utenti. Confermare UAC con un altro account amministratore non trasferisce
 gli abbinamenti a quell'account. L'app non viene avviata automaticamente con
-privilegi amministrativi e non richiede UAC durante l'abbinamento: esegue
-soltanto `CIE-Web-Setup.exe --check <lettore>`. Se il componente manca, indica
+privilegi amministrativi e non richiede UAC durante l'abbinamento: in quella
+fase esegue soltanto `CIE-Web-Setup.exe --check <lettore>`. La Home usa invece
+la verifica senza carta `--status-package`. Se il componente manca, indica
 di eseguire l'installer; rimane disponibile la scelta esplicita di procedere
 solo per la firma dei documenti. Il completamento Web riusa i dati pubblici
 salvati e non installa componenti.

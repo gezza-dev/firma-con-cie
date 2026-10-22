@@ -62,6 +62,10 @@ extern "C" CIE_EXPORT unsigned test_browser_binding(){
   }
  }
  if(CertGetCertificateContextProperty(c,CERT_FIRST_USER_PROP_ID+71,nullptr,&size))flags|=8;
+ if(CertGetCertificateContextProperty(c,CERT_FRIENDLY_NAME_PROP_ID,nullptr,&size)){
+  std::vector<wchar_t> label((size+sizeof(wchar_t)-1)/sizeof(wchar_t));
+  if(CertGetCertificateContextProperty(c,CERT_FRIENDLY_NAME_PROP_ID,label.data(),&size)&&!label.empty()&&label.back()==0&&std::wstring(label.data())==L"Firma con CIE · Accesso ai siti")flags|=16;
+ }
  return flags;
 }
 extern "C" CIE_EXPORT int test_add_foreign_certificate(){

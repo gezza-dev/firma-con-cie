@@ -12,5 +12,6 @@ class WebSetupChannel {
  private:
   struct Job {std::atomic<DWORD> code{STILL_ACTIVE};};
   std::shared_ptr<Job> job_;
+  std::shared_ptr<Job> package_job_;
   std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> channel_;
 };
