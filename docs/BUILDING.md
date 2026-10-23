@@ -225,7 +225,7 @@ flutter pub get --enforce-lockfile
 flutter build linux --release
 ```
 
-Conservare l’intera directory `build/linux/<architettura>/release/bundle`. Il runner copia le librerie private in `cie_native`; pcsc-lite e driver compatibili devono essere disponibili sul sistema destinatario. La cache cifrata degli abbinamenti è condivisa e ha test software e prove reali Linux. Il provider di accesso Firefox PKCS#11 è incluso; il test reale di accesso è stato confermato riuscito dall’utente. La build non registra il modulo nel browser: la configurazione è un’azione esplicita dell’utente, disponibile anche tramite il nuovo wizard. Vedere [LINUX_FIREFOX.md](LINUX_FIREFOX.md). L’assemblaggio DSS/JVM Linux resta incompleto. Per il solo bridge Linux serve OpenSSL 3 (`libssl-dev`); la build completa usa la copia privata del prefisso quando specificato.
+Conservare l’intera directory `build/linux/<architettura>/release/bundle`. Il runner copia le librerie private in `cie_native`; pcsc-lite e driver compatibili devono essere disponibili sul sistema destinatario. La cache cifrata degli abbinamenti è condivisa e ha test software e prove reali Linux. Il provider di accesso Firefox PKCS#11 è incluso; il test reale di accesso è stato confermato riuscito dall’utente. La build non registra il modulo nel browser: la configurazione è un’azione esplicita dell’utente, disponibile anche tramite il nuovo wizard. Vedere [LINUX_FIREFOX.md](LINUX_FIREFOX.md). Il runtime opzionale DSS/LTA Linux x86_64 è assemblato secondo [LINUX_DSS_LTA.md](LINUX_DSS_LTA.md), con JVM privata e test senza CIE. Per il solo bridge Linux serve OpenSSL 3 (`libssl-dev`); la build completa usa la copia privata del prefisso quando specificato.
 
 ### Compatibilità Firefox Snap
 
@@ -316,7 +316,7 @@ flutter test --no-pub test/linux_text_scaling_test.dart
 Per leggere soltanto il valore del desktop corrente, senza finestre o accessi
 alla carta: `.build/linux-runner-tests/text_scaling_tests --desktop-read-only`.
 
-## DSS/JVM: macOS e Windows
+## DSS/JVM: macOS, Windows e Linux x86_64
 
 `scripts/build_ltv.py` compila il worker Java e assembla JAR originali separati, JVM private, trust e helper CRL. Usare Java 21 e il Maven fissato in `native/ltv/toolchain.lock.json`, con percorsi effettivi alla JDK e all’eseguibile Maven. Su Windows usare Python e percorsi Windows.
 
@@ -330,7 +330,7 @@ python3 scripts/test_ltv.py --runtime native/runtime/macos-complete --report rep
 python3 scripts/test_history.py --runtime native/runtime/macos-complete --report reports/history.json
 ```
 
-Per Windows selezionare `--system windows` e i runtime Windows. Non usare `--refresh-dependency-lock` per una normale build: è un aggiornamento esplicito delle dipendenze. Lo script richiede una destinazione nuova e non sostituisce runtime precedenti. Gli archivi JDK/JRE e Maven si ottengono dai riferimenti/checksum del lock, fuori da Git. [Dettagli DSS](../native/ltv/README.md) · [Materiali da distribuire](LICENSING.md).
+Per Windows selezionare `--system windows` e i runtime Windows. Per Linux x86_64 usare `--system linux`, il JDK Linux e i runtime fissati nel lock; vedere [LINUX_DSS_LTA.md](LINUX_DSS_LTA.md). Non usare `--refresh-dependency-lock` per una normale build: è un aggiornamento esplicito delle dipendenze. Lo script richiede una destinazione nuova e non sostituisce runtime precedenti. Gli archivi JDK/JRE e Maven si ottengono dai riferimenti/checksum del lock, fuori da Git. [Dettagli DSS](../native/ltv/README.md) · [Materiali da distribuire](LICENSING.md).
 
 ## Test senza carta e prove esplicite
 

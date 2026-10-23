@@ -62,6 +62,17 @@ def validate_bundle(bundle):
     for name in ('Firma con CIE', 'cie_native/cie_crl_fetch', 'cie_native/cie_card_observer'):
         if not os.access(bundle / name, os.X_OK):
             raise ValueError('Executable permission missing: ' + name)
+    if manifest.get('ltv'):
+        machine = run('dpkg', '--print-architecture').stdout.strip()
+        architecture = {'amd64': 'linux-x86_64'}.get(machine)
+        if not architecture or manifest['ltv']['architectures'] != [architecture]:
+            raise ValueError('DSS JVM architecture differs from package architecture')
+        for name in ('ltv/jre/' + architecture + '/bin/java', 'ltv/fetcher/cie_crl_fetch'):
+            if not os.access(native / name, os.X_OK):
+                raise ValueError('Private DSS executable missing: ' + name)
+        for name in ('ltv/cie-ltv-worker.jar', 'ltv/trust/cacerts', 'licenses/ltv/dependencies.lock.json'):
+            if not (native / name).is_file():
+                raise ValueError('Private DSS runtime incomplete: ' + name)
     return manifest
 
 
@@ -98,7 +109,7 @@ def package(bundle, output, version):
         shutil.copytree(bundle, app, ignore=shutil.ignore_patterns('tests', 'share'))
         packaged = dict(native_manifest)
         packaged['files'] = {k: v for k, v in native_manifest['files'].items()
-                             if not k.startswith('tests/')}
+                             if 'tests' not in PurePosixPath(k).parts}
         packaged['packaging'] = {'type': 'deb-local-test', 'testProgramsIncluded': False,
                                  'sourceManifestSha256': sha(bundle / 'cie_native/backend-manifest.json')}
         (app / 'cie_native/backend-manifest.json').write_text(json.dumps(packaged, indent=2) + '\n')
@@ -120,7 +131,7 @@ def package(bundle, output, version):
         doc.mkdir(parents=True)
         shutil.copy2(ROOT / 'LICENSE', doc / 'copyright')
         shutil.copy2(ROOT / 'NOTICE.md', doc / 'NOTICE.md')
-        for name in ('BUILDING.md', 'LINUX_PACKAGE.md', 'LINUX_FIREFOX.md', 'LINUX_FIREFOX_SETUP.md', 'LICENSING.md'):
+        for name in ('BUILDING.md', 'LINUX_DSS_LTA.md', 'LINUX_PACKAGE.md', 'LINUX_FIREFOX.md', 'LINUX_FIREFOX_SETUP.md', 'LICENSING.md'):
             shutil.copy2(ROOT / 'docs' / name, doc / name)
         shutil.copy2(ROOT / 'docs/LINUX_CHROME.md', doc / 'LINUX_CHROME.md')
         (doc / 'tools').mkdir()
@@ -140,8 +151,10 @@ def package(bundle, output, version):
         (debian / 'control').write_text(
             f'Source: {PACKAGE}\n\nPackage: {PACKAGE}\nArchitecture: any\nDescription: Local test\n')
         elf_files = [p for p in files(app) if p.read_bytes()[:4] == b'\x7fELF']
+        private_library_dirs = sorted({p.parent for p in elf_files if '.so' in p.name})
         dependencies = run('dpkg-shlibdeps', '-O', '-S' + str(stage),
                            '-l' + str(app / 'lib'), '-l' + str(app / 'cie_native'),
+                           *('-l' + str(p) for p in private_library_dirs),
                            *('-e' + str(p) for p in elf_files), cwd=temp)
         dep = next(s.removeprefix('shlibs:Depends=') for s in dependencies.stdout.splitlines()
                    if s.startswith('shlibs:Depends='))
@@ -156,8 +169,10 @@ def package(bundle, output, version):
             'Description: Firma con CIE - local Linux test build\n'
             ' Independent desktop application for Italian CIE cards and document signing.\n'
             ' Includes the full-PIN Firefox/desktop Chrome PKCS#11 provider.\n'
-            ' Firefox setup is user-initiated in the application; installation does not configure browsers.\n'
-            ' Local test package; Linux DSS/LTA runtime is not included.\n')
+            ' Firefox setup is user-initiated in the application; installation does not configure browsers.\n' +
+            (' Includes local DSS/LTA validation with a private Java runtime.\n'
+             if native_manifest.get('ltv') else
+             ' Local test package; Linux DSS/LTA runtime is not included.\n'))
         payload = {p.relative_to(stage).as_posix(): sha(p)
                    for p in files(stage) if 'DEBIAN' not in p.relative_to(stage).parts}
         (control / 'md5sums').write_text(''.join(
@@ -179,6 +194,7 @@ def package(bundle, output, version):
                     'inputBundle': str(bundle), 'applicationPrefix': '/' + str(PREFIX),
                     'depends': dep, 'elfFilesChecked': len(elf_files),
                     'runtimeManifestVerified': True, 'testProgramsIncluded': False,
+                    'ltvIncluded': bool(native_manifest.get('ltv')),
                     'appLaunched': False, 'cardTestsRun': False,
                     'browserConfigurationModified': False, 'snapPermissionsModified': False,
                     'files': payload}

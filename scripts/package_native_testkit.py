@@ -20,7 +20,7 @@ with tempfile.TemporaryDirectory(prefix='cie-native-package-') as temporary:
     kit = Path(temporary)/'CIE-ID-Windows-x64-testkit'
     shutil.copytree(a.runtime.resolve(),kit/'runtime',ignore=shutil.ignore_patterns('.DS_Store'))
     (kit/'scripts').mkdir()
-    for name in ['smoke_native.py','test_card_signing.py','verify_signed_documents.py','test_ltv.py','test_history.py','test_pin.py','test_network_runtime.py','test_pairing_runtime.py']:
+    for name in ['smoke_native.py','test_card_signing.py','verify_signed_documents.py','test_ltv.py','test_history.py','test_pin.py','test_network_runtime.py','test_pairing_runtime.py','runtime_test_tools.py','ltv_runtime.py']:
         shutil.copy2(ROOT/'scripts'/name,kit/'scripts'/name)
     shutil.copy2(ROOT/'assets/prova.pdf',kit/'prova.pdf')
     shutil.copy2(ROOT/'docs/BUILD_NATIVE.md',kit/'ISTRUZIONI.md')

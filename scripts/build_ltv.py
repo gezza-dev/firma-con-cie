@@ -7,6 +7,7 @@ Dependencies and source JARs remain separate to preserve LGPL relinkability.
 """
 import argparse, hashlib, json, os, shutil, subprocess, tarfile, urllib.request, zipfile
 from pathlib import Path
+from ltv_runtime import runtime_architecture
 ROOT=Path(__file__).resolve().parents[1]
 def digest(path): return hashlib.sha256(path.read_bytes()).hexdigest()
 def run(*args,env=None): subprocess.run(list(map(str,args)),cwd=ROOT,env=env,check=True)
@@ -34,7 +35,7 @@ def extract(item,cache,name):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     for name in ['java-home','maven','base-runtime','output']: parser.add_argument('--'+name,type=Path,required=True)
-    parser.add_argument('--system',choices=['macos','windows'],required=True)
+    parser.add_argument('--system',choices=['macos','windows','linux'],required=True)
     parser.add_argument('--tools-cache',type=Path,default=ROOT/'.build/ltv-tools')
     parser.add_argument('--skip-java-build',action='store_true')
     parser.add_argument('--refresh-dependency-lock',action='store_true',help='Explicitly accept the resolved JAR hashes after dependency review')
@@ -90,7 +91,9 @@ def main():
         shutil.copyfile(difesa/cert,trust/cert)
     shutil.copyfile(a.java_home/'lib/security/cacerts',trust/'cacerts')
     tools=json.loads((ROOT/'native/ltv/toolchain.lock.json').read_text());a.tools_cache.mkdir(exist_ok=True,parents=True)
-    architectures=['macos-arm64','macos-x86_64'] if a.system=='macos' else ['windows-x86_64']
+    architectures=(['macos-arm64','macos-x86_64'] if a.system=='macos' else
+                   ['windows-x86_64'] if a.system=='windows' else
+                   [runtime_architecture('Linux')])
     for architecture in architectures:
         home=extract(tools['runtimes'][architecture],a.tools_cache,architecture)
         shutil.copytree(home,target/'jre'/architecture,symlinks=False)

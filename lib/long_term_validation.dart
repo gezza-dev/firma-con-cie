@@ -29,6 +29,14 @@ Map<String, dynamic> ltvUnavailable(String code) => {
   'allSignaturesLtaValid': false,
 };
 
+String? ltvRuntimeArchitecture(Abi abi) => switch (abi) {
+  Abi.windowsX64 => 'windows-x86_64',
+  Abi.macosArm64 => 'macos-arm64',
+  Abi.macosX64 => 'macos-x86_64',
+  Abi.linuxX64 => 'linux-x86_64',
+  _ => null,
+};
+
 Map<String, dynamic> decodeLtvResponse(String output) {
   try {
     final result = Map<String, dynamic>.from(jsonDecode(output) as Map);
@@ -114,11 +122,8 @@ class LongTermValidator {
     SessionNetworkConfig network = const SessionNetworkConfig(),
   }) async {
     network.validate();
-    final platform = Platform.isWindows
-        ? 'windows-x86_64'
-        : Abi.current() == Abi.macosArm64
-        ? 'macos-arm64'
-        : 'macos-x86_64';
+    final platform = ltvRuntimeArchitecture(Abi.current());
+    if (platform == null) return ltvUnavailable('ltv_runtime_missing');
     final java = File(
       '${folder.path}/jre/$platform/bin/java${Platform.isWindows ? '.exe' : ''}',
     );

@@ -1,6 +1,6 @@
 # Stato del progetto e verifiche
 
-Situazione al 22 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
+Situazione al 23 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
 
 Firma con CIE 1.0.0: completata la verifica Windows del nuovo nome pubblico e
 delle icone. Il titolo resta disponibile per taskbar e accessibilità, mentre
@@ -156,9 +156,44 @@ Il controllo ripetibile
 | Abbinamento e PIN parziale | Persistenza e firme reali verificate | Persistenza e firme reali verificate | Abbinamento, persistenza e firme con PIN parziale verificati |
 | Accesso ai siti | CryptoTokenKit e accesso Safari al portale CIE verificati | CSP/KSP aggiornato: accesso al portale CIE con Chrome, Edge e Firefox confermato dall'utente dopo la correzione dei contenitori | Test reali Mozilla Firefox, Firefox Snap e Chrome desktop con PIN completo confermati riusciti dall’utente |
 | Cambio PIN e Sblocco Carta | Test software; collaudo reale da completare | Test software; collaudo reale da completare | Collaudo reale non eseguito |
-| DSS/LTA con JVM privata | Predisposto e testato | Predisposto e testato | Assemblaggio non previsto dallo script attuale |
+| DSS/LTA con JVM privata | Predisposto e testato | Predisposto e testato | Integrato Linux x86_64; worker privato e test software superati |
 
 L’esecuzione su un sistema non prova automaticamente la compatibilità con tutti i lettori, le CIE, i browser o i servizi. Il formato LTA non implica da solo una validazione storica positiva: servono prove e una catena di fiducia sufficienti.
+
+## DSS/LTA Linux x86_64 (23 ottobre)
+
+Il worker EU DSS 6.5.1 è ora assemblato anche per Linux x86_64 con JVM
+Temurin 21.0.12.1+1 privata, JDK/JRE Linux fissati tramite hash e i 50 JAR
+già bloccati. App Dart e script di test selezionano la JVM Linux senza
+ripiegare su macOS. Linux ARM64 resta non coperto. Nessuna installazione
+Java di sistema o modifica agli archivi di fiducia.
+
+Superati 14 casi LTA sintetici, 19 controlli storici e 37 controlli di rete
+nativo/Java su loopback. Le prove comprendono rinnovi PDF/CAdES, firme e TSA
+scadute, marche alterate, revisioni non protette e rifiuto delle radici di
+prova nella policy di produzione. Tutti i 286 test Flutter sono superati,
+comprese le tre integrazioni documentali opt-in e l'avvio del worker Linux
+tramite Dart; superati anche 35 gruppi CTest nativi e l'analisi Flutter.
+Lo smoke usa documenti sintetici senza `--detect` e non accede alla CIE.
+Il `.deb` include JVM/worker e relative licenze quando presenti nel bundle;
+entrambi i livelli di strumenti di test sono esclusi dal runtime distribuito.
+Pacchetto `0.1.0~test20261023.10` preparato con 731 file e 61 ELF verificati:
+worker DSS funzionante dopo l'estrazione in un percorso diverso, ciclo dpkg
+installazione/aggiornamento/rimozione isolato e simulazione APT superati.
+Non installato sull'host; versione `.9` e relativi file conservati. Nessuna
+app o browser avviati, nessuna prova reale sulla CIE o modifica Snap.
+[Build, test e limiti](LINUX_DSS_LTA.md).
+
+Successivamente la versione `.10` è stata installata sull'host su richiesta
+dell'utente: verificati i 731 file e `dpkg --verify`. La JVM e i JAR installati
+superano 14 casi LTA sintetici e 19 controlli storici, usando il solo harness
+di sviluppo esterno. Analizzati anche 11 documenti PDF/P7M sintetici, compresi
+file senza firma, malformati, marche alterate e revisioni non coperte; gli
+originali sono rimasti invariati e la policy di produzione non ha promosso
+le CA sintetiche a fiducia. Superato il test Dart che avvia il worker dal
+percorso installato. Nessuna CA di prova installata, documento caricato online,
+app/browser avviati o operazione sulla CIE; configurazioni browser conservate.
+
 
 ## Chrome desktop Linux (23 ottobre)
 

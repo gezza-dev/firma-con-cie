@@ -7,7 +7,11 @@ distribuiti, inclusi i moduli caricati dinamicamente. Il controllo ABI core24
 del provider Firefox è distinto dalla compatibilità dell'intero desktop.
 Non è ancora una release binaria da redistribuire: il completamento dei
 materiali sorgente/dipendenze è descritto in [LICENSING.md](LICENSING.md).
-Il runtime Linux DSS/LTA e i programmi di test nativi non sono inclusi.
+Il pacchetto può includere il runtime DSS/LTA Linux x86_64 con JVM privata,
+se presente nel bundle di ingresso. Il packager ne controlla architettura,
+eseguibili e hash e calcola anche le dipendenze delle librerie Java.
+Programmi di test nativi e JAR di test DSS sono esclusi.
+[Build e collaudi DSS/LTA](LINUX_DSS_LTA.md).
 
 ## Assemblaggio senza installazione
 

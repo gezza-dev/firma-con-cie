@@ -1,6 +1,6 @@
 # Validatore DSS locale condiviso
 
-Worker Java 21 compilato una sola volta per macOS e Windows. Usa EU DSS 6.5.1,
+Worker Java 21 condiviso fra macOS, Windows e Linux x86_64. Usa EU DSS 6.5.1,
 policy predefinita e livello ARCHIVAL_DATA: DSS/VRI, OCSP/CRL incorporati,
 revisioni PDF e rinnovi di marche di archivio PAdES/CAdES. Il middleware C/C++
 e la firma con CIE rimangono gli stessi. La coordinazione Dart usa un processo
@@ -33,7 +33,7 @@ LTA. Il risultato nativo precedente è separato da questa validazione completa.
 LTA non significa validità eterna: dipende da prove, rinnovi e policy applicabile.
 
 Build: `scripts/build_ltv.py --java-home ... --maven ... --base-runtime ...
---output ... --system macos|windows`. Maven scarica le dipendenze da Central;
+--output ... --system macos|windows|linux`. Maven scarica le dipendenze da Central;
 JAR e runtime sono fissati con SHA-256. `--refresh-dependency-lock` è riservato
 all'aggiornamento esplicito delle dipendenze. Sono inclusi JRE privati, senza
 installazione, JAR originali separati, sorgenti Maven e avvisi di licenza.
@@ -52,3 +52,7 @@ documenti personali. Le radici sintetiche non sono attendibili per Worker.
 revoche prima/dopo la marca, precisione temporale, CRL alterate/scadute e
 retention dei certificati scaduti. `scripts/test_history.py` esegue gli stessi
 casi su Mac/Windows e, se richiesto, la verifica reale con il helper incluso.
+
+Linux x86_64: JVM Temurin privata, nessuna installazione Java di sistema.
+Build, test sintetici e pacchetto `.deb` sono descritti in
+[LINUX_DSS_LTA.md](../../docs/LINUX_DSS_LTA.md). Linux ARM64 non è ancora coperto.

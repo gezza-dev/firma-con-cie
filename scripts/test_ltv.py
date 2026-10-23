@@ -4,13 +4,14 @@
 import argparse,hashlib,json,os,platform,subprocess,tempfile
 from pathlib import Path
 from runtime_test_tools import test_tools_runtime
+from ltv_runtime import runtime_architecture
 p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('--runtime',type=Path,required=True);p.add_argument('--report',type=Path,required=True)
 p.add_argument('--test-tools-runtime',type=Path,help='External development harness; production JARs/JVM come from --runtime')
 p.add_argument('--document',type=Path,action='append',default=[]);p.add_argument('--expect-no-lta',action='store_true')
 a=p.parse_args();runtime=a.runtime.resolve();ltv=runtime/'ltv'
 test_tools=test_tools_runtime(runtime,a.test_tools_runtime)
-architecture='windows-x86_64' if platform.system()=='Windows' else 'macos-arm64' if platform.machine()=='arm64' else 'macos-x86_64'
+architecture=runtime_architecture()
 java=ltv/'jre'/architecture/'bin'/('java.exe' if os.name=='nt' else 'java')
 manifest=json.loads((runtime/'backend-manifest.json').read_text())
 for name,digest in manifest['files'].items():

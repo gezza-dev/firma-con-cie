@@ -4,6 +4,7 @@
 import argparse,hashlib,json,os,platform,subprocess
 from pathlib import Path
 from runtime_test_tools import test_tools_runtime
+from ltv_runtime import runtime_architecture
 p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('--runtime',type=Path,required=True);p.add_argument('--report',type=Path,required=True)
 p.add_argument('--test-tools-runtime',type=Path,help='External development harness; production JARs/JVM come from --runtime')
@@ -13,7 +14,7 @@ test_tools=test_tools_runtime(runtime,a.test_tools_runtime)
 manifest=json.loads((runtime/'backend-manifest.json').read_text())
 for name,digest in manifest['files'].items():
     assert hashlib.sha256((runtime/name).read_bytes()).hexdigest()==digest,'Runtime checksum mismatch: '+name
-architecture='windows-x86_64' if os.name=='nt' else 'macos-arm64' if platform.machine()=='arm64' else 'macos-x86_64'
+architecture=runtime_architecture()
 java=ltv/'jre'/architecture/'bin'/('java.exe' if os.name=='nt' else 'java')
 helper=ltv/'fetcher'/('cie_crl_fetch.exe' if os.name=='nt' else 'cie_crl_fetch')
 environment={k:v for k,v in os.environ.items() if k.upper() in ['SYSTEMROOT','WINDIR','TEMP','TMP','HOME','LANG','LC_ALL']}

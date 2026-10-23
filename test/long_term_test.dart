@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 import 'dart:convert';
+import 'dart:ffi';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -29,6 +30,35 @@ Map<String, dynamic> valid() => {
   'longTermStatus': 'passed',
 };
 void main() {
+  test('private JVM matches the OS ABI and rejects unsupported platforms', () {
+    expect(ltvRuntimeArchitecture(Abi.linuxX64), 'linux-x86_64');
+    expect(ltvRuntimeArchitecture(Abi.windowsX64), 'windows-x86_64');
+    expect(ltvRuntimeArchitecture(Abi.macosArm64), 'macos-arm64');
+    expect(ltvRuntimeArchitecture(Abi.macosX64), 'macos-x86_64');
+    expect(ltvRuntimeArchitecture(Abi.linuxArm64), isNull);
+    expect(ltvRuntimeArchitecture(Abi.androidX64), isNull);
+  });
+
+  const runtime = String.fromEnvironment('CIE_LTV_RUNTIME');
+  test(
+    'Dart launches the private Linux DSS worker without Java on PATH',
+    () async {
+      final original = File('assets/prova.pdf');
+      final bytes = await original.readAsBytes();
+      final validator = LongTermValidator.fromBridge(
+        '$runtime/libcie_bridge.so',
+      );
+      final result = await validator.verify(original.path);
+      expect(result['ok'], true);
+      expect(result['engine'], 'EU DSS 6.5.1');
+      expect(result['validationLevel'], 'ARCHIVAL_DATA');
+      expect(result['signatureCount'], 0);
+      expect(result['allSignaturesLtaValid'], false);
+      expect(await original.readAsBytes(), bytes);
+    },
+    skip: runtime.isEmpty || !Platform.isLinux,
+  );
+
   test(
     'Windows DNS environment survives while Java injection stays excluded',
     () {

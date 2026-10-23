@@ -10,6 +10,7 @@ import argparse
 import ctypes as C
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
@@ -89,13 +90,43 @@ def check(package, report, upgrade_from=None):
         assert all(hashlib.sha256((runtime / name).read_bytes()).hexdigest() == digest
                    for name, digest in native['files'].items())
         assert not (runtime / 'tests').exists()
+        ltv_checked = False
+        if native.get('ltv'):
+            java = runtime / 'ltv/jre/linux-x86_64/bin/java'
+            assert java.is_file() and os.access(java, os.X_OK)
+            assert not (runtime / 'ltv/tests').exists()
+            assert (runtime / 'ltv/jre/linux-x86_64/legal/java.base/LICENSE').is_file()
+            # Execute the packaged production worker after relocation. It must
+            # work without system Java and must not turn an unsigned PDF into LTA.
+            environment = {k: v for k, v in os.environ.items()
+                           if k.upper() in {'HOME', 'LANG', 'LC_ALL', 'TEMP', 'TMP'}}
+            result = subprocess.run([
+                str(java), '-Xmx512m', '-Djava.awt.headless=true',
+                '-cp', str(runtime / 'ltv/cie-ltv-worker.jar') + ':' + str(runtime / 'ltv/lib/*'),
+                'it.cieid.ltv.Worker', str(ROOT / 'assets/prova.pdf'), str(runtime / 'ltv/trust')],
+                env=environment, capture_output=True, text=True, check=True, timeout=90)
+            value = json.loads(result.stdout)
+            assert value['ok'] and value['signatureCount'] == 0
+            assert value['allSignaturesLtaValid'] is False
+            ltv_checked = True
         run('python3', ROOT / 'scripts/check_linux_firefox_abi.py',
             *(runtime / name for name in ('libcie_linux_pkcs11.so', 'libcie_web.so', 'libcie-pkcs11.so')))
         elf_count = 0
         for path in app.rglob('*'):
             if path.is_file() and path.read_bytes()[:4] == b'\x7fELF':
                 elf_count += 1
-                assert 'not found' not in run('ldd', path).stdout
+                if path.is_relative_to(runtime / 'ltv/jre'):
+                    # Java loads libjvm before its JNI libraries. Model that
+                    # private loader context for standalone ldd; the production
+                    # worker above runs without LD_LIBRARY_PATH or system Java.
+                    environment = dict(os.environ)
+                    environment['LD_LIBRARY_PATH'] = os.pathsep.join(map(str, (
+                        java.parent.parent / 'lib', java.parent.parent / 'lib/server')))
+                    linked = subprocess.run(['ldd', str(path)], env=environment,
+                                            capture_output=True, text=True, check=True).stdout
+                else:
+                    linked = run('ldd', path).stdout
+                assert 'not found' not in linked, str(path)
         assert elf_count == manifest['elfFilesChecked']
         # No maintainer scripts are allowed above, and every dpkg write/log is
         # directed into this temporary tree. No root privileges are requested.
@@ -142,6 +173,7 @@ def check(package, report, upgrade_from=None):
                    'rootOwnershipVerified': True, 'desktopEntryValid': True,
                    'embeddedIconVerified': True, 'hicolorIcons': len(icons), 'gtkIconLookupPassed': True,
                    'elfFilesResolved': elf_count, 'nativeManifestVerified': True,
+                   'privateDssWorkerRelocationPassed': ltv_checked,
                    'snapProviderAbiPassed': True, 'isolatedDpkgInstallPassed': True,
                    'isolatedDpkgUpgradePassed': True, 'isolatedDpkgRemovePassed': True,
                    'previousPrefixUpgradePassed': bool(upgrade_from),
