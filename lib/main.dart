@@ -1832,20 +1832,6 @@ class _PrototypeHomeState extends State<PrototypeHome>
                                       }
                                     },
                                   ),
-                                  if (_linuxBrowserSetupEnabled) ...[
-                                    const SizedBox(height: 24),
-                                    FirefoxSetupCard(
-                                      busy: busy,
-                                      service: widget.firefoxSetupService,
-                                      onBusy: _browserSetupBusy,
-                                    ),
-                                    const SizedBox(height: 16),
-                                    ChromeSetupCard(
-                                      busy: busy,
-                                      service: widget.chromeSetupService,
-                                      onBusy: _browserSetupBusy,
-                                    ),
-                                  ],
                                 ],
                               ),
                               advanced: Column(

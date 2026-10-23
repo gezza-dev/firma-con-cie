@@ -315,7 +315,7 @@ void main() {
     expect(service.writes, 0);
   });
 
-  testWidgets('Home places Chrome setup first and Settings keeps the entry', (
+  testWidgets('Chrome setup is conditional in Home and absent from Settings', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(1400, 1500);
@@ -339,11 +339,16 @@ void main() {
     );
     await tester.tap(find.text('Impostazioni'));
     await tester.pumpAndSettle();
-    expect(find.text('Configura Chrome'), findsOneWidget);
+    expect(find.text('Configura Chrome'), findsNothing);
+    expect(find.text('Google Chrome'), findsNothing);
     service.state = 'configured';
     await tester.tap(find.text('Home'));
     await tester.pumpAndSettle();
     expect(find.text('Configura Chrome'), findsNothing);
+    await tester.tap(find.text('Impostazioni'));
+    await tester.pumpAndSettle();
+    expect(find.text('Configura Chrome'), findsNothing);
+    expect(service.plans, 0);
     expect(service.writes, 0);
     await tester.pumpWidget(const SizedBox());
   });

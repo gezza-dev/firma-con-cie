@@ -1,12 +1,13 @@
 # Configurazione guidata Firefox su Linux
 
-**Impostazioni → Generali** offre sempre **Configura Firefox**, anche senza
-lettore o carta. Nella **Home** il riquadro compare in cima solo se occorre
-configurare/aggiornare un profilo inizializzato, correggere un conflitto o
+**Configura Firefox** è disponibile solo in cima alla **Home**, anche senza
+lettore o carta, se occorre configurare/aggiornare un profilo inizializzato,
+correggere un conflitto o
 verificare/autorizzare il permesso Snap. Se tutti i profili utilizzabili sono
 configurati e il permesso Snap è collegato, il riquadro scompare. Anche l'assenza
 di profili utilizzabili lascia la Home senza il riquadro. Se lo stato non è
 leggibile, il riquadro resta disponibile per la diagnosi dalla procedura.
+Il riquadro non compare nella pagina **Impostazioni**.
 
 Il controllo automatico usa esclusivamente l'ispezione in sola lettura:
 all'apertura della Home, al ritorno nell'app e alla chiusura della procedura.

@@ -29,8 +29,8 @@ l’autenticazione per questa lettura deve essere predisposta prima nell’app.
 Il certificato salvato viene nuovamente legato alla carta/SOD dal motore condiviso.
 
 La preparazione del certificato non modifica i profili Firefox. La nuova
-procedura **Configura Firefox**, sempre nelle Impostazioni generali e in
-cima alla Home solo se occorre configurare/aggiornare un profilo o verificare
+procedura **Configura Firefox**, disponibile solo in
+cima alla Home se occorre configurare/aggiornare un profilo o verificare
 il permesso Snap, esclude i profili non ancora inizializzati e
 registra il modulo soltanto nel profilo scelto e dopo conferma esplicita.
 Non avvia il browser e non richiede il PIN. Lo stato del certificato non

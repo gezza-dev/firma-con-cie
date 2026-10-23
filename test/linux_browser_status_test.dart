@@ -64,7 +64,7 @@ const pairedStatus = ValueKey('paired-web-status-TEST');
 const configuredPrefix =
     'Accesso ai siti con CIE configurato. Apri il sito nei seguenti browser: ';
 const unconfigured =
-    'Accesso ai siti da configurare. Apri le Impostazioni per configurare Firefox o Chrome.';
+    'Accesso ai siti da configurare. Usa i riquadri in cima alla Home per configurare Firefox o Chrome.';
 
 void noPrivateCalls(
   LinuxPairedService service,

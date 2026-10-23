@@ -194,24 +194,19 @@ void main() {
     },
   );
 
-  testWidgets(
-    'Home hides ready setup while Settings retains the manual entry',
-    (tester) async {
-      final service = FakeFirefoxSetup()..inspectResult = ready();
-      await tester.pumpWidget(screen(service, home: true));
-      await tester.pumpAndSettle();
-      expect(service.reads, 1);
-      expect(find.byType(Card), findsNothing);
-      expect(find.text('Configura Firefox'), findsNothing);
-      expect(service.writes, 0);
-      expect(service.plans, 0);
-      expect(service.permissions, 0);
-      await tester.pumpWidget(screen(service));
-      await tester.pumpAndSettle();
-      expect(find.text('Configura Firefox'), findsOneWidget);
-      expect(service.reads, 1);
-    },
-  );
+  testWidgets('Home hides ready setup without opening the wizard', (
+    tester,
+  ) async {
+    final service = FakeFirefoxSetup()..inspectResult = ready();
+    await tester.pumpWidget(screen(service, home: true));
+    await tester.pumpAndSettle();
+    expect(service.reads, 1);
+    expect(find.byType(Card), findsNothing);
+    expect(find.text('Configura Firefox'), findsNothing);
+    expect(service.writes, 0);
+    expect(service.plans, 0);
+    expect(service.permissions, 0);
+  });
 
   testWidgets('Home rechecks on resume and after closing the wizard', (
     tester,
@@ -237,43 +232,46 @@ void main() {
     expect(service.permissions, 0);
   });
 
-  testWidgets(
-    'Home notice precedes enrollment content and Settings stays available',
-    (tester) async {
-      tester.view.physicalSize = const Size(1400, 1500);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-      final firefox = FakeFirefoxSetup();
-      final system = PublicSystem();
-      await tester.pumpWidget(
-        CiePrototype(
-          service: UnifiedFake(),
-          webPublisher: system.publish,
-          webStatusReader: system.status,
-          firefoxSetupService: firefox,
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(
-        tester.getTopLeft(find.text('Firefox e Firefox Snap')).dy,
-        lessThan(tester.getTopLeft(find.text('Abbina la tua CIE')).dy),
-      );
-      expect(firefox.writes, 0);
-      expect(firefox.permissions, 0);
-      await tester.tap(find.text('Impostazioni'));
-      await tester.pumpAndSettle();
-      expect(find.text('Configura Firefox'), findsOneWidget);
-      firefox.inspectResult = ready();
-      await tester.tap(find.text('Home'));
-      await tester.pumpAndSettle();
-      expect(find.text('Configura Firefox'), findsNothing);
-      await tester.tap(find.text('Impostazioni'));
-      await tester.pumpAndSettle();
-      expect(find.text('Configura Firefox'), findsOneWidget);
-      await tester.pumpWidget(const SizedBox());
-    },
-  );
+  testWidgets('Firefox setup is conditional in Home and absent from Settings', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1400, 1500);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final firefox = FakeFirefoxSetup();
+    final system = PublicSystem();
+    await tester.pumpWidget(
+      CiePrototype(
+        service: UnifiedFake(),
+        webPublisher: system.publish,
+        webStatusReader: system.status,
+        firefoxSetupService: firefox,
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester.getTopLeft(find.text('Firefox e Firefox Snap')).dy,
+      lessThan(tester.getTopLeft(find.text('Abbina la tua CIE')).dy),
+    );
+    expect(firefox.writes, 0);
+    expect(firefox.permissions, 0);
+    await tester.tap(find.text('Impostazioni'));
+    await tester.pumpAndSettle();
+    expect(find.text('Configura Firefox'), findsNothing);
+    expect(find.text('Firefox e Firefox Snap'), findsNothing);
+    firefox.inspectResult = ready();
+    await tester.tap(find.text('Home'));
+    await tester.pumpAndSettle();
+    expect(find.text('Configura Firefox'), findsNothing);
+    await tester.tap(find.text('Impostazioni'));
+    await tester.pumpAndSettle();
+    expect(find.text('Configura Firefox'), findsNothing);
+    expect(firefox.plans, 0);
+    expect(firefox.writes, 0);
+    expect(firefox.permissions, 0);
+    await tester.pumpWidget(const SizedBox());
+  });
 
   testWidgets('discovery failure is not presented as an empty profile list', (
     tester,

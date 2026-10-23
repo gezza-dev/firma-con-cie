@@ -99,7 +99,7 @@ bool firefoxSetupNeeded(JsonResult status) {
 }
 
 /// Home checks only profile metadata. Registration stays behind the wizard's
-/// explicit confirmation; Settings keeps the unconditional entry point.
+/// explicit confirmation. This is the app's entry point when setup is needed.
 class FirefoxSetupHomeCard extends StatefulWidget {
   const FirefoxSetupHomeCard({
     super.key,

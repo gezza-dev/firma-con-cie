@@ -69,9 +69,9 @@ class LinuxBrowserConfiguration {
       return 'Verifica della configurazione dei browser in corso…';
     }
     if (_unknown) {
-      return 'Impossibile verificare la configurazione dei browser. Apri le Impostazioni.';
+      return 'Impossibile verificare la configurazione dei browser. Controlla gli avvisi in cima alla Home.';
     }
-    return 'Accesso ai siti da configurare. Apri le Impostazioni per configurare Firefox o Chrome.';
+    return 'Accesso ai siti da configurare. Usa i riquadri in cima alla Home per configurare Firefox o Chrome.';
   }
 }
 

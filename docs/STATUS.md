@@ -2,6 +2,37 @@
 
 Situazione al 23 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
 
+## Configurazione browser Linux solo nella Home (23 ottobre)
+
+Rimossi i riquadri Firefox/Firefox Snap e Google Chrome dalle Impostazioni.
+Le procedure restano disponibili solo in cima alla Home quando le ispezioni
+in sola lettura rilevano una configurazione da completare o un errore da
+controllare. I browser già configurati non mostrano il riquadro; restano
+invariati il filtro dei profili non inizializzati e il controllo del permesso
+Snap. I messaggi della CIE abbinata e la Guida, in italiano e inglese,
+rimandano ora alla Home. Questa modifica sostituisce i precedenti riferimenti
+all'accesso permanente dalle Impostazioni nelle sezioni storiche sottostanti.
+
+Verifiche software: analisi Flutter senza problemi, 331 test superati
+(incluse le quattro integrazioni runtime/DSS), controllo repository e cataloghi
+IT/EN superati. I test aggiornati verificano l'assenza dei due riquadri nelle
+Impostazioni e la loro scomparsa dalla Home dopo una configurazione simulata.
+Resta il warning di hit-test già noto in `pairing_test.dart`; nessun test
+fallito o saltato. Nessuna modifica ai browser, prova sulla CIE o installazione
+di pacchetti in questa verifica.
+
+Successivamente ricompilata l'app Linux Release con due job e preparato il
+pacchetto locale `0.1.0~test20261023.18`, riutilizzando il runtime nativo/DSS
+invariato dopo confronto degli hash. Superati i controlli del pacchetto:
+734 file, 61 ELF, launcher e icone, runtime Java privato e ciclo
+installazione/aggiornamento/rimozione in una radice isolata. La versione `.18`
+è stata poi installata su questo computer, con verifica degli hash di tutti
+i 734 file. SHA-256 del `.deb` di test:
+`4e940a9634923871764754a05a1ad6f1270def72e56f1b64cebd9e3a9b48c4c2`.
+L'utente ha confermato il collaudo della nuova interfaccia riuscito.
+Nessuna modifica ai browser o nuova prova sulla CIE. Il pacchetto resta un
+artefatto locale di test, escluso dal repository insieme ai rapporti locali.
+
 ## Verifica Windows di main `16da166` (23 ottobre)
 
 Aggiornata la copia Windows con fast-forward dal commit `5c17a7a` a

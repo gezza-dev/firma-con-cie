@@ -83,8 +83,8 @@ Chrome.**, includendo soltanto i browser la cui registrazione è verificata.
 Per Firefox basta almeno un profilo configurato della rispettiva versione;
 i nomi dei profili non vengono mostrati e ogni browser compare una sola volta.
 Firefox Snap è elencato soltanto se anche il permesso `pcscd` risulta attivo.
-Se nessuno è configurato, il testo invita ad aprire le Impostazioni per
-configurare Firefox o Chrome. Letture in corso o non riuscite hanno messaggi
+Se nessuno è configurato, il testo invita a usare i riquadri in cima alla Home
+per configurare Firefox o Chrome. Letture in corso o non riuscite hanno messaggi
 distinti, senza dichiarare configurato un browser non verificato.
 
 L'elenco riusa le ispezioni in sola lettura degli avvisi Home e si aggiorna

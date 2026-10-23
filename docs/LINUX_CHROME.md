@@ -44,15 +44,15 @@ osservato la sessione autenticata né avviato la prova sulla CIE.
 
 ## Configurazione guidata nell’app
 
-**Impostazioni → Generali → Configura Chrome** apre la procedura per Google
-Chrome desktop. Un riquadro compare anche in cima alla Home quando Chrome
+**Configura Chrome** apre la procedura per Google
+Chrome desktop. Il riquadro compare solo in cima alla Home quando Chrome
 è rilevato e la configurazione richiede attenzione. Il riquadro scompare
-quando la registrazione corrisponde; l’accesso nelle Impostazioni resta disponibile.
+quando la registrazione corrisponde e non compare nelle Impostazioni.
 Sotto la CIE abbinata la Home elenca anche i browser configurati, separati da
 virgole: **Firefox**, **Firefox Snap** e/o **Google Chrome**. Lo stato è condiviso
 con i riquadri di configurazione; per Firefox Snap serve anche il permesso del
-lettore. Se nessun browser è pronto, compare l'invito a configurarlo dalle
-Impostazioni. Una lettura non riuscita non viene presentata come una lista vuota.
+lettore. Se nessun browser è pronto, compare l'invito a usare i riquadri in cima
+alla Home. Una lettura non riuscita non viene presentata come una lista vuota.
 Quando Chrome è pronto per la configurazione il dialogo mostra **Continua**
 e nasconde **Rileggi**; quest’ultimo resta disponibile se manca il database
 iniziale o occorre recuperare da un errore.

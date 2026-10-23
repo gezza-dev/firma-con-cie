@@ -114,9 +114,9 @@ window manager né le dimensioni massime della finestra.
 
 ## Modulo Firefox e Firefox Snap
 
-**Impostazioni → Generali → Configura Firefox** offre sempre una procedura
-per Firefox desktop e Firefox Snap. Il riquadro compare anche in cima alla
-Home soltanto quando occorre intervenire sulla configurazione o sul permesso
+**Configura Firefox** offre una procedura
+per Firefox desktop e Firefox Snap. Il riquadro compare solo in cima alla
+Home quando occorre intervenire sulla configurazione o sul permesso
 Snap; i profili non inizializzati sono esclusi dall'elenco e dall'avviso.
 La procedura prevede scelta del profilo, riepilogo
 e conferma finale. Per Snap vengono copiate soltanto tre librerie in una
@@ -127,9 +127,10 @@ L'installazione del pacchetto non esegue la procedura né configura browser.
 [Istruzioni e limiti del nuovo wizard](LINUX_FIREFOX_SETUP.md).
 
 Google Chrome desktop usa lo stesso provider con una registrazione NSS
-distinta. **Impostazioni → Generali → Configura Chrome** offre la procedura
+distinta. **Configura Chrome** offre la procedura
 nell’app con riepilogo e conferma esplicita, senza richiedere carta/PIN.
-Il riquadro Home compare soltanto quando la configurazione richiede attenzione.
+Il riquadro compare solo nella Home quando la configurazione richiede attenzione.
+Nessuna delle due procedure è presente nella pagina Impostazioni.
 Il pacchetto include l’helper Chrome e la stessa guardia PC/SC di Firefox;
 l’installer non modifica browser. Resta disponibile l’alternativa da terminale in
 `/usr/share/doc/cie-id-desktop/tools/configure_chrome_linux.py`: senza opzioni
