@@ -366,7 +366,7 @@ void main() {
       await t.pumpAndSettle();
       expect(service.signCalls, 1);
       expect(find.byType(AlertDialog), findsOneWidget);
-      await t.tap(find.text('OK'));
+      await t.tap(find.text('Chiudi'));
       await t.pumpAndSettle();
       expect(t.widget<TextField>(find.byType(TextField)).maxLength, 4);
       await t.ensureVisible(find.text('Usa PIN completo'));

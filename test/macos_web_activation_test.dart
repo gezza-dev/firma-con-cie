@@ -81,7 +81,7 @@ void main() {
         expect(find.byType(TextField), findsNothing);
         expect(service.records['TEST']!['readyForSigning'], isTrue);
         expect(find.byType(AlertDialog), findsOneWidget);
-        await t.tap(find.text('OK'));
+        await t.tap(find.text('Chiudi'));
         await t.pumpAndSettle();
         t.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
         system.available = true;
@@ -239,6 +239,81 @@ void main() {
     });
   }
 
+  for (final outcome in ['stale-reply', 'delayed-status', 'pending']) {
+    testWidgets('activation $outcome uses fresh status without resubmission', (
+      t,
+    ) async {
+      size(t);
+      final service = pairedService();
+      final system = ActivationSystem()..available = false;
+      system.cards.add('TEST');
+      var activations = 0, statusReadsAfterRequest = 0;
+      Future<Map<String, dynamic>> status() async {
+        if (activations > 0) {
+          statusReadsAfterRequest++;
+          if (outcome == 'stale-reply' ||
+              (outcome == 'delayed-status' && statusReadsAfterRequest >= 3)) {
+            system.available = true;
+          }
+        }
+        return {
+          ...await system.status(),
+          'canActivateComponent': !system.available,
+        };
+      }
+
+      await t.pumpWidget(
+        CiePrototype(
+          service: service,
+          settings: MemorySettingsStore(),
+          webPublisher: system.publish,
+          webStatusReader: status,
+          webComponentActivator: () async {
+            activations++;
+            return {
+              'ok': false,
+              'activationRequested': outcome != 'stale-reply',
+            };
+          },
+        ),
+      );
+      await t.pumpAndSettle();
+      await t.tap(find.text('Attiva accesso ai siti'));
+      await t.pumpAndSettle();
+      await t.tap(find.text('Attiva'));
+      await t.pump();
+      for (var tick = 0; tick < 12; tick++) {
+        await t.pump(const Duration(milliseconds: 500));
+      }
+      await t.pumpAndSettle();
+      expect(activations, 1);
+      expect(service.enrollCalls, 0);
+      expect(service.signCalls, 0);
+      expect(service.completeCalls, 0);
+      expect(system.publications, 0);
+      expect(find.byType(TextField), findsNothing);
+      expect(find.textContaining('Attivazione non completata.'), findsNothing);
+      if (outcome == 'pending') {
+        expect(statusReadsAfterRequest, inInclusiveRange(11, 12));
+        expect(
+          find.textContaining('Richiesta di attivazione inviata.'),
+          findsOneWidget,
+        );
+      } else {
+        expect(
+          find.textContaining('Accesso ai siti attivato.'),
+          findsOneWidget,
+        );
+      }
+      await t.tap(find.text('Chiudi'));
+      await t.pumpAndSettle();
+      await t.pump(const Duration(seconds: 10));
+      expect(activations, 1);
+      expect(service.records['TEST']!['readyForSigning'], isTrue);
+      await t.pumpWidget(const SizedBox());
+    });
+  }
+
   for (final mismatch in ['path_mismatch', 'version_mismatch']) {
     testWidgets('component $mismatch repairs without pairing or PIN', (
       t,
@@ -286,7 +361,7 @@ void main() {
       expect(system.publications, 0);
       expect(service.records['TEST']!['readyForSigning'], isTrue);
       expect(find.textContaining('Componente aggiornato.'), findsOneWidget);
-      await t.tap(find.text('OK'));
+      await t.tap(find.text('Chiudi'));
       await t.pumpAndSettle();
       expect(find.text('Aggiorna accesso ai siti'), findsNothing);
       expect(

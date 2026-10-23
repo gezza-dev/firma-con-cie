@@ -90,7 +90,7 @@ void main() {
     expect(proofs, 0);
     expect(service.enrollments, 0);
     expect(service.removals, 0);
-    await t.tap(find.text('OK'));
+    await t.tap(find.text('Chiudi'));
     await t.pumpAndSettle();
   });
 }

@@ -94,7 +94,7 @@ class EnrollmentRecord {
       : needsComponentUpdate
       ? 'Il componente per l’accesso ai siti deve essere aggiornato. L’abbinamento è conservato; non occorre reinserire il PIN.'
       : needsComponentActivation
-      ? 'Per accedere ai siti, attiva il componente Firma con CIE. L’abbinamento per firmare è conservato.'
+      ? 'Per accedere ai siti, attiva il componente Firma con CIE.'
       : needsSystemSettings
       ? 'Per accedere ai siti, abilita il componente nelle Impostazioni di Sistema. L’abbinamento per firmare è conservato.'
       : !webProvisioned

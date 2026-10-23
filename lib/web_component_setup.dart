@@ -38,7 +38,7 @@ class WebComponentSetupNotice {
         WebComponentAction.activate,
         update
             ? 'Il componente per l’accesso ai siti deve essere aggiornato. L’abbinamento è conservato; non occorre reinserire il PIN.'
-            : 'Per accedere ai siti, attiva il componente Firma con CIE. L’abbinamento per firmare è conservato.',
+            : 'Per accedere ai siti, attiva il componente Firma con CIE.',
         update ? 'Aggiorna accesso ai siti' : 'Attiva accesso ai siti',
         update,
       );

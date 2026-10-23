@@ -1,9 +1,38 @@
 // SPDX-License-Identifier: BSD-3-Clause
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:cie_flutter_prototype/app_notification.dart';
+import 'package:cie_flutter_prototype/app_localizations.dart';
 
 void main() {
+  for (final language in ['it', 'en']) {
+    testWidgets('informational dialog closes with the $language label', (
+      t,
+    ) async {
+      await t.pumpWidget(
+        MaterialApp(
+          locale: Locale(language),
+          supportedLocales: CieLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            CieLocalizations.delegate,
+            ...GlobalMaterialLocalizations.delegates,
+          ],
+          home: const Scaffold(
+            body: AppNotification(message: 'Operazione terminata.'),
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+      final label = language == 'it' ? 'Chiudi' : 'OK';
+      expect(find.widgetWithText(TextButton, label), findsOneWidget);
+      expect(find.text(language == 'it' ? 'OK' : 'Chiudi'), findsNothing);
+      await t.tap(find.text(label));
+      await t.pumpAndSettle();
+      expect(find.byType(AlertDialog), findsNothing);
+    });
+  }
+
   testWidgets(
     'long notification is scrollable, wraps and has a reachable close action',
     (t) async {
@@ -31,7 +60,7 @@ void main() {
       );
       expect(t.widget<Text>(find.text(message)).softWrap, isTrue);
       expect(t.takeException(), isNull);
-      await t.tap(find.text('OK'));
+      await t.tap(find.text('Chiudi'));
       await t.pumpAndSettle();
       expect(find.byType(AlertDialog), findsNothing);
     },
@@ -68,11 +97,11 @@ void main() {
       expect(find.byType(AlertDialog), findsOneWidget);
       expect(find.text('Primo avviso'), findsOneWidget);
       expect(find.text('Secondo avviso'), findsNothing);
-      await t.tap(find.text('OK'));
+      await t.tap(find.text('Chiudi'));
       await t.pumpAndSettle();
       expect(find.byType(AlertDialog), findsOneWidget);
       expect(find.text('Secondo avviso'), findsOneWidget);
-      await t.tap(find.text('OK'));
+      await t.tap(find.text('Chiudi'));
       await t.pumpAndSettle();
       theme.value = ThemeMode.dark;
       await t.pumpAndSettle();
@@ -108,7 +137,7 @@ void main() {
         event.value = Object();
         await t.pumpAndSettle();
         expect(find.byType(AlertDialog), findsOneWidget);
-        await t.tap(find.text('OK'));
+        await t.tap(find.text('Chiudi'));
         await t.pumpAndSettle();
       }
       expect(acknowledged, 2);

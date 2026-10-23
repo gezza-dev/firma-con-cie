@@ -296,7 +296,14 @@ class _PrototypeHomeState extends State<PrototypeHome>
 
   JsonResult? _firefoxBrowserStatus, _chromeBrowserStatus;
 
-  String _pairedWebStatus(EnrollmentRecord record) => Platform.isLinux
+  // Main supplies these services only on Linux. Injected services also enable
+  // the same UI in software tests running on macOS or Windows.
+  bool get _linuxBrowserSetupEnabled =>
+      Platform.isLinux ||
+      widget.firefoxSetupService != null ||
+      widget.chromeSetupService != null;
+
+  String _pairedWebStatus(EnrollmentRecord record) => _linuxBrowserSetupEnabled
       ? linuxPairedWebStatus(
           record,
           LinuxBrowserConfiguration(
@@ -953,7 +960,22 @@ class _PrototypeHomeState extends State<PrototypeHome>
         result = {'ok': false};
       }
       await enrollment.refreshSystem();
-      if (result['ok'] == true && enrollment.system['available'] == true) {
+      final requested =
+          result['activationRequested'] == true || result['ok'] == true;
+      // macOS publishes the registration and driver configuration separately.
+      // Allow ten short intervals, reading status only: never repeat activation,
+      // card authentication or a failed certificate publication.
+      for (
+        var attempt = 0;
+        requested && enrollment.system['available'] != true && attempt < 10;
+        attempt++
+      ) {
+        await Future<void>.delayed(const Duration(milliseconds: 500));
+        if (!mounted) return;
+        await enrollment.refreshSystem();
+      }
+      // A fresh positive status supersedes an earlier transitional reply.
+      if (enrollment.system['available'] == true) {
         homeMessage =
             enrollment.message ??
             (update
@@ -965,6 +987,8 @@ class _PrototypeHomeState extends State<PrototypeHome>
                   )
                 ? 'Accesso ai siti attivato. Apri il sito nel browser. Non occorre ripetere l’abbinamento.'
                 : 'Componente Firma con CIE attivato. Premi Completa accesso ai siti per terminare senza reinserire il PIN.');
+      } else if (requested) {
+        homeMessage = 'Richiesta di attivazione inviata. macOS non ha ancora confermato che il componente sia pronto. Attendi qualche istante, poi riapri l’app per verificarne lo stato.';
       } else {
         homeMessage = 'Attivazione non completata. L’abbinamento è conservato e puoi continuare a firmare. Puoi riprovare su tua iniziativa; non occorre reinserire il PIN.';
       }
@@ -1808,7 +1832,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
                                       }
                                     },
                                   ),
-                                  if (Platform.isLinux) ...[
+                                  if (_linuxBrowserSetupEnabled) ...[
                                     const SizedBox(height: 24),
                                     FirefoxSetupCard(
                                       busy: busy,
@@ -1853,7 +1877,8 @@ class _PrototypeHomeState extends State<PrototypeHome>
                                       ),
                                       children: [
                                         WebAccessCard(
-                                          linuxFirefox: Platform.isLinux,
+                                          linuxFirefox:
+                                              _linuxBrowserSetupEnabled,
                                           key: ValueKey(
                                             'advanced-web-${selected!['cardId']}',
                                           ),
@@ -1963,7 +1988,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
       ? _unifiedHome(context)
       : [
           ..._webComponentSetupCards(context),
-          if (Platform.isLinux && widget.firefoxSetupService != null)
+          if (_linuxBrowserSetupEnabled && widget.firefoxSetupService != null)
             FirefoxSetupHomeCard(
               service: widget.firefoxSetupService!,
               onStatus: (status) =>
@@ -1971,7 +1996,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
               busy: busy,
               onBusy: _browserSetupBusy,
             ),
-          if (Platform.isLinux && widget.chromeSetupService != null)
+          if (_linuxBrowserSetupEnabled && widget.chromeSetupService != null)
             ChromeSetupHomeCard(
               service: widget.chromeSetupService!,
               onStatus: (status) =>
@@ -2063,7 +2088,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
                           ),
                         ),
                       WebAccessCard(
-                        linuxFirefox: Platform.isLinux,
+                        linuxFirefox: _linuxBrowserSetupEnabled,
                         key: ValueKey(
                           'web-${reader['name']}-${reader['cardId']}',
                         ),
@@ -2195,14 +2220,14 @@ class _PrototypeHomeState extends State<PrototypeHome>
     final candidates = readers.where(_homeCanPair).toList();
     return [
       ..._webComponentSetupCards(context),
-      if (Platform.isLinux && widget.firefoxSetupService != null)
+      if (_linuxBrowserSetupEnabled && widget.firefoxSetupService != null)
         FirefoxSetupHomeCard(
           service: widget.firefoxSetupService!,
           onStatus: (status) => setState(() => _firefoxBrowserStatus = status),
           busy: busy,
           onBusy: _browserSetupBusy,
         ),
-      if (Platform.isLinux && widget.chromeSetupService != null)
+      if (_linuxBrowserSetupEnabled && widget.chromeSetupService != null)
         ChromeSetupHomeCard(
           service: widget.chromeSetupService!,
           onStatus: (status) => setState(() => _chromeBrowserStatus = status),

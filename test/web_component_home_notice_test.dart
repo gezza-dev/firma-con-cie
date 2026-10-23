@@ -227,7 +227,7 @@ void main() {
       await t.pumpAndSettle();
       expect(find.byKey(noticeKey), findsOneWidget);
       expect(
-        find.textContaining('Attivazione non completata.'),
+        find.textContaining('Richiesta di attivazione inviata.'),
         findsOneWidget,
       );
       await t.pump(const Duration(seconds: 10));

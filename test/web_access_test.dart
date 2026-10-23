@@ -103,7 +103,7 @@ void main() {
     expect(attempts, 1);
     expect(find.byType(TextField), findsNothing);
     expect(find.byType(AlertDialog), findsOneWidget);
-    await tester.tap(find.text('OK'));
+    await tester.tap(find.text('Chiudi'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Completa configurazione senza PIN'));
     await tester.pumpAndSettle();

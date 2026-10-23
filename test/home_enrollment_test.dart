@@ -448,7 +448,7 @@ void main() {
       await t.pumpAndSettle();
       expect(service.forgetCalls, 1);
       expect(find.byType(AlertDialog), findsOneWidget);
-      await t.tap(find.text('OK'));
+      await t.tap(find.text('Chiudi'));
       await t.pumpAndSettle();
       expect(find.text('Rimozione della CIE da completare.'), findsOneWidget);
       expect(find.text('CIE abbinata. Puoi firmare documenti.'), findsNothing);
@@ -534,7 +534,7 @@ void main() {
       expect(find.text('Nome Cognome'), findsOneWidget);
       expect(find.text('Configura accesso ai siti'), findsNothing);
       expect(find.byType(AlertDialog), findsOneWidget);
-      await t.tap(find.text('OK'));
+      await t.tap(find.text('Chiudi'));
       await t.pumpAndSettle();
       service.presence = {'ok': true, 'readers': []};
       await t.pump(const Duration(seconds: 1));

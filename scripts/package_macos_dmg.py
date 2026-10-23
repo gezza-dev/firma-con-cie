@@ -95,6 +95,27 @@ def finder_layout(folder):
         store['Applicazioni']['Iloc'] = (465, 155)
 
 
+def clean_packaged_metadata(app):
+    # HFS+ adds FinderInfo even to read-only JRE license files. Temporarily
+    # allow owner writes on this disposable copy, then restore every mode.
+    modes = []
+    try:
+        for path in [app, *app.rglob('*')]:
+            if path.is_symlink():
+                continue
+            mode = stat.S_IMODE(path.stat().st_mode)
+            if not mode & stat.S_IWUSR:
+                path.chmod(mode | stat.S_IWUSR)
+                modes.append((path, mode))
+        for attribute in ('com.apple.FinderInfo', 'com.apple.ResourceFork'):
+            # Missing attributes are expected; validate_app checks the result.
+            subprocess.run(['xattr', '-dr', attribute, str(app)],
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    finally:
+        for path, mode in reversed(modes):
+            path.chmod(mode)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--app', type=Path, required=True)
@@ -134,9 +155,7 @@ def main():
             finder_layout(mount)
             # HFS+ creation can add FinderInfo to the copied bundle. Clean
             # only the packaged app, before freezing the volume.
-            for attribute in ('com.apple.FinderInfo', 'com.apple.ResourceFork'):
-                subprocess.run(['xattr', '-dr', attribute, str(mount / app.name)],
-                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            clean_packaged_metadata(mount / app.name)
             validate_app(mount / app.name, original)
         finally:
             if attached:

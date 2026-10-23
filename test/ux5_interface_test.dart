@@ -150,7 +150,7 @@ void main() {
       await t.pumpAndSettle();
       expect((await store.load()).proxy.mode, ProxyMode.direct);
       expect(find.byType(AlertDialog), findsOneWidget);
-      await t.tap(find.text('OK'));
+      await t.tap(find.text('Chiudi'));
       await t.pumpAndSettle();
       await t.tap(find.widgetWithText(Tab, 'Generali'));
       await t.pumpAndSettle();

@@ -66,8 +66,13 @@ class MainFlutterWindow: NSWindow {
             let driverPresent = TKTokenDriver.Configuration.driverConfigurations[classID] != nil
             let assessment = WebComponentActivation.assess(embedded: WebComponentActivation.embeddedURL, driverPresent: driverPresent, election: election)
             var response = assessment.diagnostics
-            response["ok"] = activated && assessment.state == "enabled"
-            response["code"] = activated && assessment.state == "enabled" ? "web_component_enabled" : "web_component_activation_failed"
+            // Registration/election return before CryptoTokenKit necessarily
+            // refreshes its configuration. The caller can wait using status
+            // reads only; it must not submit the activation command again.
+            response["activationRequested"] = activated
+            response["ok"] = assessment.state == "enabled"
+            response["code"] = assessment.state == "enabled" ? "web_component_enabled" :
+              activated ? "web_component_activation_pending" : "web_component_activation_failed"
             result(response)
           }
         }

@@ -28,7 +28,7 @@ Future<void> showAppNotification(
   String title = 'Firma con CIE',
   String? details,
   bool error = false,
-  String buttonLabel = 'OK',
+  String buttonLabel = 'Chiudi',
   bool Function()? isCurrent,
 }) {
   final navigator = Navigator.of(context, rootNavigator: true);
