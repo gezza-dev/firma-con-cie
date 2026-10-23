@@ -38,6 +38,28 @@ flutter test --no-pub
 
 Questi test usano servizi simulati. Tre test del backend documentale sono opt-in: vedere la sezione Test. La UI può compilare senza runtime, ma firma, lettura CIE e verifica nativa richiedono le librerie descritte sotto.
 
+## Dopo lo spostamento dei sorgenti
+
+La copia di lavoro Linux si trova in `firma-con-cie/firma-con-cie-linux`.
+I comandi di questa guida vanno eseguiti dalla nuova radice; gli script del
+repository ricavano i percorsi dalla propria posizione.
+
+Dopo una rinomina, eseguire `flutter clean` e
+`flutter pub get --enforce-lockfile`, quindi rigenerare le directory CMake
+con percorsi assoluti obsoleti. Non riutilizzare le cache `CMakeCache.txt`
+del vecchio percorso: scegliere un nuovo `--build-dir` per
+`scripts/build_native.py` oppure ricreare la relativa directory generata.
+Anche i file `.pc`, `.cmake`, `.la` e gli script `*-config` delle dipendenze
+locali possono contenere il vecchio prefisso: verificarli e aggiornare il
+solo prefisso locale, oppure ricompilare le dipendenze. Gli ambienti Python
+virtuali contengono percorsi assoluti e richiedono anch’essi una verifica
+dopo lo spostamento.
+
+La rinomina della cartella dei sorgenti non cambia il percorso di
+installazione `/opt/firma-con-cie`, gli identificativi tecnici, i dati
+utente o la configurazione dei browser. I percorsi nei report e nei
+pacchetti già prodotti documentano la build originale e restano storici.
+
 ## Processo di rilevamento della carta
 
 Il rilevamento pubblico usa il programma privato `cie_card_observer` (`.exe`
