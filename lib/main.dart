@@ -36,7 +36,9 @@ import 'information_view.dart';
 import 'card_monitor.dart';
 import 'enrollment.dart';
 import 'windows_web_setup.dart';
+import 'web_component_setup.dart';
 import 'firefox_setup.dart';
+import 'chrome_setup.dart';
 import 'enrollment_diagnostics_view.dart';
 import 'home_card_status.dart';
 import 'paired_card_identity.dart';
@@ -73,6 +75,7 @@ void main() {
           ? checkWindowsWebComponent
           : null,
       firefoxSetupService: Platform.isLinux ? LinuxFirefoxSetupService() : null,
+      chromeSetupService: Platform.isLinux ? LinuxChromeSetupService() : null,
     ),
   );
 }
@@ -92,6 +95,7 @@ class CiePrototype extends StatefulWidget {
     this.webComponentActivator = activateWebComponent,
     this.windowsWebComponentChecker,
     this.firefoxSetupService,
+    this.chromeSetupService,
   });
   final PreferencesStore? preferences;
   final SettingsStore? settings;
@@ -105,6 +109,7 @@ class CiePrototype extends StatefulWidget {
   final WebComponentActivator webComponentActivator;
   final WindowsWebComponentChecker? windowsWebComponentChecker;
   final FirefoxSetupService? firefoxSetupService;
+  final ChromeSetupService? chromeSetupService;
   @override
   State<CiePrototype> createState() => _CiePrototypeState();
 }
@@ -164,6 +169,7 @@ class _CiePrototypeState extends State<CiePrototype> {
           webComponentActivator: widget.webComponentActivator,
           windowsWebComponentChecker: widget.windowsWebComponentChecker,
           firefoxSetupService: widget.firefoxSetupService,
+          chromeSetupService: widget.chromeSetupService,
         ),
       ),
     ),
@@ -185,6 +191,7 @@ class PrototypeHome extends StatefulWidget {
     this.webComponentActivator = activateWebComponent,
     this.windowsWebComponentChecker,
     this.firefoxSetupService,
+    this.chromeSetupService,
   });
   final PreferencesStore? preferences;
   final SettingsStore? settings;
@@ -198,6 +205,7 @@ class PrototypeHome extends StatefulWidget {
   final WebComponentActivator webComponentActivator;
   final WindowsWebComponentChecker? windowsWebComponentChecker;
   final FirefoxSetupService? firefoxSetupService;
+  final ChromeSetupService? chromeSetupService;
   @override
   State<PrototypeHome> createState() => _PrototypeHomeState();
 }
@@ -276,7 +284,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
     }
   }
 
-  Future<void> _firefoxSetupBusy(bool value) async {
+  Future<void> _browserSetupBusy(bool value) async {
     if (!mounted) return;
     setState(() {
       busy = value;
@@ -329,9 +337,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
   bool refreshingWebStatus = false, waitingForWebSettings = false;
   void _updateWebSettingsMessage() {
     if (waitingForWebSettings &&
-        !enrollment.records.values.any(
-          (record) => record.needsSystemSettings,
-        )) {
+        enrollment.system['canOpenSystemSettings'] != true) {
       waitingForWebSettings = false;
       homeMessage = enrollment.message;
     }
@@ -881,8 +887,8 @@ class _PrototypeHomeState extends State<PrototypeHome>
     }
   }
 
-  Future<void> _activateWebComponent(EnrollmentRecord record) async {
-    if (busy || modalInteraction || record.removalPending) return;
+  Future<void> _activateWebComponent({bool update = false}) async {
+    if (busy || modalInteraction) return;
     modalInteraction = true;
     await _coordinateMonitor();
     bool? confirmed;
@@ -894,15 +900,13 @@ class _PrototypeHomeState extends State<PrototypeHome>
           title: Text(
             tr(
               context,
-              record.needsComponentUpdate
-                  ? 'Aggiorna accesso ai siti'
-                  : 'Attiva accesso ai siti',
+              update ? 'Aggiorna accesso ai siti' : 'Attiva accesso ai siti',
             ),
           ),
           content: Text(
             tr(
               context,
-              record.needsComponentUpdate
+              update
                   ? 'Verrà registrato il componente incluso in questa versione di Firma con CIE. L’abbinamento e il certificato pubblico sono conservati; non viene richiesto il PIN. Le altre estensioni non vengono modificate.'
                   : 'Verrà riattivato soltanto il componente Firma con CIE di questa applicazione. L’abbinamento è conservato e non viene richiesto il PIN. Le altre estensioni non vengono modificate.',
             ),
@@ -914,12 +918,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
             ),
             FilledButton(
               onPressed: () => Navigator.pop(context, true),
-              child: Text(
-                tr(
-                  context,
-                  record.needsComponentUpdate ? 'Aggiorna' : 'Attiva',
-                ),
-              ),
+              child: Text(tr(context, update ? 'Aggiorna' : 'Attiva')),
             ),
           ],
         ),
@@ -937,13 +936,16 @@ class _PrototypeHomeState extends State<PrototypeHome>
         result = {'ok': false};
       }
       await enrollment.refreshSystem();
-      final updated = enrollment.records[record.id];
-      if (result['ok'] == true && updated?.componentAvailable == true) {
+      if (result['ok'] == true && enrollment.system['available'] == true) {
         homeMessage =
             enrollment.message ??
-            (record.needsComponentUpdate
+            (update
                 ? 'Componente aggiornato. L’abbinamento è conservato. Prima del prossimo accesso, rimuovi e riappoggia la CIE e riapri il browser per terminare la sessione precedente.'
-                : updated!.webProvisioned
+                : enrollment.records.isEmpty
+                ? 'Componente Firma con CIE attivato.'
+                : enrollment.records.values.every(
+                    (record) => record.webProvisioned,
+                  )
                 ? 'Accesso ai siti attivato. Apri il sito nel browser. Non occorre ripetere l’abbinamento.'
                 : 'Componente Firma con CIE attivato. Premi Completa accesso ai siti per terminare senza reinserire il PIN.');
       } else {
@@ -1794,7 +1796,13 @@ class _PrototypeHomeState extends State<PrototypeHome>
                                     FirefoxSetupCard(
                                       busy: busy,
                                       service: widget.firefoxSetupService,
-                                      onBusy: _firefoxSetupBusy,
+                                      onBusy: _browserSetupBusy,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    ChromeSetupCard(
+                                      busy: busy,
+                                      service: widget.chromeSetupService,
+                                      onBusy: _browserSetupBusy,
                                     ),
                                   ],
                                 ],
@@ -1891,14 +1899,64 @@ class _PrototypeHomeState extends State<PrototypeHome>
       ),
     ),
   );
+  WebComponentSetupNotice? get _webComponentNotice =>
+      WebComponentSetupNotice.fromStatus(enrollment.system);
+
+  List<Widget> _webComponentSetupCards(BuildContext context) {
+    final notice = _webComponentNotice;
+    if (notice == null) return [];
+    return [
+      Card(
+        key: const ValueKey('web-component-setup-home'),
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                tr(context, 'Accesso ai siti con CIE'),
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              Text(tr(context, notice.message)),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: busy || modalInteraction
+                    ? null
+                    : () => switch (notice.action) {
+                        WebComponentAction.activate => _activateWebComponent(
+                          update: notice.update,
+                        ),
+                        WebComponentAction.systemSettings => _openWebSettings(),
+                        WebComponentAction.appUpdate ||
+                        WebComponentAction.installer =>
+                          _showWebCompletionStatus(notice.message),
+                      },
+                icon: const Icon(Icons.settings_outlined),
+                label: Text(tr(context, notice.label)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ];
+  }
+
   List<Widget> _cardPage(BuildContext context) => unified
       ? _unifiedHome(context)
       : [
+          ..._webComponentSetupCards(context),
           if (Platform.isLinux && widget.firefoxSetupService != null)
             FirefoxSetupHomeCard(
               service: widget.firefoxSetupService!,
               busy: busy,
-              onBusy: _firefoxSetupBusy,
+              onBusy: _browserSetupBusy,
+            ),
+          if (Platform.isLinux && widget.chromeSetupService != null)
+            ChromeSetupHomeCard(
+              service: widget.chromeSetupService!,
+              busy: busy,
+              onBusy: _browserSetupBusy,
             ),
           _heading(
             context,
@@ -2115,11 +2173,18 @@ class _PrototypeHomeState extends State<PrototypeHome>
   List<Widget> _unifiedHome(BuildContext context) {
     final candidates = readers.where(_homeCanPair).toList();
     return [
+      ..._webComponentSetupCards(context),
       if (Platform.isLinux && widget.firefoxSetupService != null)
         FirefoxSetupHomeCard(
           service: widget.firefoxSetupService!,
           busy: busy,
-          onBusy: _firefoxSetupBusy,
+          onBusy: _browserSetupBusy,
+        ),
+      if (Platform.isLinux && widget.chromeSetupService != null)
+        ChromeSetupHomeCard(
+          service: widget.chromeSetupService!,
+          busy: busy,
+          onBusy: _browserSetupBusy,
         ),
       _heading(
         context,
@@ -2193,7 +2258,10 @@ class _PrototypeHomeState extends State<PrototypeHome>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(tr(context, record.status)),
-                      Text(tr(context, record.webStatus)),
+                      if (_webComponentNotice == null ||
+                          record.removalPending ||
+                          !record.hasPublicData)
+                        Text(tr(context, record.webStatus)),
                       if (record.certificateValidity case final validity?)
                         Text(
                           tr(context, 'Scadenza del certificato CIE: {p0}', [
@@ -2214,7 +2282,19 @@ class _PrototypeHomeState extends State<PrototypeHome>
                         spacing: 12,
                         runSpacing: 8,
                         children: [
-                          if (!record.removalPending &&
+                          if (_webComponentNotice != null &&
+                              !record.removalPending &&
+                              !record.needsAppUpdate &&
+                              (!record.readyForSigning ||
+                                  !record.hasPublicData))
+                            OutlinedButton(
+                              onPressed: busy
+                                  ? null
+                                  : () => _completeEnrollment(record),
+                              child: Text(tr(context, 'Completa abbinamento')),
+                            ),
+                          if (_webComponentNotice == null &&
+                              !record.removalPending &&
                               !record.needsAppUpdate &&
                               (!record.readyForSigning ||
                                   !record.hasPublicData ||
@@ -2230,7 +2310,9 @@ class _PrototypeHomeState extends State<PrototypeHome>
                                         : record.needsComponentActivation &&
                                               record.readyForSigning &&
                                               record.hasPublicData
-                                        ? _activateWebComponent(record)
+                                        ? _activateWebComponent(
+                                            update: record.needsComponentUpdate,
+                                          )
                                         : record.needsSystemSettings &&
                                               record.readyForSigning &&
                                               record.hasPublicData

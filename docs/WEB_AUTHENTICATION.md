@@ -53,6 +53,32 @@ con la chiave di accesso ai siti. Le capacità dichiarate restano PKCS#1 v1.5.
 
 ## Configurazione del certificato
 
+### Avvisi nella Home
+
+Su Windows e macOS, un unico riquadro **Accesso ai siti con CIE** compare
+in cima alla Home soltanto quando il controllo del componente richiede un
+intervento. È indipendente dalla presenza di lettore, carta o abbinamenti:
+
+- Windows: informazioni sull'installazione o **Aggiorna accesso ai siti**,
+  con le istruzioni per il pacchetto di installazione; l'app non avvia l'installer.
+- macOS: **Attiva accesso ai siti**, **Aggiorna accesso ai siti** oppure
+  **Apri Impostazioni di Sistema**, secondo lo stato CryptoTokenKit.
+- Se il componente macOS è più recente dell'app aperta, il riquadro invita
+  ad aprire la versione più recente dell'app, senza proporre un downgrade.
+
+Il controllo iniziale e quello al ritorno in primo piano leggono lo stato:
+non avviano attivazioni o modifiche ai browser. L'attivazione/aggiornamento
+macOS richiede la conferma dell'utente; aprire le Impostazioni di Sistema o
+ricevere una risposta positiva dal comando non basta per dichiarare il
+componente pronto. Quando la rilettura lo conferma disponibile, l'avviso
+scompare. L'assenza della carta o di un'identità osservata non causa avvisi.
+I pulsanti relativi al componente non vengono duplicati per ciascuna CIE;
+restano le azioni e gli stati specifici di abbinamento e rimozione.
+Su Linux restano i riquadri condizionali **Configura Firefox** e **Configura
+Chrome**, con configurazione esplicita dei browser da parte dell'utente.
+
+### Abbinamento e dati pubblici
+
 La Home predispone il certificato nell’**abbinamento unico**, con un solo
 VERIFY e verifica rigorosa dei sei DG/SOD. Il materiale pubblico verificato
 viene conservato in modo versionato per completare la pubblicazione senza
@@ -147,9 +173,9 @@ di una chiave osservabile non viene interpretata come disattivazione. Il
 controllo dell’elezione avviene fuori dal thread dell’interfaccia, con un limite
 di due secondi; un esito sconosciuto non viene presentato come consenso negato.
 
-Se il componente incluso richiede attenzione, una CIE già abbinata mostra
-il pulsante di attivazione anche quando la pubblicazione del certificato non è
-ancora terminata. L’operazione avviene fuori dal thread dell’interfaccia, con
+Se il componente incluso richiede attenzione, il riquadro in cima alla Home
+mostra l'azione necessaria anche senza CIE abbinate o con pubblicazione del
+certificato ancora da completare. L’operazione avviene fuori dal thread dell’interfaccia, con
 un timeout e senza ripetizioni automatiche. Annullamento ed errore conservano
 l’abbinamento. Il canale di apertura delle Impostazioni di Sistema rimane
 separato, come ripiego, senza essere considerato un’attivazione riuscita.

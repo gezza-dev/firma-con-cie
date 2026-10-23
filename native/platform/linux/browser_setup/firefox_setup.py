@@ -109,6 +109,8 @@ def merge_record(original, name, replacement):
 
 
 class FirefoxSetup:
+    backup_name = 'cie-firefox-setup-backup.json'
+
     def __init__(self, home, runtime, *, proc=Path('/proc'), modutil='/usr/bin/modutil', run=subprocess.run):
         self.home, self.runtime, self.proc = Path(home), Path(runtime), Path(proc)
         self.modutil, self.run = modutil, run
@@ -344,7 +346,7 @@ class FirefoxSetup:
                 module_file = profile['path'] / 'pkcs11.txt'
                 before = read_private(module_file)
                 foreign = lambda data: [m for m in records(data) if m['name'] != plan['moduleName']]
-                backup = profile['path'] / 'cie-firefox-setup-backup.json'
+                backup = profile['path'] / self.backup_name
                 # Keep only module configuration for recovery, never cert/key DBs.
                 if backup.exists() or backup.is_symlink():
                     checked(backup)
@@ -380,6 +382,8 @@ class FirefoxSetup:
                     raise SetupError('registration_failed_restored')
                 if read_private(module_file) != before:
                     raise SetupError('plan_changed')
+                if self.processes_running():
+                    raise SetupError('browser_running')
                 atomic_write(module_file, proposed)
                 if read_private(module_file) != proposed:
                     raise SetupError('plan_changed')

@@ -83,6 +83,15 @@ def check(package, report, upgrade_from=None):
         obj.g_object_unref(theme)
         runtime = app / 'cie_native'
         assert (runtime / 'browser_setup/firefox_setup.py').is_file()
+        assert (runtime / 'browser_setup/chrome_setup.py').is_file()
+        isolated_home = temp / 'chrome-test-home'
+        isolated_home.mkdir(mode=0o700)
+        inspection = subprocess.run([
+            '/usr/bin/python3', '-B', str(runtime / 'browser_setup/chrome_setup.py'), '--action', 'inspect'],
+            env={'HOME': str(isolated_home), 'XDG_DATA_HOME': str(isolated_home / '.local/share')},
+            capture_output=True, text=True, check=True, timeout=20)
+        assert json.loads(inspection.stdout)['ok'] is True
+        assert not list(isolated_home.iterdir())
         assert (runtime / 'browser_setup/libcie_browser_setup_guard.so').is_file()
         assert (extracted / 'usr/share/doc/cie-id-desktop/LINUX_FIREFOX_SETUP.md').is_file()
         assert not (runtime / 'libcie_setup_no_load_probe.so').exists()
@@ -175,6 +184,7 @@ def check(package, report, upgrade_from=None):
                    'elfFilesResolved': elf_count, 'nativeManifestVerified': True,
                    'privateDssWorkerRelocationPassed': ltv_checked,
                    'snapProviderAbiPassed': True, 'isolatedDpkgInstallPassed': True,
+                   'chromeHelperReadOnlyInspectionPassed': True,
                    'isolatedDpkgUpgradePassed': True, 'isolatedDpkgRemovePassed': True,
                    'previousPrefixUpgradePassed': bool(upgrade_from),
                    'syntheticUserDataPreserved': True, 'hostAptSimulationPassed': apt.returncode == 0,

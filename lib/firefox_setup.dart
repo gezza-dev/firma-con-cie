@@ -16,11 +16,13 @@ abstract interface class FirefoxSetupService {
 }
 
 class LinuxFirefoxSetupService implements FirefoxSetupService {
+  LinuxFirefoxSetupService({this.helperName = 'firefox_setup.py'});
+  final String helperName;
   Future<JsonResult> _run(List<String> arguments) async {
     if (!Platform.isLinux) return {'ok': false, 'code': 'unsupported'};
     final helper = File.fromUri(
       File(Platform.resolvedExecutable).parent.uri
-          .resolve('cie_native/browser_setup/firefox_setup.py'),
+          .resolve('cie_native/browser_setup/$helperName'),
     );
     if (!await helper.exists()) {
       return {'ok': false, 'code': 'runtime_invalid'};

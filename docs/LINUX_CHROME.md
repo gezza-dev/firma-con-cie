@@ -42,6 +42,45 @@ nuovamente l'accesso ai siti con Google Chrome riuscito usando il PIN completo.
 Anche questo esito deriva dalla conferma diretta dell'utente; l'agente non ha
 osservato la sessione autenticata né avviato la prova sulla CIE.
 
+## Configurazione guidata nell’app
+
+**Impostazioni → Generali → Configura Chrome** apre la procedura per Google
+Chrome desktop. Un riquadro compare anche in cima alla Home quando Chrome
+è rilevato e la configurazione richiede attenzione. Il riquadro scompare
+quando la registrazione corrisponde; l’accesso nelle Impostazioni resta disponibile.
+Quando Chrome è pronto per la configurazione il dialogo mostra **Continua**
+e nasconde **Rileggi**; quest’ultimo resta disponibile se manca il database
+iniziale o occorre recuperare da un errore.
+
+1. Se non è ancora stato usato, aprire e chiudere Chrome una volta.
+2. Aprire **Configura Chrome** e chiudere tutti i processi Chrome, anche in
+   background. Non occorrono lettore, carta o PIN per questa procedura.
+3. Premere **Continua**, controllare il riepilogo e confermare con **Configura**.
+4. Riaprire Chrome. Il successivo accesso ai siti richiede il PIN completo
+   di otto cifre nel browser; la configurazione non esegue questa prova.
+
+Non si sceglie un profilo Chrome: il modulo è registrato nel database NSS
+condiviso dell’utente, selezionato secondo le stesse regole dello script.
+La procedura non crea/ripara database mancanti e non richiede sudo. Snap e
+Flatpak non sono coperti. L’installer non esegue la configurazione.
+
+L’ispezione e il riepilogo leggono soltanto metadati e `pkcs11.txt`, senza
+inizializzare NSS o caricare moduli. La scrittura richiede un piano ancora
+valido, controllo dei processi Chrome/Chromium e lock fra le istanze della
+procedura. NSS genera il solo record CIE in un database temporaneo vuoto con
+PC/SC bloccato; il record viene poi unito atomicamente a `pkcs11.txt`.
+I byte delle registrazioni estranee sono conservati e i moduli estranei non
+sono inizializzati. `cert9.db` e `key4.db` non vengono modificati; Firefox,
+certificati pubblicati, abbinamenti e permessi Snap restano invariati.
+Il backup `cie-chrome-setup-backup.json` contiene soltanto la precedente
+configurazione dei moduli, senza copie dei database certificati/chiavi.
+
+Un conflitto o una modifica del piano richiedono un nuovo controllo; nessun
+tentativo viene ripetuto automaticamente. Il monitor della carta nell’app
+rimane sospeso durante il dialogo. Il controllo della Home è in sola lettura.
+I test software usano esclusivamente HOME/database temporanei, incluso un
+modulo sentinella che segnala l’eventuale caricamento di componenti estranei.
+
 ## Configurazione esplicita, separata dall'installazione
 
 Preparare il certificato pubblico dall'app come per Firefox. Una CIE già
@@ -57,7 +96,7 @@ Il pacchetto include il provider nel percorso stabile:
 Conservare anche `libcie_web.so` e `libcie-pkcs11.so` adiacenti. Un aggiornamento
 del pacchetto mantiene il percorso; riaprire il browser dopo l'aggiornamento.
 
-La procedura usa Python 3 e `modutil` (`libnss3-tools` su Debian/Ubuntu).
+La procedura alternativa da terminale usa Python 3 e `modutil` (`libnss3-tools` su Debian/Ubuntu).
 Non eseguire come root. Dalla radice dei sorgenti, per vedere il solo piano:
 
 ```sh

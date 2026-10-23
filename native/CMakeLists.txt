@@ -316,5 +316,7 @@ if(UNIX AND NOT APPLE AND TARGET cie_web)
     add_library(cie_setup_no_load_probe SHARED platform/linux/browser_setup/tests/no_load_probe.c)
     add_test(NAME linux_firefox_guided_setup COMMAND "${Python3_EXECUTABLE}"
       "${CMAKE_CURRENT_SOURCE_DIR}/platform/linux/browser_setup/tests/setup_tests.py" --native "${CMAKE_BINARY_DIR}")
+    add_test(NAME linux_chrome_guided_setup COMMAND "${Python3_EXECUTABLE}"
+      "${CMAKE_CURRENT_SOURCE_DIR}/platform/linux/browser_setup/tests/chrome_setup_tests.py" --native "${CMAKE_BINARY_DIR}")
   endif()
 endif()

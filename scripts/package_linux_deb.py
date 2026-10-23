@@ -46,7 +46,7 @@ def validate_bundle(bundle):
             raise ValueError('Unsupported link, special file or permissions in bundle')
     native = bundle / 'cie_native'
     manifest = json.loads((native / 'backend-manifest.json').read_text())
-    if not {'browser_setup/firefox_setup.py', 'browser_setup/libcie_browser_setup_guard.so'} <= set(manifest['files']):
+    if not {'browser_setup/firefox_setup.py', 'browser_setup/chrome_setup.py', 'browser_setup/libcie_browser_setup_guard.so'} <= set(manifest['files']):
         raise ValueError('Rebuild the runtime with the Firefox guided setup helper')
     if manifest['system'] != 'linux' or not manifest.get('linux_firefox_snap_core24_abi_verified'):
         raise ValueError('Use a Linux runtime with the Firefox Snap ABI check')

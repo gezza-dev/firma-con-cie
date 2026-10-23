@@ -127,6 +127,8 @@ class EnrollmentController {
   final EnrollmentService service;
   final WebPublisher publisher;
   final WebStatusReader systemStatus;
+  // Component status belongs to this computer, independently of paired cards.
+  JsonResult system = {};
   Map<String, EnrollmentRecord> records = {};
   final Set<String> _pendingRemovals = {};
   bool readable = false;
@@ -137,14 +139,14 @@ class EnrollmentController {
       result['invalidatedCards'] as List? ?? [],
     );
     records.removeWhere((id, _) => invalidated.contains(id));
+    final nativeSystem = await service.webStatus();
+    final platform = await systemStatus();
+    system = {...nativeSystem, ...platform};
     readable = result['ok'] == true;
     if (!readable) {
       message = 'Archivio protetto non leggibile. Gli abbinamenti esistenti non vengono modificati.';
       return;
     }
-    final nativeSystem = await service.webStatus();
-    final platform = await systemStatus();
-    final system = {...nativeSystem, ...platform};
     final next = <String, EnrollmentRecord>{};
     for (final raw in result['records'] as List? ?? []) {
       final data = Map<String, dynamic>.from(raw as Map);
@@ -218,7 +220,7 @@ class EnrollmentController {
   Future<void> refreshSystem() async {
     final native = await service.webStatus();
     final platform = await systemStatus();
-    final system = {...native, ...platform};
+    system = {...native, ...platform};
     final waiting = records.values
         .where(
           (record) =>

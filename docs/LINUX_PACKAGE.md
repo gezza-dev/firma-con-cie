@@ -122,7 +122,11 @@ L'installazione del pacchetto non esegue la procedura né configura browser.
 [Istruzioni e limiti del nuovo wizard](LINUX_FIREFOX_SETUP.md).
 
 Google Chrome desktop usa lo stesso provider con una registrazione NSS
-distinta. I nuovi pacchetti includono la procedura guidata da terminale in
+distinta. **Impostazioni → Generali → Configura Chrome** offre la procedura
+nell’app con riepilogo e conferma esplicita, senza richiedere carta/PIN.
+Il riquadro Home compare soltanto quando la configurazione richiede attenzione.
+Il pacchetto include l’helper Chrome e la stessa guardia PC/SC di Firefox;
+l’installer non modifica browser. Resta disponibile l’alternativa da terminale in
 `/usr/share/doc/cie-id-desktop/tools/configure_chrome_linux.py`: senza opzioni
 mostra soltanto il piano. L'installer non la esegue. Dopo l'installazione del
 pacchetto `0.1.0~test20261023.2` e la registrazione esplicita, l'utente ha

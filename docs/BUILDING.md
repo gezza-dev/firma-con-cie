@@ -236,8 +236,10 @@ decidere se mostrare il riquadro nella Home; registrazione e permesso richiedono
 conferme separate nella procedura aperta dall'utente.
 Il nuovo `.deb` dipende anche da Python 3 e `libnss3-tools`.
 
-Per Chrome desktop lo stesso provider usa NSS; la registrazione rimane
-esplicita e separata da build/installer. I test `linux_chrome_nss` e
+Per Chrome desktop lo stesso provider usa NSS; **Configura Chrome** nell’app
+propone riepilogo e conferma prima della registrazione. L’helper usa un
+NSS temporaneo con PC/SC bloccato e conserva i database certificati/chiavi.
+La registrazione rimane esplicita e separata da build/installer. I test `linux_chrome_nss` e
 `linux_chrome_setup_policy` non aprono il browser e non accedono alla CIE.
 [Procedura, test SQL isolati e limiti](LINUX_CHROME.md).
 

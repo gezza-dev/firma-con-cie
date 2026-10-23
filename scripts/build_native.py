@@ -89,6 +89,7 @@ def main():
         (output/'browser_setup').mkdir(exist_ok=True)
         copy_binary(build/'libcie_browser_setup_guard.so', output/'browser_setup/libcie_browser_setup_guard.so')
         shutil.copy2(ROOT/'native/platform/linux/browser_setup/firefox_setup.py', output/'browser_setup/firefox_setup.py')
+        shutil.copy2(ROOT/'native/platform/linux/browser_setup/chrome_setup.py', output/'browser_setup/chrome_setup.py')
     licenses = output/'licenses'
     (output/'tests').mkdir(exist_ok=True)
     for name in ['cie_enrollment_state_tests','cie_web_probe','cie_web_policy_tests','cie_web_sign_request_tests','cie_web_abi_tests','cie_web_crypto_tests']:

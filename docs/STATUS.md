@@ -2,6 +2,31 @@
 
 Situazione al 23 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
 
+## Avvisi accesso ai siti nella Home Windows e macOS
+
+Il controllo del componente alimenta ora un unico riquadro in cima alla Home,
+visibile soltanto quando occorre intervenire, anche senza lettore o CIE
+abbinate e con archivio degli abbinamenti non leggibile. Windows mostra le
+istruzioni per l'installer; macOS propone attivazione, aggiornamento o apertura
+delle Impostazioni di Sistema. Se l'app è precedente al componente selezionato,
+invita ad aprire l'app più recente senza proporre un downgrade. Il riquadro
+scompare quando la rilettura conferma il componente pronto. I pulsanti del
+componente non vengono duplicati su tutte le carte. Restano invariati i
+riquadri condizionali di configurazione Firefox e Chrome per Linux.
+
+Superati su Linux 309 test Flutter, senza test saltati, inclusi 10 nuovi casi
+per criteri di visibilità, posizione, assenza/più abbinamenti, archivio non
+leggibile, conferma/annullamento, risposta positiva senza stato attivo,
+componente più recente e interfaccia inglese con testo al 200%. Inclusi i
+test di verifica documenti con runtime reale e worker DSS privato; PIN e carte
+sono simulati nei test dell'interfaccia. Superati anche i 36 gruppi CTest
+nativi con protezione dalle chiamate alla carta; analisi statica pulita. Il collaudo
+nativo/visivo su Windows e macOS resta da eseguire sui rispettivi sistemi.
+Nessuna modifica ai browser, installazione di pacchetti o prova sulla CIE.
+[Comportamento degli avvisi](WEB_AUTHENTICATION.md#avvisi-nella-home).
+
+## Verifiche precedenti Windows e interfaccia condivisa
+
 Firma con CIE 1.0.0: completata la verifica Windows del nuovo nome pubblico e
 delle icone. Il titolo resta disponibile per taskbar e accessibilità, mentre
 la barra del titolo visibile mostra soltanto icona e pulsanti nativi.
@@ -159,6 +184,44 @@ Il controllo ripetibile
 | DSS/LTA con JVM privata | Predisposto e testato | Predisposto e testato | Integrato Linux x86_64; worker privato e test software superati |
 
 L’esecuzione su un sistema non prova automaticamente la compatibilità con tutti i lettori, le CIE, i browser o i servizi. Il formato LTA non implica da solo una validazione storica positiva: servono prove e una catena di fiducia sufficienti.
+
+## Configurazione guidata Chrome Linux (23 ottobre)
+
+**Configura Chrome** è disponibile nelle Impostazioni generali e nella Home
+quando Chrome desktop richiede configurazione. La procedura legge lo stato
+senza inizializzare NSS; propone riepilogo e conferma, richiede Chrome chiuso
+e controlla nuovamente il piano prima di scrivere. Usa il database NSS desktop
+condiviso dell’utente, senza selezione di profili Firefox o percorsi Snap.
+NSS genera il solo record CIE in un database temporaneo con PC/SC bloccato;
+la modifica atomica conserva i byte degli altri record e non scrive nei
+database certificati/chiavi. Il monitor della carta è sospeso nel dialogo.
+Il browser richiede ancora il PIN completo; non si eseguono login di prova.
+
+Superati 18 test backend Chrome, inclusa registrazione NSS reale temporanea
+con sentinella che esclude il caricamento di moduli estranei. I 13 nuovi test
+Flutter coprono conferma/annullamento, piano cambiato, nessun retry, stato Home,
+accesso dalle Impostazioni, italiano/inglese e finestra piccola con testo al
+200%. Suite completa: 299 test Flutter senza esclusioni, 36 gruppi CTest e
+analisi pulita. Conservati DSS/LTA e JVM privata; passano nuovamente 14 casi
+LTA e 19 controlli storici. La build release usa 2 job. Nessuna configurazione
+browser reale o operazione sulla CIE viene eseguita dai test.
+Pacchetto `0.1.0~test20261023.11` preparato: 732 file e 61 ELF verificati,
+helper Chrome controllato in sola lettura con HOME temporanea, worker DSS
+funzionante dopo estrazione e ciclo dpkg isolato superato. Non installato;
+versione `.10` e tutti i file installati invariati. Nessun browser configurato
+o avviato e nessuna prova reale sulla CIE.
+[Procedura e limiti](LINUX_CHROME.md#configurazione-guidata-nellapp).
+
+Correzione successiva del dialogo Chrome: **Rileggi** viene nascosto quando
+Chrome è pronto da configurare; resta disponibile per database non inizializzato
+o errori da ricontrollare. Superati 30 test dei wizard e analisi pulita.
+Pacchetto `.12` preparato e installato su richiesta dell’utente: 732 file
+verificati e `dpkg --verify` superato. Rispetto alla `.11` cambiano soltanto
+il codice AOT dell’interfaccia e `LINUX_CHROME.md`; runtime nativo/DSS invariati.
+Nessuna app o browser avviati, configurazione browser eseguita o prova sulla CIE.
+L'utente ha successivamente confermato il test riuscito della configurazione
+guidata Chrome con il dialogo aggiornato; non è una nuova prova di accesso ai siti.
+
 
 ## DSS/LTA Linux x86_64 (23 ottobre)
 
