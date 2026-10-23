@@ -39,6 +39,7 @@ import 'windows_web_setup.dart';
 import 'web_component_setup.dart';
 import 'firefox_setup.dart';
 import 'chrome_setup.dart';
+import 'linux_browser_status.dart';
 import 'enrollment_diagnostics_view.dart';
 import 'home_card_status.dart';
 import 'paired_card_identity.dart';
@@ -292,6 +293,22 @@ class _PrototypeHomeState extends State<PrototypeHome>
     });
     await _coordinateMonitor();
   }
+
+  JsonResult? _firefoxBrowserStatus, _chromeBrowserStatus;
+
+  String _pairedWebStatus(EnrollmentRecord record) => Platform.isLinux
+      ? linuxPairedWebStatus(
+          record,
+          LinuxBrowserConfiguration(
+            firefox: widget.firefoxSetupService == null
+                ? {'ok': false}
+                : _firefoxBrowserStatus,
+            chrome: widget.chromeSetupService == null
+                ? {'ok': false}
+                : _chromeBrowserStatus,
+          ),
+        )
+      : record.webStatus;
 
   CardMonitor? monitor;
   late final enrollment = EnrollmentController(
@@ -1949,12 +1966,16 @@ class _PrototypeHomeState extends State<PrototypeHome>
           if (Platform.isLinux && widget.firefoxSetupService != null)
             FirefoxSetupHomeCard(
               service: widget.firefoxSetupService!,
+              onStatus: (status) =>
+                  setState(() => _firefoxBrowserStatus = status),
               busy: busy,
               onBusy: _browserSetupBusy,
             ),
           if (Platform.isLinux && widget.chromeSetupService != null)
             ChromeSetupHomeCard(
               service: widget.chromeSetupService!,
+              onStatus: (status) =>
+                  setState(() => _chromeBrowserStatus = status),
               busy: busy,
               onBusy: _browserSetupBusy,
             ),
@@ -2177,12 +2198,14 @@ class _PrototypeHomeState extends State<PrototypeHome>
       if (Platform.isLinux && widget.firefoxSetupService != null)
         FirefoxSetupHomeCard(
           service: widget.firefoxSetupService!,
+          onStatus: (status) => setState(() => _firefoxBrowserStatus = status),
           busy: busy,
           onBusy: _browserSetupBusy,
         ),
       if (Platform.isLinux && widget.chromeSetupService != null)
         ChromeSetupHomeCard(
           service: widget.chromeSetupService!,
+          onStatus: (status) => setState(() => _chromeBrowserStatus = status),
           busy: busy,
           onBusy: _browserSetupBusy,
         ),
@@ -2261,7 +2284,10 @@ class _PrototypeHomeState extends State<PrototypeHome>
                       if (_webComponentNotice == null ||
                           record.removalPending ||
                           !record.hasPublicData)
-                        Text(tr(context, record.webStatus)),
+                        Text(
+                          tr(context, _pairedWebStatus(record)),
+                          key: ValueKey('paired-web-status-${record.id}'),
+                        ),
                       if (record.certificateValidity case final validity?)
                         Text(
                           tr(context, 'Scadenza del certificato CIE: {p0}', [

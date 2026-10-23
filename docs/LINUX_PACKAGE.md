@@ -47,6 +47,11 @@ sudo apt install ./cie-id-desktop_0.1.0~test20261020.2_amd64.deb
 - Avvisi e documentazione: `/usr/share/doc/cie-id-desktop` e
   `/opt/firma-con-cie/cie_native/licenses`.
 
+La documentazione inclusa comprende anche `STATUS.md` e
+`WEB_AUTHENTICATION.md`, con lo stato dei collaudi e il comportamento degli
+avvisi di accesso ai siti sulle tre piattaforme. Il controllo del pacchetto
+confronta questi due documenti con i sorgenti correnti.
+
 L'installer non avvia app o browser, non configura moduli, non modifica permessi
 Snap e non legge o cancella gli abbinamenti. Le cache di sistema del menu/icone
 sono gestite dai normali trigger della distribuzione. Rimuovere il pacchetto con

@@ -120,7 +120,9 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.text('Accesso ai siti configurato: apri il sito nel browser.'),
+        find.text(
+          'Accesso ai siti con CIE configurato. Apri il sito nel browser.',
+        ),
         findsOneWidget,
       );
       expect(
@@ -156,7 +158,9 @@ void main() {
       await t.tap(find.text('Home').first);
       await t.pumpAndSettle();
       expect(
-        find.text('Accesso ai siti configurato: apri il sito nel browser.'),
+        find.text(
+          'Accesso ai siti con CIE configurato. Apri il sito nel browser.',
+        ),
         findsOneWidget,
       );
       expect(service.enrollCalls, 0);

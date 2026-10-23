@@ -89,7 +89,9 @@ void main() {
         await t.pumpAndSettle();
         expect(find.text('Apri Impostazioni di Sistema'), findsNothing);
         expect(
-          find.text('Accesso ai siti configurato: apri il sito nel browser.'),
+          find.text(
+            'Accesso ai siti con CIE configurato. Apri il sito nel browser.',
+          ),
           findsOneWidget,
         );
         expect(
@@ -164,7 +166,9 @@ void main() {
       await t.pumpAndSettle();
       expect(find.text('Apri Impostazioni di Sistema'), findsNothing);
       expect(
-        find.text('Accesso ai siti configurato: apri il sito nel browser.'),
+        find.text(
+          'Accesso ai siti con CIE configurato. Apri il sito nel browser.',
+        ),
         findsOneWidget,
       );
       expect(service.enrollCalls, 0);
@@ -212,7 +216,9 @@ void main() {
       if (outcome == 'success') {
         expect(find.text('Attiva accesso ai siti'), findsNothing);
         expect(
-          find.text('Accesso ai siti configurato: apri il sito nel browser.'),
+          find.text(
+            'Accesso ai siti con CIE configurato. Apri il sito nel browser.',
+          ),
           findsOneWidget,
         );
         expect(service.completeCalls, 1);
@@ -284,7 +290,9 @@ void main() {
       await t.pumpAndSettle();
       expect(find.text('Aggiorna accesso ai siti'), findsNothing);
       expect(
-        find.text('Accesso ai siti configurato: apri il sito nel browser.'),
+        find.text(
+          'Accesso ai siti con CIE configurato. Apri il sito nel browser.',
+        ),
         findsOneWidget,
       );
       await t.pump(const Duration(seconds: 10));

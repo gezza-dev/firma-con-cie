@@ -84,7 +84,9 @@ void main() {
       ); // The callback is invoked, but supplies no readiness flags.
       expect(service.records['TEST']!['webProvisioned'], isTrue);
       expect(
-        find.text('Accesso ai siti configurato: apri il sito nel browser.'),
+        find.text(
+          'Accesso ai siti con CIE configurato. Apri il sito nel browser.',
+        ),
         findsOneWidget,
       );
       expect(find.text('Completa accesso ai siti'), findsNothing);
@@ -92,7 +94,9 @@ void main() {
       await t.pumpWidget(const SizedBox());
       await open(); // Restored pairing stays ready after restarting the UI.
       expect(
-        find.text('Accesso ai siti configurato: apri il sito nel browser.'),
+        find.text(
+          'Accesso ai siti con CIE configurato. Apri il sito nel browser.',
+        ),
         findsOneWidget,
       );
       expect(find.text('Completa accesso ai siti'), findsNothing);

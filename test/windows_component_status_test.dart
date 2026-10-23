@@ -99,7 +99,9 @@ void main() {
       expect(find.text(windowsComponentUpdateMessage), findsOneWidget);
       expect(find.text('Aggiorna accesso ai siti'), findsOneWidget);
       expect(
-        find.text('Accesso ai siti configurato: apri il sito nel browser.'),
+        find.text(
+          'Accesso ai siti con CIE configurato. Apri il sito nel browser.',
+        ),
         findsNothing,
       );
       await t.tap(find.text('Aggiorna accesso ai siti'));
@@ -115,7 +117,9 @@ void main() {
       await t.pumpAndSettle();
       expect(find.text('Aggiorna accesso ai siti'), findsNothing);
       expect(
-        find.text('Accesso ai siti configurato: apri il sito nel browser.'),
+        find.text(
+          'Accesso ai siti con CIE configurato. Apri il sito nel browser.',
+        ),
         findsOneWidget,
       );
       expect(service.records['TEST'], original);

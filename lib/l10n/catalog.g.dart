@@ -32,7 +32,7 @@ const cieMessages = <String, Map<String, String>>{
     "Abbinamento: una sola autenticazione con la CIE…": "Abbinamento: una sola autenticazione con la CIE…",
     "Accesso ai siti attivato. Apri il sito nel browser. Non occorre ripetere l’abbinamento.": "Accesso ai siti attivato. Apri il sito nel browser. Non occorre ripetere l’abbinamento.",
     "Accesso ai siti con CIE": "Accesso ai siti con CIE",
-    "Accesso ai siti configurato: apri il sito nel browser.": "Accesso ai siti configurato: apri il sito nel browser.",
+    "Accesso ai siti con CIE configurato. Apri il sito nel browser.": "Accesso ai siti con CIE configurato. Apri il sito nel browser.",
     "Accesso ai siti da attivare. Consulta Impostazioni → Log.": "Accesso ai siti da attivare. Consulta Impostazioni → Log.",
     "Adattatore carta incompatibile": "Adattatore carta incompatibile",
     "Adattatore di firma con PIN completo non disponibile su questa piattaforma": "Adattatore di firma con PIN completo non disponibile su questa piattaforma",
@@ -844,7 +844,11 @@ const cieMessages = <String, Map<String, String>>{
     "È presente una configurazione diversa. Controlla il modulo CIE prima di riprovare.": "È presente una configurazione diversa. Controlla il modulo CIE prima di riprovare.",
     "È richiesto il certificato RSA della CIE.": "È richiesto il certificato RSA della CIE.",
     "• Nome\n• Cognome\n• Codice fiscale\n• Numero della CIE, se disponibile\n• Estremi della denuncia presentata alle forze dell’ordine\n• Città dove è stata sporta la denuncia": "• Nome\n• Cognome\n• Codice fiscale\n• Numero della CIE, se disponibile\n• Estremi della denuncia presentata alle forze dell’ordine\n• Città dove è stata sporta la denuncia",
-    "Componente Firma con CIE attivato.": "Componente Firma con CIE attivato."
+    "Componente Firma con CIE attivato.": "Componente Firma con CIE attivato.",
+    "Accesso ai siti con CIE configurato. Apri il sito nei seguenti browser: {p0}.": "Accesso ai siti con CIE configurato. Apri il sito nei seguenti browser: {p0}.",
+    "Verifica della configurazione dei browser in corso…": "Verifica della configurazione dei browser in corso…",
+    "Impossibile verificare la configurazione dei browser. Apri le Impostazioni.": "Impossibile verificare la configurazione dei browser. Apri le Impostazioni.",
+    "Accesso ai siti da configurare. Apri le Impostazioni per configurare Firefox o Chrome.": "Accesso ai siti da configurare. Apri le Impostazioni per configurare Firefox o Chrome."
   },
   "en": {
     " Il componente per l’accesso ai siti richiede ancora l’attivazione: potrai completarla senza ripetere il PIN.": " The website access component still needs activation; you can finish without entering the PIN again.",
@@ -877,7 +881,7 @@ const cieMessages = <String, Map<String, String>>{
     "Abbinamento: una sola autenticazione con la CIE…": "Pairing: one CIE authentication…",
     "Accesso ai siti attivato. Apri il sito nel browser. Non occorre ripetere l’abbinamento.": "Website access enabled. Open the website in your browser. You do not need to pair your card again.",
     "Accesso ai siti con CIE": "Website access with CIE",
-    "Accesso ai siti configurato: apri il sito nel browser.": "Website access configured: open the website in your browser.",
+    "Accesso ai siti con CIE configurato. Apri il sito nel browser.": "Website access with CIE configured. Open the website in your browser.",
     "Accesso ai siti da attivare. Consulta Impostazioni → Log.": "Website access needs activation. See Settings → Logs.",
     "Adattatore carta incompatibile": "Incompatible card adapter",
     "Adattatore di firma con PIN completo non disponibile su questa piattaforma": "Full-PIN signing adapter unavailable on this platform",
@@ -1689,6 +1693,10 @@ const cieMessages = <String, Map<String, String>>{
     "È presente una configurazione diversa. Controlla il modulo CIE prima di riprovare.": "A different configuration already exists. Check the CIE module before trying again.",
     "È richiesto il certificato RSA della CIE.": "The CIE RSA certificate is required.",
     "• Nome\n• Cognome\n• Codice fiscale\n• Numero della CIE, se disponibile\n• Estremi della denuncia presentata alle forze dell’ordine\n• Città dove è stata sporta la denuncia": "• First name\n• Last name\n• Tax code\n• CIE number, if available\n• Details of the police report\n• City where the report was filed",
-    "Componente Firma con CIE attivato.": "Firma con CIE component activated."
+    "Componente Firma con CIE attivato.": "Firma con CIE component activated.",
+    "Accesso ai siti con CIE configurato. Apri il sito nei seguenti browser: {p0}.": "Website access with CIE configured. Open the website in the following browsers: {p0}.",
+    "Verifica della configurazione dei browser in corso…": "Checking browser configuration…",
+    "Impossibile verificare la configurazione dei browser. Apri le Impostazioni.": "Unable to check browser configuration. Open Settings.",
+    "Accesso ai siti da configurare. Apri le Impostazioni per configurare Firefox o Chrome.": "Website access needs to be configured. Open Settings to configure Firefox or Chrome."
   }
 };

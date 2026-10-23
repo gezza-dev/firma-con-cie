@@ -46,6 +46,8 @@ def check(package, report, upgrade_from=None):
         tool = extracted / 'usr/share/doc/cie-id-desktop/tools/configure_chrome_linux.py'
         assert tool.read_bytes() == (ROOT / 'scripts/configure_chrome_linux.py').read_bytes()
         assert (extracted / 'usr/share/doc/cie-id-desktop/LINUX_CHROME.md').is_file()
+        for name in ('STATUS.md', 'WEB_AUTHENTICATION.md'):
+            assert (extracted / 'usr/share/doc/cie-id-desktop' / name).read_bytes() == (ROOT / 'docs' / name).read_bytes()
         launcher = extracted / 'usr/bin/Firma con CIE'
         assert launcher.stat().st_mode & 0o111
         run('sh', '-n', launcher)

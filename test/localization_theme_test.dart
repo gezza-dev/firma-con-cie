@@ -180,7 +180,7 @@ void main() {
           t.getTopLeft(art).dx + 144 * CieCardIllustration.artworkLeftFraction;
       for (final text in [
         'CIE abbinata. Puoi firmare documenti.',
-        'Accesso ai siti configurato: apri il sito nel browser.',
+        'Accesso ai siti con CIE configurato. Apri il sito nel browser.',
         'Rimuovi CIE',
       ]) {
         expect(t.getTopLeft(find.text(text)).dx, closeTo(edge, .1));

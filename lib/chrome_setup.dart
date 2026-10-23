@@ -53,10 +53,12 @@ class ChromeSetupHomeCard extends StatefulWidget {
     required this.service,
     required this.onBusy,
     this.busy = false,
+    this.onStatus,
   });
   final ChromeSetupService service;
   final FutureOr<void> Function(bool) onBusy;
   final bool busy;
+  final ValueChanged<JsonResult>? onStatus;
   @override
   State<ChromeSetupHomeCard> createState() => _ChromeSetupHomeCardState();
 }
@@ -98,13 +100,18 @@ class _ChromeSetupHomeCardState extends State<ChromeSetupHomeCard>
       return;
     }
     checking = true;
+    final service = widget.service;
     try {
-      final result = await widget.service.inspect();
-      if (mounted && !dialogOpen) {
+      final result = await service.inspect();
+      if (mounted && !dialogOpen && !widget.busy && service == widget.service) {
         setState(() => visible = chromeSetupNeeded(result));
+        widget.onStatus?.call(result);
       }
     } catch (_) {
-      if (mounted && !dialogOpen) setState(() => visible = true);
+      if (mounted && !dialogOpen && !widget.busy && service == widget.service) {
+        setState(() => visible = true);
+        widget.onStatus?.call({'ok': false});
+      }
     } finally {
       checking = false;
       if (again) {

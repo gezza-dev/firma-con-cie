@@ -294,7 +294,7 @@ void main() {
     expect(restarted.records['TEST']!.identityObserved, isFalse);
     expect(
       restarted.records['TEST']!.webStatus,
-      'Accesso ai siti configurato: apri il sito nel browser.',
+      'Accesso ai siti con CIE configurato. Apri il sito nel browser.',
     );
   });
   test('missing component and old pairings are distinct from a complete configuration', () async {

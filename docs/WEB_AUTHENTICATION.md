@@ -77,6 +77,24 @@ restano le azioni e gli stati specifici di abbinamento e rimozione.
 Su Linux restano i riquadri condizionali **Configura Firefox** e **Configura
 Chrome**, con configurazione esplicita dei browser da parte dell'utente.
 
+Sotto ogni CIE abbinata, su Linux, il testo diventa **Accesso ai siti
+con CIE configurato. Apri il sito nei seguenti browser: Firefox, Firefox Snap, Google
+Chrome.**, includendo soltanto i browser la cui registrazione è verificata.
+Per Firefox basta almeno un profilo configurato della rispettiva versione;
+i nomi dei profili non vengono mostrati e ogni browser compare una sola volta.
+Firefox Snap è elencato soltanto se anche il permesso `pcscd` risulta attivo.
+Se nessuno è configurato, il testo invita ad aprire le Impostazioni per
+configurare Firefox o Chrome. Letture in corso o non riuscite hanno messaggi
+distinti, senza dichiarare configurato un browser non verificato.
+
+L'elenco riusa le ispezioni in sola lettura degli avvisi Home e si aggiorna
+al ritorno nell'app e dopo la chiusura delle procedure guidate. Non effettua
+nuove ispezioni per ogni CIE e non sostituisce le segnalazioni di abbinamento,
+certificato pubblico da preparare o componente non disponibile. Su Windows e
+macOS il messaggio è **Accesso ai siti con CIE configurato. Apri il sito nel
+browser.** La registrazione verificata non attesta un
+login riuscito; su Linux resta richiesto il PIN completo nel browser.
+
 ### Abbinamento e dati pubblici
 
 La Home predispone il certificato nell’**abbinamento unico**, con un solo

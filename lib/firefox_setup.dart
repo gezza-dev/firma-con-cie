@@ -106,10 +106,12 @@ class FirefoxSetupHomeCard extends StatefulWidget {
     required this.service,
     required this.onBusy,
     this.busy = false,
+    this.onStatus,
   });
   final FirefoxSetupService service;
   final FutureOr<void> Function(bool) onBusy;
   final bool busy;
+  final ValueChanged<JsonResult>? onStatus;
 
   @override
   State<FirefoxSetupHomeCard> createState() => _FirefoxSetupHomeCardState();
@@ -156,14 +158,19 @@ class _FirefoxSetupHomeCardState extends State<FirefoxSetupHomeCard>
       return;
     }
     checking = true;
+    final service = widget.service;
     try {
-      final status = await widget.service.inspect();
-      if (mounted && !dialogOpen) {
+      final status = await service.inspect();
+      if (mounted && !dialogOpen && !widget.busy && service == widget.service) {
         setState(() => visible = firefoxSetupNeeded(status));
+        widget.onStatus?.call(status);
       }
     } catch (_) {
       // Keep the troubleshooting entry available if status cannot be checked.
-      if (mounted && !dialogOpen) setState(() => visible = true);
+      if (mounted && !dialogOpen && !widget.busy && service == widget.service) {
+        setState(() => visible = true);
+        widget.onStatus?.call({'ok': false});
+      }
     } finally {
       checking = false;
       if (refreshAgain) {

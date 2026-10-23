@@ -330,7 +330,7 @@ certificati estranei e non ripetono l'autenticazione.
 
 Un test widget Windows con profilo vuoto e callback di pubblicazione privo di
 effetti verifica la Home subito dopo il primo abbinamento e dopo la riapertura:
-compare «Accesso ai siti configurato», senza «Completa accesso ai siti» o altre
+compare «Accesso ai siti con CIE configurato», senza «Completa accesso ai siti» o altre
 azioni di attivazione. Passano tutti i sette test della suite Windows Web,
 i 14 gruppi CTest del ponte e l'analisi Flutter. Sono modificati solo test e
 documentazione; la distribuzione corretta dell'app resta invariata.

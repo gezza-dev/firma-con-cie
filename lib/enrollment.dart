@@ -103,7 +103,7 @@ class EnrollmentRecord {
       ? 'Accesso ai siti da attivare. Consulta Impostazioni → Log.'
       : needsBrowserRegistration
       ? firefoxSetupMessage
-      : 'Accesso ai siti configurato: apri il sito nel browser.';
+      : 'Accesso ai siti con CIE configurato. Apri il sito nel browser.';
   Map<String, bool> get diagnosticFlags => {
     'removalPending': removalPending,
     'readyForSigning': readyForSigning,

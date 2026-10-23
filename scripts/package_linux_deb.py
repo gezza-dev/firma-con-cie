@@ -131,7 +131,7 @@ def package(bundle, output, version):
         doc.mkdir(parents=True)
         shutil.copy2(ROOT / 'LICENSE', doc / 'copyright')
         shutil.copy2(ROOT / 'NOTICE.md', doc / 'NOTICE.md')
-        for name in ('BUILDING.md', 'LINUX_DSS_LTA.md', 'LINUX_PACKAGE.md', 'LINUX_FIREFOX.md', 'LINUX_FIREFOX_SETUP.md', 'LICENSING.md'):
+        for name in ('BUILDING.md', 'STATUS.md', 'WEB_AUTHENTICATION.md', 'LINUX_DSS_LTA.md', 'LINUX_PACKAGE.md', 'LINUX_FIREFOX.md', 'LINUX_FIREFOX_SETUP.md', 'LICENSING.md'):
             shutil.copy2(ROOT / 'docs' / name, doc / name)
         shutil.copy2(ROOT / 'docs/LINUX_CHROME.md', doc / 'LINUX_CHROME.md')
         (doc / 'tools').mkdir()

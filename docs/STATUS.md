@@ -2,6 +2,44 @@
 
 Situazione al 23 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
 
+## Browser configurati nel riquadro della CIE su Linux
+
+Il testo sotto ogni CIE abbinata elenca ora **Firefox**, **Firefox Snap** e/o
+**Google Chrome**, separati da virgole, quando le rispettive registrazioni
+risultano configurate. Per Firefox basta almeno un profilo configurato della
+rispettiva versione; nomi dei profili e duplicati sono esclusi. Firefox Snap
+richiede anche il permesso `pcscd` verificato. In assenza di browser configurati,
+il testo invita ad aprire le Impostazioni per configurarli. Controllo in corso
+e lettura non riuscita hanno messaggi distinti.
+
+I dati provengono dalle stesse ispezioni in sola lettura degli avvisi Home,
+senza una nuova lettura per ogni carta, e si aggiornano al ritorno nell'app e
+dopo la chiusura dei wizard. Conservate le segnalazioni per certificato pubblico
+non predisposto, componente non disponibile e rimozione pendente. Il testo su
+Windows e macOS è **Accesso ai siti con CIE configurato. Apri il sito nel
+browser.** Il browser continua a richiedere il PIN completo.
+La configurazione del modulo non viene equiparata a un login riuscito.
+
+Il collaudo usa browser e carte simulati, con controlli su elenco, permesso
+Snap, aggiornamento dello stato, esiti tardivi, conferma del wizard Chrome,
+italiano/inglese e testo al 200%. Superati 326 test Flutter senza esclusioni,
+inclusi 17 nuovi casi; analisi statica pulita. Inclusi i test di verifica di
+documenti sintetici con runtime reale e worker DSS privato. Per la successiva
+revisione dei testi **Accesso ai siti con CIE configurato.** sono passati 73
+test mirati della Home, dell'attivazione e della localizzazione, con analisi
+statica pulita. I test non hanno avviato o modificato browser reali né eseguito
+prove sulla CIE.
+
+Preparati e installati su richiesta dell'utente i pacchetti di test `.14` e
+`0.1.0~test20261023.15`, con build release a 2 job e documentazione aggiornata.
+Superati i controlli isolati del pacchetto, del worker DSS dopo estrazione e
+dei 61 ELF; verificati tutti i 734 file installati, launcher, icone e
+`dpkg --verify`. Il runtime nativo/DSS è rimasto invariato. L'agente non ha
+avviato l'app, modificato i browser o eseguito prove sulla CIE durante queste
+installazioni. Il 23 ottobre l'utente ha confermato il collaudo riuscito della
+nuova Home nella versione `.15`; la conferma non riguarda un nuovo accesso ai siti.
+[Testo e criteri di visualizzazione](WEB_AUTHENTICATION.md#avvisi-nella-home).
+
 ## Avvisi accesso ai siti nella Home Windows e macOS
 
 Il controllo del componente alimenta ora un unico riquadro in cima alla Home,
