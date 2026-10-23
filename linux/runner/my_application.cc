@@ -67,6 +67,20 @@ static void my_application_activate(GApplication* application) {
     // An explicit empty custom widget prevents GTK from copying the window
     // title into the visible header, including after Flutter title updates.
     gtk_header_bar_set_custom_title(header_bar, gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+    // GTK header bars do not render GtkWindow's icon automatically. Use the
+    // embedded asset at a logical size so GTK applies the display scale once.
+    g_autoptr(GBytes) title_icon_bytes = g_resources_lookup_data(
+        "/it/giancarloezza/cieid/cie-id.png", G_RESOURCE_LOOKUP_FLAGS_NONE, nullptr);
+    if (title_icon_bytes != nullptr) {
+      g_autoptr(GIcon) title_icon = g_bytes_icon_new(title_icon_bytes);
+      GtkWidget* image = gtk_image_new_from_gicon(title_icon, GTK_ICON_SIZE_LARGE_TOOLBAR);
+      gtk_image_set_pixel_size(GTK_IMAGE(image), 24);
+      gtk_widget_set_margin_start(image, 6);
+      gtk_widget_set_margin_end(image, 6);
+      gtk_widget_set_valign(image, GTK_ALIGN_CENTER);
+      gtk_header_bar_pack_start(header_bar, image);
+      gtk_widget_show(image);
+    }
     gtk_header_bar_set_show_close_button(header_bar, TRUE);
     gtk_window_set_titlebar(window, GTK_WIDGET(header_bar));
   } else {

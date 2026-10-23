@@ -203,9 +203,21 @@ flutter pub get --enforce-lockfile
 flutter build linux --release
 ```
 
-Conservare l’intera directory `build/linux/<architettura>/release/bundle`. Il runner copia le librerie private in `cie_native`; pcsc-lite e driver compatibili devono essere disponibili sul sistema destinatario. La cache cifrata degli abbinamenti è condivisa e ha test software e prove reali Linux. Il provider di accesso Firefox PKCS#11 è incluso; il test reale di accesso è stato confermato riuscito dall’utente. La build non registra il modulo nel browser: la configurazione resta manuale. Vedere [LINUX_FIREFOX.md](LINUX_FIREFOX.md). L’assemblaggio DSS/JVM Linux resta incompleto. Per il solo bridge Linux serve OpenSSL 3 (`libssl-dev`); la build completa usa la copia privata del prefisso quando specificato.
+Conservare l’intera directory `build/linux/<architettura>/release/bundle`. Il runner copia le librerie private in `cie_native`; pcsc-lite e driver compatibili devono essere disponibili sul sistema destinatario. La cache cifrata degli abbinamenti è condivisa e ha test software e prove reali Linux. Il provider di accesso Firefox PKCS#11 è incluso; il test reale di accesso è stato confermato riuscito dall’utente. La build non registra il modulo nel browser: la configurazione è un’azione esplicita dell’utente, disponibile anche tramite il nuovo wizard. Vedere [LINUX_FIREFOX.md](LINUX_FIREFOX.md). L’assemblaggio DSS/JVM Linux resta incompleto. Per il solo bridge Linux serve OpenSSL 3 (`libssl-dev`); la build completa usa la copia privata del prefisso quando specificato.
 
 ### Compatibilità Firefox Snap
+
+Il runtime Linux incorpora anche helper Python e guardia PC/SC per la
+[configurazione guidata di Firefox](LINUX_FIREFOX_SETUP.md). CTest esercita
+profili e cartelle Snap temporanei. L'app usa l'helper in sola lettura per
+decidere se mostrare il riquadro nella Home; registrazione e permesso richiedono
+conferme separate nella procedura aperta dall'utente.
+Il nuovo `.deb` dipende anche da Python 3 e `libnss3-tools`.
+
+Per Chrome desktop lo stesso provider usa NSS; la registrazione rimane
+esplicita e separata da build/installer. I test `linux_chrome_nss` e
+`linux_chrome_setup_policy` non aprono il browser e non accedono alla CIE.
+[Procedura, test SQL isolati e limiti](LINUX_CHROME.md).
 
 La ricetta Linux disabilita il rilevamento curl di `memset_explicit` per usare
 il suo fallback non eliminabile `explicit_bzero`. Dopo la compilazione nativa,
@@ -242,7 +254,7 @@ python3 scripts/test_linux_deb.py \
 Servono `dpkg-dev`, `binutils` e `desktop-file-utils`; il verificatore usa anche
 GTK, `gresource`, `ldd` e la simulazione APT. Il database dpkg di prova è
 separato, senza script di manutenzione o avvio dell'app. Il percorso privato
-installato è `/opt/cie-id-desktop`, con launcher e icone in `/usr/share`.
+installato è `/opt/firma-con-cie`, con launcher e icone in `/usr/share`.
 [Installazione, limiti e modulo Firefox Snap](LINUX_PACKAGE.md).
 
 ### Scaling dei caratteri Linux

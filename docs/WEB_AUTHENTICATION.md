@@ -234,15 +234,28 @@ percorso; i dati Web si rimuovono prima dall’app.
 
 ## Linux / Firefox
 
+Per Google Chrome desktop Linux è disponibile l'integrazione NSS con lo
+stesso provider e PIN completo: piano senza modifiche, registrazione esplicita
+e test isolati. Il 23 ottobre 2026 l'utente ha confermato il login reale riuscito
+all'area personale da Chrome Linux con la procedura a PIN completo; sito e
+protocollo TLS non sono stati verificati indipendentemente.
+Firefox su Windows/macOS può utilizzare automaticamente i certificati client
+del sistema; su Linux occorre registrare il modulo, manualmente o tramite
+una configurazione browser esplicita. [Dettagli Chrome e Firefox](LINUX_CHROME.md).
+
 Il runtime Linux include ora un provider PKCS#11 separato, con PIN completo e
 motore condiviso. Il collaudo software comprende PKCS#11, NSS in memoria e
 archivio pubblico isolato. Il test reale di accesso ai siti con Mozilla Firefox
 è stato confermato riuscito dall’utente il 20 ottobre 2026, con i limiti di
 osservazione riportati nella documentazione Linux.
-La build e l’app non registrano il modulo e non modificano i profili del browser.
+La build e l'installer non registrano moduli. Nell'app **Configura Firefox**
+consente una registrazione esplicita nel solo profilo scelto, previa conferma,
+senza PIN, apertura del browser o accesso alla CIE.
 Firefox Snap ha una build ABI verificata per core24 e una copia privata del
 solo certificato pubblico, separata dalla cache Web/PIN dell’host. L’accesso
-al lettore richiede l’autorizzazione Snap manuale; l’app non modifica i permessi.
+al lettore richiede un'autorizzazione Snap distinta, proposta dalla procedura
+solo dopo conferma dell'utente e con eventuale autenticazione del sistema.
+[Configurazione guidata e test isolati](LINUX_FIREFOX_SETUP.md).
 I test software sono riusciti anche con NSS dello Snap e carta simulata.
 Il 20 ottobre 2026 l’utente ha confermato anche il login reale Snap con PIN
 completo, dopo la preparazione del DER e l’abilitazione autorizzata di `pcscd`.

@@ -602,7 +602,7 @@ char* cie_bridge_web_forget(const char* card){return guarded([&]()->std::string{
 char* cie_bridge_web_test(const char* card){return guarded([&]()->std::string{
  if(!card||!cie_pairing::validId(card))return error("web_invalid_id","Selezionare la CIE da provare.");
 #if defined(__linux__) && !defined(CIE_WEB_TEST_STORE)
- return error("web_test_requires_firefox","Su Linux la prova di accesso si esegue da Firefox, che richiede il PIN completo di otto cifre. Nessuna prova sulla carta è stata avviata dall’applicazione.");
+ return error("web_test_requires_firefox","Su Linux la prova di accesso si esegue da Firefox o Chrome, con il PIN completo di otto cifre. Nessuna prova sulla carta è stata avviata dall’applicazione.");
 #else
  try{auto status=cie_web_store::test(card);if(status)return error("web_system_test_failed","Prova del componente Windows non riuscita. Verificare la registrazione del minidriver e la disponibilità della CIE; nessun tentativo automatico.",status);
   return "{\"ok\":true,\"message\":\"Firma della richiesta locale verificata tramite Windows Smart Card KSP. Il login a un sito resta una prova separata.\"}";

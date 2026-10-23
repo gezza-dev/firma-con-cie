@@ -258,7 +258,8 @@ CK_RV mechanismList(CK_SLOT_ID id,CK_MECHANISM_TYPE_PTR out,CK_ULONG_PTR count) 
 CK_RV mechanismInfo(CK_SLOT_ID id,CK_MECHANISM_TYPE type,CK_MECHANISM_INFO_PTR out) {return boundary([&]() -> CK_RV {
     slotById(id);require(out);require(std::find(std::begin(allMechanisms),std::end(allMechanisms),type)!=std::end(allMechanisms),CKR_MECHANISM_INVALID);
     if(type==CKM_SHA256||type==CKM_SHA384||type==CKM_SHA512)*out={0,0,CKF_DIGEST};
-    else *out={2048,2048,CKF_HW|CKF_SIGN|CKF_VERIFY};return CKR_OK;
+    else *out={2048,2048,CKF_HW|CKF_SIGN|CKF_VERIFY};
+    return CKR_OK;
 });}
 CK_RV openSession(CK_SLOT_ID id,CK_FLAGS flags,CK_VOID_PTR,CK_NOTIFY,CK_SESSION_HANDLE_PTR out) {return boundary([&]() -> CK_RV {
     require(out);*out=0;require(flags&CKF_SERIAL_SESSION,CKR_SESSION_PARALLEL_NOT_SUPPORTED);

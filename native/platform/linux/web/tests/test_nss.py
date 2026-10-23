@@ -15,6 +15,7 @@ module = Path(sys.argv[1]).resolve()
 assert module.name == 'libcie_linux_pkcs11_fake.so'
 with_cache = '--with-cache' in sys.argv[2:]
 with_snap = '--snap-public' in sys.argv[2:]
+with_chrome = '--chrome' in sys.argv[2:]
 if with_snap:
     os.environ['SNAP_NAME'] = os.environ['SNAP_INSTANCE_NAME'] = 'firefox'
 with tempfile.TemporaryDirectory(prefix='cie-linux-nss-software-') as folder:
@@ -56,6 +57,11 @@ with tempfile.TemporaryDirectory(prefix='cie-linux-nss-software-') as folder:
     duplicate = api('PORT_Strdup', C.c_void_p, C.c_char_p)
     find_cert = api('PK11_FindCertFromNickname', C.c_void_p, C.c_char_p, C.c_void_p)
     free_cert = api('CERT_DestroyCertificate', None, C.c_void_p)
+    default_db = api('CERT_GetDefaultCertDB', C.c_void_p)
+    user_certs = api('CERT_FindUserCertsByUsage', C.c_void_p, C.c_void_p, C.c_int, C.c_int, C.c_int, C.c_void_p)
+    free_list = api('CERT_DestroyCertList', None, C.c_void_p)
+    duplicate_cert = api('CERT_DupCertificate', C.c_void_p, C.c_void_p)
+    does_mechanism = api('PK11_DoesMechanism', C.c_int, C.c_void_p, C.c_ulong)
     find_key = api('PK11_FindKeyByAnyCert', C.c_void_p, C.c_void_p, C.c_void_p)
     free_key = api('SECKEY_DestroyPrivateKey', None, C.c_void_p)
     class Item(C.Structure):
@@ -79,17 +85,43 @@ with tempfile.TemporaryDirectory(prefix='cie-linux-nss-software-') as folder:
             assert check_password(slot, b'5678') != 0, 'Snap must reject partial PIN'
             assert fake.CieTestMetric(2) == 0, 'partial PIN must not reach even the simulated card'
         set_password(password)
+        if with_chrome:
+            # Match ClientCertStoreNSS: enumerate SSL-client identities with
+            # the browser's password callback, then acquire the selected key.
+            # NSS may request login during enumeration of user certificates.
+            class Links(C.Structure):
+                _fields_ = [('next', C.c_void_p), ('prev', C.c_void_p)]
+            class CertNode(C.Structure):
+                _fields_ = [('links', Links), ('cert', C.c_void_p), ('appData', C.c_void_p)]
+            certificates = user_certs(default_db(), 0, 0, 0, None)  # certUsageSSLClient
+            assert certificates, 'Chrome NSS SSL-client certificate selection'
+            try:
+                first = C.cast(certificates, C.POINTER(Links)).contents.next
+                assert first != certificates, 'Chrome must find a client identity'
+                node = C.cast(first, C.POINTER(CertNode)).contents
+                assert node.links.next == certificates, 'exactly one synthetic client identity'
+                cert = duplicate_cert(node.cert)
+            finally:
+                free_list(certificates)
+            assert fake.CieTestMetric(2) <= 1, 'Chrome discovery must not repeat authentication'
+            key = find_key(cert, None)
+            assert key, 'Chrome key acquisition from selected certificate'
+            assert does_mechanism(slot, 1) and not does_mechanism(slot, 0xD), 'PKCS1 enabled, RSA-PSS not advertised'
         assert authenticate(slot, 1, None) == 0, 'NSS full-PIN login'
         assert pin_prompts == [False] and fake.CieTestMetric(2) == 1, 'one synthetic PIN request/VERIFY'
-        cert = find_cert((label + ':' + label).encode(), None)
+        if not cert:
+            cert = find_cert((label + ':' + label).encode(), None)
         assert cert, 'NSS certificate selection'
-        key = find_key(cert, None)
+        if not key:
+            key = find_key(cert, None)
         assert key, 'NSS certificate/private-key association'
         digest = bytes.fromhex('3031300d060960864801650304020105000420') + hashlib.sha256(b'Synthetic Firefox TLS request').digest()
         data = C.create_string_buffer(digest)
         signature = C.create_string_buffer(256)
         input_item, output_item = Item(0, C.addressof(data), len(digest)), Item(0, C.addressof(signature), 256)
-        assert sign(key, 1, None, C.byref(output_item), C.byref(input_item)) == 0, 'NSS RSA PKCS1 signing'
+        empty_param = Item(0, None, 0)  # Chrome passes an empty SECItem, not a NULL pointer.
+        parameter = C.byref(empty_param) if with_chrome else None
+        assert sign(key, 1, parameter, C.byref(output_item), C.byref(input_item)) == 0, 'NSS RSA PKCS1 signing'
         assert output_item.len == 256 and fake.CieTestMetric(3) == 1
         assert fake.CieTestMetric(2) == 1 and pin_prompts == [False], 'signing must not resend PIN'
         public = subprocess.run(['openssl','x509','-inform','DER','-pubkey','-noout'], input=der.raw, capture_output=True, check=True).stdout
@@ -111,6 +143,7 @@ with tempfile.TemporaryDirectory(prefix='cie-linux-nss-software-') as folder:
     else:
         assert not (root/'cache-v3').exists(), 'no persistent cache created'
 print(json.dumps(dict(passed=True, nssInMemory=True, certificateSelected=True,
+                     chromeNssSelectionExercised=with_chrome, chromeStarted=False,
                      nssVersion=nss_version,
                      fullPinPrompts=1, signaturesVerified=1, publicCacheExercised=with_cache,
                      snapPublicCertificateExercised=with_snap,

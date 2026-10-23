@@ -12,10 +12,10 @@ import 'native_bridge.dart';
 import 'pairing_view.dart';
 
 const linuxFirefoxSetupMessage =
-    'Certificato pubblico predisposto. Configura il modulo Firma con CIE in Firefox e inserisci il PIN completo di otto cifre quando richiesto dal browser. La configurazione di Firefox non è stata verificata.';
+    'Certificato pubblico predisposto. Configura il modulo Firma con CIE in Firefox o Chrome e inserisci il PIN completo di otto cifre quando richiesto dal browser. L’accesso a un sito resta una prova separata.';
 
 const linuxFirefoxInformationMessage =
-    'Per accedere ai siti con Firefox, prepara il certificato dall’applicazione e configura il modulo Firma con CIE nel browser. Firefox richiede il PIN completo di otto cifre. Con Firefox Snap occorre anche autorizzare l’accesso al lettore. L’applicazione prepara solo il certificato pubblico: non modifica il browser o i permessi Snap e non avvia prove sulla carta.';
+    'Per accedere ai siti con Firefox o Chrome, prepara il certificato dall’applicazione e configura il modulo Firma con CIE. Chrome desktop usa l’archivio NSS dell’utente; Firefox ha una configurazione separata. Il browser richiede il PIN completo di otto cifre. Con Firefox Snap occorre anche autorizzare l’accesso al lettore. La configurazione guidata di Firefox modifica solo il profilo scelto dopo conferma. Il permesso Snap richiede un’autorizzazione separata. Nessuna prova sulla carta viene avviata.';
 
 typedef WebPublisher = Future<void> Function(
   String card,
@@ -268,7 +268,7 @@ class _WebAccessCardState extends State<WebAccessCard> {
           tr(
             context,
             widget.linuxFirefox
-                ? "Su Linux l’accesso ai siti usa il modulo Firma con CIE per Firefox. Il browser richiede tutte le otto cifre del PIN, anche se la CIE è abbinata. L’applicazione non modifica la configurazione di Firefox."
+                ? "Su Linux l’accesso ai siti usa il modulo Firma con CIE per Firefox o Chrome desktop. Il browser richiede tutte le otto cifre del PIN, anche se la CIE è abbinata. Puoi configurare Firefox con la procedura guidata, dopo conferma."
                 : "Configurazione separata dall’abbinamento per firmare documenti. Il certificato pubblico viene conservato dal sistema; il PIN non viene salvato da questa procedura. Per accedere ai siti, sia su macOS sia su Windows, inserisci tutte le otto cifre del PIN nella finestra protetta del sistema, anche se la CIE è abbinata.",
           ),
         ),
@@ -299,7 +299,7 @@ class _WebAccessCardState extends State<WebAccessCard> {
                 tr(
                   context,
                   widget.linuxFirefox
-                      ? "Informazioni Firefox"
+                      ? "Informazioni browser"
                       : "Prova componente di sistema",
                 ),
               ),

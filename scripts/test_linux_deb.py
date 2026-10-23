@@ -23,7 +23,7 @@ def run(*args):
     return subprocess.run(list(map(str, args)), check=True, capture_output=True, text=True)
 
 
-def check(package, report):
+def check(package, report, upgrade_from=None):
     package = package.resolve()
     manifest = json.loads((package.parent / 'package-manifest.json').read_text())
     assert hashlib.sha256(package.read_bytes()).hexdigest() == manifest['sha256']
@@ -40,18 +40,21 @@ def check(package, report):
         payload = {p.relative_to(extracted).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
                    for p in extracted.rglob('*') if p.is_file() and 'DEBIAN' not in p.parts}
         assert payload == manifest['files']
-        assert all(name.startswith(('opt/cie-id-desktop/', 'usr/bin/', 'usr/share/')) for name in payload)
+        assert all(name.startswith(('opt/firma-con-cie/', 'usr/bin/', 'usr/share/')) for name in payload)
         assert not any('tests' in Path(name).parts or '.key' == Path(name).name for name in payload)
+        tool = extracted / 'usr/share/doc/cie-id-desktop/tools/configure_chrome_linux.py'
+        assert tool.read_bytes() == (ROOT / 'scripts/configure_chrome_linux.py').read_bytes()
+        assert (extracted / 'usr/share/doc/cie-id-desktop/LINUX_CHROME.md').is_file()
         launcher = extracted / 'usr/bin/Firma con CIE'
         assert launcher.stat().st_mode & 0o111
         run('sh', '-n', launcher)
-        assert launcher.read_text() == '#!/bin/sh\nexec "/opt/cie-id-desktop/Firma con CIE" "$@"\n'
+        assert launcher.read_text() == '#!/bin/sh\nexec "/opt/firma-con-cie/Firma con CIE" "$@"\n'
         desktop = extracted / 'usr/share/applications' / (APP_ID + '.desktop')
         run('desktop-file-validate', desktop)
         assert 'Exec="/usr/bin/Firma con CIE"\n' in desktop.read_text()
         assert 'TryExec=/usr/bin/Firma con CIE\n' in desktop.read_text()
         assert 'Icon=' + APP_ID + '\n' in desktop.read_text()
-        app = extracted / 'opt/cie-id-desktop'
+        app = extracted / 'opt/firma-con-cie'
         assert '/it/giancarloezza/cieid/cie-id.png' in run('gresource', 'list', app / 'Firma con CIE').stdout
         icons = list((extracted / 'usr/share/icons/hicolor').glob('*/apps/' + APP_ID + '.png'))
         assert len(icons) == 9
@@ -78,6 +81,10 @@ def check(package, report):
         obj.g_object_unref(icon)
         obj.g_object_unref(theme)
         runtime = app / 'cie_native'
+        assert (runtime / 'browser_setup/firefox_setup.py').is_file()
+        assert (runtime / 'browser_setup/libcie_browser_setup_guard.so').is_file()
+        assert (extracted / 'usr/share/doc/cie-id-desktop/LINUX_FIREFOX_SETUP.md').is_file()
+        assert not (runtime / 'libcie_setup_no_load_probe.so').exists()
         native = json.loads((runtime / 'backend-manifest.json').read_text())
         assert all(hashlib.sha256((runtime / name).read_bytes()).hexdigest() == digest
                    for name, digest in native['files'].items())
@@ -101,7 +108,19 @@ def check(package, report):
         sentinel.write_bytes(b'synthetic user record - keep on upgrade and removal')
         base = ['dpkg', '--root=' + str(install), '--log=' + str(temp / 'dpkg.log'),
                 '--force-not-root', '--force-depends', '--force-bad-path', '--no-triggers']
+        if upgrade_from:
+            previous = temp / 'previous'
+            run('dpkg-deb', '--raw-extract', upgrade_from.resolve(), previous)
+            assert {p.name for p in (previous / 'DEBIAN').iterdir()} == {'control', 'md5sums'}
+            old_prefix = install / 'opt/cie-id-desktop'
+            run(*base, '--install', upgrade_from.resolve())
+            assert (old_prefix / 'Firma con CIE').is_file()
+            old_files = [p.relative_to(previous) for p in (previous / 'opt/cie-id-desktop').rglob('*') if p.is_file()]
         run(*base, '--install', package)
+        if upgrade_from:
+            assert all(not (install / name).exists() for name in old_files)
+            assert not (old_prefix / 'Firma con CIE').exists()
+            assert sentinel.read_bytes().startswith(b'synthetic user record')
         for name, digest in payload.items():
             assert hashlib.sha256((install / name).read_bytes()).hexdigest() == digest
         version = manifest['version'] + '+upgradecheck1'
@@ -125,6 +144,7 @@ def check(package, report):
                    'elfFilesResolved': elf_count, 'nativeManifestVerified': True,
                    'snapProviderAbiPassed': True, 'isolatedDpkgInstallPassed': True,
                    'isolatedDpkgUpgradePassed': True, 'isolatedDpkgRemovePassed': True,
+                   'previousPrefixUpgradePassed': bool(upgrade_from),
                    'syntheticUserDataPreserved': True, 'hostAptSimulationPassed': apt.returncode == 0,
                    'hostInstallationPerformed': False, 'appLaunched': False, 'cardTestsRun': False,
                    'browserConfigurationModified': False, 'snapPermissionsModified': False,
@@ -139,5 +159,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('package', type=Path)
     parser.add_argument('--report', type=Path, required=True)
+    parser.add_argument('--upgrade-from', type=Path, help='Also test migration from a prior .deb in the isolated root')
     args = parser.parse_args()
-    check(args.package, args.report)
+    check(args.package, args.report, args.upgrade_from)

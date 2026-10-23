@@ -26,7 +26,7 @@ void main() {
     expect(record.webProvisioned, isTrue);
     expect(record.webStatus, EnrollmentRecord.firefoxSetupMessage);
     expect(record.webStatus, contains('otto cifre'));
-    expect(record.webStatus, contains('non è stata verificata'));
+    expect(record.webStatus, contains('resta una prova separata'));
   });
 
   test(
@@ -71,7 +71,7 @@ void main() {
       ),
     );
     expect(find.text('Prova componente di sistema'), findsNothing);
-    await t.tap(find.text('Informazioni Firefox'));
+    await t.tap(find.text('Informazioni browser'));
     await t.pumpAndSettle();
     expect(find.byType(AlertDialog), findsOneWidget);
     expect(find.text(linuxFirefoxInformationMessage), findsOneWidget);
@@ -80,9 +80,11 @@ void main() {
       contains('PIN completo di otto cifre'),
     );
     expect(linuxFirefoxInformationMessage, contains('Firefox Snap'));
+    expect(linuxFirefoxInformationMessage, contains('Chrome'));
+    expect(linuxFirefoxInformationMessage, contains('NSS'));
     expect(
       linuxFirefoxInformationMessage,
-      contains('non modifica il browser o i permessi Snap'),
+      contains('solo il profilo scelto dopo conferma'),
     );
     expect(find.byType(TextField), findsNothing);
     expect(proofs, 0);

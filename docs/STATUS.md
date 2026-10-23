@@ -154,11 +154,63 @@ Il controllo ripetibile
 | Middleware e SDK | Compilati ARM64/x86_64; test nativi su ARM64 | Backend MinGW x64 e componenti MSVC; test su Windows | Compilazione/test nativi senza carta |
 | Firma PAdES/CAdES | CIE reale verificata | CIE reale verificata | PDF e P7M con CIE reale e PIN parziale verificati |
 | Abbinamento e PIN parziale | Persistenza e firme reali verificate | Persistenza e firme reali verificate | Abbinamento, persistenza e firme con PIN parziale verificati |
-| Accesso ai siti | CryptoTokenKit e accesso Safari al portale CIE verificati | CSP/KSP aggiornato: accesso al portale CIE con Chrome, Edge e Firefox confermato dall'utente dopo la correzione dei contenitori | Test reali Mozilla Firefox e Firefox Snap con PIN completo confermati riusciti dall’utente |
+| Accesso ai siti | CryptoTokenKit e accesso Safari al portale CIE verificati | CSP/KSP aggiornato: accesso al portale CIE con Chrome, Edge e Firefox confermato dall'utente dopo la correzione dei contenitori | Test reali Mozilla Firefox, Firefox Snap e Chrome desktop con PIN completo confermati riusciti dall’utente |
 | Cambio PIN e Sblocco Carta | Test software; collaudo reale da completare | Test software; collaudo reale da completare | Collaudo reale non eseguito |
 | DSS/LTA con JVM privata | Predisposto e testato | Predisposto e testato | Assemblaggio non previsto dallo script attuale |
 
 L’esecuzione su un sistema non prova automaticamente la compatibilità con tutti i lettori, le CIE, i browser o i servizi. Il formato LTA non implica da solo una validazione storica positiva: servono prove e una catena di fiducia sufficienti.
+
+## Chrome desktop Linux (23 ottobre)
+
+È predisposta l'integrazione NSS del provider Linux per Google Chrome desktop
+`.deb`, con il PIN completo: selezione SSL-client e firma attraverso le API NSS
+usate da Chromium, configurazione esplicita/idempotente del solo modulo CIE e
+rimozione limitata alla registrazione corrispondente. I test di configurazione
+usano database SQL temporanei e il provider simulato; non modificano certificati,
+chiavi o moduli estranei. Il comando predefinito mostra soltanto il piano senza
+inizializzare NSS. L'installer non configura il browser.
+Il pacchetto `.deb` `0.1.0~test20261023.2` è stato installato e il modulo
+registrato con PC/SC bloccato, preservando gli archivi certificati/chiavi NSS
+e la configurazione Firefox controllata. L'utente ha poi confermato il login
+reale riuscito all'area personale da Chrome desktop Linux, seguendo la prova
+con PIN completo. Pacchetto Chrome rilevato `156.0.8078.47-1`; sito, protocollo
+TLS e sessione autenticata non sono stati osservati indipendentemente.
+Chromium Snap/Flatpak e la compatibilità con altri siti restano da verificare.
+Con il pacchetto `0.1.0~test20261023.7`, dopo il cambio del percorso in
+`/opt/firma-con-cie`, è stato corretto il precedente riferimento NSS di Chrome
+che causava `No_client_certificate`. La riparazione ha modificato soltanto
+la riga della libreria CIE, a browser chiuso e senza caricare moduli. L'utente
+ha confermato nuovamente l'accesso ai siti riuscito con il PIN completo.
+Certificati/chiavi NSS, registrazioni estranee e Firefox sono stati conservati.
+[Procedura e limiti](LINUX_CHROME.md).
+
+## Configurazione guidata Firefox Linux (23 ottobre)
+
+La Home e le Impostazioni generali includono un wizard per Firefox desktop
+e Firefox Snap, utilizzabile senza lettore/carta. Il riquadro della Home è in
+cima e compare soltanto se un profilo inizializzato richiede configurazione,
+se c'è un problema da verificare o se manca la conferma del permesso Snap.
+Le Impostazioni mantengono sempre l'accesso; i profili non inizializzati non
+compaiono nella lista e non producono avvisi. Anche i profili già configurati
+sono esclusi dal selettore; un permesso Snap mancante resta un’azione separata.
+Il dialogo usa messaggi brevi e nasconde «Rileggi profili» dopo la scelta.
+Lo stato viene riletto senza caricare NSS al ritorno nella Home/app e alla
+chiusura del wizard. Scelta esplicita del profilo, piano legato alla
+configurazione e conferma prima della scrittura; separata
+autorizzazione amministrativa per il solo collegamento `firefox:pcscd`.
+L'installer non esegue il wizard. Nessun PIN viene richiesto o acquisito.
+Il backend genera il solo record CIE in un database NSS temporaneo e lo
+inserisce atomicamente nel profilo, con PC/SC bloccato per il processo NSS.
+La sentinella software verifica che altri moduli non vengano inizializzati.
+Per Snap sono copiate solo tre librerie verificate in directory per versione;
+le vecchie generazioni e gli archivi dell'utente sono conservati.
+L'utente ha confermato il collaudo della Home condizionale e della lista dei
+profili, e il successivo accesso ai siti con Firefox dopo l'installazione
+della `.7`. La variante standard/Snap di quest'ultimo esito non è stata
+distinta nella conferma; i precedenti login con configurazione manuale sono
+riportati separatamente. L'icona nella barra del titolo richiede un collaudo
+visivo distinto sui diversi desktop.
+[Procedura e test isolati](LINUX_FIREFOX_SETUP.md).
 
 ## Installer Windows x64 (21 ottobre)
 
@@ -479,7 +531,7 @@ lettori e casi di errore. [Dettagli](LINUX_FIREFOX.md).
 Il runner imposta il nome dell'app e il nome dell'icona predefinita GTK,
 conservando la risorsa incorporata per il bundle portabile. Il launcher
 include `TryExec` e parole chiave localizzate. Lo script di packaging crea
-`cie-id-desktop` per test locali, con bundle in `/opt/cie-id-desktop`, comando
+`cie-id-desktop` per test locali, con bundle in `/opt/firma-con-cie`, comando
 in `/usr/bin`, `.desktop` e nove icone hicolor nelle directory standard.
 Le dipendenze sono ricavate da tutti gli ELF con `dpkg-shlibdeps`; programmi
 di test e dati utente non fanno parte del payload. Non ci sono script che

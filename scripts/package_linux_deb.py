@@ -20,7 +20,7 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = 'cie-id-desktop'
 APP_ID = 'it.giancarloezza.prototype.cie_flutter_prototype'
-PREFIX = Path('opt') / PACKAGE
+PREFIX = Path('opt/firma-con-cie')
 
 
 def run(*args, cwd=None):
@@ -46,6 +46,8 @@ def validate_bundle(bundle):
             raise ValueError('Unsupported link, special file or permissions in bundle')
     native = bundle / 'cie_native'
     manifest = json.loads((native / 'backend-manifest.json').read_text())
+    if not {'browser_setup/firefox_setup.py', 'browser_setup/libcie_browser_setup_guard.so'} <= set(manifest['files']):
+        raise ValueError('Rebuild the runtime with the Firefox guided setup helper')
     if manifest['system'] != 'linux' or not manifest.get('linux_firefox_snap_core24_abi_verified'):
         raise ValueError('Use a Linux runtime with the Firefox Snap ABI check')
     for name, digest in manifest['files'].items():
@@ -103,7 +105,7 @@ def package(bundle, output, version):
         bindir = stage / 'usr/bin'
         bindir.mkdir(parents=True)
         launcher = bindir / 'Firma con CIE'
-        launcher.write_text('#!/bin/sh\nexec "/opt/cie-id-desktop/Firma con CIE" "$@"\n')
+        launcher.write_text('#!/bin/sh\nexec "/opt/firma-con-cie/Firma con CIE" "$@"\n')
         launcher.chmod(0o755)
         applications = stage / 'usr/share/applications'
         applications.mkdir(parents=True)
@@ -118,8 +120,11 @@ def package(bundle, output, version):
         doc.mkdir(parents=True)
         shutil.copy2(ROOT / 'LICENSE', doc / 'copyright')
         shutil.copy2(ROOT / 'NOTICE.md', doc / 'NOTICE.md')
-        for name in ('LINUX_PACKAGE.md', 'LINUX_FIREFOX.md', 'LICENSING.md'):
+        for name in ('LINUX_PACKAGE.md', 'LINUX_FIREFOX.md', 'LINUX_FIREFOX_SETUP.md', 'LICENSING.md'):
             shutil.copy2(ROOT / 'docs' / name, doc / name)
+        shutil.copy2(ROOT / 'docs/LINUX_CHROME.md', doc / 'LINUX_CHROME.md')
+        (doc / 'tools').mkdir()
+        shutil.copy2(ROOT / 'scripts/configure_chrome_linux.py', doc / 'tools/configure_chrome_linux.py')
         # These notices cover Flutter, PDFium, the icon and bundled native code.
         # The full dependency notice trees remain adjacent in cie_native/licenses.
         shutil.copy2(ROOT / 'assets/licenses/cie-app-icon-NOTICE.txt', doc / 'icon-NOTICE.txt')
@@ -140,7 +145,7 @@ def package(bundle, output, version):
                            *('-e' + str(p) for p in elf_files), cwd=temp)
         dep = next(s.removeprefix('shlibs:Depends=') for s in dependencies.stdout.splitlines()
                    if s.startswith('shlibs:Depends='))
-        dep += ', pcscd, ca-certificates'
+        dep += ', pcscd, ca-certificates, python3, libnss3-tools'
         installed_size = sum((p.stat().st_size + 1023) // 1024 for p in files(stage))
         (control / 'control').write_text(
             f'Package: {PACKAGE}\nVersion: {version}\nArchitecture: {arch}\n'
@@ -150,7 +155,8 @@ def package(bundle, output, version):
             'Homepage: https://github.com/gezza-dev/cie-id-desktop\n'
             'Description: Firma con CIE - local Linux test build\n'
             ' Independent desktop application for Italian CIE cards and document signing.\n'
-            ' Includes the full-PIN Firefox PKCS#11 provider. Browser setup is manual.\n'
+            ' Includes the full-PIN Firefox/desktop Chrome PKCS#11 provider.\n'
+            ' Firefox setup is user-initiated in the application; installation does not configure browsers.\n'
             ' Local test package; Linux DSS/LTA runtime is not included.\n')
         payload = {p.relative_to(stage).as_posix(): sha(p)
                    for p in files(stage) if 'DEBIAN' not in p.relative_to(stage).parts}

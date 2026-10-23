@@ -310,4 +310,11 @@ endif()
 
 if(UNIX AND NOT APPLE AND TARGET cie_web)
   add_subdirectory(platform/linux/web)
+  add_library(cie_browser_setup_guard SHARED platform/linux/browser_setup/no_card_guard.cpp)
+  target_include_directories(cie_browser_setup_guard PRIVATE ${PCSC_INCLUDE_DIRS})
+  if(BUILD_TESTING)
+    add_library(cie_setup_no_load_probe SHARED platform/linux/browser_setup/tests/no_load_probe.c)
+    add_test(NAME linux_firefox_guided_setup COMMAND "${Python3_EXECUTABLE}"
+      "${CMAKE_CURRENT_SOURCE_DIR}/platform/linux/browser_setup/tests/setup_tests.py" --native "${CMAKE_BINARY_DIR}")
+  endif()
 endif()

@@ -36,6 +36,7 @@ import 'information_view.dart';
 import 'card_monitor.dart';
 import 'enrollment.dart';
 import 'windows_web_setup.dart';
+import 'firefox_setup.dart';
 import 'enrollment_diagnostics_view.dart';
 import 'home_card_status.dart';
 import 'paired_card_identity.dart';
@@ -71,6 +72,7 @@ void main() {
       windowsWebComponentChecker: Platform.isWindows
           ? checkWindowsWebComponent
           : null,
+      firefoxSetupService: Platform.isLinux ? LinuxFirefoxSetupService() : null,
     ),
   );
 }
@@ -89,6 +91,7 @@ class CiePrototype extends StatefulWidget {
     this.webSettingsOpener = openWebSystemSettings,
     this.webComponentActivator = activateWebComponent,
     this.windowsWebComponentChecker,
+    this.firefoxSetupService,
   });
   final PreferencesStore? preferences;
   final SettingsStore? settings;
@@ -101,6 +104,7 @@ class CiePrototype extends StatefulWidget {
   final WebSettingsOpener webSettingsOpener;
   final WebComponentActivator webComponentActivator;
   final WindowsWebComponentChecker? windowsWebComponentChecker;
+  final FirefoxSetupService? firefoxSetupService;
   @override
   State<CiePrototype> createState() => _CiePrototypeState();
 }
@@ -159,6 +163,7 @@ class _CiePrototypeState extends State<CiePrototype> {
           webSettingsOpener: widget.webSettingsOpener,
           webComponentActivator: widget.webComponentActivator,
           windowsWebComponentChecker: widget.windowsWebComponentChecker,
+          firefoxSetupService: widget.firefoxSetupService,
         ),
       ),
     ),
@@ -179,6 +184,7 @@ class PrototypeHome extends StatefulWidget {
     this.webSettingsOpener = openWebSystemSettings,
     this.webComponentActivator = activateWebComponent,
     this.windowsWebComponentChecker,
+    this.firefoxSetupService,
   });
   final PreferencesStore? preferences;
   final SettingsStore? settings;
@@ -191,6 +197,7 @@ class PrototypeHome extends StatefulWidget {
   final WebSettingsOpener webSettingsOpener;
   final WebComponentActivator webComponentActivator;
   final WindowsWebComponentChecker? windowsWebComponentChecker;
+  final FirefoxSetupService? firefoxSetupService;
   @override
   State<PrototypeHome> createState() => _PrototypeHomeState();
 }
@@ -267,6 +274,15 @@ class _PrototypeHomeState extends State<PrototypeHome>
       });
       unawaited(_coordinateMonitor());
     }
+  }
+
+  Future<void> _firefoxSetupBusy(bool value) async {
+    if (!mounted) return;
+    setState(() {
+      busy = value;
+      progress = value ? 'Configurazione accesso ai siti…' : '';
+    });
+    await _coordinateMonitor();
   }
 
   CardMonitor? monitor;
@@ -1773,6 +1789,14 @@ class _PrototypeHomeState extends State<PrototypeHome>
                                       }
                                     },
                                   ),
+                                  if (Platform.isLinux) ...[
+                                    const SizedBox(height: 24),
+                                    FirefoxSetupCard(
+                                      busy: busy,
+                                      service: widget.firefoxSetupService,
+                                      onBusy: _firefoxSetupBusy,
+                                    ),
+                                  ],
                                 ],
                               ),
                               advanced: Column(
@@ -1870,6 +1894,12 @@ class _PrototypeHomeState extends State<PrototypeHome>
   List<Widget> _cardPage(BuildContext context) => unified
       ? _unifiedHome(context)
       : [
+          if (Platform.isLinux && widget.firefoxSetupService != null)
+            FirefoxSetupHomeCard(
+              service: widget.firefoxSetupService!,
+              busy: busy,
+              onBusy: _firefoxSetupBusy,
+            ),
           _heading(
             context,
             pairedCards.isEmpty ? 'Abbina la tua CIE' : 'Le tue CIE',
@@ -2085,6 +2115,12 @@ class _PrototypeHomeState extends State<PrototypeHome>
   List<Widget> _unifiedHome(BuildContext context) {
     final candidates = readers.where(_homeCanPair).toList();
     return [
+      if (Platform.isLinux && widget.firefoxSetupService != null)
+        FirefoxSetupHomeCard(
+          service: widget.firefoxSetupService!,
+          busy: busy,
+          onBusy: _firefoxSetupBusy,
+        ),
       _heading(
         context,
         enrollment.records.isEmpty ? 'Abbina la tua CIE' : 'Le tue CIE',

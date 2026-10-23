@@ -34,14 +34,14 @@ Per il successivo collaudo manuale, nella directory del `.deb`:
 sudo apt install ./cie-id-desktop_0.1.0~test20261020.2_amd64.deb
 ```
 
-- App e librerie private: `/opt/cie-id-desktop`.
+- App e librerie private: `/opt/firma-con-cie`.
 - Comando di avvio: `/usr/bin/Firma con CIE`; conserva lingua e ambiente del desktop.
 - Voce nel menu: **Firma con CIE**, con lo stesso application ID GTK/Wayland del
   file `.desktop` in `/usr/share/applications`.
 - Icone statiche chiare: `/usr/share/icons/hicolor`, da 16 a 1024 pixel.
   Le varianti scure restano nei sorgenti; il launcher non cambia icona con il tema.
 - Avvisi e documentazione: `/usr/share/doc/cie-id-desktop` e
-  `/opt/cie-id-desktop/cie_native/licenses`.
+  `/opt/firma-con-cie/cie_native/licenses`.
 
 L'installer non avvia app o browser, non configura moduli, non modifica permessi
 Snap e non legge o cancella gli abbinamenti. Le cache di sistema del menu/icone
@@ -87,26 +87,62 @@ verificate tramite dpkg. L'esito della finestra è una conferma dell'utente;
 l'agente non ha avviato l'app o altre prove sulla CIE. La verifica visiva su
 KDE della finestra aggiornata e i cambi di monitor restano prove distinte.
 
+## Cambio della cartella dell’app
+
+I nuovi pacchetti usano `/opt/firma-con-cie`. Il nome tecnico del pacchetto
+resta `cie-id-desktop`, quindi apt/dpkg eseguono un aggiornamento dello stesso
+pacchetto. I vecchi file di proprietà del pacchetto vengono rimossi dal
+precedente percorso; non si creano collegamenti di compatibilità. Abbinamenti,
+impostazioni e immagini dell’utente conservano i percorsi precedenti nella home.
+L’installer non cancella o riconfigura alcun profilo browser: i moduli che
+puntavano alla vecchia cartella richiedono una nuova configurazione dell’utente.
+
+La barra GTK su GNOME/Wayland mostra a sinistra l’icona incorporata nell’app,
+alla dimensione logica di 24 px; GTK gestisce lo scaling. Su X11 con decorazione
+gestita dal window manager viene fornita l’icona della finestra: posizione e
+visibilità dipendono dal tema del desktop. Non si cambiano le preferenze del
+window manager né le dimensioni massime della finestra.
+
 ## Modulo Firefox e Firefox Snap
+
+**Impostazioni → Generali → Configura Firefox** offre sempre una procedura
+per Firefox desktop e Firefox Snap. Il riquadro compare anche in cima alla
+Home soltanto quando occorre intervenire sulla configurazione o sul permesso
+Snap; i profili non inizializzati sono esclusi dall'elenco e dall'avviso.
+La procedura prevede scelta del profilo, riepilogo
+e conferma finale. Per Snap vengono copiate soltanto tre librerie in una
+generazione privata; il permesso del lettore richiede una seconda conferma.
+La procedura non richiede carta/PIN e non esegue login. Il `.deb` include
+helper e guardia PC/SC, con dipendenze Python 3 e `libnss3-tools`.
+L'installazione del pacchetto non esegue la procedura né configura browser.
+[Istruzioni e limiti del nuovo wizard](LINUX_FIREFOX_SETUP.md).
+
+Google Chrome desktop usa lo stesso provider con una registrazione NSS
+distinta. I nuovi pacchetti includono la procedura guidata da terminale in
+`/usr/share/doc/cie-id-desktop/tools/configure_chrome_linux.py`: senza opzioni
+mostra soltanto il piano. L'installer non la esegue. Dopo l'installazione del
+pacchetto `0.1.0~test20261023.2` e la registrazione esplicita, l'utente ha
+confermato il 23 ottobre 2026 il login reale Chrome Linux riuscito con PIN
+completo. Firefox non è stato modificato. [Istruzioni e limiti](LINUX_CHROME.md).
 
 Per Firefox non confinato, il percorso installato stabile è:
 
 ```text
-/opt/cie-id-desktop/cie_native/libcie_linux_pkcs11.so
+/opt/firma-con-cie/cie_native/libcie_linux_pkcs11.so
 ```
 
 Firefox Snap non ha automaticamente accesso al runtime installato in `/opt`.
 Il modulo già registrato dal bundle di sviluppo rimane su quel percorso.
-Per usare il runtime del pacchetto con Snap, chiudere Firefox e copiare
+Come alternativa manuale al wizard, per usare il runtime del pacchetto con Snap, chiudere Firefox e copiare
 esplicitamente le sole tre librerie in un percorso stabile accessibile:
 
 ```sh
-mkdir -p "$HOME/snap/firefox/common/cie-id-module-v1"
-chmod 700 "$HOME/snap/firefox/common/cie-id-module-v1"
-install -m 600 /opt/cie-id-desktop/cie_native/libcie_linux_pkcs11.so \
-  /opt/cie-id-desktop/cie_native/libcie_web.so \
-  /opt/cie-id-desktop/cie_native/libcie-pkcs11.so \
-  "$HOME/snap/firefox/common/cie-id-module-v1/"
+mkdir -p "$HOME/snap/firefox/common/firma-con-cie-module-v1"
+chmod 700 "$HOME/snap/firefox/common/firma-con-cie-module-v1"
+install -m 600 /opt/firma-con-cie/cie_native/libcie_linux_pkcs11.so \
+  /opt/firma-con-cie/cie_native/libcie_web.so \
+  /opt/firma-con-cie/cie_native/libcie-pkcs11.so \
+  "$HOME/snap/firefox/common/firma-con-cie-module-v1/"
 ```
 
 Caricare manualmente `libcie_linux_pkcs11.so` da questa directory in Firefox.

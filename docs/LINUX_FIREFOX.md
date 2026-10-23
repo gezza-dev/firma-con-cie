@@ -28,10 +28,15 @@ provare a leggerlo e verificarlo dalla carta senza PIN; una CIE che richiede
 l’autenticazione per questa lettura deve essere predisposta prima nell’app.
 Il certificato salvato viene nuovamente legato alla carta/SOD dal motore condiviso.
 
-L’applicazione non legge né modifica i profili Firefox, non registra il modulo e
-non avvia il browser. Lo stato «certificato predisposto» conserva esplicitamente
-la configurazione Firefox come non verificata. Su Linux la prova avanzata
-nell’app mostra informazioni e non esegue autenticazioni.
+La preparazione del certificato non modifica i profili Firefox. La nuova
+procedura **Configura Firefox**, sempre nelle Impostazioni generali e in
+cima alla Home solo se occorre configurare/aggiornare un profilo o verificare
+il permesso Snap, esclude i profili non ancora inizializzati e
+registra il modulo soltanto nel profilo scelto e dopo conferma esplicita.
+Non avvia il browser e non richiede il PIN. Lo stato del certificato non
+attesta un login riuscito. Su Linux la prova avanzata nell’app mostra
+informazioni e non esegue autenticazioni.
+[Procedura guidata, Snap e limiti](LINUX_FIREFOX_SETUP.md).
 
 Per la configurazione manuale, Firefox può caricare la libreria
 tramite **Impostazioni → Privacy e sicurezza → Certificati → Dispositivi di
@@ -43,7 +48,11 @@ un’azione distinta dalla rimozione del certificato locale nell’app.
 
 Questo documento non esegue la configurazione. Flatpak e gli altri browser
 richiedono verifiche separate di accessibilità della libreria e PC/SC.
-Non viene dichiarato supporto per Chrome/Chromium in questa integrazione.
+Chrome desktop può riutilizzare il provider attraverso la propria registrazione
+NSS, separata da Firefox. Il 23 ottobre 2026 l'utente ha confermato anche il
+login reale Chrome Linux riuscito con PIN completo; i test software restano
+distinti da tale conferma e Firefox non è stato modificato.
+[Integrazione e limiti Chrome Linux](LINUX_CHROME.md).
 
 ## Firefox Snap su Ubuntu
 
@@ -81,14 +90,17 @@ elimina anche la sola copia Snap corrispondente, conservando le altre carte.
 Per una CIE già abbinata, dopo il primo avvio di Firefox Snap torna nell’app
 aggiornata e usa **Completa la configurazione** se necessario: i dati pubblici
 già verificati consentono di preparare la copia senza un nuovo abbinamento
-o un altro PIN. Il modulo da caricare manualmente rimane quello nel bundle
+o un altro PIN. **Configura Firefox** può copiare le tre librerie necessarie
+in una generazione privata accessibile a Snap e registrarle nel profilo
+selezionato. Resta disponibile anche la configurazione manuale dal bundle
 completo, da mantenere in un percorso stabile accessibile al browser.
 
 L’interfaccia Snap `firefox:pcscd` deve essere collegata per il successivo uso
-del lettore. L’autorizzazione e il caricamento del modulo rimangono azioni
-manuali distinte: l’app non esegue `snap connect`, non modifica i profili e
-non dichiara verificati i permessi. La compilazione e i test qui descritti
-non li cambiano. Istanze Snap parallele e Flatpak non sono collaudati.
+del lettore. La procedura guidata propone questa autorizzazione separatamente
+dalla registrazione, con conferma e autenticazione amministrativa locale.
+Un permesso non verificabile non viene indicato come concesso. Installazione,
+compilazione e test non cambiano profili o permessi. Istanze Snap parallele
+e Flatpak non sono collaudati.
 
 Il collaudo software locale usa Firefox Snap 158.0-2, revisione 9057,
 glibc 2.39 e NSS 3.130: caricamento del provider reale in NSS senza database
