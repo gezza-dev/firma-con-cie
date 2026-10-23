@@ -201,7 +201,7 @@ flutter pub get --enforce-lockfile
 flutter build windows --release
 ```
 
-L’output è `build/windows/x64/runner/Release/Firma con CIE.exe`. Distribuire l’intera cartella Release, che contiene `cie_native`, risorse Flutter, PDFium e payload Web. Il solo `.exe` non basta. I comandi di compilazione non devono registrare driver né autenticare la carta; il helper esegue l’installazione solo su azione esplicita nell’app con UAC. [Flusso e collaudi Windows](WINDOWS_WEB_FIRST_USE.md).
+L’output è `build/windows/x64/runner/Release/Firma con CIE.exe`. Distribuire l’intera cartella Release, che contiene `cie_native`, risorse Flutter, PDFium e payload Web. Il solo `.exe` non basta. I comandi di compilazione non devono registrare driver né autenticare la carta. L’installazione del componente e l’autorizzazione UAC spettano al pacchetto di installazione; l’app ne controlla lo stato in sola lettura e, se occorre intervenire, mostra le istruzioni per eseguire il pacchetto. [Installer e collaudi Windows](WINDOWS_INSTALLER.md) · [Flusso iniziale e storia dei collaudi](WINDOWS_WEB_FIRST_USE.md).
 
 Questa ricetta non firma Authenticode il prodotto. L’esecuzione in processi protetti e una distribuzione Windows richiedono verifiche e firma distinte.
 

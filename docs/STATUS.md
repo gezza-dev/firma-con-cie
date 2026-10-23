@@ -2,6 +2,49 @@
 
 Situazione al 23 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
 
+## Verifica Windows di main `16da166` (23 ottobre)
+
+Aggiornata la copia Windows con fast-forward dal commit `5c17a7a` a
+`16da166c98e2c1587f0aadb9e7e395fe2dc36ada`, senza modifiche locali iniziali.
+Compilati l'app Release 1.0.0 e un nuovo installer completo di runtime privato,
+PDFium, DSS/JVM, componente Web e licenze. Il confronto dei sorgenti non
+richiede una nuova build MinGW: il cambiamento del bridge riguarda un ramo
+Linux escluso su Windows, quello PKCS#11 è solo formattazione e le nuove
+dipendenze JVM riguardano Linux. Conservati binari, manifest e provenienza
+dei singoli moduli già verificati, senza attribuirli al nuovo commit dell'app.
+
+Analisi Flutter senza problemi; **327 test superati e 4 opzionali saltati**.
+Superati i 15 gruppi CTest del bridge, 4 del provider Windows, 2 geometrici,
+2 del runner Win32 e 1 PKCS#11: compresi 161 controlli minidriver, 203 PKCS#11,
+21 sullo stato del pacchetto e 114 sui pulsanti della finestra. Superati anche
+i 50 controlli dell'installer Inno isolato, lo smoke test del runtime distribuito,
+i 14 casi DSS/LTA, i 19 di validità storica e i 37 controlli di rete su loopback.
+I test dei nuovi servizi Linux usano servizi simulati su Windows; la produzione
+non li istanzia e non ne mostra i controlli.
+
+Nella GUI Windows verificati avvio, navigazione, Home con componente corrente,
+notifiche **Chiudi** in italiano e **OK** in inglese, temi chiaro/scuro e
+ripristino delle preferenze iniziali. Il controllo reale in sola lettura del
+componente installato restituisce codice 0; nessun avviso di aggiornamento
+superfluo. Le condizioni componente assente/non corrente e l'attivazione macOS
+sono coperte dai test software, senza installazioni o attivazioni reali qui.
+
+Completata anche la prova con lettore e CIE reali, senza PIN: rimozione e
+reinserimento con app minimizzata, processo observer ancora attivo e miniature
+rispettivamente grigia e a colori al ripristino della Home. Verificati nella
+GUI restringimento della finestra, navigazione a Verifica Firma, allargamento
+tramite massimizzazione e ripristino; i controlli si adattano e rispondono.
+La chiusura normale con X termina sia l'app sia l'observer. Gli hash di
+abbinamenti, impostazioni, preferenze di firma, archivio certificati pubblici
+e registrazioni Calais risultano invariati dopo il collaudo.
+
+La distribuzione contiene 883 file, inclusi 50 JAR; verificati hash dei payload,
+identità tra build provata e app confezionata e 649 file di licenza/avvisi
+conservati byte per byte. L'installer non è stato installato sul sistema e
+rimane un pacchetto locale non firmato Authenticode. Nessuna autenticazione
+browser, firma con CIE, richiesta PIN o modifica della configurazione browser.
+Report esterno ai sorgenti: `windows-main-16da166-20261023`.
+
 ## Browser configurati nel riquadro della CIE su Linux
 
 Il testo sotto ogni CIE abbinata elenca ora **Firefox**, **Firefox Snap** e/o
