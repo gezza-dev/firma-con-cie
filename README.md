@@ -97,6 +97,10 @@ Gli identificativi tecnici storici contenenti `FlutterPrototype` sono conservati
 
 ## Licenze e distribuzione
 
+Pacchetti Linux locali di test per x86_64: `.deb` verificato su Ubuntu 24.04
+LTS/Debian 13, `.rpm` per Fedora 44 e `.pkg.tar.zst` per Arch rolling.
+[Ricette, verifiche software e limiti](docs/LINUX_DISTRIBUTION_PACKAGES.md).
+
 La licenza principale è **BSD-3-Clause**, con copyright e avvisi originali conservati. Il progetto include anche componenti con altre licenze: **non tutto il repository né il prodotto completo sono esclusivamente BSD**.
 
 Consultare [LICENSE](LICENSE), [NOTICE.md](NOTICE.md), [matrice delle licenze e condizioni di distribuzione](docs/LICENSING.md) e [avvisi del backend](native/backend/THIRD_PARTY_NOTICES.md). I futuri pacchetti binari richiedono anche materiali sorgente corrispondenti, avvisi completi e procedure di ricompilazione per i componenti che li richiedono.

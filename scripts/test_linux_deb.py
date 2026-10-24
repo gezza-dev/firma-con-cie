@@ -149,7 +149,8 @@ def check(package, report, upgrade_from=None):
         sentinel.parent.mkdir(parents=True)
         sentinel.write_bytes(b'synthetic user record - keep on upgrade and removal')
         base = ['dpkg', '--root=' + str(install), '--log=' + str(temp / 'dpkg.log'),
-                '--force-not-root', '--force-depends', '--force-bad-path', '--no-triggers']
+                '--force-not-root', '--force-depends', '--force-bad-path', '--no-triggers',
+                '--path-include=/usr/share/doc/*', '--path-include=/usr/share/licenses/*']
         if upgrade_from:
             previous = temp / 'previous'
             run('dpkg-deb', '--raw-extract', upgrade_from.resolve(), previous)

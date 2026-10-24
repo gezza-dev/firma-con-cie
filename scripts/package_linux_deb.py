@@ -10,70 +10,14 @@ import argparse
 import hashlib
 import json
 import os
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 import re
 import shutil
-import stat
 import subprocess
 import tempfile
 
-ROOT = Path(__file__).resolve().parents[1]
-PACKAGE = 'cie-id-desktop'
-APP_ID = 'it.giancarloezza.prototype.cie_flutter_prototype'
-PREFIX = Path('opt/firma-con-cie')
-
-
-def run(*args, cwd=None):
-    return subprocess.run(list(map(str, args)), cwd=cwd, check=True,
-                          capture_output=True, text=True)
-
-
-def sha(path):
-    return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
-def files(tree):
-    return sorted(p for p in tree.rglob('*') if p.is_file())
-
-
-def validate_bundle(bundle):
-    if not bundle.is_dir() or set(p.name for p in bundle.iterdir()) != {
-            'Firma con CIE', 'lib', 'data', 'cie_native', 'share'}:
-        raise ValueError('Expected a complete Linux release bundle')
-    for p in bundle.rglob('*'):
-        mode = p.lstat().st_mode
-        if not (stat.S_ISREG(mode) or stat.S_ISDIR(mode)) or mode & 0o7000:
-            raise ValueError('Unsupported link, special file or permissions in bundle')
-    native = bundle / 'cie_native'
-    manifest = json.loads((native / 'backend-manifest.json').read_text())
-    if not {'browser_setup/firefox_setup.py', 'browser_setup/chrome_setup.py', 'browser_setup/libcie_browser_setup_guard.so'} <= set(manifest['files']):
-        raise ValueError('Rebuild the runtime with the Firefox guided setup helper')
-    if manifest['system'] != 'linux' or not manifest.get('linux_firefox_snap_core24_abi_verified'):
-        raise ValueError('Use a Linux runtime with the Firefox Snap ABI check')
-    for name, digest in manifest['files'].items():
-        relative = PurePosixPath(name)
-        if relative.is_absolute() or '..' in relative.parts or '\\' in name:
-            raise ValueError('Unsafe runtime manifest path')
-        if sha(native / name) != digest:
-            raise ValueError('Native runtime checksum mismatch: ' + name)
-    actual = {p.relative_to(native).as_posix() for p in files(native)}
-    if actual != set(manifest['files']) | {'backend-manifest.json'}:
-        raise ValueError('Unmanifested native runtime file')
-    for name in ('Firma con CIE', 'cie_native/cie_crl_fetch', 'cie_native/cie_card_observer'):
-        if not os.access(bundle / name, os.X_OK):
-            raise ValueError('Executable permission missing: ' + name)
-    if manifest.get('ltv'):
-        machine = run('dpkg', '--print-architecture').stdout.strip()
-        architecture = {'amd64': 'linux-x86_64'}.get(machine)
-        if not architecture or manifest['ltv']['architectures'] != [architecture]:
-            raise ValueError('DSS JVM architecture differs from package architecture')
-        for name in ('ltv/jre/' + architecture + '/bin/java', 'ltv/fetcher/cie_crl_fetch'):
-            if not os.access(native / name, os.X_OK):
-                raise ValueError('Private DSS executable missing: ' + name)
-        for name in ('ltv/cie-ltv-worker.jar', 'ltv/trust/cacerts', 'licenses/ltv/dependencies.lock.json'):
-            if not (native / name).is_file():
-                raise ValueError('Private DSS runtime incomplete: ' + name)
-    return manifest
+from linux_package_common import (ROOT, PACKAGE, PREFIX, run, sha, files,
+                                  validate_bundle, stage_payload, source_revision, graphics_libraries)
 
 
 def package(bundle, output, version):
@@ -84,6 +28,7 @@ def package(bundle, output, version):
     if output.exists() or output.is_relative_to(bundle):
         raise ValueError('Use a new output directory outside the input bundle')
     native_manifest = validate_bundle(bundle)
+    graphics_libraries()
     arch = run('dpkg', '--print-architecture').stdout.strip()
     machines = {'amd64': 'Advanced Micro Devices X86-64', 'arm64': 'AArch64'}
     if arch not in machines:
@@ -105,45 +50,8 @@ def package(bundle, output, version):
         stage = temp / PACKAGE
         control = stage / 'DEBIAN'
         control.mkdir(parents=True)
+        stage_payload(bundle, stage, native_manifest)
         app = stage / PREFIX
-        shutil.copytree(bundle, app, ignore=shutil.ignore_patterns('tests', 'share'))
-        packaged = dict(native_manifest)
-        packaged['files'] = {k: v for k, v in native_manifest['files'].items()
-                             if 'tests' not in PurePosixPath(k).parts}
-        packaged['packaging'] = {'type': 'deb-local-test', 'testProgramsIncluded': False,
-                                 'sourceManifestSha256': sha(bundle / 'cie_native/backend-manifest.json')}
-        (app / 'cie_native/backend-manifest.json').write_text(json.dumps(packaged, indent=2) + '\n')
-        bindir = stage / 'usr/bin'
-        bindir.mkdir(parents=True)
-        launcher = bindir / 'Firma con CIE'
-        launcher.write_text('#!/bin/sh\nexec "/opt/firma-con-cie/Firma con CIE" "$@"\n')
-        launcher.chmod(0o755)
-        applications = stage / 'usr/share/applications'
-        applications.mkdir(parents=True)
-        desktop = applications / (APP_ID + '.desktop')
-        text = (ROOT / 'assets/branding/linux' / desktop.name).read_text()
-        text = text.replace('Exec="Firma con CIE"\n', 'Exec="/usr/bin/Firma con CIE"\n').replace('TryExec=Firma con CIE\n', 'TryExec=/usr/bin/Firma con CIE\n')
-        desktop.write_text(text)
-        run('desktop-file-validate', desktop)
-        icons = stage / 'usr/share/icons/hicolor'
-        shutil.copytree(ROOT / 'assets/branding/linux/hicolor', icons)
-        doc = stage / 'usr/share/doc' / PACKAGE
-        doc.mkdir(parents=True)
-        shutil.copy2(ROOT / 'LICENSE', doc / 'copyright')
-        shutil.copy2(ROOT / 'NOTICE.md', doc / 'NOTICE.md')
-        for name in ('BUILDING.md', 'STATUS.md', 'WEB_AUTHENTICATION.md', 'LINUX_DSS_LTA.md', 'LINUX_PACKAGE.md', 'LINUX_FIREFOX.md', 'LINUX_FIREFOX_SETUP.md', 'LICENSING.md'):
-            shutil.copy2(ROOT / 'docs' / name, doc / name)
-        shutil.copy2(ROOT / 'docs/LINUX_CHROME.md', doc / 'LINUX_CHROME.md')
-        (doc / 'tools').mkdir()
-        shutil.copy2(ROOT / 'scripts/configure_chrome_linux.py', doc / 'tools/configure_chrome_linux.py')
-        # These notices cover Flutter, PDFium, the icon and bundled native code.
-        # The full dependency notice trees remain adjacent in cie_native/licenses.
-        shutil.copy2(ROOT / 'assets/licenses/cie-app-icon-NOTICE.txt', doc / 'icon-NOTICE.txt')
-        shutil.copy2(ROOT / 'assets/branding/LICENSE.txt', doc / 'icon-LICENSE.txt')
-        # Normalize copied build-directory permissions; no setuid, writable
-        # system files or user-specific caches are installed by this package.
-        for p in stage.rglob('*'):
-            p.chmod(0o755 if p.is_dir() or p.stat().st_mode & 0o111 else 0o644)
         # Analyze the installed layout, not build-tree paths; private unversioned
         # DSOs stay in this package. Missing system dependencies remain fatal.
         debian = temp / 'debian'
@@ -158,7 +66,7 @@ def package(bundle, output, version):
                            *('-e' + str(p) for p in elf_files), cwd=temp)
         dep = next(s.removeprefix('shlibs:Depends=') for s in dependencies.stdout.splitlines()
                    if s.startswith('shlibs:Depends='))
-        dep += ', pcscd, ca-certificates, python3, libnss3-tools'
+        dep += ', libegl1, libgl1, libgles2, pcscd, ca-certificates, python3, libnss3-tools'
         installed_size = sum((p.stat().st_size + 1023) // 1024 for p in files(stage))
         (control / 'control').write_text(
             f'Package: {PACKAGE}\nVersion: {version}\nArchitecture: {arch}\n'
@@ -178,11 +86,11 @@ def package(bundle, output, version):
         (control / 'md5sums').write_text(''.join(
             hashlib.md5((stage / name).read_bytes()).hexdigest() + '  ' + name + '\n'
             for name in sorted(payload)))
-        commit = run('git', 'rev-parse', 'HEAD', cwd=ROOT).stdout.strip()
-        dirty = bool(run('git', 'status', '--porcelain', cwd=ROOT).stdout)
+        revision = source_revision()
+        commit = revision['baseCommit']
+        dirty = revision['workingTreeModified']
         environment = dict(os.environ)
-        environment.setdefault('SOURCE_DATE_EPOCH', run('git', 'show', '-s', '--format=%ct',
-                                                     'HEAD', cwd=ROOT).stdout.strip())
+        environment.setdefault('SOURCE_DATE_EPOCH', str(revision['sourceDateEpoch']))
         output.mkdir(parents=True)
         target = output / f'{PACKAGE}_{version}_{arch}.deb'
         built = subprocess.run(['dpkg-deb', '--root-owner-group', '-Zxz', '-z6',
@@ -191,6 +99,8 @@ def package(bundle, output, version):
         metadata = {'package': PACKAGE, 'version': version, 'architecture': arch,
                     'file': target.name, 'sha256': sha(target), 'bytes': target.stat().st_size,
                     'baseCommit': commit, 'workingTreeModified': dirty,
+                    'sourceSnapshotSha256': revision.get('sourceSnapshotSha256'),
+                    'sourceDateEpoch': revision['sourceDateEpoch'],
                     'inputBundle': str(bundle), 'applicationPrefix': '/' + str(PREFIX),
                     'depends': dep, 'elfFilesChecked': len(elf_files),
                     'runtimeManifestVerified': True, 'testProgramsIncluded': False,

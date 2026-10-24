@@ -281,6 +281,16 @@ separato, senza script di manutenzione o avvio dell'app. Il percorso privato
 installato è `/opt/firma-con-cie`, con launcher e icone in `/usr/share`.
 [Installazione, limiti e modulo Firefox Snap](LINUX_PACKAGE.md).
 
+### Pacchetti Fedora e Arch e compatibilità Debian
+
+Il contenuto comune dei pacchetti è preparato da `linux_package_common.py`.
+`package_linux_distribution.py --format rpm` usa `rpmbuild` in Fedora;
+`--format arch` usa `makepkg` come utente ordinario in Arch. Il `.deb` continua
+a usare lo stesso comando sopra e `dpkg-shlibdeps`. Il controllo delle
+dipendenze include esplicitamente EGL/OpenGL/GLES, caricati dinamicamente
+all'avvio. I pacchetti restano di test e non configurano browser.
+[Versioni verificate, ricette, isolamento e limiti](LINUX_DISTRIBUTION_PACKAGES.md).
+
 ### Scaling dei caratteri Linux
 
 La dimensione della finestra è separata dallo scaling dei caratteri.

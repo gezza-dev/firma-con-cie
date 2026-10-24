@@ -2,9 +2,14 @@
 
 Il pacchetto locale `cie-id-desktop` contiene l'app Flutter e il runtime
 nativo, con launcher e icone. Il primo assemblaggio è per Ubuntu 26.10 amd64.
+Dal test `.19` è disponibile anche un bundle ricompilato su Ubuntu 24.04 LTS,
+con il `.deb` verificato in Ubuntu 24.04 e Debian 13. Sono disponibili anche
+ricette native Fedora e Arch: [matrice e collaudi](LINUX_DISTRIBUTION_PACKAGES.md).
 Le dipendenze minime sono calcolate con `dpkg-shlibdeps` su tutti gli ELF
 distribuiti, inclusi i moduli caricati dinamicamente. Il controllo ABI core24
 del provider Firefox è distinto dalla compatibilità dell'intero desktop.
+EGL/OpenGL/GLES, caricati dinamicamente all'avvio, sono dipendenze esplicite
+oltre a quelle determinate dall'analisi degli ELF.
 Non è ancora una release binaria da redistribuire: il completamento dei
 materiali sorgente/dipendenze è descritto in [LICENSING.md](LICENSING.md).
 Il pacchetto può includere il runtime DSS/LTA Linux x86_64 con JVM privata,

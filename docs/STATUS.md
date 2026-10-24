@@ -27,6 +27,26 @@ positivo. Nessuna modifica ai browser o prova sulla CIE eseguita dall'agente.
 Pacchetto, snapshot dei sorgenti e rapporti restano artefatti locali esclusi
 da Git.
 
+## Pacchetti Linux x86_64 per distribuzione (24 ottobre)
+
+Preparate ricette e pacchetti di test `.19` per Ubuntu 24.04 LTS/Debian 13,
+Fedora 44 e Arch rolling. GUI Release ricompilata su Ubuntu 24.04 con due job,
+runtime nativo/DSS riutilizzato dopo confronto degli hash e senza modificarne
+la provenienza. Il confezionamento ora dichiara esplicitamente EGL/OpenGL/GLES,
+necessari all'avvio anche se caricati dinamicamente.
+
+Superati 11 test del confezionamento, 331 test Flutter e analisi statica;
+in ogni ambiente verificati installazione/aggiornamento/rimozione, 737 file,
+61 ELF, Java/DSS privato, avvio GUI su display virtuale con PC/SC bloccato e
+smoke nativo senza `--detect`. Durante queste prove isolate la `.18`
+installata sul computer è rimasta invariata; nessuna modifica ai browser,
+ai permessi Snap o prova sulla CIE. In seguito sono state installate, su
+richiesta dell'utente, la `.19` e la `.20` (collaudata come descritto sopra).
+Gli artefatti RPM e Arch restano alla `.19`. Prima del commit ripetuti i
+12 test Python del confezionamento e del supporto Xvfb, tutti superati.
+Restano separati i collaudi su desktop completi e SELinux di Fedora.
+[Dettagli, versioni, isolamento e limiti](LINUX_DISTRIBUTION_PACKAGES.md).
+
 ## Configurazione browser Linux solo nella Home (23 ottobre)
 
 Rimossi i riquadri Firefox/Firefox Snap e Google Chrome dalle Impostazioni.
