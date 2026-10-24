@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:cie_flutter_prototype/desktop_navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cie_flutter_prototype/app_settings.dart';
@@ -261,12 +262,20 @@ void main() {
       final service = FakeService();
       await tester.pumpWidget(CiePrototype(service: service));
       await tester.pumpAndSettle();
-      final rail = tester.widget<NavigationRail>(find.byType(NavigationRail));
-      expect((rail.destinations[5].label as Text).data, 'Guida');
-      expect((rail.destinations[6].label as Text).data, 'Assistenza');
-      expect((rail.destinations[7].label as Text).data, 'Informazioni');
-      expect((rail.destinations[8].label as Text).data, 'Impostazioni');
-      expect(rail.scrollable, isTrue);
+      final rail = tester.widget<DesktopNavigation>(
+        find.byType(DesktopNavigation),
+      );
+      expect(rail.destinations[5].label, 'Guida');
+      expect(rail.destinations[6].label, 'Assistenza');
+      expect(rail.destinations[7].label, 'Informazioni');
+      expect(rail.destinations[8].label, 'Impostazioni');
+      expect(
+        find.descendant(
+          of: find.byType(DesktopNavigation),
+          matching: find.byType(SingleChildScrollView),
+        ),
+        findsOneWidget,
+      );
       await tester.tap(find.text('Assistenza'));
       await tester.pumpAndSettle();
       expect(find.text('cie.cittadini@interno.it'), findsOneWidget);

@@ -23,6 +23,7 @@ import 'web_access.dart';
 import 'signature_appearance.dart';
 import 'document_drop_zone.dart';
 import 'desktop_page_body.dart';
+import 'desktop_navigation.dart';
 import 'preferences.dart';
 import 'preferences_view.dart';
 import 'guide_view.dart';
@@ -1624,8 +1625,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
       child: Scaffold(
         body: Row(
           children: [
-            NavigationRail(
-              scrollable: true,
+            DesktopNavigation(
               extended: MediaQuery.sizeOf(context).width > 930,
               selectedIndex: page,
               onDestinationSelected: flow.busy || verifyFlow.exporting
@@ -1636,41 +1636,41 @@ class _PrototypeHomeState extends State<PrototypeHome>
                 child: CieCardIllustration(width: 64),
               ),
               destinations: [
-                NavigationRailDestination(
-                  icon: Icon(Icons.contactless_outlined),
-                  label: Text(tr(context, "Home")),
+                DesktopNavigationDestination(
+                  icon: Icons.contactless_outlined,
+                  label: tr(context, "Home"),
                 ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.draw_outlined),
-                  label: Text(tr(context, "Firma Elettronica")),
+                DesktopNavigationDestination(
+                  icon: Icons.draw_outlined,
+                  label: tr(context, "Firma Elettronica"),
                 ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.fact_check_outlined),
-                  label: Text(tr(context, "Verifica Firma")),
+                DesktopNavigationDestination(
+                  icon: Icons.fact_check_outlined,
+                  label: tr(context, "Verifica Firma"),
                 ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.password_outlined),
-                  label: Text(tr(context, "Cambia PIN")),
+                DesktopNavigationDestination(
+                  icon: Icons.password_outlined,
+                  label: tr(context, "Cambia PIN"),
                 ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.lock_open_outlined),
-                  label: Text(tr(context, "Sblocca Carta")),
+                DesktopNavigationDestination(
+                  icon: Icons.lock_open_outlined,
+                  label: tr(context, "Sblocca Carta"),
                 ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.menu_book_outlined),
-                  label: Text(tr(context, "Guida")),
+                DesktopNavigationDestination(
+                  icon: Icons.menu_book_outlined,
+                  label: tr(context, "Guida"),
                 ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.support_agent_outlined),
-                  label: Text(tr(context, "Assistenza")),
+                DesktopNavigationDestination(
+                  icon: Icons.support_agent_outlined,
+                  label: tr(context, "Assistenza"),
                 ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.info_outline),
-                  label: Text(tr(context, "Informazioni")),
+                DesktopNavigationDestination(
+                  icon: Icons.info_outline,
+                  label: tr(context, "Informazioni"),
                 ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.settings_outlined),
-                  label: Text(tr(context, "Impostazioni")),
+                DesktopNavigationDestination(
+                  icon: Icons.settings_outlined,
+                  label: tr(context, "Impostazioni"),
                 ),
               ],
             ),

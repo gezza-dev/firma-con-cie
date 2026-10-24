@@ -2,6 +2,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:cie_flutter_prototype/desktop_navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cie_flutter_prototype/main.dart';
@@ -236,7 +237,9 @@ void main() {
       expect(output.readAsStringSync(), 'previous signed bytes');
       expect(
         t.widget<Icon>(find.byIcon(Icons.cancel_outlined)).color,
-        Theme.of(t.element(find.byIcon(Icons.cancel_outlined))).colorScheme.error,
+        Theme.of(t.element(find.byIcon(Icons.cancel_outlined)))
+            .colorScheme
+            .error,
       );
       expect(
         t.widget<TextField>(find.byType(TextField)).controller!.text,
@@ -287,7 +290,7 @@ void main() {
       expect(controller.text, isEmpty);
       expect(service.signCalls, 0);
       expect(find.byType(TextField), findsNothing);
-      final rail = t.widget<NavigationRail>(find.byType(NavigationRail));
+      final rail = t.widget<DesktopNavigation>(find.byType(DesktopNavigation));
       expect(rail.onDestinationSelected, isNull);
       expect(request!.extension, 'pdf');
       expect(request!.suggestedName, 'original-firmato');

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause
+import 'package:cie_flutter_prototype/desktop_navigation.dart';
 import 'package:cie_flutter_prototype/document_drop_zone.dart';
 import 'package:cie_flutter_prototype/main.dart';
 import 'package:cie_flutter_prototype/signature_appearance.dart';
@@ -28,10 +29,14 @@ void main() {
     ]) {
       t.view.physicalSize = size;
       await t.pumpAndSettle();
-      final rail = t.widget<NavigationRail>(find.byType(NavigationRail));
+      final rail = t.widget<DesktopNavigation>(find.byType(DesktopNavigation));
       expect(rail.extended, size.width > 930);
+      final menu = t.getRect(find.byType(DesktopNavigation));
+      expect(menu.top, 0);
+      expect(menu.bottom, size.height);
+      expect(menu.width, size.width > 930 ? 256 : 72);
       final available =
-          size.width - t.getSize(find.byType(NavigationRail)).width - 1 - 56;
+          size.width - t.getSize(find.byType(DesktopNavigation)).width - 1 - 56;
       expect(
         t.getSize(find.byType(DocumentDropZone)).width,
         closeTo(available, .1),

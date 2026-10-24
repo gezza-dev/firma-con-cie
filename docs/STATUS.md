@@ -1,6 +1,31 @@
 # Stato del progetto e verifiche
 
-Situazione al 23 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
+Situazione al 24 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
+
+## Hover del menu condiviso (24 ottobre)
+
+Il menu laterale Flutter usa ora righe Material interamente interattive:
+al passaggio del mouse si evidenzia solo la voce interessata e il puntatore
+diventa una mano. Il comportamento è condiviso da Linux, Windows e macOS,
+nei temi chiaro/scuro e nelle modalità estesa/compatta. La selezione resta
+distinta dall'hover; durante le operazioni che bloccano la navigazione le
+voci sono disabilitate e il puntatore torna normale. Conservati scorrimento,
+navigazione da tastiera e descrizioni delle icone in modalità compatta.
+
+Superati analisi statica e 346 test Flutter, incluse le quattro integrazioni
+software runtime/DSS e 15 nuove varianti di test del menu sulle tre piattaforme
+simulate. I test confrontano anche i pixel dello sfondo delle singole righe.
+Il collaudo desktop nativo Windows/macOS resta da eseguire.
+
+Preparato e installato su Linux il pacchetto di test
+`0.1.0~test20261024.20`, con GUI Release compilata su Ubuntu 24.04 con due job
+e runtime nativo/DSS riutilizzato dopo confronto degli hash. Superati i
+controlli del pacchetto, compreso il ciclo installazione/aggiornamento/rimozione
+in una cartella isolata; verificati tutti i 737 file installati sul computer.
+L'utente ha confermato il collaudo dell'interfaccia aggiornata con esito
+positivo. Nessuna modifica ai browser o prova sulla CIE eseguita dall'agente.
+Pacchetto, snapshot dei sorgenti e rapporti restano artefatti locali esclusi
+da Git.
 
 ## Configurazione browser Linux solo nella Home (23 ottobre)
 

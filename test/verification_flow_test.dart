@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:desktop_drop/desktop_drop.dart';
+import 'package:cie_flutter_prototype/desktop_navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cie_flutter_prototype/main.dart';
@@ -386,7 +387,7 @@ void main() {
       expect(find.byType(TextField), findsNothing);
       expect(
         t
-            .widget<NavigationRail>(find.byType(NavigationRail))
+            .widget<DesktopNavigation>(find.byType(DesktopNavigation))
             .onDestinationSelected,
         isNotNull,
       );
