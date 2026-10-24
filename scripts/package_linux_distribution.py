@@ -20,12 +20,16 @@ from linux_package_common import (ROOT, PACKAGE, PREFIX, files, run, sha,
                                   source_revision, stage_payload, validate_bundle, graphics_libraries, GRAPHICS_SONAMES)
 
 
-def elf_files(stage):
+def elf_files(stage, architecture='x86_64'):
+    machines = {'amd64': 'Advanced Micro Devices X86-64',
+                'x86_64': 'Advanced Micro Devices X86-64', 'arm64': 'AArch64'}
+    if architecture not in machines:
+        raise ValueError('Unsupported ELF architecture: ' + architecture)
     result = [p for p in files(stage) if p.read_bytes()[:4] == b'\x7fELF']
     for path in result:
-        if not re.search(r'Machine:\s+Advanced Micro Devices X86-64\s*$',
+        if not re.search(r'Machine:\s+' + re.escape(machines[architecture]) + r'\s*$',
                          run('readelf', '-h', path).stdout, re.M):
-            raise ValueError('Expected x86_64 ELF: ' + str(path))
+            raise ValueError('Expected ' + architecture + ' ELF: ' + str(path))
     return result
 
 

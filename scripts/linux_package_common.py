@@ -5,11 +5,11 @@ import hashlib
 import json
 import os
 from pathlib import Path, PurePosixPath
-import platform
 import re
 import shutil
 import stat
 import subprocess
+from ltv_runtime import runtime_architecture
 
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = 'cie-id-desktop'
@@ -61,7 +61,7 @@ def validate_bundle(bundle):
         if not os.access(bundle / name, os.X_OK):
             raise ValueError('Executable permission missing: ' + name)
     if manifest.get('ltv'):
-        architecture = {'x86_64': 'linux-x86_64'}.get(platform.machine())
+        architecture = runtime_architecture('Linux')
         if not architecture or manifest['ltv']['architectures'] != [architecture]:
             raise ValueError('DSS JVM architecture differs from package architecture')
         for name in ('ltv/jre/' + architecture + '/bin/java', 'ltv/fetcher/cie_crl_fetch'):
@@ -101,7 +101,7 @@ def stage_payload(bundle, stage, native_manifest, package_type="deb"):
     doc.mkdir(parents=True)
     shutil.copy2(ROOT / 'LICENSE', doc / 'copyright')
     shutil.copy2(ROOT / 'NOTICE.md', doc / 'NOTICE.md')
-    for name in ('BUILDING.md', 'STATUS.md', 'WEB_AUTHENTICATION.md', 'LINUX_DSS_LTA.md', 'LINUX_PACKAGE.md', 'LINUX_FIREFOX.md', 'LINUX_FIREFOX_SETUP.md', 'LINUX_DISTRIBUTION_PACKAGES.md', 'LICENSING.md'):
+    for name in ('BUILDING.md', 'STATUS.md', 'WEB_AUTHENTICATION.md', 'LINUX_DSS_LTA.md', 'LINUX_PACKAGE.md', 'LINUX_FIREFOX.md', 'LINUX_FIREFOX_SETUP.md', 'LINUX_DISTRIBUTION_PACKAGES.md', 'LINUX_ARM64.md', 'LICENSING.md'):
         shutil.copy2(ROOT / 'docs' / name, doc / name)
     shutil.copy2(ROOT / 'docs/LINUX_CHROME.md', doc / 'LINUX_CHROME.md')
     (doc / 'tools').mkdir()

@@ -48,6 +48,29 @@ class PackageBoundaries(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'checksum mismatch'):
             common.validate_bundle(self.bundle)
 
+    def test_arm64_elf_cannot_be_packaged_as_x86_64(self):
+        elf = self.bundle / 'lib/synthetic.so'
+        elf.write_bytes(b'\x7fELFsynthetic')
+        with patch.object(distribution, 'run', return_value=SimpleNamespace(stdout='Machine: AArch64\n')):
+            self.assertEqual(distribution.elf_files(self.bundle, 'arm64'), [elf])
+            with self.assertRaisesRegex(ValueError, 'Expected x86_64 ELF'):
+                distribution.elf_files(self.bundle)
+
+    def test_x86_64_elf_cannot_be_packaged_as_arm64(self):
+        elf = self.bundle / 'lib/synthetic.so'
+        elf.write_bytes(b'\x7fELFsynthetic')
+        with patch.object(distribution, 'run', return_value=SimpleNamespace(stdout='Machine: Advanced Micro Devices X86-64\n')):
+            self.assertEqual(distribution.elf_files(self.bundle), [elf])
+            with self.assertRaisesRegex(ValueError, 'Expected arm64 ELF'):
+                distribution.elf_files(self.bundle, 'arm64')
+
+    def test_arm64_bundle_rejects_x86_64_private_jvm(self):
+        self.manifest['ltv'] = {'architectures': ['linux-x86_64']}
+        self.save()
+        with patch('ltv_runtime.platform.machine', return_value='aarch64'):
+            with self.assertRaisesRegex(ValueError, 'DSS JVM architecture differs'):
+                common.validate_bundle(self.bundle)
+
     def test_unmanifested_runtime_rejected(self):
         (self.native / 'unexpected').touch()
         with self.assertRaisesRegex(ValueError, 'Unmanifested'):

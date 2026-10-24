@@ -18,6 +18,7 @@ import time
 
 from linux_package_common import ROOT, PACKAGE, APP_ID, PREFIX, run, sha
 from package_linux_distribution import elf_files, target_libraries
+from ltv_runtime import runtime_architecture
 
 
 def require_isolated_root():
@@ -66,7 +67,7 @@ def verify_installed(manifest, kind):
     native = json.loads((runtime / 'backend-manifest.json').read_text())
     assert all(sha(runtime / name) == digest for name, digest in native['files'].items())
     assert not (runtime / 'tests').exists()
-    elfs = elf_files(app)
+    elfs = elf_files(app, manifest['architecture'])
     target_libraries(app, elfs)
     run('desktop-file-validate', Path('/usr/share/applications') / (APP_ID + '.desktop'))
     assert len(list(Path('/usr/share/icons/hicolor').glob('*/apps/' + APP_ID + '.png'))) == 9
@@ -83,7 +84,9 @@ def verify_installed(manifest, kind):
             assert json.loads(result.stdout)['ok']
             assert not list(Path(home).iterdir())
     if native.get('ltv'):
-        java = runtime / 'ltv/jre/linux-x86_64/bin/java'
+        architecture = runtime_architecture('Linux')
+        assert native['ltv']['architectures'] == [architecture]
+        java = runtime / 'ltv/jre' / architecture / 'bin/java'
         result = run(java, '-Xmx512m', '-Djava.awt.headless=true', '-cp',
                      str(runtime / 'ltv/cie-ltv-worker.jar') + ':' + str(runtime / 'ltv/lib/*'),
                      'it.cieid.ltv.Worker', ROOT / 'assets/prova.pdf', runtime / 'ltv/trust')
@@ -115,7 +118,7 @@ def read_xvfb_display(readfd, timeout=12):
         os.close(readfd)
 
 
-def headless_gui(report_dir, guard):
+def headless_gui(report_dir, guard, executable='/opt/firma-con-cie/Firma con CIE', startup_delay=6):
     """Launch the real Release app on a private virtual display, PC/SC blocked."""
     with tempfile.TemporaryDirectory() as home, (report_dir / 'headless-gui.log').open('w') as log:
         readfd, writefd = os.pipe()
@@ -129,9 +132,9 @@ def headless_gui(report_dir, guard):
             env = dict(os.environ, HOME=home, XDG_DATA_HOME=home + '/data', XDG_CONFIG_HOME=home + '/config',
                        XDG_CACHE_HOME=home + '/cache', DISPLAY=display, GDK_BACKEND='x11',
                        LD_PRELOAD=str(guard), LIBGL_ALWAYS_SOFTWARE='1', NO_AT_BRIDGE='1')
-            app = subprocess.Popen(['/opt/firma-con-cie/Firma con CIE'], env=env, stdout=log,
+            app = subprocess.Popen([str(executable)], env=env, stdout=log,
                                    stderr=subprocess.STDOUT, start_new_session=True)
-            time.sleep(6)
+            time.sleep(startup_delay)
             assert app.poll() is None, 'Release app exited on the target distribution'
             # Root framebuffer capture is local to Xvfb, with no host display.
             x = C.CDLL('libX11.so.6')

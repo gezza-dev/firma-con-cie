@@ -91,7 +91,7 @@ struct State {
     void refresh() {
         auto current=readers.list();
         for(auto& [id,slot]:slots) {
-            auto found=std::find_if(current.begin(),current.end(),[&](auto& r){return r.name==slot.reader;});
+            auto found=std::find_if(current.begin(),current.end(),[&reader=slot.reader](const auto& r){return r.name==reader;});
             Bytes atr=found==current.end()?Bytes{}:found->atr;
             if(atr!=slot.atr) {invalidate(slot);slot.atr=std::move(atr);events.push_back(id);wake.notify_all();}
         }

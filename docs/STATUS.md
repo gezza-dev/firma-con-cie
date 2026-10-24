@@ -2,6 +2,34 @@
 
 Situazione al 24 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
 
+## Pacchetto Linux ARM64 in emulazione (24 ottobre)
+
+Preparata la ricetta `.deb` ARM64 di test `.21`, con GUI Flutter Release
+compilata in una macchina virtuale AArch64 e runtime nativo compilato per
+AArch64 con due job. JVM Temurin, PDFium e tutte le librerie native hanno
+l'architettura ARM64; worker DSS e 50 JAR sono riutilizzati dopo verifica
+degli hash. Manifest e rapporti distinguono compilazione incrociata ed
+esecuzione emulata, senza attribuire test nativi ARM64 al computer x86_64.
+
+Superati 37 gruppi CTest nell'ambiente ARM64, smoke senza `--detect`, 14 casi
+DSS/LTA e rifiuto della radice sintetica nel worker di produzione. Superati
+anche 15 test del confezionamento e tre test della selezione JVM; sul computer
+x86_64 analisi Flutter, 346 test Flutter e tre regressioni native mirate.
+Il porting corregge la codifica delle lunghezze DER e il riconoscimento delle
+estensioni X.509 assenti, con un test di otto lunghezze e tre casi di estensioni.
+Le prove browser usano profili sintetici e un utente non amministratore.
+
+Il `.deb` `.21` è stato verificato su Ubuntu 24.04 e Debian 13 ARM64 emulati:
+737 file e 60 ELF ARM64, launcher e nove icone, worker DSS rilocato, ABI del
+provider e risoluzione delle dipendenze. Superati su entrambe le distribuzioni
+il ciclo dpkg in una cartella temporanea, con conservazione di un record utente
+sintetico, e l'avvio grafico su display virtuale con PC/SC bloccato.
+[Procedura, isolamento e limiti](LINUX_ARM64.md). RPM e Arch restano x86_64.
+La `.20` x86_64 installata sul computer e i suoi 737 file sono rimasti invariati.
+Nessuna installazione sul computer, modifica ai browser o prova sulla CIE.
+Il collaudo su hardware ARM64 reale rimane da eseguire. Artefatti, snapshot
+corrispondente e rapporti sono conservati localmente, esclusi da Git.
+
 ## Hover del menu condiviso (24 ottobre)
 
 Il menu laterale Flutter usa ora righe Material interamente interattive:
@@ -338,7 +366,7 @@ Il controllo ripetibile
 | Abbinamento e PIN parziale | Persistenza e firme reali verificate | Persistenza e firme reali verificate | Abbinamento, persistenza e firme con PIN parziale verificati |
 | Accesso ai siti | CryptoTokenKit e accesso Safari al portale CIE verificati | CSP/KSP aggiornato: accesso al portale CIE con Chrome, Edge e Firefox confermato dall'utente dopo la correzione dei contenitori | Test reali Mozilla Firefox, Firefox Snap e Chrome desktop con PIN completo confermati riusciti dall’utente |
 | Cambio PIN e Sblocco Carta | Test software; collaudo reale da completare | Test software; collaudo reale da completare | Collaudo reale non eseguito |
-| DSS/LTA con JVM privata | Predisposto e testato | Predisposto e testato | Integrato Linux x86_64; worker privato e test software superati |
+| DSS/LTA con JVM privata | Predisposto e testato | Predisposto e testato | Integrato Linux x86_64 e ARM64 di test; worker privato e test software |
 
 L’esecuzione su un sistema non prova automaticamente la compatibilità con tutti i lettori, le CIE, i browser o i servizi. Il formato LTA non implica da solo una validazione storica positiva: servono prove e una catena di fiducia sufficienti.
 
@@ -385,7 +413,7 @@ guidata Chrome con il dialogo aggiornato; non è una nuova prova di accesso ai s
 Il worker EU DSS 6.5.1 è ora assemblato anche per Linux x86_64 con JVM
 Temurin 21.0.12.1+1 privata, JDK/JRE Linux fissati tramite hash e i 50 JAR
 già bloccati. App Dart e script di test selezionano la JVM Linux senza
-ripiegare su macOS. Linux ARM64 resta non coperto. Nessuna installazione
+ripiegare su macOS. Alla data di questa verifica ARM64 non era ancora coperto; il supporto di test successivo è descritto in [LINUX_ARM64.md](LINUX_ARM64.md). Nessuna installazione
 Java di sistema o modifica agli archivi di fiducia.
 
 Superati 14 casi LTA sintetici, 19 controlli storici e 37 controlli di rete

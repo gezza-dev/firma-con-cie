@@ -9,7 +9,9 @@ p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('--runtime',type=Path,required=True);p.add_argument('--report',type=Path,required=True)
 p.add_argument('--test-tools-runtime',type=Path,help='External development harness; production JARs/JVM come from --runtime')
 p.add_argument('--document',type=Path,action='append',default=[]);p.add_argument('--expect-no-lta',action='store_true')
+p.add_argument('--timeout',type=int,default=90,help='Seconds per Java test process; increase for emulated targets')
 a=p.parse_args();runtime=a.runtime.resolve();ltv=runtime/'ltv'
+if a.timeout < 1: p.error('--timeout must be positive')
 test_tools=test_tools_runtime(runtime,a.test_tools_runtime)
 architecture=runtime_architecture()
 java=ltv/'jre'/architecture/'bin'/('java.exe' if os.name=='nt' else 'java')
@@ -22,8 +24,8 @@ classpath=str(ltv/'cie-ltv-worker.jar')+os.pathsep+str(ltv/'lib/*')
 def run(main,args,tests=False):
     cp=classpath+(os.pathsep+str(test_tools/'ltv/tests/cie-ltv-tests.jar') if tests else '')
     return subprocess.run([str(java),'-Xmx512m','-Djava.awt.headless=true','-Dfile.encoding=UTF-8','-cp',cp,main,*map(str,args)],
-        env=environment,capture_output=True,timeout=90)
-report={'engine':'EU DSS 6.5.1','offline':True,'runtimeHashesVerified':True,'testRootsInstalled':False,'newCieSignatures':0}
+        env=environment,capture_output=True,timeout=a.timeout)
+report={'engine':'EU DSS 6.5.1','offline':True,'runtimeHashesVerified':True,'testRootsInstalled':False,'newCieSignatures':0,'testTimeoutSeconds':a.timeout}
 with tempfile.TemporaryDirectory(prefix='cie-lta-test-') as folder:
     result=run('it.cieid.ltv.LtvSelfTest',[folder],tests=True)
     lines=result.stdout.decode('utf-8',errors='replace').splitlines()

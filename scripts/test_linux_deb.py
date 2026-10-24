@@ -12,6 +12,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+from ltv_runtime import runtime_architecture
 import re
 import subprocess
 import tempfile
@@ -103,10 +104,12 @@ def check(package, report, upgrade_from=None):
         assert not (runtime / 'tests').exists()
         ltv_checked = False
         if native.get('ltv'):
-            java = runtime / 'ltv/jre/linux-x86_64/bin/java'
+            architecture = runtime_architecture('Linux')
+            assert native['ltv']['architectures'] == [architecture]
+            java = runtime / 'ltv/jre' / architecture / 'bin/java'
             assert java.is_file() and os.access(java, os.X_OK)
             assert not (runtime / 'ltv/tests').exists()
-            assert (runtime / 'ltv/jre/linux-x86_64/legal/java.base/LICENSE').is_file()
+            assert (java.parent.parent / 'legal/java.base/LICENSE').is_file()
             # Execute the packaged production worker after relocation. It must
             # work without system Java and must not turn an unsigned PDF into LTA.
             environment = {k: v for k, v in os.environ.items()

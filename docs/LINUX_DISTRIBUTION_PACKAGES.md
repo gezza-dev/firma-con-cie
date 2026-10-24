@@ -5,6 +5,9 @@ I formati previsti sono `.deb` per Ubuntu/Debian, `.rpm` per Fedora e
 distribuzioni. Ogni dichiarazione di compatibilità si riferisce alle versioni
 e alle prove riportate qui, non a tutte le distribuzioni o architetture.
 
+Il `.deb` ARM64 ha una [procedura e verifiche separate](LINUX_ARM64.md);
+le ricette RPM e Arch di questo documento restano limitate a x86_64.
+
 ## Contenuto e comportamento
 
 I tre formati condividono la validazione e la preparazione del contenuto in

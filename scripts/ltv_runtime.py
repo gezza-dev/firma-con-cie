@@ -12,6 +12,7 @@ def runtime_architecture(system=None, machine=None):
         ('Darwin', 'x86_64'): 'macos-x86_64',
         ('Windows', 'x86_64'): 'windows-x86_64',
         ('Linux', 'x86_64'): 'linux-x86_64',
+        ('Linux', 'arm64'): 'linux-arm64',
     }
     try:
         return supported[system, arch]

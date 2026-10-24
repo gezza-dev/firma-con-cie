@@ -36,10 +36,14 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     for name in ['java-home','maven','base-runtime','output']: parser.add_argument('--'+name,type=Path,required=True)
     parser.add_argument('--system',choices=['macos','windows','linux'],required=True)
+    parser.add_argument('--architecture',choices=['x86_64','arm64','aarch64'],
+                        help='Linux target CPU when assembling a cross-compiled runtime')
     parser.add_argument('--tools-cache',type=Path,default=ROOT/'.build/ltv-tools')
     parser.add_argument('--skip-java-build',action='store_true')
     parser.add_argument('--refresh-dependency-lock',action='store_true',help='Explicitly accept the resolved JAR hashes after dependency review')
     a=parser.parse_args(); build=ROOT/'.build/ltv-java'; repo=ROOT/'.build/ltv-maven-repository'
+    if a.architecture and a.system != 'linux':
+        parser.error('--architecture is supported only for Linux')
     env=os.environ.copy(); env['JAVA_HOME']=str(a.java_home.resolve())
     maven=[str(a.maven.resolve()),'-B','-f',str(ROOT/'native/ltv/pom.xml'),'-Dmaven.repo.local='+str(repo)]
     if not a.skip_java_build:
@@ -67,6 +71,14 @@ def main():
     if a.refresh_dependency_lock:
         lockfile.write_text(json.dumps({'dssVersion':'6.5.1','jars':jars},indent=2)+'\n')
     if not lockfile.exists() or jars!=json.loads(lockfile.read_text())['jars']: raise RuntimeError('JAR dependency lock mismatch')
+    architectures=(['macos-arm64','macos-x86_64'] if a.system=='macos' else
+                   ['windows-x86_64'] if a.system=='windows' else
+                   [runtime_architecture('Linux',a.architecture)])
+    manifest=json.loads((a.base_runtime/'backend-manifest.json').read_text())
+    if a.system == 'linux':
+        base_architectures=[runtime_architecture('Linux',arch) for arch in manifest['architectures']]
+        if base_architectures != architectures:
+            raise RuntimeError('Private JVM architecture differs from the native base runtime')
     if a.output.exists(): raise RuntimeError('Choose a new output folder; existing runtimes are preserved')
     shutil.copytree(a.base_runtime,a.output)
     target=a.output/'ltv'; target.mkdir()
@@ -91,9 +103,6 @@ def main():
         shutil.copyfile(difesa/cert,trust/cert)
     shutil.copyfile(a.java_home/'lib/security/cacerts',trust/'cacerts')
     tools=json.loads((ROOT/'native/ltv/toolchain.lock.json').read_text());a.tools_cache.mkdir(exist_ok=True,parents=True)
-    architectures=(['macos-arm64','macos-x86_64'] if a.system=='macos' else
-                   ['windows-x86_64'] if a.system=='windows' else
-                   [runtime_architecture('Linux')])
     for architecture in architectures:
         home=extract(tools['runtimes'][architecture],a.tools_cache,architecture)
         shutil.copytree(home,target/'jre'/architecture,symlinks=False)
@@ -109,7 +118,6 @@ def main():
                     out=notices/'jar-notices'/jar.stem/Path(n).name;out.parent.mkdir(exist_ok=True,parents=True);out.write_bytes(z.read(n))
     for filename in ['toolchain.lock.json','dependencies.lock.json','README.md']:
         shutil.copyfile(ROOT/'native/ltv'/filename,notices/filename)
-    manifest=json.loads((a.output/'backend-manifest.json').read_text())
     manifest['native_base_manifest_sha256']=digest(a.base_runtime/'backend-manifest.json')
     manifest['ltv']={'engine':'EU DSS 6.5.1','java':'Eclipse Temurin 21.0.12.1+1','offline':False,
         'network':'bounded CRL GETs through private shared C++ helper; document processing local',

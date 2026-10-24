@@ -18,6 +18,9 @@ eseguibili e hash e calcola anche le dipendenze delle librerie Java.
 Programmi di test nativi e JAR di test DSS sono esclusi.
 [Build e collaudi DSS/LTA](LINUX_DSS_LTA.md).
 
+La build ARM64 di test usa una JVM privata e binari AArch64; il `.deb` amd64
+rimane separato. [Preparazione e collaudi ARM64](LINUX_ARM64.md).
+
 ## Assemblaggio senza installazione
 
 Richiede un bundle release completo già compilato, `dpkg-dev`, `binutils` e

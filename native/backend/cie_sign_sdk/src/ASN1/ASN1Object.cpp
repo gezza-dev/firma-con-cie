@@ -208,7 +208,7 @@ void CASN1Object::toByteArray(UUCByteArray& byteArray) const
 		int nAux = nLen;
 		for(i = 0; i < nLenNeeded; i++)				
 		{
-			nDigit = nAux >> (256 * i);			
+			nDigit = nAux & 0xff;			
 			pbtSerialized[2 + (nLenNeeded - i - 1)] = (BYTE)nDigit;
 			nAux = nAux / 256;					
 		}					

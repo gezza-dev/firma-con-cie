@@ -25,7 +25,7 @@ il 23 ottobre 2026; Chromium Snap/Flatpak
 non sono inclusi in questa integrazione. Nessun browser viene configurato
 dall'installer o durante la compilazione.
 
-Cambio PIN e Sblocco Carta sono implementati con test software: le prove reali su macOS e Windows restano da completare. La validazione DSS/LTA con JVM privata è attualmente predisposta per macOS e Windows.
+Cambio PIN e Sblocco Carta sono implementati con test software: le prove reali su macOS e Windows restano da completare. La validazione DSS/LTA con JVM privata è predisposta per macOS, Windows e Linux; [supporto ARM64 di test](docs/LINUX_ARM64.md).
 
 [Stato delle verifiche e limiti](docs/STATUS.md) · [Compilazione](docs/BUILDING.md) · [Licenze](docs/LICENSING.md)
 
@@ -100,6 +100,9 @@ Gli identificativi tecnici storici contenenti `FlutterPrototype` sono conservati
 Pacchetti Linux locali di test per x86_64: `.deb` verificato su Ubuntu 24.04
 LTS/Debian 13, `.rpm` per Fedora 44 e `.pkg.tar.zst` per Arch rolling.
 [Ricette, verifiche software e limiti](docs/LINUX_DISTRIBUTION_PACKAGES.md).
+È disponibile anche una ricetta [`.deb` ARM64 di test](docs/LINUX_ARM64.md),
+con compilazione e verifiche in emulazione; il collaudo su hardware ARM64 reale
+resta da eseguire. Le prove reali Linux descritte sopra riguardano x86_64.
 
 La licenza principale è **BSD-3-Clause**, con copyright e avvisi originali conservati. Il progetto include anche componenti con altre licenze: **non tutto il repository né il prodotto completo sono esclusivamente BSD**.
 

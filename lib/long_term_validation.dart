@@ -34,6 +34,7 @@ String? ltvRuntimeArchitecture(Abi abi) => switch (abi) {
   Abi.macosArm64 => 'macos-arm64',
   Abi.macosX64 => 'macos-x86_64',
   Abi.linuxX64 => 'linux-x86_64',
+  Abi.linuxArm64 => 'linux-arm64',
   _ => null,
 };
 

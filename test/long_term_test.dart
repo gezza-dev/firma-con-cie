@@ -35,7 +35,8 @@ void main() {
     expect(ltvRuntimeArchitecture(Abi.windowsX64), 'windows-x86_64');
     expect(ltvRuntimeArchitecture(Abi.macosArm64), 'macos-arm64');
     expect(ltvRuntimeArchitecture(Abi.macosX64), 'macos-x86_64');
-    expect(ltvRuntimeArchitecture(Abi.linuxArm64), isNull);
+    expect(ltvRuntimeArchitecture(Abi.linuxArm64), 'linux-arm64');
+    expect(ltvRuntimeArchitecture(Abi.linuxArm), isNull);
     expect(ltvRuntimeArchitecture(Abi.androidX64), isNull);
   });
 

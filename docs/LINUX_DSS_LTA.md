@@ -1,10 +1,10 @@
-# DSS/LTA su Linux x86_64
+# DSS/LTA su Linux x86_64 e ARM64
 
-Il validatore locale EU DSS 6.5.1 è disponibile anche su Linux x86_64.
+Il validatore locale EU DSS 6.5.1 è disponibile su Linux x86_64 e nella build di test ARM64.
 Usa il worker Java condiviso con macOS/Windows e una JVM privata Eclipse
 Temurin 21.0.12.1+1. Il `.deb` non richiede Java di sistema e non modifica
 `JAVA_HOME`, alternative Java, browser, abbinamenti o archivi di fiducia.
-Linux ARM64 non è ancora coperto da questa integrazione.
+La JVM Linux ARM64 è selezionata separatamente; ARM32 non è supportato.
 
 ## Funzionamento
 
@@ -23,7 +23,7 @@ lettore, carta, PIN o PUK e non aggiunge nuove marche al documento.
 
 ## Build riproducibile
 
-Usare il JDK `build-linux-x86_64` e Maven indicati in
+Usare il JDK `build-linux-x86_64` oppure `build-linux-arm64` e Maven indicati in
 `native/ltv/toolchain.lock.json`, verificando gli archivi con SHA-256/SHA-512
 prima dell'estrazione. Gli strumenti restano in una cartella privata di
 compilazione. Impostare `CIE_JAVA_HOME` alla directory del JDK e
@@ -41,6 +41,15 @@ python3 scripts/build_ltv.py --system linux \
 flutter pub get --enforce-lockfile
 flutter build linux --release --no-pub
 ```
+
+Su Linux ARM64 il prefisso nativo è normalmente
+`.build/dependencies/linux-aarch64/prefix`. Per assemblare da un host x86_64
+un runtime ARM64 già compilato, aggiungere `--architecture arm64` a
+`build_ltv.py`. Lo script confronta l'architettura della JVM con il manifest
+del runtime base e rifiuta una combinazione differente. Il worker e i 50 JAR
+possono essere riutilizzati solo dopo confronto con i rispettivi hash;
+fetcher nativo e JVM devono essere ARM64. `--skip-java-build` richiede che i
+prodotti Java e i source JAR siano già presenti nella cache verificata.
 
 Conservare runtime base e output completo in directory distinte; lo script
 rifiuta una destinazione esistente. Non usare `--refresh-dependency-lock`

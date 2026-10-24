@@ -291,6 +291,15 @@ dipendenze include esplicitamente EGL/OpenGL/GLES, caricati dinamicamente
 all'avvio. I pacchetti restano di test e non configurano browser.
 [Versioni verificate, ricette, isolamento e limiti](LINUX_DISTRIBUTION_PACKAGES.md).
 
+### Pacchetto Debian ARM64
+
+Il target `arm64` richiede GUI, runtime nativo, PDFium e JVM AArch64;
+worker e dipendenze Java possono essere riutilizzati dopo confronto degli hash.
+`build_ltv.py --architecture arm64` verifica l'architettura del runtime base;
+il confezionamento e i test `.deb` selezionano la JVM ARM64 separatamente.
+La compilazione e il collaudo possono usare un ambiente emulato privato.
+[Procedura ARM64, provenienza e limiti](LINUX_ARM64.md).
+
 ### Scaling dei caratteri Linux
 
 La dimensione della finestra è separata dallo scaling dei caratteri.

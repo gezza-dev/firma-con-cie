@@ -89,7 +89,12 @@ CSubjectPublicKeyInfo CCertificateInfo::getSubjectPublicKeyInfo()
 
 CASN1Sequence CCertificateInfo::getExtensions()
 {
-	int count = size();
-	return elementAt(count - 1);//).elementAt(1);
+	const int count = size();
+	if (count == 0)
+		return CASN1Sequence();
+	const CASN1Object last = elementAt(count - 1);
+	// X.509 extensions are optional and explicitly tagged [3]. Without
+	// this wrapper the last field can be a public key, not extensions.
+	return last.getTag() == 0xa3 ? CASN1Sequence(last) : CASN1Sequence();
 }
 
