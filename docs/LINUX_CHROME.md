@@ -60,14 +60,23 @@ iniziale o occorre recuperare da un errore.
 1. Se non è ancora stato usato, aprire e chiudere Chrome una volta.
 2. Aprire **Configura Chrome** e chiudere tutti i processi Chrome, anche in
    background. Non occorrono lettore, carta o PIN per questa procedura.
-3. Premere **Continua**, controllare il riepilogo e confermare con **Configura**.
+3. Premere **Continua**: si apre direttamente la conferma finale.
+   Premere **Configura** per applicare la modifica oppure **Annulla** per
+   lasciare tutto invariato. Un nuovo **Continua** prepara un piano aggiornato.
 4. Riaprire Chrome. Il successivo accesso ai siti richiede il PIN completo
    di otto cifre nel browser; la configurazione non esegue questa prova.
 
 Non si sceglie un profilo Chrome: il modulo è registrato nel database NSS
 condiviso dell’utente, selezionato secondo le stesse regole dello script.
-La procedura non crea/ripara database mancanti e non richiede sudo. Snap e
-Flatpak non sono coperti. L’installer non esegue la configurazione.
+La procedura non crea/ripara database mancanti e non richiede sudo. Le
+installazioni del browser in formato Snap o Flatpak non sono coperte.
+L’installer non esegue la configurazione.
+
+La guida ha due finestre, senza una schermata intermedia con un secondo
+pulsante di configurazione. Messaggi ed esito sono mostrati sopra i pulsanti
+nella finestra iniziale, senza un ulteriore dialogo di successo. Lo stesso
+flusso è usato dai pacchetti nativi e dall'AppImage; il browser configurato
+resta Chrome desktop del sistema.
 
 L’ispezione e il riepilogo leggono soltanto metadati e `pkcs11.txt`, senza
 inizializzare NSS o caricare moduli. La scrittura richiede un piano ancora

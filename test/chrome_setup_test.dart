@@ -94,13 +94,6 @@ Future<void> prepare(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
-Future<void> ask(WidgetTester tester) async {
-  final button = find.widgetWithText(FilledButton, 'Configura Chrome');
-  await tester.ensureVisible(button);
-  await tester.tap(button);
-  await tester.pumpAndSettle();
-}
-
 void main() {
   test('Home only requests setup when Chrome needs attention', () {
     expect(
@@ -143,7 +136,16 @@ void main() {
     await prepare(tester);
     expect(service.plans, 1);
     expect(service.writes, 0);
+    expect(find.byType(AlertDialog, skipOffstage: false), findsNWidgets(2));
+    expect(find.text('Conferma configurazione'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'Configura Chrome'), findsNothing);
+    expect(
+      find.text('Verrà configurato Chrome per usare la CIE.'),
+      findsNothing,
+    );
     expect(find.text('Rileggi'), findsNothing);
+    await tester.tap(find.text('Annulla'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Chiudi'));
     await tester.pumpAndSettle();
     expect(busy, [true, false]);
@@ -155,7 +157,6 @@ void main() {
     await tester.pumpWidget(screen(service));
     await open(tester);
     await prepare(tester);
-    await ask(tester);
     expect(
       find.text(
         'Vuoi configurare Chrome per usare la CIE? Firefox resterà invariato.',
@@ -164,6 +165,10 @@ void main() {
     );
     await tester.tap(find.text('Annulla'));
     await tester.pumpAndSettle();
+    expect(service.writes, 0);
+    expect(find.byType(AlertDialog), findsOneWidget);
+    await prepare(tester);
+    expect(service.plans, 2);
     expect(service.writes, 0);
   });
 
@@ -174,16 +179,26 @@ void main() {
       await tester.pumpWidget(screen(service));
       await open(tester);
       await prepare(tester);
-      await ask(tester);
       await tester.tap(find.text('Configura'));
       await tester.pumpAndSettle();
       expect(service.writes, 1);
       expect(service.fingerprint, 'reviewed-1');
+      expect(find.byType(AlertDialog), findsOneWidget);
       expect(
         find.text(
           'Chrome è configurato. Riaprilo e usa il PIN completo di otto cifre.',
         ),
         findsOneWidget,
+      );
+      expect(
+        tester
+            .getBottomLeft(
+              find.text(
+                'Chrome è configurato. Riaprilo e usa il PIN completo di otto cifre.',
+              ),
+            )
+            .dy,
+        lessThan(tester.getTopLeft(find.text('Chiudi')).dy),
       );
       expect(find.byType(TextField), findsNothing);
     },
@@ -196,7 +211,6 @@ void main() {
     await tester.pumpWidget(screen(service));
     await open(tester);
     await prepare(tester);
-    await ask(tester);
     await tester.tap(find.text('Configura'));
     await tester.pump();
     final close = tester.widget<TextButton>(
@@ -217,7 +231,6 @@ void main() {
     await tester.pumpWidget(screen(service));
     await open(tester);
     await prepare(tester);
-    await ask(tester);
     await tester.tap(find.text('Configura'));
     await tester.pumpAndSettle();
     expect(find.text(chromeSetupError('plan_changed')), findsOneWidget);
@@ -305,7 +318,6 @@ void main() {
     await tester.pumpWidget(screen(service, scale: 2));
     await open(tester);
     await prepare(tester);
-    await ask(tester);
     expect(tester.takeException(), isNull);
     await tester.tap(find.text('Annulla'));
     await tester.pumpAndSettle();

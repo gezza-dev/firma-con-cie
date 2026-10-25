@@ -46,11 +46,11 @@ Esempi dalla radice dei sorgenti, all'interno dell'ambiente appropriato:
 
 ```sh
 python3 scripts/package_linux_deb.py --bundle /bundle --output /output/deb \
-  --version '0.1.0~test20261024.19'
+  --version '1.0.0~test20261025.1'
 python3 scripts/package_linux_distribution.py --format rpm \
-  --bundle /bundle --output /output/rpm --version '0.1.0~test20261024.19'
+  --bundle /bundle --output /output/rpm --version '1.0.0~test20261025.1'
 python3 scripts/package_linux_distribution.py --format arch \
-  --bundle /bundle --output /output/arch --version '0.1.0~test20261024.19'
+  --bundle /bundle --output /output/arch --version '1.0.0~test20261025.1'
 ```
 
 Per Fedora servono `rpm-build`, Python, binutils, gli strumenti desktop e le

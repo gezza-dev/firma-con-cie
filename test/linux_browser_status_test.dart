@@ -364,9 +364,7 @@ void main() {
       await t.tap(find.text('Continua'));
       await t.pump();
       await t.pump(const Duration(milliseconds: 400));
-      await t.tap(find.widgetWithText(FilledButton, 'Configura Chrome'));
-      await t.pump();
-      await t.pump(const Duration(milliseconds: 400));
+      expect(find.text('Conferma configurazione'), findsOneWidget);
       expect(c.writes, 0);
       await t.tap(find.text('Configura'));
       await t.pump();

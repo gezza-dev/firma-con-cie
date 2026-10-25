@@ -70,9 +70,6 @@ class LinuxFirefoxSetupService implements FirefoxSetupService {
 }
 
 String firefoxSetupError(String? code) => switch (code) {
-  'helper_missing' || 'helper_incompatible' || 'helper_unavailable' => 'Installa o aggiorna il componente esterno per l’accesso ai siti, poi premi «Rileggi».',
-  'public_certificate_unavailable' =>
-    'Dati pubblici della CIE non disponibili. Rileggi la Home e riprova.',
   'profile_uninitialized' =>
     'Apri e chiudi Firefox con questo profilo, poi riprova.',
   'browser_running' || 'browser_status_unknown' => 'Chiudi Firefox e riprova.',
@@ -269,12 +266,11 @@ class _FirefoxSetupDialog extends StatefulWidget {
 }
 
 class _FirefoxSetupDialogState extends State<_FirefoxSetupDialog> {
-  bool working = false, configured = false;
+  bool working = false, confirming = false, configured = false;
   bool hadProfiles = false, snapReady = false;
   List<JsonResult> profiles = [];
   String? selected, message;
   String permission = 'unknown';
-  JsonResult? plan;
 
   @override
   void initState() {
@@ -300,7 +296,6 @@ class _FirefoxSetupDialogState extends State<_FirefoxSetupDialog> {
   Future<void> _refresh() => _run(() async {
     profiles = [];
     selected = null;
-    plan = null;
     configured = false;
     hadProfiles = false;
     snapReady = false;
@@ -322,69 +317,83 @@ class _FirefoxSetupDialogState extends State<_FirefoxSetupDialog> {
     profiles = initialized.where((p) => p['state'] != 'configured').toList();
     permission = result['snapPermission'] as String? ?? 'unknown';
     selected = null;
-    plan = null;
     configured = false;
   });
 
-  Future<void> _prepare() => _run(() async {
-    final result = await widget.service.plan(selected!);
-    if (!mounted) return;
-    if (result['ok'] != true) {
-      plan = null;
-      message = firefoxSetupError(result['code'] as String?);
-      return;
-    }
-    if (result['alreadyConfigured'] == true) {
-      profiles.removeWhere((p) => p['id'] == selected);
-      snapReady = snapReady || result['target'] == 'snap';
-      selected = null;
-      plan = null;
-      message = 'Questo profilo è già configurato.';
-      return;
-    }
-    plan = result;
-  });
-
-  Future<bool> _confirm({required bool permission}) async =>
-      await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(
-            tr(
-              context,
-              permission ? 'Autorizza lettore' : 'Conferma configurazione',
-            ),
-          ),
-          content: SingleChildScrollView(
-            child: Text(
-              tr(
-                context,
-                permission
-                    ? 'Vuoi consentire a Firefox Snap di usare il lettore? Il sistema potrebbe chiedere la password del computer.'
-                    : 'Configurare il profilo «{p0}»? Le altre impostazioni resteranno invariate.',
-                permission ? [] : [plan!['label'] as String],
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(tr(context, 'Annulla')),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: Text(tr(context, permission ? 'Autorizza' : 'Configura')),
-            ),
-          ],
-        ),
-      ) ??
-      false;
-
-  Future<void> _apply() async {
-    if (working) return;
-    final prepared = plan!;
+  Future<void> _prepare() async {
+    if (working || confirming || selected == null) return;
     final identity = selected!;
-    if (!await _confirm(permission: false) || !mounted) return;
+    JsonResult? prepared;
+    await _run(() async {
+      final result = await widget.service.plan(identity);
+      if (!mounted) return;
+      if (result['ok'] != true) {
+        message = firefoxSetupError(result['code'] as String?);
+        return;
+      }
+      if (result['alreadyConfigured'] == true) {
+        profiles.removeWhere((p) => p['id'] == identity);
+        snapReady = snapReady || result['target'] == 'snap';
+        selected = null;
+        message = 'Questo profilo è già configurato.';
+        return;
+      }
+      prepared = result;
+    });
+    if (mounted && prepared != null) await _apply(identity, prepared!);
+  }
+
+  Future<bool> _confirm({
+    required bool permission,
+    JsonResult? prepared,
+  }) async {
+    setState(() => confirming = true);
+    try {
+      return await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text(
+                tr(
+                  context,
+                  permission ? 'Autorizza lettore' : 'Conferma configurazione',
+                ),
+              ),
+              content: SingleChildScrollView(
+                child: Text(
+                  tr(
+                    context,
+                    permission
+                        ? 'Vuoi consentire a Firefox Snap di usare il lettore? Il sistema potrebbe chiedere la password del computer.'
+                        : 'Configurare il profilo «{p0}»? Le altre impostazioni resteranno invariate.',
+                    permission ? [] : [prepared!['label'] as String],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: Text(tr(context, 'Annulla')),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: Text(
+                    tr(context, permission ? 'Autorizza' : 'Configura'),
+                  ),
+                ),
+              ],
+            ),
+          ) ??
+          false;
+    } finally {
+      if (mounted) setState(() => confirming = false);
+    }
+  }
+
+  Future<void> _apply(String identity, JsonResult prepared) async {
+    if (working || confirming) return;
+    if (!await _confirm(permission: false, prepared: prepared) || !mounted) {
+      return;
+    }
     await _run(() async {
       final result = await widget.service.apply(
         identity,
@@ -392,7 +401,6 @@ class _FirefoxSetupDialogState extends State<_FirefoxSetupDialog> {
       );
       if (!mounted) return;
       if (result['ok'] != true) {
-        plan = null;
         message = firefoxSetupError(result['code'] as String?);
         return;
       }
@@ -401,13 +409,12 @@ class _FirefoxSetupDialogState extends State<_FirefoxSetupDialog> {
       snapReady = snapReady || prepared['target'] == 'snap';
       profiles.removeWhere((p) => p['id'] == identity);
       selected = null;
-      plan = null;
       message = 'Firefox è configurato. Riaprilo e usa il PIN completo per accedere ai siti.';
     });
   }
 
   Future<void> _permission() async {
-    if (working) return;
+    if (working || confirming) return;
     if (!await _confirm(permission: true) || !mounted) return;
     await _run(() async {
       final result = await widget.service.connectPcsc();
@@ -423,11 +430,8 @@ class _FirefoxSetupDialogState extends State<_FirefoxSetupDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final snap = profiles.any(
-      (p) => p['id'] == selected && p['target'] == 'snap',
-    );
     return PopScope(
-      canPop: !working,
+      canPop: !working && !confirming,
       child: AlertDialog(
         title: Text(tr(context, 'Configura Firefox')),
         content: SizedBox(
@@ -463,11 +467,10 @@ class _FirefoxSetupDialogState extends State<_FirefoxSetupDialog> {
                           ),
                         ),
                     ],
-                    onChanged: working
+                    onChanged: working || confirming
                         ? null
                         : (value) => setState(() {
                             selected = value;
-                            plan = null;
                             configured = false;
                             message = null;
                           }),
@@ -480,42 +483,14 @@ class _FirefoxSetupDialogState extends State<_FirefoxSetupDialog> {
                     ),
                   ),
                 const SizedBox(height: 12),
-                if (selected == null && !configured)
-                  TextButton(
-                    onPressed: working ? null : _refresh,
-                    child: Text(tr(context, 'Rileggi profili')),
-                  ),
-                if (selected != null && plan == null && !configured)
-                  OutlinedButton(
-                    onPressed: working ? null : _prepare,
-                    child: Text(tr(context, 'Continua')),
-                  ),
-                if (plan != null && !configured) ...[
-                  Text(
-                    tr(context, 'Profilo selezionato: {p0}', [
-                      plan!['label'] as String,
-                    ]),
-                  ),
-                  Text(tr(context, 'Verrà configurato solo questo profilo.')),
-                  const SizedBox(height: 12),
-                  FilledButton(
-                    onPressed: working ? null : _apply,
-                    child: Text(tr(context, 'Configura profilo')),
-                  ),
-                ],
-                if (snap || (snapReady && permission != 'connected')) ...[
+                if (snapReady && permission != 'connected') ...[
                   const SizedBox(height: 12),
                   Text(
                     tr(
                       context,
-                      permission == 'connected' ? 'Lettore già autorizzato.' : 'Firefox Snap deve essere autorizzato a usare il lettore.',
+                      'Firefox Snap deve essere autorizzato a usare il lettore.',
                     ),
                   ),
-                  if (permission != 'connected' && (snapReady || configured))
-                    OutlinedButton(
-                      onPressed: working ? null : _permission,
-                      child: Text(tr(context, 'Autorizza lettore')),
-                    ),
                 ],
                 if (working)
                   const Padding(
@@ -532,10 +507,27 @@ class _FirefoxSetupDialogState extends State<_FirefoxSetupDialog> {
           ),
         ),
         actions: [
+          if (selected == null && !configured)
+            TextButton(
+              onPressed: working || confirming ? null : _refresh,
+              child: Text(tr(context, 'Rileggi profili')),
+            ),
+          if (snapReady && permission != 'connected')
+            OutlinedButton(
+              onPressed: working || confirming ? null : _permission,
+              child: Text(tr(context, 'Autorizza lettore')),
+            ),
           TextButton(
-            onPressed: working ? null : () => Navigator.pop(context),
+            onPressed: working || confirming
+                ? null
+                : () => Navigator.pop(context),
             child: Text(tr(context, 'Chiudi')),
           ),
+          if (selected != null && !configured)
+            FilledButton(
+              onPressed: working || confirming ? null : _prepare,
+              child: Text(tr(context, 'Continua')),
+            ),
         ],
       ),
     );

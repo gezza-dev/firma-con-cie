@@ -32,9 +32,6 @@ class LinuxChromeSetupService implements ChromeSetupService {
 }
 
 String chromeSetupError(String? code) => switch (code) {
-  'helper_missing' || 'helper_incompatible' || 'helper_unavailable' => 'Installa o aggiorna il componente esterno per l’accesso ai siti, poi premi «Rileggi».',
-  'public_certificate_unavailable' =>
-    'Dati pubblici della CIE non disponibili. Rileggi la Home e riprova.',
   'not_installed' => 'Installa Google Chrome desktop, poi riprova.',
   'database_uninitialized' ||
   'profile_missing' ||
@@ -215,7 +212,6 @@ class _ChromeSetupDialog extends StatefulWidget {
 class _ChromeSetupDialogState extends State<_ChromeSetupDialog> {
   bool working = false, confirming = false;
   String? state, message;
-  JsonResult? plan;
   @override
   void initState() {
     super.initState();
@@ -232,7 +228,6 @@ class _ChromeSetupDialogState extends State<_ChromeSetupDialog> {
       await action();
     } catch (_) {
       if (mounted) {
-        plan = null;
         message = chromeSetupError(null);
       }
     } finally {
@@ -241,7 +236,6 @@ class _ChromeSetupDialogState extends State<_ChromeSetupDialog> {
   }
 
   Future<void> _refresh() => _run(() async {
-    plan = null;
     state = null;
     final result = await widget.service.inspect();
     if (!mounted) return;
@@ -250,22 +244,27 @@ class _ChromeSetupDialogState extends State<_ChromeSetupDialog> {
       message = chromeSetupError((state ?? result['code']) as String?);
     }
   });
-  Future<void> _prepare() => _run(() async {
-    final result = await widget.service.plan();
-    if (!mounted) return;
-    if (result['ok'] != true) {
-      message = chromeSetupError(result['code'] as String?);
-      return;
-    }
-    if (result['alreadyConfigured'] == true) {
-      state = 'configured';
-      return;
-    }
-    plan = result;
-  });
-  Future<void> _apply() async {
-    if (working || confirming || plan == null) return;
-    final prepared = plan!;
+  Future<void> _prepare() async {
+    if (working || confirming) return;
+    JsonResult? prepared;
+    await _run(() async {
+      final result = await widget.service.plan();
+      if (!mounted) return;
+      if (result['ok'] != true) {
+        message = chromeSetupError(result['code'] as String?);
+        return;
+      }
+      if (result['alreadyConfigured'] == true) {
+        state = 'configured';
+        return;
+      }
+      prepared = result;
+    });
+    if (mounted && prepared != null) await _apply(prepared!);
+  }
+
+  Future<void> _apply(JsonResult prepared) async {
+    if (working || confirming) return;
     setState(() => confirming = true);
     final approved = await showDialog<bool>(
       context: context,
@@ -299,7 +298,6 @@ class _ChromeSetupDialogState extends State<_ChromeSetupDialog> {
         prepared['fingerprint'] as String,
       );
       if (!mounted) return;
-      plan = null;
       if (result['ok'] != true) {
         message = chromeSetupError(result['code'] as String?);
         return;
@@ -331,30 +329,6 @@ class _ChromeSetupDialogState extends State<_ChromeSetupDialog> {
                 ),
               if (state == 'configured' && message == null)
                 Text(tr(context, 'Chrome è già configurato.')),
-              if (state == 'needs_setup' && plan == null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: OutlinedButton(
-                    onPressed: working || confirming ? null : _prepare,
-                    child: Text(tr(context, 'Continua')),
-                  ),
-                ),
-              if (plan != null) ...[
-                const SizedBox(height: 12),
-                Text(tr(context, 'Verrà configurato Chrome per usare la CIE.')),
-                const SizedBox(height: 12),
-                FilledButton(
-                  onPressed: working || confirming ? null : _apply,
-                  child: Text(tr(context, 'Configura Chrome')),
-                ),
-              ],
-              if (plan == null &&
-                  state != 'configured' &&
-                  (state != 'needs_setup' || message != null))
-                TextButton(
-                  onPressed: working || confirming ? null : _refresh,
-                  child: Text(tr(context, 'Rileggi')),
-                ),
               if (working)
                 const Padding(
                   padding: EdgeInsets.all(12),
@@ -370,12 +344,23 @@ class _ChromeSetupDialogState extends State<_ChromeSetupDialog> {
         ),
       ),
       actions: [
+        if (state != 'configured' &&
+            (state != 'needs_setup' || message != null))
+          TextButton(
+            onPressed: working || confirming ? null : _refresh,
+            child: Text(tr(context, 'Rileggi')),
+          ),
         TextButton(
           onPressed: working || confirming
               ? null
               : () => Navigator.pop(context),
           child: Text(tr(context, 'Chiudi')),
         ),
+        if (state == 'needs_setup')
+          FilledButton(
+            onPressed: working || confirming ? null : _prepare,
+            child: Text(tr(context, 'Continua')),
+          ),
       ],
     ),
   );

@@ -11,10 +11,6 @@ set(BINARY_NAME "CIE-ID")
 # The unique GTK application identifier for this application. See:
 # https://wiki.gnome.org/HowDoI/ChooseApplicationID
 set(APPLICATION_ID "it.giancarloezza.prototype.cie_flutter_prototype")
-# The Flatpak test launcher must coexist with the native desktop entry.
-if(DEFINED ENV{CIE_FLATPAK_APP_ID})
-  set(APPLICATION_ID "$ENV{CIE_FLATPAK_APP_ID}")
-endif()
 
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent

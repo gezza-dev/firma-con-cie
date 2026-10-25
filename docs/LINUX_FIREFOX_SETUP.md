@@ -24,6 +24,13 @@ resta disponibile separatamente, senza registrare di nuovo alcun profilo.
 Dopo la selezione «Rileggi profili» è nascosto; dopo una configurazione
 riuscita il profilo viene rimosso dalla lista.
 
+La procedura usa due finestre: scelta del profilo e conferma finale.
+«Continua» apre direttamente la conferma, senza un riepilogo intermedio
+con un ulteriore pulsante. Messaggi ed esito rimangono sopra i pulsanti
+nella finestra iniziale; non compare un terzo dialogo di successo.
+Solo l'eventuale autorizzazione del lettore Snap ha una conferma separata.
+Il flusso è condiviso dai pacchetti nativi e dall'AppImage.
+
 La ricerca usa gli indici `profiles.ini`, indipendentemente dalla posizione
 del programma Firefox (anche se estratto nella cartella Download):
 
@@ -48,10 +55,12 @@ visibile per consentire la diagnosi.
    **Rileggi profili**. L'app non crea nuovi profili.
 2. Scegliere esplicitamente il profilo. Non viene selezionato automaticamente
    un profilo predefinito o quello della prima installazione trovata.
-3. Premere **Continua** e leggere il riepilogo. Questo passaggio
-   non scrive nel profilo e non copia librerie.
-4. Chiudere tutte le finestre/processi Firefox. Premere **Configura profilo**, poi **Configura** nella conferma finale. Annullando non viene
-   applicata alcuna modifica.
+3. Chiudere tutte le finestre/processi Firefox e premere **Continua**.
+   Si apre direttamente la conferma del profilo scelto; fino a questo punto
+   non si scrive nel profilo e non si copiano librerie.
+4. Premere **Configura** nella conferma finale. Annullando non viene
+   applicata alcuna modifica; un nuovo **Continua** ricontrolla il piano.
+   L'esito viene mostrato nella finestra iniziale, senza altri dialoghi.
 5. Per Snap, se il permesso non è già collegato, usare **Autorizza lettore** dopo la registrazione. C'è una conferma separata;
    l'eventuale password amministrativa va inserita soltanto nella finestra
    del sistema. Il comando è limitato a `snap connect firefox:pcscd`.

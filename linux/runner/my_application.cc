@@ -2,7 +2,6 @@
 #include "text_scaling.h"
 #include "window_sizing.h"
 #include "window_chrome.h"
-#include "flatpak_browser.h"
 
 #include <flutter_linux/flutter_linux.h>
 #ifdef GDK_WINDOWING_X11
@@ -85,7 +84,7 @@ static void my_application_activate(GApplication* application) {
     }
     gtk_header_bar_set_show_close_button(header_bar, TRUE);
     g_object_set_data_full(G_OBJECT(header_bar), "cie-window-chrome",
-        cie_window_chrome_new(header_bar, g_file_test("/.flatpak-info", G_FILE_TEST_IS_REGULAR)),
+        cie_window_chrome_new(header_bar, FALSE),
         g_object_unref);
     gtk_window_set_titlebar(window, GTK_WIDGET(header_bar));
   } else {
@@ -115,11 +114,6 @@ static void my_application_activate(GApplication* application) {
   gtk_widget_realize(GTK_WIDGET(view));
 
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
-  if (g_file_test("/.flatpak-info", G_FILE_TEST_IS_REGULAR)) {
-    g_object_set_data_full(G_OBJECT(view), "cie-flatpak-browser",
-        cie_flatpak_browser_new(fl_engine_get_binary_messenger(fl_view_get_engine(view)),
-                               g_application_get_dbus_connection(application)), g_object_unref);
-  }
 
   // GTK resolves the desktop's logical font DPI independently of display DPI.
   // Keep the channel alive for the view and stop its settings observer on exit.

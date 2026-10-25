@@ -2,7 +2,28 @@
 
 Situazione al 25 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
 
-## AppImage Linux x86_64 e sperimentazione Flatpak (25 ottobre)
+## Versione e semplificazione Linux (25 ottobre)
+
+La versione corrente dei sorgenti è `1.0.0` (build Flutter `1`). Diagnostica e
+worker DSS sono allineati alla versione già dichiarata dall'app e dagli
+installer Windows. Gli esempi di confezionamento Linux usano ora la base
+`1.0.0`; i numeri dei pacchetti nei resoconti storici restano quelli originali.
+Il cambio di versione dei sorgenti non rinomina né aggiorna i pacchetti binari
+locali già compilati e non costituisce una nuova release binaria.
+
+Le guide Firefox e Chrome sono ridotte a due finestre: preparazione/selezione
+e conferma della configurazione. L'autorizzazione separata del lettore appare
+solo per Firefox Snap quando necessaria. Rimossi il passaggio intermedio e le
+etichette sotto i pulsanti; errori ed esiti rimangono nella finestra iniziale.
+
+Dopo la rimozione Flatpak: analisi Flutter senza problemi, 351 test Flutter,
+39 gruppi CTest nativi, 3 gruppi GTK e 25 test Python superati; build Release
+Linux e smoke software senza rilevamento carta completati. I vecchi artefatti
+locali sono stati eliminati, conservando un pacchetto per formato e
+architettura, con manifest e checksum. Nessuna nuova prova sulla CIE è stata
+eseguita per queste modifiche ai sorgenti.
+
+## AppImage Linux x86_64 (25 ottobre)
 
 Il prototipo portabile prosegue con l'AppImage compilato su Ubuntu 22.04,
 con base glibc 2.35 e requisito C++ `GLIBCXX_3.4.30`. Le librerie CIE principali
@@ -20,12 +41,10 @@ Firefox/Chrome con PIN completo, anche a AppImage chiuso per Chrome.
 Dopo la rimozione del pacchetto nativo è riuscito un nuovo abbinamento,
 conservato dopo la riapertura senza reinserire il PIN. [Dettagli e limiti](LINUX_APPIMAGE.md).
 
-Il lavoro Flatpak resta sperimentale e temporaneamente accantonato. Comprende
-archivio privato persistente, salvataggio tramite portali e barra GTK con icona
-unica e tema del desktop. Interfaccia e firma con PIN parziale sono state
-collaudate dall'utente. La guida browser tramite componente esterno separato
-è verificata soltanto con test software e non con autenticazioni reali.
-[Ricetta, componente esterno e confini](LINUX_FLATPAK.md).
+La sperimentazione Flatpak e il componente browser esterno sono stati rimossi
+dal progetto. Restano AppImage e pacchetti nativi, con configurazione diretta
+dei browser. Sono conservate le correzioni condivise per salvataggio tramite
+portali, icona e decorazioni della finestra.
 
 I collaudi hardware precedenti sono conferme dell'utente, distinte dai test
 automatici dell'integrazione dei sorgenti. Restano da completare altri desktop

@@ -41,7 +41,7 @@ flutter pub get --enforce-lockfile
 CMAKE_BUILD_PARALLEL_LEVEL=2 flutter build linux --release --no-pub
 python3 scripts/package_linux_deb.py \
   --bundle build/linux/arm64/release/bundle \
-  --output dist/linux-arm64-deb-test --version '0.1.0~test20261024.21'
+  --output dist/linux-arm64-deb-test --version '1.0.0~test20261025.1'
 ```
 
 `CIE_JAVA_HOME` indica il JDK ARM64 verificato e `CIE_MAVEN` lo strumento Maven
@@ -67,7 +67,7 @@ python3 scripts/test_linux_packaging.py
 python3 scripts/smoke_native.py --runtime native/runtime/linux \
   --report reports/linux-arm64-smoke.json
 python3 scripts/test_linux_deb.py \
-  dist/linux-arm64-deb-test/cie-id-desktop_0.1.0~test20261024.21_arm64.deb \
+  dist/linux-arm64-deb-test/cie-id-desktop_1.0.0~test20261025.1_arm64.deb \
   --report reports/linux-arm64-deb.json
 ```
 

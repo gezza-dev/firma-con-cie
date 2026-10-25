@@ -2,9 +2,6 @@
 import 'enrollment.dart';
 import 'native_bridge.dart';
 
-const flatpakWebMessage =
-    'Per configurare l’accesso ai siti, installa il componente «Accesso ai siti per Firma con CIE Flatpak», poi premi «Rileggi».';
-
 /// Uses only the inspections already performed by the Home setup cards.
 /// A configured profile confirms registration, never a successful website login.
 class LinuxBrowserConfiguration {

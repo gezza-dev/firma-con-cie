@@ -44,7 +44,6 @@ import 'linux_browser_status.dart';
 import 'enrollment_diagnostics_view.dart';
 import 'home_card_status.dart';
 import 'paired_card_identity.dart';
-import 'flatpak_browser_setup.dart';
 import 'signing_document.dart';
 import 'document_dialogs.dart';
 import 'verification_flow.dart';
@@ -54,13 +53,11 @@ export 'signing_document.dart' show SignedFileRequest, SignedFilePicker;
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  final flatpak = Platform.isLinux && File('/.flatpak-info').existsSync();
   final appimage =
       Platform.isLinux && Platform.environment['CIE_APPIMAGE'] == '1';
   final browserPython = appimage
       ? '${File(Platform.resolvedExecutable).parent.path}/tools/python3'
       : '/usr/bin/python3';
-  final flatpakTransport = flatpak ? FlatpakBrowserTransport() : null;
   LicenseRegistry.addLicense(() async* {
     for (final item in {
       'CIE middleware e SDK': 'assets/licenses/native-LICENSE.txt',
@@ -84,26 +81,21 @@ void main() {
       windowsWebComponentChecker: Platform.isWindows
           ? checkWindowsWebComponent
           : null,
-      flatpak: flatpak,
       firefoxSetupService: Platform.isLinux
-          ? flatpak
-                ? FlatpakFirefoxSetupService(flatpakTransport!)
-                : LinuxFirefoxSetupService(
-                    helperName: appimage
-                        ? 'appimage_firefox_setup.py'
-                        : 'firefox_setup.py',
-                    pythonExecutable: browserPython,
-                  )
+          ? LinuxFirefoxSetupService(
+              helperName: appimage
+                  ? 'appimage_firefox_setup.py'
+                  : 'firefox_setup.py',
+              pythonExecutable: browserPython,
+            )
           : null,
       chromeSetupService: Platform.isLinux
-          ? flatpak
-                ? FlatpakChromeSetupService(flatpakTransport!)
-                : LinuxChromeSetupService(
-                    helperName: appimage
-                        ? 'appimage_chrome_setup.py'
-                        : 'chrome_setup.py',
-                    pythonExecutable: browserPython,
-                  )
+          ? LinuxChromeSetupService(
+              helperName: appimage
+                  ? 'appimage_chrome_setup.py'
+                  : 'chrome_setup.py',
+              pythonExecutable: browserPython,
+            )
           : null,
     ),
   );
@@ -125,7 +117,6 @@ class CiePrototype extends StatefulWidget {
     this.windowsWebComponentChecker,
     this.firefoxSetupService,
     this.chromeSetupService,
-    this.flatpak = false,
   });
   final PreferencesStore? preferences;
   final SettingsStore? settings;
@@ -140,7 +131,6 @@ class CiePrototype extends StatefulWidget {
   final WindowsWebComponentChecker? windowsWebComponentChecker;
   final FirefoxSetupService? firefoxSetupService;
   final ChromeSetupService? chromeSetupService;
-  final bool flatpak;
   @override
   State<CiePrototype> createState() => _CiePrototypeState();
 }
@@ -201,7 +191,6 @@ class _CiePrototypeState extends State<CiePrototype> {
           windowsWebComponentChecker: widget.windowsWebComponentChecker,
           firefoxSetupService: widget.firefoxSetupService,
           chromeSetupService: widget.chromeSetupService,
-          flatpak: widget.flatpak,
         ),
       ),
     ),
@@ -224,7 +213,6 @@ class PrototypeHome extends StatefulWidget {
     this.windowsWebComponentChecker,
     this.firefoxSetupService,
     this.chromeSetupService,
-    this.flatpak = false,
   });
   final PreferencesStore? preferences;
   final SettingsStore? settings;
@@ -239,7 +227,6 @@ class PrototypeHome extends StatefulWidget {
   final WindowsWebComponentChecker? windowsWebComponentChecker;
   final FirefoxSetupService? firefoxSetupService;
   final ChromeSetupService? chromeSetupService;
-  final bool flatpak;
   @override
   State<PrototypeHome> createState() => _PrototypeHomeState();
 }
@@ -328,24 +315,15 @@ class _PrototypeHomeState extends State<PrototypeHome>
   }
 
   JsonResult? _firefoxBrowserStatus, _chromeBrowserStatus;
-  bool _flatpakHelperReady = false;
 
   // Main supplies these services only on Linux. Injected services also enable
   // the same UI in software tests running on macOS or Windows.
   bool get _linuxBrowserSetupEnabled =>
-      (!widget.flatpak ||
-          widget.firefoxSetupService is FlatpakFirefoxSetupService) &&
-      (Platform.isLinux ||
-          widget.firefoxSetupService != null ||
-          widget.chromeSetupService != null);
+      Platform.isLinux ||
+      widget.firefoxSetupService != null ||
+      widget.chromeSetupService != null;
 
-  String _pairedWebStatus(EnrollmentRecord record) =>
-      widget.flatpak &&
-          !_flatpakHelperReady &&
-          record.readyForSigning &&
-          !record.removalPending
-      ? flatpakWebMessage
-      : _linuxBrowserSetupEnabled
+  String _pairedWebStatus(EnrollmentRecord record) => _linuxBrowserSetupEnabled
       ? linuxPairedWebStatus(
           record,
           LinuxBrowserConfiguration(
@@ -832,23 +810,6 @@ class _PrototypeHomeState extends State<PrototypeHome>
           .where((r) => r.readyForSigning)
           .map((r) => r.id)
           .toList();
-      if (widget.flatpak) {
-        final certificates = <String, String>{
-          for (final record in enrollment.records.values)
-            if (record.readyForSigning &&
-                record.hasPublicData &&
-                record.data['certificateHex'] is String)
-              record.id: record.data['certificateHex'] as String,
-        };
-        final firefox = widget.firefoxSetupService,
-            chrome = widget.chromeSetupService;
-        if (firefox is FlatpakFirefoxSetupService) {
-          firefox.certificates = certificates;
-        }
-        if (chrome is FlatpakChromeSetupService) {
-          chrome.certificates = certificates;
-        }
-      }
       pin.clear();
       usePartialPin = false;
       return;
@@ -1911,9 +1872,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
                                       ),
                                     ],
                                   ),
-                                  if (unified &&
-                                      selected != null &&
-                                      !widget.flatpak)
+                                  if (unified && selected != null)
                                     ExpansionTile(
                                       title: Text(
                                         tr(
@@ -1991,41 +1950,6 @@ class _PrototypeHomeState extends State<PrototypeHome>
       WebComponentSetupNotice.fromStatus(enrollment.system);
 
   List<Widget> _webComponentSetupCards(BuildContext context) {
-    if (widget.flatpak) {
-      final firefox = widget.firefoxSetupService,
-          chrome = widget.chromeSetupService;
-      if (firefox is FlatpakFirefoxSetupService &&
-          chrome is FlatpakChromeSetupService) {
-        return [
-          FlatpakBrowserSetupHome(
-            firefox: firefox,
-            chrome: chrome,
-            busy: busy || modalInteraction,
-            onBusy: _browserSetupBusy,
-            onHealth: (value) {
-              if (mounted && value != _flatpakHelperReady) {
-                setState(() => _flatpakHelperReady = value);
-              }
-            },
-            onFirefoxStatus: (value) {
-              if (mounted) setState(() => _firefoxBrowserStatus = value);
-            },
-            onChromeStatus: (value) {
-              if (mounted) setState(() => _chromeBrowserStatus = value);
-            },
-          ),
-        ];
-      }
-      return [
-        Card(
-          key: const ValueKey('flatpak-web-notice'),
-          child: Padding(
-            padding: const EdgeInsets.all(18),
-            child: Text(tr(context, flatpakWebMessage)),
-          ),
-        ),
-      ];
-    }
     final notice = _webComponentNotice;
     if (notice == null) return [];
     return [
@@ -2069,9 +1993,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
       ? _unifiedHome(context)
       : [
           ..._webComponentSetupCards(context),
-          if (!widget.flatpak &&
-              _linuxBrowserSetupEnabled &&
-              widget.firefoxSetupService != null)
+          if (_linuxBrowserSetupEnabled && widget.firefoxSetupService != null)
             FirefoxSetupHomeCard(
               service: widget.firefoxSetupService!,
               onStatus: (status) =>
@@ -2079,9 +2001,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
               busy: busy,
               onBusy: _browserSetupBusy,
             ),
-          if (!widget.flatpak &&
-              _linuxBrowserSetupEnabled &&
-              widget.chromeSetupService != null)
+          if (_linuxBrowserSetupEnabled && widget.chromeSetupService != null)
             ChromeSetupHomeCard(
               service: widget.chromeSetupService!,
               onStatus: (status) =>
@@ -2172,28 +2092,27 @@ class _PrototypeHomeState extends State<PrototypeHome>
                             ),
                           ),
                         ),
-                      if (!widget.flatpak)
-                        WebAccessCard(
-                          linuxFirefox: _linuxBrowserSetupEnabled,
-                          key: ValueKey(
-                            'web-${reader['name']}-${reader['cardId']}',
-                          ),
-                          service: service,
-                          reader: reader['name'] as String,
-                          card: reader['cardId'] as String,
-                          enabled: capabilities?['canConfigureWeb'] == true,
-                          busy: busy,
-                          onBusy: (value) {
-                            if (mounted) {
-                              setState(() {
-                                busy = value;
-                                progress = value
-                                    ? 'Configurazione accesso ai siti…'
-                                    : '';
-                              });
-                            }
-                          },
+                      WebAccessCard(
+                        linuxFirefox: _linuxBrowserSetupEnabled,
+                        key: ValueKey(
+                          'web-${reader['name']}-${reader['cardId']}',
                         ),
+                        service: service,
+                        reader: reader['name'] as String,
+                        card: reader['cardId'] as String,
+                        enabled: capabilities?['canConfigureWeb'] == true,
+                        busy: busy,
+                        onBusy: (value) {
+                          if (mounted) {
+                            setState(() {
+                              busy = value;
+                              progress = value
+                                  ? 'Configurazione accesso ai siti…'
+                                  : '';
+                            });
+                          }
+                        },
+                      ),
                     ],
                   ],
                 ),
@@ -2306,18 +2225,14 @@ class _PrototypeHomeState extends State<PrototypeHome>
     final candidates = readers.where(_homeCanPair).toList();
     return [
       ..._webComponentSetupCards(context),
-      if (!widget.flatpak &&
-          _linuxBrowserSetupEnabled &&
-          widget.firefoxSetupService != null)
+      if (_linuxBrowserSetupEnabled && widget.firefoxSetupService != null)
         FirefoxSetupHomeCard(
           service: widget.firefoxSetupService!,
           onStatus: (status) => setState(() => _firefoxBrowserStatus = status),
           busy: busy,
           onBusy: _browserSetupBusy,
         ),
-      if (!widget.flatpak &&
-          _linuxBrowserSetupEnabled &&
-          widget.chromeSetupService != null)
+      if (_linuxBrowserSetupEnabled && widget.chromeSetupService != null)
         ChromeSetupHomeCard(
           service: widget.chromeSetupService!,
           onStatus: (status) => setState(() => _chromeBrowserStatus = status),

@@ -1,7 +1,7 @@
 # AppImage x86_64 di test
 
-La distribuzione Flatpak è temporaneamente accantonata. Il prototipo AppImage
-usa Ubuntu 22.04 LTS come base di compilazione, con glibc 2.35. Si ricompilano
+Il prototipo AppImage usa Ubuntu 22.04 LTS come base di compilazione, con
+glibc 2.35. Si ricompilano
 su questa base anche le dipendenze statiche native: i precedenti binari CIE
 richiedevano glibc 2.38 e non vengono riutilizzati. Flutter Engine e PDFium
 sono precompilati nelle versioni fissate dal progetto; il controllo ABI esamina
@@ -89,7 +89,7 @@ CMAKE_BUILD_PARALLEL_LEVEL=2 flutter build linux --release --no-pub
 python3 scripts/package_linux_appimage.py \
   --bundle build/linux/x64/release/bundle \
   --runtime /percorso/runtime-x86_64 \
-  --version 0.1.0-test20261025.1 --output dist/linux-appimage-test
+  --version 1.0.0-test20261025.1 --output dist/linux-appimage-test
 ```
 
 Il file del runtime deve corrispondere al checksum fissato. Il confezionamento

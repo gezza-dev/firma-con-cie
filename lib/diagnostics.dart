@@ -3,6 +3,7 @@ import 'dart:ffi';
 import 'dart:io';
 
 import 'app_settings.dart';
+import 'app_updates.dart';
 import 'native_bridge.dart';
 
 // Explicit projection, never redaction of arbitrary strings or SDK messages.
@@ -148,7 +149,7 @@ class DiagnosticRecorder {
   }) => {
     'schema': 1,
     'application': 'Firma con CIE',
-    'prototypeVersion': '0.1.0',
+    'prototypeVersion': appVersion,
     'operatingSystem': Platform.operatingSystem,
     'architecture': Abi.current().toString(),
     'proxyMode': network.proxy.mode.name,

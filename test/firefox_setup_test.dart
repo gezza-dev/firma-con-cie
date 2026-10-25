@@ -22,6 +22,7 @@ class FakeFirefoxSetup implements FirefoxSetupService {
   };
   Completer<JsonResult>? pending;
   JsonResult? inspectResult;
+  JsonResult? planResult;
   JsonResult? afterApplyInspection;
   @override
   Future<JsonResult> inspect() async {
@@ -50,13 +51,14 @@ class FakeFirefoxSetup implements FirefoxSetupService {
   @override
   Future<JsonResult> plan(String profile) async {
     plans++;
-    return {
-      'ok': true,
-      'id': profile,
-      'fingerprint': 'reviewed-$profile',
-      'label': profile == 'snap' ? 'Personal' : 'Work',
-      'target': profile == 'snap' ? 'snap' : 'firefox',
-    };
+    return planResult ??
+        {
+          'ok': true,
+          'id': profile,
+          'fingerprint': 'reviewed-$profile',
+          'label': profile == 'snap' ? 'Personal' : 'Work',
+          'target': profile == 'snap' ? 'snap' : 'firefox',
+        };
   }
 
   @override
@@ -123,9 +125,6 @@ Future<void> prepare(WidgetTester tester) async {
 }
 
 Future<void> confirm(WidgetTester tester) async {
-  await tester.ensureVisible(find.text('Configura profilo'));
-  await tester.tap(find.text('Configura profilo'));
-  await tester.pumpAndSettle();
   await tester.tap(find.text('Configura').last);
   await tester.pumpAndSettle();
 }
@@ -149,6 +148,108 @@ void main() {
     ],
     'snapPermission': 'connected',
   };
+
+  testWidgets('Continue opens the only setup confirmation directly', (
+    tester,
+  ) async {
+    final service = FakeFirefoxSetup();
+    await tester.pumpWidget(screen(service));
+    await open(tester);
+    expect(find.byType(AlertDialog), findsOneWidget);
+    await choose(tester, 'Firefox · Work');
+    expect(
+      tester
+          .getBottomLeft(
+            find.text('Scegli un profilo e chiudi Firefox. Non serve il PIN.'),
+          )
+          .dy,
+      lessThan(tester.getTopLeft(find.text('Continua')).dy),
+    );
+    await prepare(tester);
+    expect(find.byType(AlertDialog, skipOffstage: false), findsNWidgets(2));
+    expect(find.text('Conferma configurazione'), findsOneWidget);
+    expect(find.text('Configura profilo'), findsNothing);
+    expect(find.text('Verrà configurato solo questo profilo.'), findsNothing);
+    expect(service.plans, 1);
+    expect(service.writes, 0);
+    await confirm(tester);
+    expect(service.writes, 1);
+    expect(service.permissions, 0);
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(
+      tester.getBottomLeft(find.textContaining('Firefox è configurato.')).dy,
+      lessThan(tester.getTopLeft(find.text('Chiudi')).dy),
+    );
+  });
+
+  testWidgets('cancel discards the plan and Continue prepares a fresh one', (
+    tester,
+  ) async {
+    final service = FakeFirefoxSetup();
+    await tester.pumpWidget(screen(service));
+    await open(tester);
+    await choose(tester, 'Firefox · Work');
+    await prepare(tester);
+    await tester.tap(find.text('Annulla'));
+    await tester.pumpAndSettle();
+    expect(service.writes, 0);
+    expect(find.byType(AlertDialog), findsOneWidget);
+    await prepare(tester);
+    expect(service.plans, 2);
+    expect(service.writes, 0);
+    await confirm(tester);
+    expect(service.writes, 1);
+  });
+
+  testWidgets('plan failure shows no confirmation or write', (tester) async {
+    final service = FakeFirefoxSetup()
+      ..planResult = {'ok': false, 'code': 'browser_running'};
+    await tester.pumpWidget(screen(service));
+    await open(tester);
+    await choose(tester, 'Firefox · Work');
+    await prepare(tester);
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.text('Conferma configurazione'), findsNothing);
+    expect(service.writes, 0);
+    expect(
+      tester.getBottomLeft(find.text(firefoxSetupError('browser_running'))).dy,
+      lessThan(tester.getTopLeft(find.text('Continua')).dy),
+    );
+  });
+
+  testWidgets('already configured plan does not ask for confirmation', (
+    tester,
+  ) async {
+    final service = FakeFirefoxSetup()
+      ..planResult = {
+        'ok': true,
+        'alreadyConfigured': true,
+        'target': 'firefox',
+      };
+    await tester.pumpWidget(screen(service));
+    await open(tester);
+    await choose(tester, 'Firefox · Work');
+    await prepare(tester);
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.text('Questo profilo è già configurato.'), findsOneWidget);
+    expect(service.writes, 0);
+    expect(service.permissions, 0);
+  });
+
+  testWidgets('connected Snap reader needs no extra permission dialog', (
+    tester,
+  ) async {
+    final service = FakeFirefoxSetup()
+      ..applyResult = {'ok': true, 'snapPermission': 'connected'};
+    await tester.pumpWidget(screen(service));
+    await open(tester);
+    await choose(tester, 'Firefox Snap · Personal');
+    await prepare(tester);
+    await confirm(tester);
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.text('Autorizza lettore'), findsNothing);
+    expect(service.permissions, 0);
+  });
 
   test(
     'Home visibility distinguishes configuration needs from unused profiles',
@@ -407,9 +508,6 @@ void main() {
     await open(tester);
     await choose(tester, 'Firefox · Work');
     await prepare(tester);
-    await tester.ensureVisible(find.text('Configura profilo'));
-    await tester.tap(find.text('Configura profilo'));
-    await tester.pumpAndSettle();
     await tester.tap(find.text('Configura'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 200));
@@ -449,9 +547,6 @@ void main() {
     await choose(tester, 'Firefox · Work');
     await prepare(tester);
     expect(service.writes, 0);
-    await tester.ensureVisible(find.text('Configura profilo'));
-    await tester.tap(find.text('Configura profilo'));
-    await tester.pumpAndSettle();
     await tester.tap(find.text('Annulla'));
     await tester.pumpAndSettle();
     expect(service.writes, 0);

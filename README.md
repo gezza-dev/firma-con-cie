@@ -109,8 +109,8 @@ compilato su Ubuntu 22.04, con PC/SC del sistema e modulo browser persistente
 nella home. Collaudati dall'utente interfaccia, abbinamento da zero e persistente,
 firme PDF/P7M con PIN parziale e accesso Firefox/Chrome con PIN completo.
 Restano da completare i collaudi su altri desktop reali e i materiali di release.
-La sperimentazione [Flatpak](docs/LINUX_FLATPAK.md), con archivio separato e
-componente browser esterno facoltativo, è temporaneamente accantonata.
+La distribuzione Linux mantiene AppImage e pacchetti nativi `.deb`, `.rpm`
+e Arch, con le rispettive procedure di configurazione dei browser.
 
 La licenza principale è **BSD-3-Clause**, con copyright e avvisi originali conservati. Il progetto include anche componenti con altre licenze: **non tutto il repository né il prodotto completo sono esclusivamente BSD**.
 

@@ -276,12 +276,12 @@ installazione, aggiornamento e rimozione senza installarlo sull'host:
 
 ```sh
 python3 scripts/package_linux_deb.py \
-  --bundle dist/linux-window-fit-software \
-  --output dist/linux-window-fit-deb-test \
-  --version '0.1.0~test20261020.2'
+  --bundle build/linux/x64/release/bundle \
+  --output dist/linux-deb-test \
+  --version '1.0.0~test20261025.1'
 python3 scripts/test_linux_deb.py \
-  'dist/linux-window-fit-deb-test/cie-id-desktop_0.1.0~test20261020.2_amd64.deb' \
-  --report reports/linux-window-fit/deb-validation.json
+  'dist/linux-deb-test/cie-id-desktop_1.0.0~test20261025.1_amd64.deb' \
+  --report reports/linux-deb-validation.json
 ```
 
 Servono `dpkg-dev`, `binutils` e `desktop-file-utils`; il verificatore usa anche
@@ -317,16 +317,6 @@ GTK, PDFium, DSS/JVM, Python e strumenti NSS; PC/SC e lo stack grafico restano
 quelli del sistema. La guida browser copia il provider in un percorso utente
 persistente solo dopo conferma. Gli script dei pacchetti nativi conservano
 i propri percorsi e comportamento. [Build e collaudi AppImage](LINUX_APPIMAGE.md).
-
-### Flatpak x86_64 sperimentale
-
-La distribuzione Flatpak è temporaneamente accantonata a favore dell'AppImage;
-ricetta e test restano disponibili.
-
-Il confezionamento usa un bundle Release con identità GTK separata e runtime
-GNOME 51. Client PC/SC, DSS e PDFium sono verificati per x86_64; documenti
-tramite portali e archivio privato persistente. La configurazione dei browser
-del sistema passa dal componente esterno facoltativo, con PIN completo. [Ricetta e collaudi Flatpak](LINUX_FLATPAK.md).
 
 ### Scaling dei caratteri Linux
 
@@ -369,8 +359,8 @@ Con `xvfb-run` e `dbus-run-session` disponibili, CTest include anche
 `linux_window_chrome`: usa un display virtuale e un portale sintetico per
 controllare l'icona unica, il layout dei pulsanti, i cambi di preferenza
 chiaro/scuro e la chiusura durante una richiesta asincrona. Non apre l'app
-né accede alla carta. Nel Flatpak la barra GTK segue la preferenza del portale
-del desktop; non forza colori o una scala aggiuntiva.
+né accede alla carta. La barra GTK conserva il tema del desktop, l'icona unica
+e il layout dei pulsanti, senza forzare colori o una scala aggiuntiva.
 
 ## DSS/JVM: macOS, Windows e Linux x86_64
 

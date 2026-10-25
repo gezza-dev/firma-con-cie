@@ -28,9 +28,9 @@ Richiede un bundle release completo già compilato, `dpkg-dev`, `binutils` e
 
 ```sh
 python3 scripts/package_linux_deb.py \
-  --bundle dist/linux-window-fit-software \
-  --output dist/linux-window-fit-deb-test \
-  --version '0.1.0~test20261020.2'
+  --bundle build/linux/x64/release/bundle \
+  --output dist/linux-deb-test \
+  --version '1.0.0~test20261025.1'
 ```
 
 Usare una directory di output nuova. Lo script verifica gli hash del runtime,
@@ -43,7 +43,7 @@ manifest del contenuto e log delle dipendenze. Le versioni devono contenere
 Per il successivo collaudo manuale, nella directory del `.deb`:
 
 ```sh
-sudo apt install ./cie-id-desktop_0.1.0~test20261020.2_amd64.deb
+sudo apt install ./cie-id-desktop_1.0.0~test20261025.1_amd64.deb
 ```
 
 - App e librerie private: `/opt/firma-con-cie`.
