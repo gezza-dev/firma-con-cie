@@ -14,7 +14,14 @@ abstract interface class ChromeSetupService {
 }
 
 class LinuxChromeSetupService implements ChromeSetupService {
-  final _helper = LinuxFirefoxSetupService(helperName: 'chrome_setup.py');
+  LinuxChromeSetupService({
+    String helperName = 'chrome_setup.py',
+    String pythonExecutable = '/usr/bin/python3',
+  }) : _helper = LinuxFirefoxSetupService(
+         helperName: helperName,
+         pythonExecutable: pythonExecutable,
+       );
+  final LinuxFirefoxSetupService _helper;
   @override
   Future<JsonResult> inspect() => _helper.inspect();
   @override
@@ -25,6 +32,9 @@ class LinuxChromeSetupService implements ChromeSetupService {
 }
 
 String chromeSetupError(String? code) => switch (code) {
+  'helper_missing' || 'helper_incompatible' || 'helper_unavailable' => 'Installa o aggiorna il componente esterno per l’accesso ai siti, poi premi «Rileggi».',
+  'public_certificate_unavailable' =>
+    'Dati pubblici della CIE non disponibili. Rileggi la Home e riprova.',
   'not_installed' => 'Installa Google Chrome desktop, poi riprova.',
   'database_uninitialized' ||
   'profile_missing' ||

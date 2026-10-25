@@ -25,6 +25,8 @@ add_executable(${BINARY_NAME}
   "my_application.cc"
   "text_scaling.cc"
   "window_sizing.cc"
+  "window_chrome.cc"
+  "flatpak_browser.cc"
   "${FLUTTER_MANAGED_DIR}/generated_plugin_registrant.cc"
 )
 
@@ -36,6 +38,8 @@ apply_standard_settings(${BINARY_NAME})
 add_definitions(-DAPPLICATION_ID="${APPLICATION_ID}")
 
 # Add dependency libraries. Add any application-specific dependencies here.
+pkg_check_modules(X11 REQUIRED IMPORTED_TARGET x11)
+target_link_libraries(${BINARY_NAME} PRIVATE PkgConfig::X11)
 target_link_libraries(${BINARY_NAME} PRIVATE flutter)
 target_link_libraries(${BINARY_NAME} PRIVATE PkgConfig::GTK)
 

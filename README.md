@@ -104,6 +104,14 @@ LTS/Debian 13, `.rpm` per Fedora 44 e `.pkg.tar.zst` per Arch rolling.
 con compilazione e verifiche in emulazione; il collaudo su hardware ARM64 reale
 resta da eseguire. Le prove reali Linux descritte sopra riguardano x86_64.
 
+Il prototipo portabile Linux prosegue con un [AppImage x86_64 di test](docs/LINUX_APPIMAGE.md),
+compilato su Ubuntu 22.04, con PC/SC del sistema e modulo browser persistente
+nella home. Collaudati dall'utente interfaccia, abbinamento da zero e persistente,
+firme PDF/P7M con PIN parziale e accesso Firefox/Chrome con PIN completo.
+Restano da completare i collaudi su altri desktop reali e i materiali di release.
+La sperimentazione [Flatpak](docs/LINUX_FLATPAK.md), con archivio separato e
+componente browser esterno facoltativo, è temporaneamente accantonata.
+
 La licenza principale è **BSD-3-Clause**, con copyright e avvisi originali conservati. Il progetto include anche componenti con altre licenze: **non tutto il repository né il prodotto completo sono esclusivamente BSD**.
 
 Consultare [LICENSE](LICENSE), [NOTICE.md](NOTICE.md), [matrice delle licenze e condizioni di distribuzione](docs/LICENSING.md) e [avvisi del backend](native/backend/THIRD_PARTY_NOTICES.md). I futuri pacchetti binari richiedono anche materiali sorgente corrispondenti, avvisi completi e procedure di ricompilazione per i componenti che li richiedono.

@@ -69,7 +69,7 @@ void monitor_changed(GObject*, GParamSpec*, GtkWindow* window) { refresh(window)
 void watch_monitor(GdkDisplay*, GdkMonitor* monitor, GtkWindow* window) {
   for (const auto* signal : {"notify::workarea", "notify::geometry", "notify::scale-factor"})
     g_signal_connect_object(monitor, signal, G_CALLBACK(monitor_changed), window,
-                            G_CONNECT_DEFAULT);
+                            static_cast<GConnectFlags>(0));
   refresh(window);
 }
 
@@ -107,9 +107,9 @@ void cie_window_sizing_attach(GtkWindow* window) {
   auto* display = gtk_widget_get_display(GTK_WIDGET(window));
   if (!display) return;
   g_signal_connect_object(display, "monitor-added", G_CALLBACK(watch_monitor), window,
-                          G_CONNECT_DEFAULT);
+                          static_cast<GConnectFlags>(0));
   g_signal_connect_object(display, "monitor-removed", G_CALLBACK(monitor_removed), window,
-                          G_CONNECT_DEFAULT);
+                          static_cast<GConnectFlags>(0));
   for (int i = 0; i < gdk_display_get_n_monitors(display); ++i)
     watch_monitor(display, gdk_display_get_monitor(display, i), window);
   refresh(window);

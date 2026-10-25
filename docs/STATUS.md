@@ -1,6 +1,35 @@
 # Stato del progetto e verifiche
 
-Situazione al 24 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
+Situazione al 25 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
+
+## AppImage Linux x86_64 e sperimentazione Flatpak (25 ottobre)
+
+Il prototipo portabile prosegue con l'AppImage compilato su Ubuntu 22.04,
+con base glibc 2.35 e requisito C++ `GLIBCXX_3.4.30`. Le librerie CIE principali
+sono ricompilate con requisito glibc massimo 2.34. GTK, Flutter, PDFium,
+DSS/JVM, Python e NSS sono inclusi; PC/SC, runtime C++ e stack grafico restano
+quelli del sistema. La guida browser installa il provider in una generazione
+utente persistente dopo conferma, conservando le registrazioni native valide.
+Le procedure dei pacchetti nativi rimangono invariate.
+
+Superati i controlli software del pacchetto nelle basi isolate Ubuntu 22.04,
+Ubuntu 24.04, Debian, Fedora e Arch: dipendenze ELF, smoke senza rilevamento,
+DSS/LTA, PDFium, NSS con profili sintetici e GUI su display virtuale.
+L'utente ha collaudato interfaccia, firme PDF/P7M con PIN parziale e accesso
+Firefox/Chrome con PIN completo, anche a AppImage chiuso per Chrome.
+Dopo la rimozione del pacchetto nativo è riuscito un nuovo abbinamento,
+conservato dopo la riapertura senza reinserire il PIN. [Dettagli e limiti](LINUX_APPIMAGE.md).
+
+Il lavoro Flatpak resta sperimentale e temporaneamente accantonato. Comprende
+archivio privato persistente, salvataggio tramite portali e barra GTK con icona
+unica e tema del desktop. Interfaccia e firma con PIN parziale sono state
+collaudate dall'utente. La guida browser tramite componente esterno separato
+è verificata soltanto con test software e non con autenticazioni reali.
+[Ricetta, componente esterno e confini](LINUX_FLATPAK.md).
+
+I collaudi hardware precedenti sono conferme dell'utente, distinte dai test
+automatici dell'integrazione dei sorgenti. Restano da completare altri desktop
+reali, Firefox Snap dall'AppImage, cambio PIN/sblocco e materiali di release.
 
 ## Pacchetto Linux ARM64 in emulazione (24 ottobre)
 

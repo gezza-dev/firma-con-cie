@@ -40,9 +40,10 @@ Questi test usano servizi simulati. Tre test del backend documentale sono opt-in
 
 ## Dopo lo spostamento dei sorgenti
 
-La copia di lavoro Linux si trova in `firma-con-cie/firma-con-cie-linux`.
-I comandi di questa guida vanno eseguiti dalla nuova radice; gli script del
-repository ricavano i percorsi dalla propria posizione.
+I comandi di questa guida vanno eseguiti dalla radice del checkout corrente;
+gli script del repository ricavano i percorsi dalla propria posizione.
+Conservare i percorsi effettivi della macchina soltanto nelle configurazioni
+locali ignorate o in `LOCAL_SETUP.md`, senza inserirli negli esempi condivisi.
 
 Dopo una rinomina, eseguire `flutter clean` e
 `flutter pub get --enforce-lockfile`, quindi rigenerare le directory CMake
@@ -308,6 +309,25 @@ il confezionamento e i test `.deb` selezionano la JVM ARM64 separatamente.
 La compilazione e il collaudo possono usare un ambiente emulato privato.
 [Procedura ARM64, provenienza e limiti](LINUX_ARM64.md).
 
+### AppImage x86_64 locale di test
+
+La base di compilazione è Ubuntu 22.04 con due job, glibc 2.35 e runtime C++
+del sistema compatibile con `GLIBCXX_3.4.30`. Il pacchetto include Flutter,
+GTK, PDFium, DSS/JVM, Python e strumenti NSS; PC/SC e lo stack grafico restano
+quelli del sistema. La guida browser copia il provider in un percorso utente
+persistente solo dopo conferma. Gli script dei pacchetti nativi conservano
+i propri percorsi e comportamento. [Build e collaudi AppImage](LINUX_APPIMAGE.md).
+
+### Flatpak x86_64 sperimentale
+
+La distribuzione Flatpak è temporaneamente accantonata a favore dell'AppImage;
+ricetta e test restano disponibili.
+
+Il confezionamento usa un bundle Release con identità GTK separata e runtime
+GNOME 51. Client PC/SC, DSS e PDFium sono verificati per x86_64; documenti
+tramite portali e archivio privato persistente. La configurazione dei browser
+del sistema passa dal componente esterno facoltativo, con PIN completo. [Ricetta e collaudi Flatpak](LINUX_FLATPAK.md).
+
 ### Scaling dei caratteri Linux
 
 La dimensione della finestra è separata dallo scaling dei caratteri.
@@ -344,6 +364,13 @@ flutter test --no-pub test/linux_text_scaling_test.dart
 
 Per leggere soltanto il valore del desktop corrente, senza finestre o accessi
 alla carta: `.build/linux-runner-tests/text_scaling_tests --desktop-read-only`.
+
+Con `xvfb-run` e `dbus-run-session` disponibili, CTest include anche
+`linux_window_chrome`: usa un display virtuale e un portale sintetico per
+controllare l'icona unica, il layout dei pulsanti, i cambi di preferenza
+chiaro/scuro e la chiusura durante una richiesta asincrona. Non apre l'app
+né accede alla carta. Nel Flatpak la barra GTK segue la preferenza del portale
+del desktop; non forza colori o una scala aggiuntiva.
 
 ## DSS/JVM: macOS, Windows e Linux x86_64
 

@@ -1,0 +1,20 @@
+{
+  "id": "it.giancarloezza.FirmaConCIE.Test",
+  "runtime": "org.gnome.Platform",
+  "runtime-version": "51",
+  "sdk": "org.gnome.Sdk",
+  "command": "firma-con-cie",
+  "branch": "test",
+  "finish-args": [
+    "--socket=wayland",
+    "--socket=fallback-x11",
+    "--share=ipc",
+    "--device=dri",
+    "--share=network",
+    "--socket=pcsc",
+    "--talk-name=org.freedesktop.secrets",
+    "--persist=.local",
+    "--env=GTK_USE_PORTAL=1",
+    "--talk-name=it.giancarloezza.FirmaConCIE.BrowserHelper1"
+  ]
+}

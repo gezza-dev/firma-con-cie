@@ -11,6 +11,11 @@ set(BINARY_NAME "CIE-ID")
 # The unique GTK application identifier for this application. See:
 # https://wiki.gnome.org/HowDoI/ChooseApplicationID
 set(APPLICATION_ID "it.giancarloezza.prototype.cie_flutter_prototype")
+# The Flatpak test launcher must coexist with the native desktop entry.
+if(DEFINED ENV{CIE_FLATPAK_APP_ID})
+  set(APPLICATION_ID "$ENV{CIE_FLATPAK_APP_ID}")
+endif()
+
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent
 # versions of CMake.
@@ -107,7 +112,7 @@ install(TARGETS ${BINARY_NAME} RUNTIME DESTINATION "${CMAKE_INSTALL_PREFIX}"
 # embedded in the runner, so it also works from a relocated unpacked bundle.
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../assets/branding/linux/hicolor"
   DESTINATION "${CMAKE_INSTALL_PREFIX}/share/icons" COMPONENT Runtime)
-install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/../assets/branding/linux/${APPLICATION_ID}.desktop"
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/../assets/branding/linux/it.giancarloezza.prototype.cie_flutter_prototype.desktop"
   DESTINATION "${CMAKE_INSTALL_PREFIX}/share/applications" COMPONENT Runtime)
 
 install(FILES "${FLUTTER_ICU_DATA_FILE}" DESTINATION "${INSTALL_BUNDLE_DATA_DIR}"

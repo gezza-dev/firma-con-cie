@@ -16,8 +16,11 @@ abstract interface class FirefoxSetupService {
 }
 
 class LinuxFirefoxSetupService implements FirefoxSetupService {
-  LinuxFirefoxSetupService({this.helperName = 'firefox_setup.py'});
-  final String helperName;
+  LinuxFirefoxSetupService({
+    this.helperName = 'firefox_setup.py',
+    this.pythonExecutable = '/usr/bin/python3',
+  });
+  final String helperName, pythonExecutable;
   Future<JsonResult> _run(List<String> arguments) async {
     if (!Platform.isLinux) return {'ok': false, 'code': 'unsupported'};
     final helper = File.fromUri(
@@ -29,7 +32,7 @@ class LinuxFirefoxSetupService implements FirefoxSetupService {
     }
     Process? process;
     try {
-      process = await Process.start('/usr/bin/python3', [
+      process = await Process.start(pythonExecutable, [
         helper.path,
         ...arguments,
       ]);
@@ -67,6 +70,9 @@ class LinuxFirefoxSetupService implements FirefoxSetupService {
 }
 
 String firefoxSetupError(String? code) => switch (code) {
+  'helper_missing' || 'helper_incompatible' || 'helper_unavailable' => 'Installa o aggiorna il componente esterno per l’accesso ai siti, poi premi «Rileggi».',
+  'public_certificate_unavailable' =>
+    'Dati pubblici della CIE non disponibili. Rileggi la Home e riprova.',
   'profile_uninitialized' =>
     'Apri e chiudi Firefox con questo profilo, poi riprova.',
   'browser_running' || 'browser_status_unknown' => 'Chiudi Firefox e riprova.',

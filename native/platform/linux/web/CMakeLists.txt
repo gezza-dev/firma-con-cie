@@ -17,7 +17,28 @@ cie_linux_web_target(cie_linux_pkcs11)
 target_link_libraries(cie_linux_pkcs11 PRIVATE cie_web PkgConfig::PCSC)
 set_target_properties(cie_linux_pkcs11 PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 install(TARGETS cie_linux_pkcs11 LIBRARY DESTINATION .)
+
+# Separate Flatpak companion utility. Native browser setup keeps its existing
+# scripts, provider and paths; this tool transfers public certificates only.
+add_executable(cie_browser_public_certificate ../browser_setup/public_certificate.cpp
+  snap_public_store.cpp ../../../src/local_cache.cpp ../../../src/local_cache_crypto.cpp)
+target_include_directories(cie_browser_public_certificate PRIVATE . ../../../src)
+target_link_libraries(cie_browser_public_certificate PRIVATE OpenSSL::Crypto)
+set_target_properties(cie_browser_public_certificate PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 if(BUILD_TESTING)
+  add_executable(cie_browser_public_certificate_test ../browser_setup/public_certificate.cpp
+    snap_public_store.cpp ../../../src/local_cache.cpp ../../../src/local_cache_crypto.cpp)
+  target_compile_definitions(cie_browser_public_certificate_test PRIVATE CIE_PAIRING_TEST_SERVICE)
+  target_include_directories(cie_browser_public_certificate_test PRIVATE . ../../../src)
+  target_link_libraries(cie_browser_public_certificate_test PRIVATE OpenSSL::Crypto)
+  set_target_properties(cie_browser_public_certificate_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+  add_test(NAME linux_appimage_persistent_policy COMMAND "${Python3_EXECUTABLE}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../browser_setup/tests/appimage_setup_tests.py")
+  add_test(NAME linux_flatpak_helper_policy COMMAND "${Python3_EXECUTABLE}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../browser_setup/tests/flatpak_helper_tests.py")
+  add_test(NAME linux_flatpak_public_certificate COMMAND "${Python3_EXECUTABLE}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../browser_setup/tests/public_certificate_tests.py"
+    "$<TARGET_FILE:cie_browser_public_certificate_test>")
   # No link to pcsc-lite or the real Web engine. All card calls are synthetic;
   # the test-only cache override cannot reach the production user's archive.
   add_library(cie_linux_pkcs11_fake SHARED ${CIE_LINUX_WEB_SOURCES} tests/fake_card.cpp)

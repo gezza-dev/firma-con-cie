@@ -22,7 +22,8 @@ def run(*args, cwd=None):
         return subprocess.run(list(map(str, args)), cwd=cwd, check=True,
                               capture_output=True, text=True)
     except subprocess.CalledProcessError as exc:
-        exc.add_note(((exc.stdout or '') + (exc.stderr or ''))[-12000:])
+        if hasattr(exc, 'add_note'):  # Python 3.10 on the AppImage build base.
+            exc.add_note(((exc.stdout or '') + (exc.stderr or ''))[-12000:])
         raise
 
 
