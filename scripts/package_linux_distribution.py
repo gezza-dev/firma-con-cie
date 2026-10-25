@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: BSD-3-Clause
-"""Native Fedora/Arch x86_64 test packages from a validated Linux bundle.
+"""Native Fedora/Arch x86_64 packages from a validated Linux bundle.
 
 Run inside the destination distribution. Never installs packages, runs the GUI,
 loads PKCS#11 or connects to PC/SC. No application-specific install scriptlets.
@@ -16,8 +16,9 @@ import subprocess
 import tarfile
 import tempfile
 
-from linux_package_common import (ROOT, PACKAGE, PREFIX, files, run, sha,
-                                  source_revision, stage_payload, validate_bundle, graphics_libraries, GRAPHICS_SONAMES)
+from linux_package_common import (ROOT, PACKAGE, ARTIFACT_STEM, PREFIX, files, run, sha,
+                                  source_revision, stage_payload, validate_bundle, graphics_libraries, GRAPHICS_SONAMES,
+                                  validate_release_version)
 
 
 def elf_files(stage, architecture='x86_64'):
@@ -89,7 +90,7 @@ def rpm_package(stage, elfs, inputs, output, version, release, epoch):
     (top / 'SOURCES/files.list').write_text('\n'.join(
         ['%dir ' + quoted(p) for p in sorted(owned)] +
         [('%license ' if p.is_relative_to(stage / 'usr/share/licenses' / PACKAGE) else '') + quoted(p) for p in files(stage)]) + '\n')
-    spec = f'''# Generated local test recipe; runtime provenance is in package-manifest.json.
+    spec = f'''# Generated recipe; runtime provenance is in package-manifest.json.
 %global debug_package %{{nil}}
 %global __debug_install_post %{{nil}}
 %global __os_install_post %{{nil}}
@@ -97,7 +98,7 @@ def rpm_package(stage, elfs, inputs, output, version, release, epoch):
 Name: {PACKAGE}
 Version: {version}
 Release: {release}
-Summary: Firma con CIE - local Linux test build
+Summary: Firma con CIE
 License: LicenseRef-FirmaConCIE-Bundled
 URL: https://github.com/gezza-dev/cie-id-desktop
 Source0: payload.tar.gz
@@ -110,7 +111,7 @@ Recommends: pcsc-lite-ccid
 %description
 Independent CIE application with a private native/DSS runtime. Bundled license
 texts are included. Browser setup is explicitly initiated by the user in Home.
-This test recipe is not a submission to the Fedora package repositories.
+This package does not configure browsers during installation.
 
 %prep
 %setup -q -c -T
@@ -127,7 +128,7 @@ cp -a opt usr "%{{buildroot}}/"
     run('rpmbuild', '-bb', '--define', '_topdir ' + str(top), '--define', '_smp_mflags -j2',
         '--define', '_smp_build_ncpus 2', '--define', '_binary_payload w6.xzdio', specpath)
     built, = (top / 'RPMS/x86_64').glob('*.rpm')
-    target = output / built.name
+    target = output / (ARTIFACT_STEM + built.name[len(PACKAGE):])
     shutil.copy2(built, target)
     shutil.copy2(specpath, output / (PACKAGE + '.spec'))
     (output / 'requires.txt').write_text('\n'.join(requires) + '\n')
@@ -139,11 +140,11 @@ def arch_package(stage, system_libraries, inputs, output, version, pkgrel):
     depends = sorted(owners | {'bash', 'pcsclite', 'python', 'nss', 'ca-certificates'})
     # Source tar is generated from the verified bundle. makepkg verifies its
     # checksum, metadata and dependencies, then fakeroot records root ownership.
-    recipe = f'''# Generated native local-test recipe; no install script or browser hooks.
+    recipe = f'''# Generated native recipe; no install script or browser hooks.
 pkgname={PACKAGE}
 pkgver={version}
 pkgrel={pkgrel}
-pkgdesc='Firma con CIE - local Linux test build'
+pkgdesc='Firma con CIE'
 arch=('x86_64')
 url='https://github.com/gezza-dev/cie-id-desktop'
 license=('LicenseRef-FirmaConCIE-Bundled')
@@ -164,17 +165,17 @@ package() {{
     config.write_text('source /etc/makepkg.conf\nCOMPRESSZST=(zstd -c -T2 -10 -)\nMAKEFLAGS=-j2\n')
     run('makepkg', '--config', config, '--cleanbuild', '--noconfirm', cwd=inputs)
     built, = inputs.glob('*.pkg.tar.zst')
-    target = output / built.name
+    target = output / (ARTIFACT_STEM + built.name[len(PACKAGE):])
     shutil.copy2(built, target)
     shutil.copy2(inputs / 'PKGBUILD', output / 'PKGBUILD')
     (output / 'requires.txt').write_text('\n'.join(depends) + '\n')
     return target, version + '-' + pkgrel
 
 
-def package(bundle, output, kind, test_version, pkgrel='1'):
-    match = re.fullmatch(r'(\d[\d.]*)~test(\d{8}\.\d+)', test_version)
-    if not match or not re.fullmatch(r'[1-9]\d*(?:\.\d+)?', pkgrel):
-        raise ValueError('Explicit ~testYYYYMMDD.N version and numeric Arch pkgrel required')
+def package(bundle, output, kind, version, pkgrel='1'):
+    validate_release_version(version)
+    if not re.fullmatch(r'[1-9]\d*(?:\.\d+)?', pkgrel):
+        raise ValueError('Numeric Arch pkgrel required')
     bundle, output = bundle.resolve(), output.resolve()
     if output.exists() or output.is_relative_to(bundle):
         raise ValueError('Use a new output directory outside the bundle')
@@ -198,12 +199,12 @@ def package(bundle, output, kind, test_version, pkgrel='1'):
         payload_tar(stage, inputs / 'payload.tar.gz', revision['sourceDateEpoch'])
         output.mkdir(parents=True)
         if kind == 'rpm':
-            release = '0.test' + match[2] + '.fc' + osrelease['VERSION_ID'].strip('"')
-            target, version = rpm_package(stage, elfs, inputs, output, match[1], release,
+            release = '1.fc' + osrelease['VERSION_ID'].strip('"')
+            target, version = rpm_package(stage, elfs, inputs, output, version, release,
                                           revision['sourceDateEpoch'])
         else:
             target, version = arch_package(stage, system, inputs, output,
-                                            match[1] + '_test' + match[2], pkgrel)
+                                            version, pkgrel)
         manifest = dict(revision, package=PACKAGE, version=version, architecture='x86_64',
                         format=kind, targetDistribution=expected, file=target.name,
                         sha256=sha(target), bytes=target.stat().st_size,

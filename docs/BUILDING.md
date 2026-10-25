@@ -269,7 +269,7 @@ Nel collaudo manuale separato del 20 ottobre 2026, dopo la preparazione del
 certificato pubblico e l’abilitazione autorizzata di `firefox:pcscd`, l’utente
 ha confermato l’accesso riuscito con Firefox Snap e PIN completo.
 
-### Pacchetto .deb locale di test
+### Pacchetto .deb
 
 Per assemblare un `.deb` locale da un bundle release completo e collaudare
 installazione, aggiornamento e rimozione senza installarlo sull'host:
@@ -277,10 +277,10 @@ installazione, aggiornamento e rimozione senza installarlo sull'host:
 ```sh
 python3 scripts/package_linux_deb.py \
   --bundle build/linux/x64/release/bundle \
-  --output dist/linux-deb-test \
-  --version '1.0.0~test20261025.1'
+  --output dist/linux-deb \
+  --version '1.0.0'
 python3 scripts/test_linux_deb.py \
-  'dist/linux-deb-test/cie-id-desktop_1.0.0~test20261025.1_amd64.deb' \
+  'dist/linux-deb/firma-con-cie_1.0.0_amd64.deb' \
   --report reports/linux-deb-validation.json
 ```
 
@@ -297,7 +297,7 @@ Il contenuto comune dei pacchetti è preparato da `linux_package_common.py`.
 `--format arch` usa `makepkg` come utente ordinario in Arch. Il `.deb` continua
 a usare lo stesso comando sopra e `dpkg-shlibdeps`. Il controllo delle
 dipendenze include esplicitamente EGL/OpenGL/GLES, caricati dinamicamente
-all'avvio. I pacchetti restano di test e non configurano browser.
+all'avvio. I pacchetti usano la versione di release e non configurano browser.
 [Versioni verificate, ricette, isolamento e limiti](LINUX_DISTRIBUTION_PACKAGES.md).
 
 ### Pacchetto Debian ARM64
@@ -309,7 +309,7 @@ il confezionamento e i test `.deb` selezionano la JVM ARM64 separatamente.
 La compilazione e il collaudo possono usare un ambiente emulato privato.
 [Procedura ARM64, provenienza e limiti](LINUX_ARM64.md).
 
-### AppImage x86_64 locale di test
+### AppImage x86_64
 
 La base di compilazione è Ubuntu 22.04 con due job, glibc 2.35 e runtime C++
 del sistema compatibile con `GLIBCXX_3.4.30`. Il pacchetto include Flutter,

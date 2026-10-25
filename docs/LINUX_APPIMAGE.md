@@ -1,6 +1,6 @@
-# AppImage x86_64 di test
+# AppImage x86_64
 
-Il prototipo AppImage usa Ubuntu 22.04 LTS come base di compilazione, con
+L’AppImage usa Ubuntu 22.04 LTS come base di compilazione, con
 glibc 2.35. Si ricompilano
 su questa base anche le dipendenze statiche native: i precedenti binari CIE
 richiedevano glibc 2.38 e non vengono riutilizzati. Flutter Engine e PDFium
@@ -31,7 +31,7 @@ con i simboli elencati nel manifest. Non è una promessa di compatibilità con
 ogni distribuzione, con musl/Alpine o con qualunque stack grafico. Il normale
 montaggio richiede supporto FUSE e il relativo helper del sistema; il runtime
 supporta `--appimage-extract-and-run` quando il montaggio non è disponibile.
-L'AppImage non è una sandbox: una prova isolata richiede un contenitore separato.
+L'AppImage non è una sandbox: l’esecuzione isolata richiede un contenitore separato.
 
 ## Provider persistente per i browser
 
@@ -89,7 +89,7 @@ CMAKE_BUILD_PARALLEL_LEVEL=2 flutter build linux --release --no-pub
 python3 scripts/package_linux_appimage.py \
   --bundle build/linux/x64/release/bundle \
   --runtime /percorso/runtime-x86_64 \
-  --version 1.0.0-test20261025.1 --output dist/linux-appimage-test
+  --version 1.0.0 --output dist/linux-appimage
 ```
 
 Il file del runtime deve corrispondere al checksum fissato. Il confezionamento
@@ -139,8 +139,7 @@ o accessi ai siti. L'agente non ha acquisito PIN o controllato sessioni
 autenticate. I rapporti restano locali, esclusi dai sorgenti pubblicati.
 
 Restano separati i collaudi reali su altre distribuzioni e desktop, Firefox
-Snap dall'AppImage, cambio PIN e sblocco carta. La build corrente è una
-versione di test x86_64: non copre ARM64 né costituisce una release binaria
-pubblica completa. Prima della pubblicazione occorrono i materiali di
+Snap dall'AppImage, cambio PIN e sblocco carta. La versione `1.0.0` è preparata per la prima release del progetto e copre
+x86_64. La pubblicazione è un passaggio successivo, insieme ai materiali di
 distribuzione descritti in [LICENSING.md](LICENSING.md), inclusi i sorgenti
 corrispondenti delle dipendenze richiesti per il bundle effettivo.

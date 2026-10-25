@@ -2,14 +2,23 @@
 
 Situazione al 25 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
 
+## Nomi dei pacchetti Linux (25 ottobre)
+
+Tutti i file di installazione della release `1.0.0` usano il prefisso
+`firma-con-cie`: AppImage, `.deb` amd64/ARM64, RPM e Arch. Gli strumenti di
+confezionamento separano il nome pubblico del file dall’identificativo interno
+`cie-id-desktop`, conservato per gli aggiornamenti. La rinomina dei file già
+verificati aggiorna gli indici, i manifest e `SHA256SUMS`; il contenuto degli
+archivi e i relativi hash rimangono quelli dei pacchetti collaudati.
+
 ## Versione e semplificazione Linux (25 ottobre)
 
 La versione corrente dei sorgenti è `1.0.0` (build Flutter `1`). Diagnostica e
 worker DSS sono allineati alla versione già dichiarata dall'app e dagli
-installer Windows. Gli esempi di confezionamento Linux usano ora la base
-`1.0.0`; i numeri dei pacchetti nei resoconti storici restano quelli originali.
-Il cambio di versione dei sorgenti non rinomina né aggiorna i pacchetti binari
-locali già compilati e non costituisce una nuova release binaria.
+installer Windows. Il confezionamento Linux usa la versione
+`1.0.0`, senza suffissi, per la prima release del progetto. I numeri dei
+pacchetti nei resoconti storici restano quelli originali. La pubblicazione
+degli artefatti è rinviata a un passaggio successivo.
 
 Le guide Firefox e Chrome sono ridotte a due finestre: preparazione/selezione
 e conferma della configurazione. L'autorizzazione separata del lettore appare
@@ -25,7 +34,7 @@ eseguita per queste modifiche ai sorgenti.
 
 ## AppImage Linux x86_64 (25 ottobre)
 
-Il prototipo portabile prosegue con l'AppImage compilato su Ubuntu 22.04,
+La distribuzione portabile prosegue con l'AppImage compilato su Ubuntu 22.04,
 con base glibc 2.35 e requisito C++ `GLIBCXX_3.4.30`. Le librerie CIE principali
 sono ricompilate con requisito glibc massimo 2.34. GTK, Flutter, PDFium,
 DSS/JVM, Python e NSS sono inclusi; PC/SC, runtime C++ e stack grafico restano

@@ -14,7 +14,7 @@ Il progetto è in sviluppo. Questo repository contiene i sorgenti; **non è anco
 | --- | --- |
 | macOS | Bundle Universal Apple Silicon/Intel compilato. Firma PDF/P7M, abbinamento, PIN parziale e accesso Safari con CIE reale verificati su Apple Silicon. L’esecuzione su Intel resta da collaudare. |
 | Windows x64 | Interfaccia e componenti nativi compilati e verificati. Firma PDF/P7M, abbinamento persistente e PIN parziale collaudati. Accesso al portale CIE con Chrome e Firefox verificato con CIE reale e PIN completo; collaudo riuscito anche con Microsoft Edge confermato dall'utente. |
-| Linux | Backend e interfaccia compilati e testati. Abbinamento persistente e firma PDF/P7M con PIN parziale verificati con CIE reale. Test reali di accesso ai siti con Mozilla Firefox, Firefox Snap e Chrome desktop con PIN completo confermati riusciti dall’utente. Pacchetto `.deb` locale di test con launcher e icone; collaudo desktop completo da completare. |
+| Linux | Backend e interfaccia compilati e testati. Abbinamento persistente e firma PDF/P7M con PIN parziale verificati con CIE reale. Test reali di accesso ai siti con Mozilla Firefox, Firefox Snap e Chrome desktop con PIN completo confermati riusciti dall’utente. Pacchetto `.deb` con launcher e icone; collaudo desktop completo da completare. |
 
 Il nuovo archivio su file richiede di abbinare nuovamente le CIE con il PIN completo; non importa i precedenti abbinamenti. Le prove reali macOS/Windows riportate nella tabella riguardano il precedente archivio. Su Linux la nuova cache è stata collaudata anche con abbinamento persistente e firme PDF/P7M con PIN parziale.
 
@@ -25,7 +25,7 @@ il 23 ottobre 2026; Chromium Snap/Flatpak
 non sono inclusi in questa integrazione. Nessun browser viene configurato
 dall'installer o durante la compilazione.
 
-Cambio PIN e Sblocco Carta sono implementati con test software: le prove reali su macOS e Windows restano da completare. La validazione DSS/LTA con JVM privata è predisposta per macOS, Windows e Linux; [supporto ARM64 di test](docs/LINUX_ARM64.md).
+Cambio PIN e Sblocco Carta sono implementati con test software: le prove reali su macOS e Windows restano da completare. La validazione DSS/LTA con JVM privata è predisposta per macOS, Windows e Linux; [supporto ARM64](docs/LINUX_ARM64.md).
 
 [Stato delle verifiche e limiti](docs/STATUS.md) · [Compilazione](docs/BUILDING.md) · [Licenze](docs/LICENSING.md)
 
@@ -97,14 +97,14 @@ Gli identificativi tecnici storici contenenti `FlutterPrototype` sono conservati
 
 ## Licenze e distribuzione
 
-Pacchetti Linux locali di test per x86_64: `.deb` verificato su Ubuntu 24.04
+Pacchetti Linux per x86_64: `.deb` verificato su Ubuntu 24.04
 LTS/Debian 13, `.rpm` per Fedora 44 e `.pkg.tar.zst` per Arch rolling.
 [Ricette, verifiche software e limiti](docs/LINUX_DISTRIBUTION_PACKAGES.md).
-È disponibile anche una ricetta [`.deb` ARM64 di test](docs/LINUX_ARM64.md),
+È disponibile anche una ricetta [`.deb` ARM64](docs/LINUX_ARM64.md),
 con compilazione e verifiche in emulazione; il collaudo su hardware ARM64 reale
 resta da eseguire. Le prove reali Linux descritte sopra riguardano x86_64.
 
-Il prototipo portabile Linux prosegue con un [AppImage x86_64 di test](docs/LINUX_APPIMAGE.md),
+La distribuzione portabile Linux comprende un [AppImage x86_64](docs/LINUX_APPIMAGE.md),
 compilato su Ubuntu 22.04, con PC/SC del sistema e modulo browser persistente
 nella home. Collaudati dall'utente interfaccia, abbinamento da zero e persistente,
 firme PDF/P7M con PIN parziale e accesso Firefox/Chrome con PIN completo.

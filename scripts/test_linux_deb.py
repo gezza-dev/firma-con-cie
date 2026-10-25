@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: BSD-3-Clause
-"""Validate a test .deb and its dpkg lifecycle in an isolated root (no app/card).
+"""Validate a .deb and its dpkg lifecycle in an isolated root (no app/card).
 
 The isolated dpkg database intentionally has no system dependencies installed;
 --force-depends is limited to this temporary root. Host dependency resolution
@@ -29,7 +29,9 @@ def check(package, report, upgrade_from=None):
     package = package.resolve()
     manifest = json.loads((package.parent / 'package-manifest.json').read_text())
     assert hashlib.sha256(package.read_bytes()).hexdigest() == manifest['sha256']
-    assert manifest['package'] == 'cie-id-desktop' and '~test' in manifest['version']
+    from linux_package_common import validate_release_version
+    assert manifest['package'] == 'cie-id-desktop'
+    validate_release_version(manifest['version'])
     work = ROOT / '.build/linux-deb'
     work.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='test-', dir=work) as directory:

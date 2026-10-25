@@ -1,4 +1,4 @@
-# Pacchetto Linux ARM64 di test
+# Pacchetto Linux ARM64
 
 Il target è Debian `arm64`, cioè AArch64 a 64 bit little-endian. ARM32/armhf
 non è incluso. Il pacchetto mantiene nome, percorsi e comportamento del `.deb`
@@ -17,12 +17,12 @@ il confronto degli hash con la build già verificata e con il lock delle dipende
 La selezione della JVM riconosce Linux ARM64 sia in Dart sia negli strumenti
 Python. L'assemblaggio DSS confronta la CPU richiesta con quella del runtime
 nativo; il confezionamento controlla inoltre gli ELF e rifiuta una JVM x86_64
-in un bundle ARM64. RPM e Arch restano, per ora, ricette di test x86_64.
+in un bundle ARM64. RPM e Arch restano, per ora, ricette x86_64.
 
 ## Compilazione in un ambiente ARM64
 
 Usare una macchina ARM64 o un ambiente Linux ARM64 emulato. Per mantenere una
-base compatibile, la GUI di test viene compilata con Ubuntu 24.04 e Flutter
+base compatibile, la GUI viene compilata con Ubuntu 24.04 e Flutter
 3.47.7. Sono necessari gli strumenti e le librerie di sviluppo descritti in
 [BUILDING.md](BUILDING.md), compreso Meson 1.11.0; il confezionamento richiede
 anche dpkg-dev, binutils e desktop-file-utils. Limitare la compilazione a due job.
@@ -41,7 +41,7 @@ flutter pub get --enforce-lockfile
 CMAKE_BUILD_PARALLEL_LEVEL=2 flutter build linux --release --no-pub
 python3 scripts/package_linux_deb.py \
   --bundle build/linux/arm64/release/bundle \
-  --output dist/linux-arm64-deb-test --version '1.0.0~test20261025.1'
+  --output dist/linux-arm64-deb --version '1.0.0'
 ```
 
 `CIE_JAVA_HOME` indica il JDK ARM64 verificato e `CIE_MAVEN` lo strumento Maven
@@ -67,7 +67,7 @@ python3 scripts/test_linux_packaging.py
 python3 scripts/smoke_native.py --runtime native/runtime/linux \
   --report reports/linux-arm64-smoke.json
 python3 scripts/test_linux_deb.py \
-  dist/linux-arm64-deb-test/cie-id-desktop_1.0.0~test20261025.1_arm64.deb \
+  dist/linux-arm64-deb/firma-con-cie_1.0.0_arm64.deb \
   --report reports/linux-arm64-deb.json
 ```
 
@@ -114,7 +114,7 @@ Python di confezionamento/selezione JVM e tre regressioni native mirate.
 Il pacchetto non è stato installato sul computer: la `.20` x86_64 e i suoi
 737 file sono rimasti invariati. Nessuna modifica ai browser o ai permessi
 Snap e nessuna prova sulla CIE reale. Pacchetto, checksum, snapshot dei sorgenti
-e rapporti restano artefatti locali in `dist/linux-arm64-deb-test` e
+e rapporti restano artefatti locali in `dist/linux-arm64-deb` e
 `reports/linux-arm64`, esclusi da Git.
 
 ## Correzioni native emerse nel porting

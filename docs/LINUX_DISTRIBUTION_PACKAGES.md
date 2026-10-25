@@ -1,4 +1,4 @@
-# Pacchetti Linux di test per distribuzione — x86_64
+# Pacchetti Linux per distribuzione — x86_64
 
 I formati previsti sono `.deb` per Ubuntu/Debian, `.rpm` per Fedora e
 `.pkg.tar.zst` per Arch Linux. Non sono pubblicazioni nei repository delle
@@ -7,6 +7,21 @@ e alle prove riportate qui, non a tutte le distribuzioni o architetture.
 
 Il `.deb` ARM64 ha una [procedura e verifiche separate](LINUX_ARM64.md);
 le ricette RPM e Arch di questo documento restano limitate a x86_64.
+
+## Nomi dei file della release 1.0.0
+
+I file distribuiti usano il nome pubblico dell’app:
+
+- `firma-con-cie_1.0.0_amd64.deb` e `firma-con-cie_1.0.0_arm64.deb`;
+- `firma-con-cie-1.0.0-1.fc44.x86_64.rpm`;
+- `firma-con-cie-1.0.0-1-x86_64.pkg.tar.zst`;
+- `firma-con-cie-1.0.0-x86_64.AppImage`.
+
+L’identificativo interno APT/RPM/pacman resta `cie-id-desktop` per conservare
+la continuità degli aggiornamenti. Il nome del file distribuito è gestito
+separatamente; percorsi installati, abbinamenti e configurazioni dei browser
+mantengono il comportamento già verificato. I nomi nei resoconti storici
+identificano gli artefatti di quel momento.
 
 ## Contenuto e comportamento
 
@@ -46,11 +61,11 @@ Esempi dalla radice dei sorgenti, all'interno dell'ambiente appropriato:
 
 ```sh
 python3 scripts/package_linux_deb.py --bundle /bundle --output /output/deb \
-  --version '1.0.0~test20261025.1'
+  --version '1.0.0'
 python3 scripts/package_linux_distribution.py --format rpm \
-  --bundle /bundle --output /output/rpm --version '1.0.0~test20261025.1'
+  --bundle /bundle --output /output/rpm --version '1.0.0'
 python3 scripts/package_linux_distribution.py --format arch \
-  --bundle /bundle --output /output/arch --version '1.0.0~test20261025.1'
+  --bundle /bundle --output /output/arch --version '1.0.0'
 ```
 
 Per Fedora servono `rpm-build`, Python, binutils, gli strumenti desktop e le

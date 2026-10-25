@@ -26,9 +26,9 @@ class Boundaries(unittest.TestCase):
     def test_non_numeric_new_glibc_feature_is_rejected(self):
         with patch.object(image,'run',return_value=SimpleNamespace(stdout='GLIBC_ABI_DT_RELR')):
             with self.assertRaisesRegex(ValueError,'newer glibc ABI'):image.maximum_versions(Path('synthetic'))
-    def test_runtime_checksum_is_pinned_and_versions_require_test(self):
+    def test_runtime_checksum_is_pinned_and_versions_require_release(self):
         import json
         lock=json.loads(image.LOCK.read_text());self.assertEqual(len(lock['sha256']),64)
-        for version in ['1.0.0','0.1.0-test/unsafe']:
-            with self.assertRaisesRegex(ValueError,'test version'):image.package(Path('/nonexistent-bundle'),Path('/new-output'),Path('/nonexistent-runtime'),version)
+        for version in ['1.0','01.0.0','1.0.0-test20261025.1','1.0.0/unsafe']:
+            with self.assertRaisesRegex(ValueError,'release version'):image.package(Path('/nonexistent-bundle'),Path('/new-output'),Path('/nonexistent-runtime'),version)
 if __name__=='__main__':unittest.main(verbosity=2)

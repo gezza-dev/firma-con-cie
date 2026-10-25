@@ -1,4 +1,4 @@
-# Pacchetto Linux .deb di test
+# Pacchetto Linux .deb
 
 Il pacchetto locale `cie-id-desktop` contiene l'app Flutter e il runtime
 nativo, con launcher e icone. Il primo assemblaggio è per Ubuntu 26.10 amd64.
@@ -10,16 +10,21 @@ distribuiti, inclusi i moduli caricati dinamicamente. Il controllo ABI core24
 del provider Firefox è distinto dalla compatibilità dell'intero desktop.
 EGL/OpenGL/GLES, caricati dinamicamente all'avvio, sono dipendenze esplicite
 oltre a quelle determinate dall'analisi degli ELF.
-Non è ancora una release binaria da redistribuire: il completamento dei
-materiali sorgente/dipendenze è descritto in [LICENSING.md](LICENSING.md).
+La versione `1.0.0` è preparata per la prima release del progetto, da
+pubblicare separatamente. I materiali sorgente/dipendenze sono descritti
+in [LICENSING.md](LICENSING.md).
 Il pacchetto può includere il runtime DSS/LTA Linux x86_64 con JVM privata,
 se presente nel bundle di ingresso. Il packager ne controlla architettura,
 eseguibili e hash e calcola anche le dipendenze delle librerie Java.
 Programmi di test nativi e JAR di test DSS sono esclusi.
 [Build e collaudi DSS/LTA](LINUX_DSS_LTA.md).
 
-La build ARM64 di test usa una JVM privata e binari AArch64; il `.deb` amd64
+La build ARM64 usa una JVM privata e binari AArch64; il `.deb` amd64
 rimane separato. [Preparazione e collaudi ARM64](LINUX_ARM64.md).
+
+I file `.deb` usano il nome pubblico `firma-con-cie`, per esempio
+`firma-con-cie_1.0.0_arm64.deb`. L’identificativo interno del pacchetto è
+`cie-id-desktop`, usato da APT/dpkg per gestire gli aggiornamenti.
 
 ## Assemblaggio senza installazione
 
@@ -29,21 +34,21 @@ Richiede un bundle release completo già compilato, `dpkg-dev`, `binutils` e
 ```sh
 python3 scripts/package_linux_deb.py \
   --bundle build/linux/x64/release/bundle \
-  --output dist/linux-deb-test \
-  --version '1.0.0~test20261025.1'
+  --output dist/linux-deb \
+  --version '1.0.0'
 ```
 
 Usare una directory di output nuova. Lo script verifica gli hash del runtime,
 il tipo/architettura dei binari e il launcher. Produce `.deb`, `SHA256SUMS`,
-manifest del contenuto e log delle dipendenze. Le versioni devono contenere
-`~test`. Il pacchetto non viene installato né avviato durante l'assemblaggio.
+manifest del contenuto e log delle dipendenze. Le versioni seguono il formato
+`MAJOR.MINOR.PATCH`, senza suffissi. Il pacchetto non viene installato né avviato durante l'assemblaggio.
 
 ## Installazione e percorsi
 
 Per il successivo collaudo manuale, nella directory del `.deb`:
 
 ```sh
-sudo apt install ./cie-id-desktop_1.0.0~test20261025.1_amd64.deb
+sudo apt install ./firma-con-cie_1.0.0_amd64.deb
 ```
 
 - App e librerie private: `/opt/firma-con-cie`.

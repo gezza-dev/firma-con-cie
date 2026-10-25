@@ -9,7 +9,7 @@ import re
 import shutil
 import subprocess
 import tempfile
-from linux_package_common import ROOT, APP_ID, PREFIX, files, run, sha, source_revision, stage_payload, validate_bundle
+from linux_package_common import ROOT, APP_ID, ARTIFACT_STEM, PREFIX, files, run, sha, source_revision, stage_payload, validate_bundle, validate_release_version
 from package_linux_distribution import elf_files
 
 # Keep the C library/loader, C++ runtime, graphics stack and PC/SC on the host.
@@ -101,7 +101,7 @@ def stage(bundle,tree,native):
     doc=tree/'usr/share/doc/cie-id-desktop';shutil.copy2(ROOT/'docs/LINUX_APPIMAGE.md',doc/'LINUX_APPIMAGE.md')
     icon=ROOT/'assets/branding/linux/hicolor/256x256/apps'/(APP_ID+'.png')
     shutil.copy2(icon,tree/'firma-con-cie.png');shutil.copy2(icon,tree/'.DirIcon')
-    (tree/'firma-con-cie.desktop').write_text('[Desktop Entry]\nType=Application\nName=Firma con CIE (AppImage test)\nExec=AppRun\nIcon=firma-con-cie\nCategories=Utility;Security;\nTerminal=false\nStartupWMClass='+APP_ID+'\n')
+    (tree/'firma-con-cie.desktop').write_text('[Desktop Entry]\nType=Application\nName=Firma con CIE\nExec=AppRun\nIcon=firma-con-cie\nCategories=Utility;Security;\nTerminal=false\nStartupWMClass='+APP_ID+'\n')
     run('desktop-file-validate',tree/'firma-con-cie.desktop')
     launcher='''#!/bin/sh
 set -eu
@@ -198,7 +198,7 @@ def notices(tree,sources):
 
 def package(bundle,output,runtime,version):
     bundle,output,runtime=bundle.resolve(),output.resolve(),runtime.resolve()
-    if not re.fullmatch(r'\d[\d.]*-test\d{8}\.\d+',version):raise ValueError('Explicit AppImage test version required')
+    validate_release_version(version)
     if output.exists() or output.is_relative_to(bundle):raise ValueError('New output directory required')
     release=Path('/etc/os-release').read_text()
     if 'VERSION_ID="22.04"' not in release or 'ID=ubuntu' not in release:raise ValueError('Build AppImage inside Ubuntu 22.04')
@@ -218,13 +218,13 @@ def package(bundle,output,runtime,version):
         output.mkdir(parents=True);filesystem=temp/'payload.squashfs'
         run('mksquashfs',tree,filesystem,'-noappend','-comp','zstd','-Xcompression-level','15','-processors','2','-all-root',
             '-mkfs-time',str(revision['sourceDateEpoch']),'-all-time',str(revision['sourceDateEpoch']))
-        target=output/('firma-con-cie-'+version+'-x86_64.AppImage')
+        target=output/(ARTIFACT_STEM+'-'+version+'-x86_64.AppImage')
         with target.open('wb') as out:
             for source in [runtime,filesystem]:
                 with source.open('rb') as src:shutil.copyfileobj(src,out)
         target.chmod(0o755)
         offset=int(run(target,'--appimage-offset').stdout.strip());assert offset==runtime.stat().st_size
-        result=dict(revision,format='appimage-local-test',version=version,architecture='x86_64',
+        result=dict(revision,format='appimage',version=version,architecture='x86_64',
             file=target.name,sha256=sha(target),bytes=target.stat().st_size,files=data,
             buildDistribution='Ubuntu 22.04',maximumGlibc='2.35',elfFilesChecked=len(abi),elfAbi=abi,
             externalLibraries=external,pcscFromHost=True,pcscDaemonBundled=False,

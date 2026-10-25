@@ -109,15 +109,15 @@ class PackageBoundaries(unittest.TestCase):
                 native = stage / common.PREFIX / 'cie_native'
                 self.assertFalse((native / 'tests').exists())
                 packaged = json.loads((native / 'backend-manifest.json').read_text())
-                self.assertEqual(packaged['packaging']['type'], kind + '-local-test')
+                self.assertEqual(packaged['packaging']['type'], kind)
                 self.assertNotIn('tests/synthetic-test', packaged['files'])
                 self.assertEqual((stage / 'usr/bin/Firma con CIE').read_text(),
                                  '#!/bin/sh\nexec "/opt/firma-con-cie/Firma con CIE" "$@"\n')
                 self.assertTrue((stage / 'usr/share/doc/cie-id-desktop/BUILDING.md').is_file())
                 self.assertFalse(list(stage.glob('**/postinst')))
 
-    def test_test_version_is_mandatory_before_creating_output(self):
-        for version in ['1.0.0', '0.1.0~test../../bad', '0.1.0~test20261024.19;bad']:
+    def test_release_version_is_mandatory_before_creating_output(self):
+        for version in ['', '1.0', 'v1.0.0', '01.0.0', '1.0.0~test20261025.1', '1.0.0/../../bad', '1.0.0;bad']:
             with self.subTest(version=version), self.assertRaises(ValueError):
                 distribution.package(self.bundle, self.root / 'out', 'rpm', version)
         self.assertFalse((self.root / 'out').exists())
@@ -125,7 +125,7 @@ class PackageBoundaries(unittest.TestCase):
     def test_existing_or_nested_output_rejected(self):
         for output in [self.bundle / 'output', self.root]:
             with self.subTest(output=output), self.assertRaises(ValueError):
-                distribution.package(self.bundle, output, 'arch', '0.1.0~test20261024.19')
+                distribution.package(self.bundle, output, 'arch', '1.0.0')
 
     def test_missing_dlopen_graphics_library_rejected(self):
         with patch.object(common, 'run', return_value=SimpleNamespace(stdout='')), \

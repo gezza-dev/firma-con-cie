@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: BSD-3-Clause
-"""Validated, identical application payload for native Linux test packages."""
+"""Validated, identical application payload for native Linux packages."""
 import hashlib
 import json
 import os
@@ -13,6 +13,7 @@ from ltv_runtime import runtime_architecture
 
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = 'cie-id-desktop'
+ARTIFACT_STEM = 'firma-con-cie'
 APP_ID = 'it.giancarloezza.prototype.cie_flutter_prototype'
 PREFIX = Path('opt/firma-con-cie')
 
@@ -33,6 +34,12 @@ def sha(path):
 
 def files(tree):
     return sorted(p for p in tree.rglob('*') if p.is_file())
+
+
+def validate_release_version(version):
+    if not re.fullmatch(r'(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)', version):
+        raise ValueError('Use a release version MAJOR.MINOR.PATCH without a suffix')
+    return version
 
 
 def validate_bundle(bundle):
@@ -81,7 +88,7 @@ def stage_payload(bundle, stage, native_manifest, package_type="deb"):
     packaged = dict(native_manifest)
     packaged['files'] = {k: v for k, v in native_manifest['files'].items()
                          if 'tests' not in PurePosixPath(k).parts}
-    packaged['packaging'] = {'type': package_type + '-local-test', 'testProgramsIncluded': False,
+    packaged['packaging'] = {'type': package_type, 'testProgramsIncluded': False,
                              'sourceManifestSha256': sha(bundle / 'cie_native/backend-manifest.json')}
     (app / 'cie_native/backend-manifest.json').write_text(json.dumps(packaged, indent=2) + '\n')
     bindir = stage / 'usr/bin'

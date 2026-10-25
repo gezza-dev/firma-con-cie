@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: BSD-3-Clause
-"""Build a local-test .deb from a release bundle; never install or launch it.
+"""Build a .deb from a release bundle; never install or launch it.
 
 Requires dpkg-dev, desktop-file-utils and binutils. All ELF dependencies are
 computed with dpkg-shlibdeps, including the modules loaded dynamically by Dart.
@@ -16,13 +16,13 @@ import shutil
 import subprocess
 import tempfile
 
-from linux_package_common import (ROOT, PACKAGE, PREFIX, run, sha, files,
-                                  validate_bundle, stage_payload, source_revision, graphics_libraries)
+from linux_package_common import (ROOT, PACKAGE, ARTIFACT_STEM, PREFIX, run, sha, files,
+                                  validate_bundle, stage_payload, source_revision, graphics_libraries,
+                                  validate_release_version)
 
 
 def package(bundle, output, version):
-    if not re.fullmatch(r'[0-9][A-Za-z0-9.+:~\-]*', version) or '~test' not in version:
-        raise ValueError('Use an explicit Debian test version containing ~test')
+    validate_release_version(version)
     run('dpkg', '--validate-version', version)
     bundle, output = bundle.resolve(), output.resolve()
     if output.exists() or output.is_relative_to(bundle):
@@ -57,7 +57,7 @@ def package(bundle, output, version):
         debian = temp / 'debian'
         debian.mkdir()
         (debian / 'control').write_text(
-            f'Source: {PACKAGE}\n\nPackage: {PACKAGE}\nArchitecture: any\nDescription: Local test\n')
+            f'Source: {PACKAGE}\n\nPackage: {PACKAGE}\nArchitecture: any\nDescription: Firma con CIE\n')
         elf_files = [p for p in files(app) if p.read_bytes()[:4] == b'\x7fELF']
         private_library_dirs = sorted({p.parent for p in elf_files if '.so' in p.name})
         dependencies = run('dpkg-shlibdeps', '-O', '-S' + str(stage),
@@ -74,13 +74,13 @@ def package(bundle, output, version):
             f'Installed-Size: {installed_size}\nDepends: {dep}\nRecommends: libccid\n'
             'Section: utils\nPriority: optional\n'
             'Homepage: https://github.com/gezza-dev/cie-id-desktop\n'
-            'Description: Firma con CIE - local Linux test build\n'
+            'Description: Firma con CIE\n'
             ' Independent desktop application for Italian CIE cards and document signing.\n'
             ' Includes the full-PIN Firefox/desktop Chrome PKCS#11 provider.\n'
             ' Firefox setup is user-initiated in the application; installation does not configure browsers.\n' +
             (' Includes local DSS/LTA validation with a private Java runtime.\n'
              if native_manifest.get('ltv') else
-             ' Local test package; Linux DSS/LTA runtime is not included.\n'))
+             ' Linux DSS/LTA runtime is not included.\n'))
         payload = {p.relative_to(stage).as_posix(): sha(p)
                    for p in files(stage) if 'DEBIAN' not in p.relative_to(stage).parts}
         (control / 'md5sums').write_text(''.join(
@@ -92,7 +92,7 @@ def package(bundle, output, version):
         environment = dict(os.environ)
         environment.setdefault('SOURCE_DATE_EPOCH', str(revision['sourceDateEpoch']))
         output.mkdir(parents=True)
-        target = output / f'{PACKAGE}_{version}_{arch}.deb'
+        target = output / f'{ARTIFACT_STEM}_{version}_{arch}.deb'
         built = subprocess.run(['dpkg-deb', '--root-owner-group', '-Zxz', '-z6',
                                 '--threads-max=2', '--build', str(stage), str(target)],
                                env=environment, capture_output=True, text=True, check=True)
@@ -121,7 +121,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--bundle', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
-    parser.add_argument('--version', required=True, help='Debian version containing ~test')
+    parser.add_argument('--version', required=True, help='Release version MAJOR.MINOR.PATCH')
     args = parser.parse_args()
     package(args.bundle, args.output, args.version)
 
