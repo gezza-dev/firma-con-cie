@@ -10,6 +10,8 @@ Descrizione:
 
 Sorgenti correnti, asset sintetici, icone, testi originali di licenza, documentazione e lockfile. Il repository ha una propria cronologia iniziale: non importa la storia dei vecchi progetti o i file rimossi dagli snapshot precedenti.
 
+Le destinazioni personali di compilazione si configurano in `local-build.json` (vedere [BUILDING.md](BUILDING.md)); il file resta locale. Su GitHub si carica soltanto `local-build.example.json`, che contiene un esempio generico.
+
 Sono esclusi runtime, output di compilazione, JAR/JVM, pacchetti Microsoft, identità/profili di firma, configurazioni locali, abbinamenti, report e documenti personali. I certificati CA pubblici versionati nel backend restano inclusi con provenienza e checksum. Il PDF `assets/prova.pdf` è una fixture sintetica; altri PDF e P7M sono ignorati.
 
 Gli identificativi tecnici del package e del bundle non vengono rinominati: mantenerli conserva gli archivi protetti già creati dall’app.

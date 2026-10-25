@@ -16,6 +16,7 @@ import subprocess
 import tempfile
 
 from ds_store import DSStore
+from build_paths import build_root
 
 # Finder stores absolute AppKit coordinates, with y increasing upwards.
 # A high y asks Finder to fit the window near the top of the opening display,
@@ -118,13 +119,18 @@ def clean_packaged_metadata(app):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--app', type=Path, required=True)
+    parser.add_argument('--app', type=Path,
+                        help='Override the local/default signed app location')
     parser.add_argument('--identity', required=True,
                         help='Apple Development identity for the disk image')
     parser.add_argument('--output', type=Path,
-                        default=Path.home() / 'Developer/Builds/CIE-ID/Firma con CIE.dmg')
+                        help='Override the local/default DMG destination')
     parser.add_argument('--report', type=Path)
     args = parser.parse_args()
+    if args.app is None or args.output is None:
+        local_root = build_root(Path(__file__).resolve().parents[1])
+        args.app = args.app or local_root / 'firma-con-cie/Firma con CIE.app'
+        args.output = args.output or local_root / 'Firma con CIE.dmg'
     if args.app.is_symlink() or args.app.name != 'Firma con CIE.app':
         raise ValueError('Provide a real signed Firma con CIE.app bundle')
     app, output = args.app.resolve(), args.output.absolute()

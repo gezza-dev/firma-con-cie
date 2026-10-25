@@ -66,7 +66,7 @@ def check(sources):
             errors.append('Binary artifact or credential/document type in index: ' + name)
         if p.suffix.lower() == '.pdf' and name != 'assets/prova.pdf':
             errors.append('Unapproved document in index: ' + name)
-        if p.name.startswith('.env') or p.name in {'LOCAL_SETUP.md', 'local-backend.json', 'install_manifest.txt'}:
+        if p.name.startswith('.env') or p.name in {'LOCAL_SETUP.md', 'local-backend.json', 'local-build.json', 'install_manifest.txt'}:
             errors.append('Local configuration in index: ' + name)
         if len(content) >= 50 * 1024 * 1024:
             errors.append('Unexpectedly large source file: ' + name)

@@ -120,13 +120,21 @@ python3 scripts/build_web_macos.py \
   --identity "$CIE_SIGNING_IDENTITY" --team-id "$CIE_TEAM_ID"
 python3 scripts/build_macos.py \
   --runtime native/runtime/macos-complete \
-  --destination "$HOME/Developer/Builds/CIE-ID/firma-con-cie" \
-  --build-workspace "$HOME/Developer/Builds/CIE-ID/workspace-macos" \
   --identity "$CIE_SIGNING_IDENTITY" \
   --web-extension .build/web-macos/CIEPrototypeToken.appex
 ```
 
-Le destinazioni predefinite di `build_macos.py` sono `~/Developer/Builds/CIE-ID/firma-con-cie` per il bundle e `~/Developer/Builds/CIE-ID/workspace-macos` per i file generati. Il workspace non contiene i dati personali dell’app. Per le ricompilazioni locali si può conservare l’estensione firmata in `~/Developer/Builds/CIE-ID/components/macos/CIEPrototypeToken.appex` e passarla esplicitamente con `--web-extension`. La copia deve conservare i permessi di esecuzione (per esempio con `ditto`): la sola verifica della firma digitale non rileva la perdita di tali permessi. La compilazione e il confezionamento del DMG controllano anche che i programmi necessari siano eseguibili.
+Le destinazioni generiche predefinite sono `~/Developer/Builds/cie-id-desktop/firma-con-cie` per il bundle e `~/Developer/Builds/cie-id-desktop/workspace-macos` per i file generati. Non dipendono dal nome dell’account o dalla disposizione delle cartelle di uno sviluppatore.
+
+Per scegliere una destinazione propria, copiare l’esempio e modificare **solo** il file locale:
+
+```sh
+cp local-build.example.json local-build.json
+```
+
+`local-build.json` contiene la chiave `build_root`, con un percorso assoluto oppure iniziante con `~/`. Gli script lo leggono dalla cartella del progetto, indipendentemente dalla directory da cui sono avviati. Il file è ignorato da Git, escluso dalla copia di compilazione e rifiutato dal controllo degli snapshot da pubblicare. L’esempio versionato contiene solo un percorso generico; non inserirvi le proprie impostazioni. I parametri espliciti `--destination`, `--build-workspace`, `--app` e `--output` prevalgono sulla configurazione locale. Senza configurazione locale si usano i valori generici indicati sopra.
+
+Il workspace non contiene gli archivi personali dell’app. L’estensione firmata può essere conservata fuori dai sorgenti e passata esplicitamente con `--web-extension`; i percorsi effettivi e i comandi personali possono essere annotati in `LOCAL_SETUP.md`, anch’esso escluso da Git. La copia dell’estensione deve conservare i permessi di esecuzione (per esempio con `ditto`): la sola verifica della firma digitale non rileva la perdita di tali permessi. La compilazione e il confezionamento del DMG controllano anche che i programmi necessari siano eseguibili.
 
 Il bundle risultante è `Firma con CIE.app`, con librerie private, avvisi e CTK. La copia di compilazione deve essere fuori dalla cartella dei sorgenti. Lo script non registra o attiva l’estensione e non esegue prove sulla carta. Se si cambiano bundle identifier o App Group occorre allineare host, estensione e archivi; gli identificativi storici sono intenzionalmente conservati.
 
@@ -141,11 +149,11 @@ observer e CryptoTokenKit:
 python3 -m venv .build/dmg-tools
 .build/dmg-tools/bin/python -m pip install ds_store==1.3.1
 .build/dmg-tools/bin/python scripts/package_macos_dmg.py \
-  --app "$HOME/Developer/Builds/CIE-ID/firma-con-cie/Firma con CIE.app" \
   --identity "$CIE_SIGNING_IDENTITY" \
-  --output "$HOME/Developer/Builds/CIE-ID/Firma con CIE.dmg" \
   --report reports/macos-development-dmg.json
 ```
+
+Il comando usa il bundle sotto `build_root/firma-con-cie` e salva `Firma con CIE.dmg` sotto lo stesso `build_root`, risolto dalla configurazione locale o dal valore generico predefinito. È possibile indicare un’altra app o destinazione con `--app` e `--output`.
 
 Il volume **Firma con CIE** contiene soltanto l’app e il collegamento
 **Applicazioni**; la finestra Finder usa una disposizione a due icone con

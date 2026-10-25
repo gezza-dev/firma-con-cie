@@ -219,7 +219,7 @@ rinviate. Rapporto: `reports/pairing-integration-20261017.json`.
 ## Impostazioni, diagnostica, proxy e Assistenza
 
 Nuovo bundle macOS Universal Apple Development separato in
-`/percorso/Builds/CIE-ID/macos-settings/CIE ID Flutter Prototype.app`.
+`/percorso/build/macos-settings/CIE ID Flutter Prototype.app`.
 
 - 48 test Flutter superati e analisi Dart senza problemi. La raccolta diagnostica
   è inizialmente disattivata; i test controllano l’elenco esplicito dei campi,
@@ -269,7 +269,7 @@ Report locale: `reports/settings-assistance-integration-20261017.json`.
 ## Cofirma P7M, guida inclusa e preferenze
 
 Bundle macOS Universal Apple Development separato in
-`/percorso/Builds/CIE-ID/macos-cosign-preferences/CIE ID Flutter Prototype.app`.
+`/percorso/build/macos-cosign-preferences/CIE ID Flutter Prototype.app`.
 
 - 40 test Flutter superati e analisi Dart senza problemi. I test comprendono
   preferenze persistenti, percorsi Unicode, copia/rimozione dell'immagine senza
@@ -311,7 +311,7 @@ Report locale: `reports/cosign-guide-preferences-integration-20261017.json`.
 ## Integrazione dei flussi documentali Flutter
 
 Nuovo bundle macOS Universal Apple Development in
-`/percorso/Builds/CIE-ID/macos-documents/CIE ID Flutter Prototype.app`.
+`/percorso/build/macos-documents/CIE ID Flutter Prototype.app`.
 È separato dall'app pubblicata e dalle precedenti build di prova.
 
 - 32 test Flutter superati; analisi Dart senza problemi.

@@ -10,19 +10,23 @@ import re
 import shutil
 import subprocess
 from pathlib import Path
+from build_paths import build_root
 ROOT = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--flutter', default='flutter')
 parser.add_argument('--identity', default='-', help='Optional Apple Development identity; default ad hoc')
 parser.add_argument('--destination', type=Path,
-    default=Path.home()/'Developer/Builds/CIE-ID/firma-con-cie')
+    help='Override the local/default bundle destination')
 parser.add_argument('--build-workspace', type=Path,
-    default=Path.home()/'Developer/Builds/CIE-ID/workspace-macos',
-    help='Use a local non-cloud folder to avoid Finder metadata in code signatures')
+    help='Override the local/default non-cloud build workspace')
 parser.add_argument('--runtime', type=Path, default=ROOT/'native/runtime/macos', help='Private runtime to embed, including the shared-source backend')
 parser.add_argument('--skip-build', action='store_true', help='Reassemble the existing prototype build only')
 parser.add_argument('--web-extension',type=Path,help='Optional separately built prototype CryptoTokenKit appex')
 args = parser.parse_args()
+if args.destination is None or args.build_workspace is None:
+    local_root = build_root(ROOT)
+    args.destination = args.destination or local_root / 'firma-con-cie'
+    args.build_workspace = args.build_workspace or local_root / 'workspace-macos'
 if args.web_extension:
     extension = args.web_extension.resolve()
     extension_info = plistlib.loads((extension/'Contents/Info.plist').read_bytes())
@@ -50,7 +54,8 @@ if not args.skip_build:
         elif generated.exists(): shutil.rmtree(generated)
 shutil.copytree(ROOT, workspace, dirs_exist_ok=True, copy_function=shutil.copyfile,
     ignore=shutil.ignore_patterns('build', '.dart_tool', '.git', 'dist', 'reports', 'output',
-        'runtime', '.build', '__pycache__', '.idea', 'ephemeral', '.plugin_symlinks', 'Pods'))
+        'runtime', '.build', '__pycache__', '.idea', 'ephemeral', '.plugin_symlinks', 'Pods',
+        'local-build.json', 'LOCAL_SETUP.md', 'local-backend.json'))
 # Only generated/copy-owned build files are cleaned, never original sources or
 # existing CIE ID bundles. File-provider FinderInfo prevents codesign in iCloud.
 for key in ['com.apple.FinderInfo', 'com.apple.ResourceFork']:

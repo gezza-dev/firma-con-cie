@@ -53,6 +53,7 @@ app.*.map.json
 /reports/
 /output/
 /local-backend.json
+/local-build.json
 
 /LOCAL_SETUP.md
 

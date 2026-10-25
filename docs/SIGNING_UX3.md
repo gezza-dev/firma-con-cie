@@ -34,7 +34,7 @@ Un P7M idoneo presenta solo **Aggiungi una firma**: l’integrità delle firme e
 
 ## Artefatti locali
 
-- App macOS con firma Apple Development, runtime DSS/LTA privato ed estensione CryptoTokenKit esistente: `/percorso/Builds/CIE-ID/macos-ux3/CIE ID Flutter Prototype.app`.
+- App macOS con firma Apple Development, runtime DSS/LTA privato ed estensione CryptoTokenKit esistente: `/percorso/build/macos-ux3/CIE ID Flutter Prototype.app`.
 - Runtime macOS: `native/runtime/macos-ux3`; runtime Windows: `native/runtime/windows-ux3`. Sono output locali esclusi da Git, con manifest/checksum dei binari e delle sorgenti native corrispondenti.
 - Nessuna pubblicazione GitHub, notarizzazione o sostituzione dell’app CIE ID Universal. L’attivazione del componente Web non viene modificata durante il controllo UX3.
 
@@ -50,7 +50,7 @@ Firma reale PDF invisibile/grafica, P7M e cofirma con questo nuovo percorso; abb
 - Il segno grafico PDF usa il Nome e Cognome del certificato della CIE effettivamente autenticata. La seconda riga riporta data e ora UTC del momento di preparazione della firma, identiche alla data nei metadati della firma PDF. Non costituisce una marca temporale certificata. Il bordo tratteggiato è disegnato sia nell’anteprima sia nel PDF, anche con immagine personalizzata. L’anteprima indica che la data finale sarà determinata durante la firma.
 - Il salvataggio atomico con hard link conservava il flag macOS `UF_HIDDEN` del file temporaneo. Prima della pubblicazione viene rimosso solo l’attributo nascosto (anche Windows); i byte, gli altri flag e il controllo contro la sovrascrittura restano invariati. La stessa correzione si applica all’estrazione P7M. Il PDF segnalato dall’utente è stato reso visibile senza modificarne i byte, con confronto SHA-256 prima/dopo.
 - Verifiche software: 104 test Flutter superati, 20 gruppi CTest macOS superati, 166 controlli documentali con certificati sintetici, prova visiva PDF con nome accentato/data/bordo, tre integrazioni documentali sul runtime reale. Backend Windows x64 ricompilato dalle medesime sorgenti; questa compilazione non equivale a esecuzione sul PC Windows. Nessun nuovo tentativo PIN o test reale di Cambio PIN/Sblocco Carta.
-- App macOS Apple Development: `/percorso/Builds/CIE-ID/macos-ux4-signing-fixes/CIE ID Flutter Prototype.app`. Runtime: `native/runtime/macos-ux4-signing-fixes` e `native/runtime/windows-ux4-signing-fixes`. Il codice CryptoTokenKit non è stato modificato; l’estensione è stata ricompilata con le librerie aggiornate senza attivarne una nuova registrazione durante i test.
+- App macOS Apple Development: `/percorso/build/macos-ux4-signing-fixes/CIE ID Flutter Prototype.app`. Runtime: `native/runtime/macos-ux4-signing-fixes` e `native/runtime/windows-ux4-signing-fixes`. Il codice CryptoTokenKit non è stato modificato; l’estensione è stata ricompilata con le librerie aggiornate senza attivarne una nuova registrazione durante i test.
 
 
 ## Seconda revisione dopo il collaudo (18 ottobre 2026)
@@ -63,7 +63,7 @@ Gli indicatori usano l’allineamento verticale centrale, senza padding disegual
 
 Il segno comprende ora quattro righe: **Firmato digitalmente da/Signed by:**, Nome e Cognome del certificato, **In Data/On Date:**, data e ora UTC. Le due etichette sono più piccole sia del nome sia della data, con colore azzurro chiaro `#64B5F6`; i dati restano neri. La stessa composizione è usata nel PDF finale, nell’anteprima testuale e nella didascalia delle immagini personalizzate. La misura si adatta alla larghezza, include tutte le righe e conserva il bordo tratteggiato.
 
-Artefatti di questa revisione: app Apple Development in `/percorso/Builds/CIE-ID/macos-ux4-signing-r2/CIE ID Flutter Prototype.app`, runtime `native/runtime/macos-ux4-signing-r2` e `native/runtime/windows-ux4-signing-r2`. La revisione precedente resta disponibile ma non contiene queste correzioni. Nessuna nuova autenticazione reale sulla CIE né modifica a PIN/PUK; l’estensione Web è ricompilata dalle stesse librerie, senza cambiamenti al codice delle sessioni CryptoTokenKit.
+Artefatti di questa revisione: app Apple Development in `/percorso/build/macos-ux4-signing-r2/CIE ID Flutter Prototype.app`, runtime `native/runtime/macos-ux4-signing-r2` e `native/runtime/windows-ux4-signing-r2`. La revisione precedente resta disponibile ma non contiene queste correzioni. Nessuna nuova autenticazione reale sulla CIE né modifica a PIN/PUK; l’estensione Web è ricompilata dalle stesse librerie, senza cambiamenti al codice delle sessioni CryptoTokenKit.
 
 
 Verifica della seconda revisione: 105 test Flutter e analisi statica senza problemi; 20 gruppi CTest macOS; 178 controlli documentali nativi, comprese etichette bilingui, data coerente, PDF ruotati e pubblicazione senza sovrascrittura; tre integrazioni con il runtime documentale reale. La prova del backend sintetico sul Desktop conferma flag Hidden assente subito e dopo 1, 3 e 6 secondi, con byte invariati. Controllati visivamente il PDF a quattro righe e gli indicatori con cinque passaggi nell’app macOS. Backend Windows ricompilato dalle stesse sorgenti: test runtime su Windows e firma reale con CIE restano da ripetere con questa revisione.

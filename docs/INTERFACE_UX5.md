@@ -20,7 +20,7 @@
 
 ## Artefatti
 
-- App Apple Development Universal: `/percorso/Builds/CIE-ID/macos-ux5/CIE ID.app`.
+- App Apple Development Universal: `/percorso/build/macos-ux5/CIE ID.app`.
 - Runtime: `native/runtime/macos-ux5` e `native/runtime/windows-ux5`, con DSS/JVM privati e manifest delle sorgenti native.
 - Report: `reports/ux5-validation.json`.
 
@@ -33,14 +33,14 @@
 - L’icona di firma riuscita è verde; l’icona dell’operazione fallita è rossa. Dopo un errore il PIN rimane vuoto e non partono nuovi tentativi.
 - **Salva** accetta la sostituzione confermata dal dialogo di sistema, compreso il documento scelto inizialmente: si firma sempre la copia privata immutabile. Il backend conserva il file precedente fino al completamento della firma e della verifica, controlla che la destinazione non sia stata modificata durante l’operazione e pubblica il risultato con una sostituzione atomica. Errori PIN e controlli crittografici falliti non modificano il file precedente. Cartelle e collegamenti non sono accettati come destinazione. I file pubblicati restano visibili. Le vecchie API native e l’estrazione P7M mantengono il comportamento senza sovrascrittura.
 - Collaudo: 116 test Flutter, 3 integrazioni documentali, analisi statica senza problemi, 20 gruppi CTest macOS e 187 controlli documentali. Prove sintetiche di sostituzione PDF/P7M con PIN completo/parziale, conservazione dopo errore e visibilità sul Desktop. Titolo, spaziatura, primo Indietro e i due dialoghi Apri controllati nell’app macOS. Backend Windows ricompilato con manifest delle stesse 551 sorgenti; esecuzione sul PC Windows e nuove firme con CIE reale da collaudare separatamente.
-- App aggiornata Apple Development Universal: `/percorso/Builds/CIE-ID/macos-ux5-dialogs/CIE ID.app`.
+- App aggiornata Apple Development Universal: `/percorso/build/macos-ux5-dialogs/CIE ID.app`.
 - Runtime: `native/runtime/macos-ux5-dialogs` e `native/runtime/windows-ux5-dialogs`; report `reports/ux5-dialogs-validation.json`.
 
 ## Nome del firmatario sopra agli identificativi — 18 ottobre 2026
 
 Nei risultati della verifica il Nome e Cognome provenienti dal certificato del singolo firmatario precedono, su una riga separata, il Common Name originale (per le CIE: codice fiscale/numero della carta). Lo stesso componente è usato nei dettagli successivi alla firma PDF/P7M e nella pagina Verifica Firma su macOS e Windows. Non viene usato il nome della carta collegata o abbinata, che potrebbe appartenere a una persona diversa dal firmatario. Un Common Name già uguale al nome non viene duplicato; certificati privi di Nome e Cognome conservano l’identificazione disponibile. L’esito dei controlli crittografici, della fiducia e della revoca resta distinto dall’identità dichiarata nel certificato.
 
-App Apple Development Universal: `/percorso/Builds/CIE-ID/macos-ux5-identities/CIE ID.app`. Backend nativo e componente CryptoTokenKit invariati rispetto a `macos-ux5-dialogs`; modifica nel solo codice Dart condiviso.
+App Apple Development Universal: `/percorso/build/macos-ux5-identities/CIE ID.app`. Backend nativo e componente CryptoTokenKit invariati rispetto a `macos-ux5-dialogs`; modifica nel solo codice Dart condiviso.
 
 ## Schede CIE della Home e miniatura nella barra laterale — 18 ottobre 2026
 
@@ -50,13 +50,13 @@ Il numero è ricavato dal campo Subject serialNumber del certificato pubblico gi
 
 Controlli: 116 test Flutter, analisi statica senza problemi, 20 gruppi CTest macOS e 203 controlli documentali, inclusi rifiuto di numeri ambigui/malformati e separazione dal codice fiscale/PAN. Backend Windows x64 ricompilato con manifest delle stesse 552 sorgenti; esecuzione sul PC Windows non effettuata in questa revisione. Nessun tentativo PIN/PUK reale.
 
-App Universal Apple Development: `/percorso/Builds/CIE-ID/macos-ux5-home/CIE ID.app`. Runtime: `native/runtime/macos-ux5-home` e `native/runtime/windows-ux5-home`.
+App Universal Apple Development: `/percorso/build/macos-ux5-home/CIE ID.app`. Runtime: `native/runtime/macos-ux5-home` e `native/runtime/windows-ux5-home`.
 
 ## Miniatura nella scelta della CIE per la firma — 18 ottobre 2026
 
 Anche l’elenco **Scegli la CIE con cui firmare** usa l’illustrazione originale della CIE, a sinistra di Nome e Cognome. La miniatura misura 72 punti di larghezza e mantiene le proporzioni originali; riusa lo stesso asset della Home e della barra laterale, senza modificare selezione della carta o procedura di firma. Il widget è condiviso tra macOS e Windows.
 
-App Universal Apple Development: `/percorso/Builds/CIE-ID/macos-ux5-card-list/CIE ID.app`. Runtime nativo e componente CryptoTokenKit invariati rispetto a `macos-ux5-home`.
+App Universal Apple Development: `/percorso/build/macos-ux5-card-list/CIE ID.app`. Runtime nativo e componente CryptoTokenKit invariati rispetto a `macos-ux5-home`.
 
 ## Numero carta nella scelta della CIE e finestra fissa — 18 ottobre 2026
 
@@ -77,7 +77,7 @@ macOS resta senza fullscreen. Test software su Linux superati; build complete
 e verifiche visive delle due piattaforme ancora da eseguire.
 [Dettagli multipiattaforma](DESKTOP_WINDOW_SIZING.md).
 
-App Universal Apple Development: `/percorso/Builds/CIE-ID/macos-ux5-fixed-window/CIE ID.app`. Il backend nativo e l’estensione CryptoTokenKit non cambiano. Verifica GUI macOS, 19 test di firma e analisi statica; i runner Windows/Linux richiedono collaudo sulle rispettive piattaforme.
+App Universal Apple Development: `/percorso/build/macos-ux5-fixed-window/CIE ID.app`. Il backend nativo e l’estensione CryptoTokenKit non cambiano. Verifica GUI macOS, 19 test di firma e analisi statica; i runner Windows/Linux richiedono collaudo sulle rispettive piattaforme.
 
 
 ## Messaggi Home e diagnostica — 18 ottobre 2026

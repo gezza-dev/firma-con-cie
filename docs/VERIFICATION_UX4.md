@@ -47,6 +47,6 @@ Sono utilizzati solo documenti e certificati effimeri sintetici. Non vengono ese
 
 App macOS Universal firmata Apple Development, con runtime DSS/LTA e componente CryptoTokenKit già esistente:
 
-`/percorso/Builds/CIE-ID/macos-ux4/CIE ID Flutter Prototype.app`
+`/percorso/build/macos-ux4/CIE ID Flutter Prototype.app`
 
 Il prototipo non è notarizzato né pubblicato. Nessuna release GitHub, installazione di driver, modifica alle attivazioni Web o richiesta PIN fa parte di UX4. Le prove reali di firma dei nuovi flussi, Cambio PIN e Sblocco Carta restano rinviate. Il prossimo blocco funzionale è UX5; la verifica completa sui due sistemi resta UX6.
