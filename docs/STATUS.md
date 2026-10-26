@@ -2,12 +2,119 @@
 
 Situazione al 25 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
 
+## Firefox Snap condiviso tra pacchetto nativo e AppImage (26 ottobre)
+
+Corretto nei sorgenti il confezionamento AppImage: le tre librerie del provider
+browser conservano i byte del bundle nativo e quindi lo stesso percorso di
+generazione Snap. Prima erano riscritte due RPATH, causando richieste ripetute
+di configurazione quando si alternavano `.deb` e AppImage. Restano attivi il
+controllo ABI e delle dipendenze, gli hash esatti, il rilevamento di aggiornamenti
+effettivi e il rifiuto di copie corrotte. Il PIN browser resta completo.
+
+Superati tre gruppi CTest delle procedure guidate e nove test del confezionamento
+AppImage. Verificati con NSS reale entrambi gli ordini su profili sintetici,
+con quattro passaggi successivi senza scritture o registrazioni aggiuntive;
+confermate anche le procedure Firefox standard e Chrome. L'assemblaggio privato
+x86_64 verifica 239 ELF; le librerie ARM64 ricevono soltanto controlli statici.
+Nessun browser reale o permesso Snap modificato, nessuna prova CIE. Gli archivi
+di distribuzione e l'app installata non sono aggiornati da questa operazione:
+la correzione richiede la successiva rigenerazione dell'AppImage.
+
+## Nome del prodotto e identità dei pacchetti (26 ottobre)
+
+Le ricette usano `firma-con-cie` anche come nome interno di APT/dpkg, RPM e
+pacman e nelle cartelle di documentazione e licenze. È prevista l'installazione
+pulita, senza alias o metadati di migrazione: un'eventuale precedente app con
+identità diversa va rimossa dal gestore pacchetti prima dell'installazione.
+La rimozione ordinaria conserva gli archivi personali dell'utente.
+
+Gli strumenti condividono `scripts/product_identity.py`. Anche i target CMake,
+la risorsa versione Windows, il sorgente Inno Setup e i nomi degli archivi di
+icone usano il nome attuale. I default degli installer sono
+`firma-con-cie_1.0.0_windows_x64_setup.exe` e
+`firma-con-cie_1.0.0_universal.dmg`. I nomi visibili dell'app restano
+«Firma con CIE». Identificativi di bundle, archivi protetti, provider e
+protocolli CIE rimangono stabili: non sono nomi del pacchetto installabile.
+
+## AppImage x86_64 aggiornato (26 ottobre)
+
+Ricompilati SDK nativo e GUI sulla base Ubuntu 22.04 con requisito massimo
+glibc 2.35. L'AppImage x86_64 include ora la selezione dei certificati HTTPS
+del sistema e le correzioni del trascinamento nelle pagine Firma e Verifica,
+già integrate nei sorgenti Linux e nel pacchetto ARM64. La versione rimane
+`1.0.0`, in preparazione della prima pubblicazione.
+
+Superati 40 gruppi CTest nativi, 361 test Flutter comprese le quattro
+integrazioni con il runtime reale su documenti sintetici, analisi Flutter e
+quattro gruppi GTK, inclusa la priorità dei percorsi URI nel trascinamento.
+I controlli del pacchetto usano radici isolate, profili browser sintetici e
+accesso alla carta bloccato. PC/SC rimane esterno e l'accesso ai siti conserva
+il PIN completo. I rapporti locali identificano checksum e distribuzioni
+effettivamente verificate; nessun pacchetto viene installato sull'host.
+
+## Revoca e certificati HTTPS nell'AppImage ARM64 (26 ottobre)
+
+### Trascinamento in Firma e Verifica
+
+Corretto anche il destinatario GTK, che ora preferisce i percorsi URI diretti
+offerti dal desktop e conserva il portale come alternativa. Il componente
+Dart condiviso deduplica riferimenti allo stesso file e recupera percorsi
+locali espliciti dal payload testuale; una chiave del portale non diventa un
+percorso relativo. Lo stato senza percorsi ricevuti ha un messaggio distinto
+dalla selezione di più documenti, in entrambe le pagine. La modifica non avvia
+firme né richiede il PIN. Il collaudo del trascinamento nel desktop GNOME
+della VM dell'utente resta da confermare sul pacchetto aggiornato.
+Analisi Flutter senza problemi e 357 test Flutter superati, con quattro
+integrazioni opzionali saltate. I test del canale Linux coprono entrambe le
+pagine, riferimenti duplicati, selezioni multiple e trasferimenti senza file.
+
+### Download delle prove di revoca
+
+L'utente ha confermato il funzionamento dell'app in una VM Ubuntu 26.10 ARM64
+su Apple Silicon, segnalando uno stato di revoca indeterminato con connessione
+diretta. Riprodotto nel trasporto ARM64 l'errore libcurl 60 sul download della
+CRL pubblica CIE, dopo un reindirizzamento HTTP verso HTTPS: nella compilazione
+incrociata non erano stati rilevati percorsi CA. Il trasporto Linux seleziona
+ora i certificati TLS del sistema di destinazione per server e proxy HTTPS.
+La verifica della firma, la fiducia nella catena CIE e l'autenticazione delle
+prove di revoca mantengono i controlli precedenti; un errore TLS resta
+indeterminato. La correzione non modifica browser, abbinamenti o PIN.
+
+Superati 40 gruppi CTest su x86_64 e 40 su ARM64 emulato. Il test TLS
+deterministico accetta la CA sintetica soltanto nel namespace privato e
+rifiuta CA estranea e nome errato, anche per il proxy HTTPS. Sul trasporto
+ARM64 corretto lo stesso download pubblico CIE passa da errore 60 a HTTP 200;
+la firma della CRL e lo stato non revocato della CA SUBCA002 sono verificati
+separatamente. Nessuna carta o configurazione browser reale è utilizzata.
+
+## AppImage ARM64 (26 ottobre)
+
+Il confezionamento AppImage supporta anche AArch64 e produce
+`firma-con-cie-1.0.0-aarch64.AppImage`. Usa Ubuntu 22.04 con glibc massima 2.35,
+una build nativa ricompilata contro quel sysroot e una GUI compilata in
+emulazione ARM64. Il runtime AppImage AArch64 è fissato per versione e SHA-256;
+ogni ELF del payload e il runtime devono corrispondere all’architettura scelta.
+Il `.deb` ARM64 precedente basato su Ubuntu 24.04 rimane distinto.
+
+Sono superati analisi Flutter, 347 test Flutter (quattro integrazioni opzionali
+saltate), 28 test Python, 39 gruppi CTest ARM64 e 14 casi DSS/LTA ARM64. Le
+verifiche dell’AppImage includono risoluzione delle dipendenze, avvio su display
+virtuale e registrazione NSS su profili sintetici, con PC/SC bloccato. I rapporti
+locali identificano il pacchetto e le distribuzioni effettivamente verificate.
+
+Non è un collaudo su hardware ARM64 reale. PC/SC, driver del lettore, glibc e
+stack grafico restano quelli del sistema; la guida browser richiede sempre una
+conferma esplicita e mantiene il PIN completo. La disponibilità dei browser
+nativi ARM64 e il loro accesso con CIE richiedono verifiche separate. Nessuna
+installazione sull’host, configurazione di browser reali o prova sulla CIE è
+prevista per questa preparazione. [Procedura e limiti](LINUX_APPIMAGE.md).
+
 ## Nomi dei pacchetti Linux (25 ottobre)
 
 Tutti i file di installazione della release `1.0.0` usano il prefisso
 `firma-con-cie`: AppImage, `.deb` amd64/ARM64, RPM e Arch. Gli strumenti di
 confezionamento separano il nome pubblico del file dall’identificativo interno
-`cie-id-desktop`, conservato per gli aggiornamenti. La rinomina dei file già
+`firma-con-cie`, allineato al nome pubblico dell’app. La rinomina dei file già
 verificati aggiorna gli indici, i manifest e `SHA256SUMS`; il contenuto degli
 archivi e i relativi hash rimangono quelli dei pacchetti collaudati.
 
@@ -704,7 +811,7 @@ Questa revisione non include una nuova esecuzione nativa della GUI Windows/Linux
 
 La Guida inclusa è stata riscritta in italiano e inglese come manuale per
 l’utente finale, con istruzioni per macOS, Windows e Linux e collegamenti al
-progetto CIE ID Desktop. I dettagli sullo stato di sviluppo restano in questa
+progetto Firma con CIE. I dettagli sullo stato di sviluppo restano in questa
 documentazione tecnica.
 
 Le didascalie dei pulsanti usano tonalità azzurre adatte al tema chiaro e scuro;
@@ -732,7 +839,7 @@ L’utente ha confermato il collaudo delle modifiche Windows. L’ultima ricompi
 
 ## Pubblicazione
 
-Il repository è predisposto per i sorgenti e resta privato. Non sono pubblicate release binarie di CIE ID Desktop. Prima di distribuire un’app occorre completare il pacchetto corrispondente descritto in [LICENSING.md](LICENSING.md), il collaudo finale e la firma/distribuzione della piattaforma.
+Il repository è predisposto per i sorgenti e resta privato. Non sono pubblicate release binarie di Firma con CIE. Prima di distribuire un’app occorre completare il pacchetto corrispondente descritto in [LICENSING.md](LICENSING.md), il collaudo finale e la firma/distribuzione della piattaforma.
 
 ## Integrazione Linux / Firefox
 
@@ -871,7 +978,7 @@ lettori e casi di errore. [Dettagli](LINUX_FIREFOX.md).
 Il runner imposta il nome dell'app e il nome dell'icona predefinita GTK,
 conservando la risorsa incorporata per il bundle portabile. Il launcher
 include `TryExec` e parole chiave localizzate. Lo script di packaging crea
-`cie-id-desktop` per test locali, con bundle in `/opt/firma-con-cie`, comando
+per test locali, con bundle nella cartella dell’app, comando
 in `/usr/bin`, `.desktop` e nove icone hicolor nelle directory standard.
 Le dipendenze sono ricavate da tutti gli ELF con `dpkg-shlibdeps`; programmi
 di test e dati utente non fanno parte del payload. Non ci sono script che
@@ -891,7 +998,7 @@ Linux è escluso; non è una release binaria pronta per redistribuzione.
 
 Successivamente, su autorizzazione dell'utente, il pacchetto
 `0.1.0~test20261020.1` è stato installato su Ubuntu 26.10 amd64 con KDE/Wayland.
-APT ha aggiunto il solo `cie-id-desktop`, senza installare altre dipendenze o
+APT ha aggiunto il solo pacchetto locale dell’app, senza installare altre dipendenze o
 rimuovere pacchetti. Verificati i 311 hash del payload, proprietà root,
 `dpkg --verify`, launcher eseguibile, registrazione GIO e corrispondenza
 dell'application ID. La cache KDE è stata aggiornata: il test del menu colloca

@@ -74,7 +74,7 @@ def verify_installed(manifest, kind):
     assert '/it/giancarloezza/cieid/cie-id.png' in run('gresource', 'list', app / 'Firma con CIE').stdout
     assert Path('/usr/bin/Firma con CIE').read_text() == '#!/bin/sh\nexec "/opt/firma-con-cie/Firma con CIE" "$@"\n'
     for name in ['BUILDING.md', 'STATUS.md', 'LINUX_DISTRIBUTION_PACKAGES.md']:
-        assert Path('/usr/share/doc/cie-id-desktop', name).read_bytes() == (ROOT / 'docs' / name).read_bytes()
+        assert Path('/usr/share/doc/firma-con-cie', name).read_bytes() == (ROOT / 'docs' / name).read_bytes()
     for browser in ['firefox', 'chrome']:
         with tempfile.TemporaryDirectory() as home:
             result = subprocess.run(['python3', '-B', str(runtime / 'browser_setup' / (browser + '_setup.py')),

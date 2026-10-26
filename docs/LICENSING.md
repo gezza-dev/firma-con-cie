@@ -1,6 +1,6 @@
 # Licenze, provenienza e distribuzione
 
-Questo documento riguarda lo snapshot sorgente di CIE ID Desktop. Non attribuisce una nuova licenza ai componenti di terzi e non sostituisce i testi integrali conservati nel repository. La visibilità privata di GitHub e la licenza sono aspetti distinti: il cambio di visibilità non modifica i termini dei componenti.
+Questo documento riguarda lo snapshot sorgente di Firma con CIE. Non attribuisce una nuova licenza ai componenti di terzi e non sostituisce i testi integrali conservati nel repository. La visibilità privata di GitHub e la licenza sono aspetti distinti: il cambio di visibilità non modifica i termini dei componenti.
 
 ## Codice e risorse del progetto
 

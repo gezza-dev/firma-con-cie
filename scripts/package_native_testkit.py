@@ -17,7 +17,7 @@ a.output.parent.mkdir(parents=True,exist_ok=True)
 if a.output.exists(): raise SystemExit('Output already exists')
 files = sorted(set(subprocess.check_output(['git','ls-files','--cached','--others','--exclude-standard','-z'],cwd=ROOT).decode().split('\0'))-{''})
 with tempfile.TemporaryDirectory(prefix='cie-native-package-') as temporary:
-    kit = Path(temporary)/'CIE-ID-Windows-x64-testkit'
+    kit = Path(temporary)/'firma-con-cie-windows-x64-testkit'
     shutil.copytree(a.runtime.resolve(),kit/'runtime',ignore=shutil.ignore_patterns('.DS_Store'))
     (kit/'scripts').mkdir()
     for name in ['smoke_native.py','test_card_signing.py','verify_signed_documents.py','test_ltv.py','test_history.py','test_pin.py','test_network_runtime.py','test_pairing_runtime.py','runtime_test_tools.py','ltv_runtime.py']:
@@ -30,7 +30,7 @@ with tempfile.TemporaryDirectory(prefix='cie-native-package-') as temporary:
         target = kit/'sources'/relative
         target.parent.mkdir(parents=True,exist_ok=True)
         shutil.copy2(source,target)
-    (kit/'README.txt').write_text('''CIE ID — test del backend Windows x64
+    (kit/'README.txt').write_text('''Firma con CIE — test del backend Windows x64
 
 Pacchetto di sviluppo, senza installer e senza firma Authenticode.
 Non sostituisce l'app CIE ID macOS o il middleware ufficiale.

@@ -10,14 +10,29 @@ import 'package:cie_flutter_prototype/enrollment.dart';
 import 'package:cie_flutter_prototype/information_view.dart';
 
 void main() {
-  String release(String tag, {String? url, bool pre = false}) => jsonEncode({
+  String release(
+    String tag, {
+    String? url,
+    bool pre = false,
+    bool draft = false,
+  }) => jsonEncode({
     'tag_name': tag,
-    'draft': false,
+    'draft': draft,
     'prerelease': pre,
     'html_url':
-        url ?? 'https://github.com/gezza-dev/cie-id-desktop/releases/tag/$tag',
+        url ?? 'https://github.com/gezza-dev/firma-con-cie/releases/tag/$tag',
   });
   test('updates compare numeric versions and accept only this project release pages', () {
+    expect(
+      releaseEndpoint.toString(),
+      'https://api.github.com/repos/gezza-dev/firma-con-cie/releases/latest',
+    );
+    final newer = parseRelease(200, release('v1.10.0'), current: '1.9.9');
+    expect(newer.version, 'v1.10.0');
+    expect(
+      newer.page.toString(),
+      'https://github.com/gezza-dev/firma-con-cie/releases/tag/v1.10.0',
+    );
     expect(
       parseRelease(200, release('v1.10.0'), current: '1.9.9').state,
       UpdateState.available,
@@ -26,19 +41,38 @@ void main() {
     expect(parseRelease(200, release('0.9.9')).state, UpdateState.current);
     for (final bad in [
       release('1.1.0', pre: true),
+      release('1.1.0', draft: true),
       release('1.1.0-beta'),
       release('1.1.0', url: 'https://example.invalid/update.exe'),
       release(
         '1.1.0',
         url: 'https://github.com/other/project/releases/tag/1.1.0',
       ),
+      // A different repository owned by the same account is still untrusted.
       release(
         '1.1.0',
-        url: 'http://github.com/gezza-dev/cie-id-desktop/releases/tag/1.1.0',
+        url: 'https://github.com/gezza-dev/another-project/releases/tag/1.1.0',
       ),
       release(
         '1.1.0',
-        url: 'https://github.com/gezza-dev/cie-id-desktop/releases/tag/1.1.0?redirect=bad',
+        url: 'http://github.com/gezza-dev/firma-con-cie/releases/tag/1.1.0',
+      ),
+      release(
+        '1.1.0',
+        url: 'https://github.com/gezza-dev/firma-con-cie/releases/tag/1.1.0?redirect=bad',
+      ),
+      release(
+        '1.1.0',
+        url: 'https://github.com/gezza-dev/firma-con-cie/releases/tag/1.1.0#download',
+      ),
+      release(
+        '1.1.0',
+        url:
+            'https://github.com:8443/gezza-dev/firma-con-cie/releases/tag/1.1.0',
+      ),
+      release(
+        '1.1.0',
+        url: 'https://user@github.com/gezza-dev/firma-con-cie/releases/tag/1.1.0',
       ),
       '{}',
       'not json',

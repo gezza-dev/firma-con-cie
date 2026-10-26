@@ -8,7 +8,7 @@ AppId={{7D9C31E3-F685-48E7-88BF-152BF8D331F2}
 PrivilegesRequired=admin
 DefaultDirName={autopf}\Firma con CIE
 #else
-AppId=CIE-ID-Installer-Isolated-Test
+AppId=firma-con-cie-installer-isolated-test
 PrivilegesRequired=lowest
 DefaultDirName={#TestInstallPath}
 DisableDirPage=yes
@@ -18,7 +18,7 @@ UninstallFilesDir={app}\uninstall
 AppName=Firma con CIE
 AppVersion={#AppVersion}
 AppPublisher=gezza-dev
-AppPublisherURL=https://github.com/gezza-dev/cie-id-desktop
+AppPublisherURL=https://github.com/gezza-dev/firma-con-cie
 DefaultGroupName=Firma con CIE
 DisableProgramGroupPage=yes
 ArchitecturesAllowed=x64os
@@ -35,7 +35,7 @@ SolidCompression=yes
 ; Setup and Uninstall read the user's Windows light/dark preference at startup.
 WizardStyle=modern dynamic
 CloseApplications=yes
-CloseApplicationsFilter=Firma con CIE.exe,CIE-ID.exe
+CloseApplicationsFilter=Firma con CIE.exe
 RestartApplications=no
 DisableWelcomePage=no
 UninstallDisplayName=Firma con CIE
@@ -65,13 +65,6 @@ Name: "{autodesktop}\Firma con CIE"; Filename: "{app}\Firma con CIE.exe"; Workin
 #endif
 
 [InstallDelete]
-; Retire the previous executable and shortcuts during an in-place upgrade.
-; Only names owned by the previous desktop installer are affected.
-Type: files; Name: "{app}\CIE-ID.exe"
-#ifndef InstallerTest
-Type: files; Name: "{autoprograms}\CIE ID Desktop.lnk"
-Type: files; Name: "{autodesktop}\CIE ID Desktop.lnk"
-#endif
 ; Exact development-file names only; unknown files and user profiles are kept.
 #include "development-cleanup.iss"
 

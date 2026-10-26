@@ -10,12 +10,12 @@ import 'package:url_launcher/url_launcher.dart';
 
 const assistanceFaq =
     'https://www.cartaidentita.interno.gov.it/Assistenza/#FAQ';
-const prototypeIssues = 'https://github.com/gezza-dev/cie-id-desktop/issues';
+const prototypeIssues = 'https://github.com/gezza-dev/firma-con-cie/issues';
 
 typedef LinkOpener = Future<bool> Function(Uri uri);
 const guideLinks = {
   'Firma con CIE: progetto e documentazione':
-      'https://github.com/gezza-dev/cie-id-desktop',
+      'https://github.com/gezza-dev/firma-con-cie',
   'Software CIE ufficiale':
       'https://www.cartaidentita.interno.gov.it/info-utili/software-cie-2/',
 };

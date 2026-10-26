@@ -7,7 +7,7 @@ project(runner LANGUAGES C CXX)
 set(BINARY_NAME "Firma con CIE")
 set(APP_EXECUTABLE_NAME "${BINARY_NAME}")
 # Keep an internal target without spaces for generated Flutter plugin rules.
-set(BINARY_NAME "CIE-ID")
+set(BINARY_NAME "firma-con-cie")
 # The unique GTK application identifier for this application. See:
 # https://wiki.gnome.org/HowDoI/ChooseApplicationID
 set(APPLICATION_ID "it.giancarloezza.prototype.cie_flutter_prototype")

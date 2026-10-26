@@ -1,6 +1,6 @@
 # Accesso ai siti con CIE — componenti sperimentali
 
-## Stato attuale di CIE ID Desktop
+## Stato attuale di Firma con CIE
 
 La sintesi aggiornata è in [STATUS.md](STATUS.md). L'accesso reale al portale CIE
 è stato verificato con Safari su macOS Apple Silicon e Chrome/Firefox su Windows

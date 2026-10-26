@@ -30,7 +30,9 @@ def check(package, report, upgrade_from=None):
     manifest = json.loads((package.parent / 'package-manifest.json').read_text())
     assert hashlib.sha256(package.read_bytes()).hexdigest() == manifest['sha256']
     from linux_package_common import validate_release_version
-    assert manifest['package'] == 'cie-id-desktop'
+    assert manifest['package'] == 'firma-con-cie'
+    assert run('dpkg-deb', '-f', package, 'Package').stdout.strip() == 'firma-con-cie'
+    assert package.name == f"firma-con-cie_{manifest['version']}_{manifest['architecture']}.deb"
     validate_release_version(manifest['version'])
     work = ROOT / '.build/linux-deb'
     work.mkdir(parents=True, exist_ok=True)
@@ -46,11 +48,11 @@ def check(package, report, upgrade_from=None):
         assert payload == manifest['files']
         assert all(name.startswith(('opt/firma-con-cie/', 'usr/bin/', 'usr/share/')) for name in payload)
         assert not any('tests' in Path(name).parts or '.key' == Path(name).name for name in payload)
-        tool = extracted / 'usr/share/doc/cie-id-desktop/tools/configure_chrome_linux.py'
+        tool = extracted / 'usr/share/doc/firma-con-cie/tools/configure_chrome_linux.py'
         assert tool.read_bytes() == (ROOT / 'scripts/configure_chrome_linux.py').read_bytes()
-        assert (extracted / 'usr/share/doc/cie-id-desktop/LINUX_CHROME.md').is_file()
+        assert (extracted / 'usr/share/doc/firma-con-cie/LINUX_CHROME.md').is_file()
         for name in ('STATUS.md', 'WEB_AUTHENTICATION.md'):
-            assert (extracted / 'usr/share/doc/cie-id-desktop' / name).read_bytes() == (ROOT / 'docs' / name).read_bytes()
+            assert (extracted / 'usr/share/doc/firma-con-cie' / name).read_bytes() == (ROOT / 'docs' / name).read_bytes()
         launcher = extracted / 'usr/bin/Firma con CIE'
         assert launcher.stat().st_mode & 0o111
         run('sh', '-n', launcher)
@@ -98,7 +100,7 @@ def check(package, report, upgrade_from=None):
         assert json.loads(inspection.stdout)['ok'] is True
         assert not list(isolated_home.iterdir())
         assert (runtime / 'browser_setup/libcie_browser_setup_guard.so').is_file()
-        assert (extracted / 'usr/share/doc/cie-id-desktop/LINUX_FIREFOX_SETUP.md').is_file()
+        assert (extracted / 'usr/share/doc/firma-con-cie/LINUX_FIREFOX_SETUP.md').is_file()
         assert not (runtime / 'libcie_setup_no_load_probe.so').exists()
         native = json.loads((runtime / 'backend-manifest.json').read_text())
         assert all(hashlib.sha256((runtime / name).read_bytes()).hexdigest() == digest
@@ -160,14 +162,13 @@ def check(package, report, upgrade_from=None):
             previous = temp / 'previous'
             run('dpkg-deb', '--raw-extract', upgrade_from.resolve(), previous)
             assert {p.name for p in (previous / 'DEBIAN').iterdir()} == {'control', 'md5sums'}
-            old_prefix = install / 'opt/cie-id-desktop'
+            assert run('dpkg-deb', '-f', upgrade_from.resolve(), 'Package').stdout.strip() == 'firma-con-cie'
             run(*base, '--install', upgrade_from.resolve())
-            assert (old_prefix / 'Firma con CIE').is_file()
-            old_files = [p.relative_to(previous) for p in (previous / 'opt/cie-id-desktop').rglob('*') if p.is_file()]
+            old_files = {p.relative_to(previous).as_posix() for p in previous.rglob('*')
+                         if p.is_file() and 'DEBIAN' not in p.relative_to(previous).parts}
         run(*base, '--install', package)
         if upgrade_from:
-            assert all(not (install / name).exists() for name in old_files)
-            assert not (old_prefix / 'Firma con CIE').exists()
+            assert all(not (install / name).exists() for name in old_files - set(payload))
             assert sentinel.read_bytes().startswith(b'synthetic user record')
         for name, digest in payload.items():
             assert hashlib.sha256((install / name).read_bytes()).hexdigest() == digest
@@ -178,9 +179,9 @@ def check(package, report, upgrade_from=None):
         run('dpkg-deb', '--root-owner-group', '-Znone', '--build', extracted, upgrade)
         run(*base, '--install', upgrade)
         assert run('dpkg-query', '--admindir=' + str(database), '-W', '-f=${Version}',
-                   'cie-id-desktop').stdout == version
+                   'firma-con-cie').stdout == version
         assert sentinel.read_bytes().startswith(b'synthetic user record')
-        run(*base, '--remove', 'cie-id-desktop')
+        run(*base, '--remove', 'firma-con-cie')
         assert sentinel.exists()
         assert all(not (install / name).exists() for name in payload)
         # Simulate the host's package resolver without invoking installation or

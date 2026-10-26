@@ -15,13 +15,13 @@ I file distribuiti usano il nome pubblico dell’app:
 - `firma-con-cie_1.0.0_amd64.deb` e `firma-con-cie_1.0.0_arm64.deb`;
 - `firma-con-cie-1.0.0-1.fc44.x86_64.rpm`;
 - `firma-con-cie-1.0.0-1-x86_64.pkg.tar.zst`;
-- `firma-con-cie-1.0.0-x86_64.AppImage`.
+- `firma-con-cie-1.0.0-x86_64.AppImage` e `firma-con-cie-1.0.0-aarch64.AppImage`.
 
-L’identificativo interno APT/RPM/pacman resta `cie-id-desktop` per conservare
-la continuità degli aggiornamenti. Il nome del file distribuito è gestito
-separatamente; percorsi installati, abbinamenti e configurazioni dei browser
-mantengono il comportamento già verificato. I nomi nei resoconti storici
-identificano gli artefatti di quel momento.
+L’identificativo interno APT/RPM/pacman è `firma-con-cie`, uguale al prefisso
+dei file distribuiti. Una precedente installazione con identità diversa va
+prima rimossa: è prevista l'installazione pulita, senza alias o migrazione
+automatica. Abbinamenti e configurazioni personali restano negli archivi
+utente esistenti e non sono cancellati dal pacchetto.
 
 ## Contenuto e comportamento
 
@@ -29,7 +29,7 @@ I tre formati condividono la validazione e la preparazione del contenuto in
 `scripts/linux_package_common.py`: app Flutter, runtime nativo, provider
 PKCS#11, DSS con Java privato, launcher, icone e documentazione con licenze.
 Restano i percorsi `/opt/firma-con-cie`, `/usr/bin/Firma con CIE` e
-`/usr/share/doc/cie-id-desktop`. I programmi di test sono esclusi.
+`/usr/share/doc/firma-con-cie`. I programmi di test sono esclusi.
 
 L'installazione non avvia l'app, non registra moduli nei browser, non collega
 permessi Snap e non legge la CIE. Le configurazioni browser restano attivabili
@@ -90,11 +90,11 @@ Il runtime nativo/DSS rimane byte per byte quello già verificato: 714 file
 confrontati prima del confezionamento, con manifest originale conservato.
 Non è attribuito al nuovo lavoro di packaging una nuova compilazione del middleware.
 
-| Artefatto x86_64 | Ambienti di verifica |
+| Formato e versione del collaudo x86_64 | Ambienti di verifica |
 | --- | --- |
-| `cie-id-desktop_0.1.0~test20261024.19_amd64.deb` | Ubuntu 24.04 LTS e Debian 13 |
-| `cie-id-desktop-0.1.0-0.test20261024.19.fc44.x86_64.rpm` | Fedora 44 |
-| `cie-id-desktop-0.1.0_test20261024.19-1-x86_64.pkg.tar.zst` | Arch rolling, snapshot del 24 ottobre 2026 |
+| `.deb`, versione `0.1.0~test20261024.19` | Ubuntu 24.04 LTS e Debian 13 |
+| `.rpm`, versione `0.1.0-0.test20261024.19.fc44` | Fedora 44 |
+| `.pkg.tar.zst`, versione `0.1.0_test20261024.19-1` | Arch rolling, snapshot del 24 ottobre 2026 |
 
 Verificati in ogni ambiente 737 file installati, 61 ELF, proprietario root,
 hash del runtime, icone/launcher, provider Snap e analisi DSS con Java privato

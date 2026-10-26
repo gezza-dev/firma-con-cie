@@ -1,9 +1,34 @@
 // SPDX-License-Identifier: BSD-3-Clause
+import 'dart:convert';
+
 import 'app_localizations.dart';
 import 'desktop_page_body.dart';
 
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
+
+List<String> droppedDocumentPaths(Iterable<String> paths, {String? rawText}) {
+  final unique = paths.where((path) => path.isNotEmpty).toSet();
+  if (unique.isNotEmpty) return unique.toList();
+  // Linux STRING/URI targets may include comments or line endings. A portal
+  // transfer key is never a path; only explicit local paths can be recovered.
+  for (final line in const LineSplitter().convert(rawText ?? '')) {
+    if (line.isEmpty || line.startsWith('#')) continue;
+    try {
+      final uri = Uri.tryParse(line);
+      if (uri?.scheme == 'file') {
+        unique.add(uri!.toFilePath());
+      } else if (line.startsWith('/')) {
+        unique.add(line);
+      }
+    } on UnsupportedError {
+      // Remote file authorities do not identify a local document.
+    } on FormatException {
+      // A malformed URI must not become a relative filesystem path.
+    }
+  }
+  return unique.toList();
+}
 
 class DocumentDropZone extends StatefulWidget {
   const DocumentDropZone({
@@ -31,7 +56,12 @@ class _DocumentDropZoneState extends State<DocumentDropZone> {
     onDragDone: (details) async {
       setState(() => hover = false);
       if (widget.enabled) {
-        await widget.onPaths(details.files.map((f) => f.path).toList());
+        await widget.onPaths(
+          droppedDocumentPaths(
+            details.files.map((f) => f.path),
+            rawText: details.rawText,
+          ),
+        );
       }
     },
     child: Container(

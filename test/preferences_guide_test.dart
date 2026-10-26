@@ -161,6 +161,14 @@ void main() {
   test(
     'external opener refuses unsupported schemes and destinations',
     () async {
+      expect(
+        prototypeIssues,
+        'https://github.com/gezza-dev/firma-con-cie/issues',
+      );
+      expect(
+        guideLinks['Firma con CIE: progetto e documentazione'],
+        'https://github.com/gezza-dev/firma-con-cie',
+      );
       expect(await openGuideLink(Uri.parse('file:///tmp/example')), isFalse);
       expect(
         await openGuideLink(Uri.parse('https://example.invalid/')),

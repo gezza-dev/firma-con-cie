@@ -16,10 +16,10 @@ richiedono una verifica distinta. Non usare i percorsi Firefox Snap per Chrome.
 
 ## Collaudo reale del 23 ottobre 2026
 
-Installato `cie-id-desktop 0.1.0~test20261023.2` su Ubuntu 26.10 amd64,
+Installato il pacchetto locale versione `0.1.0~test20261023.2` su Ubuntu 26.10 amd64,
 KDE/Wayland; pacchetto Google Chrome desktop rilevato
 `156.0.8078.47-1`. Il provider è registrato come `Firma con CIE Linux` nel
-database NSS condiviso, inizialmente sotto `/opt/cie-id-desktop`.
+database NSS condiviso, inizialmente nella cartella di installazione dell'epoca.
 La configurazione è avvenuta con PC/SC bloccato, preservando byte per byte
 gli archivi certificati/chiavi NSS e le configurazioni Firefox controllate.
 
@@ -152,7 +152,7 @@ Non vengono rimossi abbinamenti, certificati, chiavi o altri moduli. Non si
 modificano profili Firefox, permessi Snap, preferenze TLS o policy Chrome.
 La registrazione resta un'azione dell'utente: l'installer `.deb` non la esegue.
 Nei nuovi pacchetti lo script è disponibile anche in
-`/usr/share/doc/cie-id-desktop/tools/configure_chrome_linux.py`.
+`/usr/share/doc/firma-con-cie/tools/configure_chrome_linux.py`.
 
 ## Procedura di prova e limiti TLS
 

@@ -27,7 +27,7 @@ def main():
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(args.output, 'w', zipfile.ZIP_DEFLATED, compresslevel=6) as archive:
         for name, data in sorted(sources.items()):
-            item = zipfile.ZipInfo('cie-id-desktop/' + name, date_time=(2026, 1, 1, 0, 0, 0))
+            item = zipfile.ZipInfo('firma-con-cie/' + name, date_time=(2026, 1, 1, 0, 0, 0))
             item.create_system = 3
             item.external_attr = modes.get(name, 0o100644) << 16
             item.compress_type = zipfile.ZIP_DEFLATED

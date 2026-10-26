@@ -96,4 +96,58 @@ class Persistence(fixtures.Fixture):
         with patch('os.geteuid',return_value=1000):fixture.service.apply('chrome-desktop',plan['fingerprint'])
         self.assertTrue(fixture.service.plan()['alreadyConfigured'])
         self.assertTrue(Path(plan['library']).is_relative_to(fixture.home))
+class SnapInteroperability(fixtures.Fixture):
+    def services(self):
+        self.profile('snap')
+        native=self.service
+        mounted=self.home/'mounted AppImage'
+        shutil.copytree(self.runtime,mounted)
+        appimage=image.AppImageFirefox(self.home,mounted,proc=self.proc,run=self.run_fake)
+        appimage.modutil=str(mounted/'fake-modutil')
+        return native,appimage,self.identity('snap')
+
+    def configure(self,service,identity):
+        self.service=service
+        plan=service.plan(identity)
+        with patch('os.geteuid',return_value=1000):
+            service.apply(identity,plan['fingerprint'])
+        return plan
+
+    def check_launch_order(self,appimage_first):
+        native,appimage,identity=self.services()
+        first,second=(appimage,native) if appimage_first else (native,appimage)
+        configured=self.configure(first,identity)
+        before=self.snapshot(self.home)
+        registrations=sum('-rawadd' in command for command in self.commands)
+        for service in [second,first,second]:
+            plan=service.plan(identity)
+            self.assertTrue(plan['alreadyConfigured'])
+            self.assertEqual(plan['library'],configured['library'])
+            self.assertEqual(service.inspect()['profiles'][0]['state'],'configured')
+            self.configure(service,identity)
+        self.assertEqual(before,self.snapshot(self.home))
+        self.assertEqual(registrations,sum('-rawadd' in command for command in self.commands))
+        self.assertFalse(self.connected)
+        self.assertFalse(any(command[0]=='/usr/bin/pkexec' for command in self.commands))
+
+    def test_native_then_appimage_reuses_the_snap_copy_without_nss_writes(self):
+        self.check_launch_order(appimage_first=False)
+
+    def test_appimage_then_native_reuses_the_snap_copy_without_nss_writes(self):
+        self.check_launch_order(appimage_first=True)
+
+    def test_actual_provider_update_and_corruption_are_still_detected(self):
+        native,appimage,identity=self.services()
+        old=self.configure(native,identity)
+        path=appimage.runtime/image.LIBRARIES[1]
+        path.write_bytes(b'new provider code, not a packaging change')
+        self.runtime=appimage.runtime;self.refresh_manifest()
+        newer=appimage.plan(identity)
+        self.assertFalse(newer['alreadyConfigured'])
+        self.assertNotEqual(old['library'],newer['library'])
+        self.assertTrue(native.plan(identity)['alreadyConfigured'])
+        Path(old['library']).write_bytes(b'tampered shared copy')
+        for service in [native,appimage]:
+            with self.assertRaises((image.SetupError,fixtures.setup.SetupError)):service.plan(identity)
+
 if __name__=='__main__':unittest.main(verbosity=2)

@@ -347,6 +347,7 @@
   "Il documento da firmare non è leggibile": "The document to sign is unreadable",
   "Il documento non è un file leggibile": "The document is not a readable file",
   "Il documento rimane un PDF. Puoi aggiungere una firma grafica.": "The document remains a PDF. You can add a visible signature.",
+  "Il documento trascinato non è disponibile. Usa «Seleziona un documento».": "The dropped document is unavailable. Use “Select a document”.",
   "Il documento è cambiato durante la lettura. Selezionalo di nuovo.": "The document changed while reading it. Select it again.",
   "Il documento è cambiato durante la verifica. Ripeti il controllo sul file aggiornato.": "The document changed during verification. Check the updated file again.",
   "Il documento è cambiato. Ripeti la verifica sul file aggiornato.": "The document changed. Verify the updated file again.",

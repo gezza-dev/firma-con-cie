@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cie_flutter_prototype/main.dart';
 import 'package:cie_flutter_prototype/native_bridge.dart';
@@ -75,6 +76,86 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+  }
+
+  for (final page in ['Firma Elettronica', 'Verifica Firma']) {
+    testWidgets('$page accepts duplicate references to one dropped file', (
+      tester,
+    ) async {
+      final directory = Directory.systemTemp.createTempSync(
+        'cie-duplicate-drop-',
+      );
+      addTearDown(() => directory.deleteSync(recursive: true));
+      final file = File('${directory.path}/documento.pdf.p7m')
+        ..writeAsBytesSync([1, 2, 3]);
+      tester.view.physicalSize = const Size(1100, 1100);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final service = DocumentsService();
+      await tester.pumpWidget(CiePrototype(service: service));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(page).first);
+      await tester.pumpAndSettle();
+      // Exercise the real Linux channel parser, as used by a GTK URI-list
+      // drop, including CRLF and repeated references to the same file.
+      final position = tester.getCenter(find.byType(DropTarget));
+      await tester.runAsync(() async {
+        final completed = Completer<void>();
+        const codec = StandardMethodCodec();
+        tester.binding.defaultBinaryMessenger.handlePlatformMessage(
+          'desktop_drop',
+          codec.encodeMethodCall(
+            MethodCall('performOperation_linux', [
+              '${file.uri}\r\n${file.uri}\r\n',
+              [position.dx, position.dy],
+            ]),
+          ),
+          (_) => completed.complete(),
+        );
+        await completed.future;
+        // The plugin's event callback is void; let document filesystem I/O
+        // complete in the real async zone before settling Flutter frames.
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      });
+      await tester.pumpAndSettle();
+      expect(find.text(file.path), findsOneWidget);
+      expect(
+        find.text('Trascinare un solo documento alla volta.'),
+        findsNothing,
+      );
+      expect(service.signCalls, 0);
+      expect(service.detectCalls, 0);
+      expect(tester.takeException(), isNull);
+    });
+    testWidgets(
+      '$page reports an unavailable drop separately from many files',
+      (tester) async {
+        tester.view.physicalSize = const Size(1100, 1100);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final service = DocumentsService();
+        await tester.pumpWidget(CiePrototype(service: service));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(page).first);
+        await tester.pumpAndSettle();
+        await drop(tester, []);
+        expect(
+          find.text(
+            'Il documento trascinato non è disponibile. Usa «Seleziona un documento».',
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.text('Trascinare un solo documento alla volta.'),
+          findsNothing,
+        );
+        expect(service.signCalls, 0);
+        expect(service.detectCalls, 0);
+        expect(tester.takeException(), isNull);
+      },
+    );
   }
 
   testWidgets('multiple files and directories are rejected without signing', (

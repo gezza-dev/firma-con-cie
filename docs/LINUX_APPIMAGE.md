@@ -1,4 +1,4 @@
-# AppImage x86_64
+# AppImage Linux x86_64 e ARM64
 
 L’AppImage usa Ubuntu 22.04 LTS come base di compilazione, con
 glibc 2.35. Si ricompilano
@@ -6,9 +6,13 @@ su questa base anche le dipendenze statiche native: i precedenti binari CIE
 richiedevano glibc 2.38 e non vengono riutilizzati. Flutter Engine e PDFium
 sono precompilati nelle versioni fissate dal progetto; il controllo ABI esamina
 anche questi file e tutti gli ELF della JVM DSS, non soltanto il runner.
+Il confezionamento compila anche il database MIME incluso e richiede gli
+schemi delle impostazioni desktop: PNG/SVG e icona della finestra devono
+funzionare senza dipendere dai metadati del desktop di destinazione.
 
 Il formato è AppImage Type 2, con runtime statico fissato per versione e SHA-256
-in `linux/appimage/runtime.lock.json`. Include firma/verifica, PDFium, DSS/JVM,
+in `linux/appimage/runtime.lock.json` per x86_64 e
+`linux/appimage/runtime-aarch64.lock.json` per ARM64/AArch64. Include firma/verifica, PDFium, DSS/JVM,
 GTK e dipendenze private, Python 3.10 e strumenti NSS per la guida dei browser.
 Non incorpora Chrome o Firefox. I browser del sistema usano il provider con
 il PIN completo di otto cifre; la firma nell'app mantiene il PIN parziale per
@@ -26,7 +30,21 @@ relativi nei singoli ELF risolvono le librerie private. Fontconfig usa una
 configurazione inclusa compatibile con la libreria, mantenendo la ricerca dei
 font nelle cartelle del sistema e dell’utente e una cache dedicata.
 
-La base dichiarata è Linux x86_64 con glibc almeno 2.35 e runtime C++ compatibile
+Anche i certificati HTTPS restano quelli del sistema (`ca-certificates`). Il
+trasporto nativo individua a ogni richiesta il bundle Debian/Ubuntu, Fedora
+o openSUSE e l'eventuale cartella `/etc/ssl/certs`, senza dipendere dalla
+ricerca automatica di libcurl durante la compilazione incrociata. La stessa
+selezione vale per i proxy HTTPS. Non si includono radici TLS personali e non
+si disabilitano la verifica del certificato o del nome del server.
+
+Questo controllo serve anche quando un indirizzo CRL inizia con `http://`:
+il servizio CIE può reindirizzarlo a HTTPS. L'assenza di radici TLS impediva
+alla prima AppImage ARM64 di consultare tali prove e produceva correttamente
+un esito di revoca indeterminato. Un problema di rete, una CRL non valida o
+un certificato TLS non attendibile devono continuare a dare un esito
+indeterminato, senza essere trasformati in «non revocato».
+
+La base dichiarata è Linux x86_64 oppure ARM64 con glibc almeno 2.35 e runtime C++ compatibile
 con i simboli elencati nel manifest. Non è una promessa di compatibilità con
 ogni distribuzione, con musl/Alpine o con qualunque stack grafico. Il normale
 montaggio richiede supporto FUSE e il relativo helper del sistema; il runtime
@@ -69,11 +87,41 @@ o certificati per generarvi il modulo, non richiede il PIN e non autentica la
 CIE. Python e NSS inclusi permettono la guida anche se `modutil` non è installato
 sul sistema. PC/SC rimane sempre esterno anche per il provider persistente.
 
+### Firefox Snap e alternanza con i pacchetti nativi
+
+Il confezionamento AppImage conserva identiche, byte per byte, le tre librerie
+del provider provenienti dal bundle nativo: `libcie_linux_pkcs11.so`,
+`libcie_web.so` e `libcie-pkcs11.so`. Prima della rilocazione controlla ABI,
+dipendenze ammesse e percorsi relativi necessari per trovare le librerie vicine.
+Gli altri ELF dell'AppImage continuano a ricevere i percorsi privati richiesti.
+
+Questo evita di cambiare l'impronta della copia Snap soltanto per il formato
+di distribuzione. Quando i due pacchetti contengono lo stesso provider, una
+configurazione effettuata dal `.deb` è riconosciuta anche dall'AppImage e
+viceversa, senza riscrivere `pkcs11.txt`. Non cambia il controllo esatto degli
+hash: un provider aggiornato richiede una nuova generazione e una copia
+alterata resta rifiutata. Il PIN per il browser resta completo.
+
+Le vecchie AppImage riscrivevano i percorsi di due di queste librerie. Se il
+profilo usa ancora una loro copia, può essere necessaria una configurazione
+esplicita una sola volta con il provider ora condiviso; non vengono modificati
+automaticamente profili o permessi Snap. La correzione entra nei nuovi archivi
+quando l'AppImage viene rigenerata: non cambia i pacchetti già prodotti.
+
+Verifiche software del 26 ottobre: entrambi gli ordini di configurazione su
+profili Snap temporanei, quattro passaggi ripetuti per ordine senza nuove
+registrazioni NSS, rifiuto delle copie alterate e rilevamento degli aggiornamenti
+effettivi. Controllati anche Firefox standard e Chrome su
+profili sintetici. Le librerie x86_64 sono caricate sotto guardia senza
+inizializzare PKCS#11; per ARM64 sono verificati conservazione dei byte e ABI,
+senza eseguire il runtime. Browser reali, permessi Snap e CIE restano esclusi.
+
 ## Preparazione
 
 `linux/appimage/Dockerfile` descrive l'ambiente Ubuntu 22.04 fissato. È possibile
 usare Docker/Podman oppure un contenitore rootless equivalente a partire dallo
-stesso manifest OCI. Nei test locali vengono esposti soltanto sorgenti,
+stesso indice OCI fissato, selezionando `linux/amd64` oppure `linux/arm64`.
+Ogni AppImage contiene binari di una sola architettura. Nei test locali vengono esposti soltanto sorgenti,
 toolchain e file sintetici; nessun socket PC/SC, dispositivo USB o profilo reale.
 
 Nell'ambiente 22.04, con il Flutter Linux fissato dal progetto e due job:
@@ -92,6 +140,30 @@ python3 scripts/package_linux_appimage.py \
   --version 1.0.0 --output dist/linux-appimage
 ```
 
+Per ARM64 usare un ambiente Ubuntu 22.04 ARM64 nativo o emulato. La build
+Debian ARM64 precedente, basata su Ubuntu 24.04, non costituisce la base di
+questo AppImage: si ricompilano le librerie native contro la glibc 2.35.
+Con due job, usare `--arch aarch64` per le dipendenze,
+`--architectures aarch64` per `build_native.py`, il prefisso
+`.build/dependencies/linux-aarch64/prefix` e una JVM privata `linux-arm64`.
+Flutter produce `build/linux/arm64/release/bundle`. Il confezionamento nel
+sistema ARM64 usa:
+
+```sh
+python3 scripts/package_linux_appimage.py \
+  --bundle build/linux/arm64/release/bundle \
+  --runtime /percorso/runtime-aarch64 \
+  --version 1.0.0 --output dist/linux-appimage-arm64
+```
+
+Il risultato si chiama `firma-con-cie-1.0.0-aarch64.AppImage`; x86_64 mantiene
+`firma-con-cie-1.0.0-x86_64.AppImage`. Il packager riconosce la CPU dell’ambiente,
+verifica runtime AppImage e ogni ELF, seleziona i percorsi di sistema corretti
+e rifiuta un payload misto. La compatibilità di ABI è controllata anche sul
+modulo persistente dei browser; nei browser si mantiene il PIN completo.
+Chrome deve essere disponibile come browser nativo della stessa architettura:
+la guida non installa un browser e non ne garantisce la disponibilità su ARM64.
+
 Il file del runtime deve corrispondere al checksum fissato. Il confezionamento
 rifiuta ELF con requisiti glibc superiori a 2.35, librerie PC/SC/glibc incluse e
 file con architettura diversa. Sono esclusi programmi di test e dati utente.
@@ -108,7 +180,7 @@ rimuove la copia sorgente dopo la configurazione e controlla che il percorso
 registrato rimanga valido. Le prove bloccano PC/SC e usano HOME temporanee.
 
 Durante la preparazione i test non installano pacchetti sul computer né
-modificano browser reali. Sono stati superati i controlli runtime e ABI,
+modificano browser reali. Per x86_64 sono stati superati i controlli runtime e ABI,
 DSS/LTA, modulo persistente e avvio GUI su Xvfb nelle cinque basi indicate,
 oltre ai test Flutter, CTest nativi e runner GTK. I test in contenitore non
 equivalgono al collaudo di tutti i desktop Wayland, GNOME/KDE, driver GPU,
@@ -140,6 +212,7 @@ autenticate. I rapporti restano locali, esclusi dai sorgenti pubblicati.
 
 Restano separati i collaudi reali su altre distribuzioni e desktop, Firefox
 Snap dall'AppImage, cambio PIN e sblocco carta. La versione `1.0.0` è preparata per la prima release del progetto e copre
-x86_64. La pubblicazione è un passaggio successivo, insieme ai materiali di
+x86_64 e ARM64 con artefatti distinti. I collaudi reali riportati sopra
+riguardano x86_64; ARM64 richiede ancora hardware reale. La pubblicazione è un passaggio successivo, insieme ai materiali di
 distribuzione descritti in [LICENSING.md](LICENSING.md), inclusi i sorgenti
 corrispondenti delle dipendenze richiesti per il bundle effettivo.

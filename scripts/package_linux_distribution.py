@@ -100,7 +100,7 @@ Version: {version}
 Release: {release}
 Summary: Firma con CIE
 License: LicenseRef-FirmaConCIE-Bundled
-URL: https://github.com/gezza-dev/cie-id-desktop
+URL: https://github.com/gezza-dev/firma-con-cie
 Source0: payload.tar.gz
 Source1: files.list
 BuildArch: x86_64
@@ -130,6 +130,8 @@ cp -a opt usr "%{{buildroot}}/"
     built, = (top / 'RPMS/x86_64').glob('*.rpm')
     target = output / (ARTIFACT_STEM + built.name[len(PACKAGE):])
     shutil.copy2(built, target)
+    if run('rpm', '-qp', '--queryformat', '%{NAME}', target).stdout.strip() != PACKAGE:
+        raise ValueError('RPM manager identity differs from the product name')
     shutil.copy2(specpath, output / (PACKAGE + '.spec'))
     (output / 'requires.txt').write_text('\n'.join(requires) + '\n')
     return target, version + '-' + release
@@ -146,7 +148,7 @@ pkgver={version}
 pkgrel={pkgrel}
 pkgdesc='Firma con CIE'
 arch=('x86_64')
-url='https://github.com/gezza-dev/cie-id-desktop'
+url='https://github.com/gezza-dev/firma-con-cie'
 license=('LicenseRef-FirmaConCIE-Bundled')
 depends=({' '.join(repr(n) for n in depends)})
 optdepends=('ccid: CCID smart card reader driver')
@@ -167,6 +169,8 @@ package() {{
     built, = inputs.glob('*.pkg.tar.zst')
     target = output / (ARTIFACT_STEM + built.name[len(PACKAGE):])
     shutil.copy2(built, target)
+    if run('pacman', '-Qp', target).stdout.split()[0] != PACKAGE:
+        raise ValueError('Arch manager identity differs from the product name')
     shutil.copy2(inputs / 'PKGBUILD', output / 'PKGBUILD')
     (output / 'requires.txt').write_text('\n'.join(depends) + '\n')
     return target, version + '-' + pkgrel

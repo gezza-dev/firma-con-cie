@@ -17,6 +17,7 @@ import tempfile
 
 from ds_store import DSStore
 from build_paths import build_root
+from product_identity import macos_image_name
 
 # Finder stores absolute AppKit coordinates, with y increasing upwards.
 # A high y asks Finder to fit the window near the top of the opening display,
@@ -130,7 +131,9 @@ def main():
     if args.app is None or args.output is None:
         local_root = build_root(Path(__file__).resolve().parents[1])
         args.app = args.app or local_root / 'firma-con-cie/Firma con CIE.app'
-        args.output = args.output or local_root / 'Firma con CIE.dmg'
+        if args.output is None:
+            version = plistlib.loads((args.app / 'Contents/Info.plist').read_bytes())['CFBundleShortVersionString']
+            args.output = local_root / macos_image_name(version)
     if args.app.is_symlink() or args.app.name != 'Firma con CIE.app':
         raise ValueError('Provide a real signed Firma con CIE.app bundle')
     app, output = args.app.resolve(), args.output.absolute()
@@ -140,7 +143,7 @@ def main():
         raise ValueError('Output must be a DMG outside the source app')
     original = validate_app(app)
     output.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix='.cie-id-dmg-', dir=output.parent) as temporary:
+    with tempfile.TemporaryDirectory(prefix='.firma-con-cie-dmg-', dir=output.parent) as temporary:
         work = Path(temporary)
         stage = work / 'contents'
         stage.mkdir()

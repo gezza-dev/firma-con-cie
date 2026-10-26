@@ -1299,6 +1299,16 @@ class _PrototypeHomeState extends State<PrototypeHome>
       });
   Future<void> _drop(List<String> paths, {required bool verify}) async {
     if ((verify ? flow.busy || verifyFlow.exporting : busy)) return;
+    if (paths.isEmpty) {
+      setState(
+        () => error = {
+          'ok': false,
+          'message':
+              'Il documento trascinato non è disponibile. Usa «Seleziona un documento».',
+        },
+      );
+      return;
+    }
     if (paths.length != 1) {
       setState(
         () => error = {

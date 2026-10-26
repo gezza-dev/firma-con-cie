@@ -113,7 +113,7 @@ class PackageBoundaries(unittest.TestCase):
                 self.assertNotIn('tests/synthetic-test', packaged['files'])
                 self.assertEqual((stage / 'usr/bin/Firma con CIE').read_text(),
                                  '#!/bin/sh\nexec "/opt/firma-con-cie/Firma con CIE" "$@"\n')
-                self.assertTrue((stage / 'usr/share/doc/cie-id-desktop/BUILDING.md').is_file())
+                self.assertTrue((stage / 'usr/share/doc/firma-con-cie/BUILDING.md').is_file())
                 self.assertFalse(list(stage.glob('**/postinst')))
 
     def test_release_version_is_mandatory_before_creating_output(self):
@@ -121,6 +121,27 @@ class PackageBoundaries(unittest.TestCase):
             with self.subTest(version=version), self.assertRaises(ValueError):
                 distribution.package(self.bundle, self.root / 'out', 'rpm', version)
         self.assertFalse((self.root / 'out').exists())
+
+    def test_current_project_notice_replaces_stale_bundled_copy_only(self):
+        name = 'licenses/prototype-NOTICE.md'
+        original = self.native / name
+        original.parent.mkdir()
+        original.write_text('outdated project notice')
+        upstream = self.native / 'licenses/upstream-NOTICE.txt'
+        upstream.write_text('upstream attribution - preserve exactly')
+        for path in [original, upstream]:
+            self.manifest['files'][path.relative_to(self.native).as_posix()] = common.sha(path)
+        self.save()
+        source_hash = common.sha(self.native / 'backend-manifest.json')
+        stage = self.root / 'fresh-notice'
+        common.stage_payload(self.bundle, stage, self.manifest)
+        packaged = stage / common.PREFIX / 'cie_native'
+        manifest = json.loads((packaged/'backend-manifest.json').read_text())
+        self.assertEqual((packaged/name).read_bytes(), (common.ROOT/'NOTICE.md').read_bytes())
+        self.assertEqual(manifest['files'][name], common.sha(packaged/name))
+        self.assertEqual(manifest['packaging']['sourceManifestSha256'], source_hash)
+        self.assertEqual((packaged/'licenses/upstream-NOTICE.txt').read_bytes(), upstream.read_bytes())
+        self.assertEqual(original.read_text(), 'outdated project notice')
 
     def test_existing_or_nested_output_rejected(self):
         for output in [self.bundle / 'output', self.root]:

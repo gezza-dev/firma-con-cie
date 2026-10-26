@@ -13,6 +13,7 @@ from pathlib import Path, PurePosixPath
 import re
 import shutil
 import subprocess
+from product_identity import windows_installer_name
 
 ROOT = Path(__file__).resolve().parents[1]
 POLICY = ROOT / 'packaging/windows/release-policy.json'
@@ -155,9 +156,9 @@ def prepare(release, output, version, vc_redist, *, test_root=None):
     (work / 'release-audit.json').write_text(json.dumps(audit, indent=2) + '\n', encoding='utf-8')
     shutil.copy2(source_release / 'cie_native/backend-manifest.json', work / 'source-backend-manifest.json')
     web, counts = validate_release(release)
-    script = work / 'CIE-ID.iss'
-    shutil.copy2(ROOT / 'packaging/windows/CIE-ID.iss', script)
-    name = 'Firma-con-CIE-' + version + '-Windows-x64-Setup'
+    script = work / 'firma-con-cie.iss'
+    shutil.copy2(ROOT / 'packaging/windows/firma-con-cie.iss', script)
+    name = windows_installer_name(version)
     if test_root:
         name += '-ISOLATED-TEST'
     before = work / 'before.txt'
@@ -192,8 +193,8 @@ def prepare(release, output, version, vc_redist, *, test_root=None):
                     'native/platform/windows/pkcs11/CMakeLists.txt',
                     'lib/l10n/catalog.g.dart', 'windows/runner/web_setup.cpp',
                     'native/platform/windows/web/setup.cpp', 'native/platform/windows/web/setup_policy.h',
-                    'native/platform/windows/web/minidriver.cpp', 'packaging/windows/CIE-ID.iss',
-                    'scripts/package_windows_installer.py', 'packaging/windows/release-policy.json',
+                    'native/platform/windows/web/minidriver.cpp', 'packaging/windows/firma-con-cie.iss',
+                    'scripts/package_windows_installer.py', 'scripts/product_identity.py', 'packaging/windows/release-policy.json',
                     'packaging/windows/card-catalog.json', 'native/platform/windows/web/card_catalog.h',
                     'native/platform/windows/web/setup_catalog.h', 'native/platform/windows/web/setup_registry.h']
     manifest['sourceFileHashes'] = {name: sha(ROOT / name) for name in source_paths}

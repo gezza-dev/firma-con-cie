@@ -27,7 +27,7 @@ Con Segui il sistema, `ThemeMode.system` segue automaticamente l'impostazione ch
 
 ## Eseguibili
 
-Il prodotto è `CIE-ID.app` su macOS, `CIE-ID.exe` su Windows e `CIE-ID` su Linux. Il nome visibile resta **CIE ID**. Identificativi dei bundle, estensione CryptoTokenKit e spazi dei nomi degli archivi protetti rimangono invariati, così la rinomina non invalida gli abbinamenti.
+Il prodotto è `Firma con CIE.app` su macOS, `Firma con CIE.exe` su Windows e `Firma con CIE` su Linux. Il nome visibile è **Firma con CIE**. Identificativi dei bundle, estensione CryptoTokenKit e spazi dei nomi degli archivi protetti rimangono invariati, così la rinomina non invalida gli abbinamenti.
 
 ## Verifica
 

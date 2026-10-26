@@ -48,6 +48,14 @@ Le pagine Firma e Verifica accettano un solo file locale alla volta; cartelle e
 selezioni multiple sono rifiutate. Durante operazioni native o finestre modali
 il trascinamento è disabilitato. Scegliere un file non avvia firme o letture CIE.
 
+Su Linux il destinatario GTK preferisce `text/uri-list`; il trasferimento tramite
+portale resta disponibile quando la sorgente non offre percorsi URI. Lo stesso
+componente condiviso gestisce Firma e Verifica: riferimenti ripetuti allo
+stesso percorso contano come un solo documento. Quando il desktop non consegna
+un percorso utilizzabile, l'app suggerisce il pulsante di selezione e non
+mostra l'avviso riservato alle selezioni multiple. Una chiave temporanea del
+portale non viene trattata come nome di un file.
+
 Il percorso aggiornato e i limiti di collaudo sono descritti in [SIGNING_UX3.md](SIGNING_UX3.md).
 
 Il flusso di verifica e l’estrazione aggiornati sono descritti in [VERIFICATION_UX4.md](VERIFICATION_UX4.md).

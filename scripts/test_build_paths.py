@@ -24,7 +24,7 @@ class BuildPathTests(unittest.TestCase):
     def test_missing_configuration_uses_portable_default_without_writing(self):
         home = Path(self.temporary.name) / 'home'
         with patch.object(Path, 'home', return_value=home):
-            self.assertEqual(build_root(self.project), home / 'Developer/Builds/cie-id-desktop')
+            self.assertEqual(build_root(self.project), home / 'Developer/Builds/firma-con-cie')
         self.assertFalse(home.exists())
         self.assertFalse(self.config.exists())
 
@@ -43,7 +43,7 @@ class BuildPathTests(unittest.TestCase):
         other = Path(self.temporary.name) / 'other checkout'
         other.mkdir()
         self.assertEqual(build_root(self.project), Path.home() / 'first output')
-        self.assertEqual(build_root(other), Path.home() / 'Developer/Builds/cie-id-desktop')
+        self.assertEqual(build_root(other), Path.home() / 'Developer/Builds/firma-con-cie')
 
     def test_invalid_or_unexpected_configuration_is_rejected(self):
         for value in [None, [], {}, {'build_root': ''}, {'build_root': 1},

@@ -1,6 +1,6 @@
 # Pacchetto Linux .deb
 
-Il pacchetto locale `cie-id-desktop` contiene l'app Flutter e il runtime
+Il pacchetto locale `firma-con-cie` contiene l'app Flutter e il runtime
 nativo, con launcher e icone. Il primo assemblaggio è per Ubuntu 26.10 amd64.
 Dal test `.19` è disponibile anche un bundle ricompilato su Ubuntu 24.04 LTS,
 con il `.deb` verificato in Ubuntu 24.04 e Debian 13. Sono disponibili anche
@@ -24,7 +24,11 @@ rimane separato. [Preparazione e collaudi ARM64](LINUX_ARM64.md).
 
 I file `.deb` usano il nome pubblico `firma-con-cie`, per esempio
 `firma-con-cie_1.0.0_arm64.deb`. L’identificativo interno del pacchetto è
-`cie-id-desktop`, usato da APT/dpkg per gestire gli aggiornamenti.
+`firma-con-cie`, usato da APT/dpkg per gestire gli aggiornamenti.
+La prima installazione con questo identificativo è pulita: rimuovere dal
+gestore pacchetti l'eventuale precedente versione dell'app prima di installare
+il nuovo file. Non sono previsti alias o metadati di migrazione. La rimozione
+ordinaria non cancella abbinamenti, preferenze o documenti personali.
 
 ## Assemblaggio senza installazione
 
@@ -57,7 +61,7 @@ sudo apt install ./firma-con-cie_1.0.0_amd64.deb
   file `.desktop` in `/usr/share/applications`.
 - Icone statiche chiare: `/usr/share/icons/hicolor`, da 16 a 1024 pixel.
   Le varianti scure restano nei sorgenti; il launcher non cambia icona con il tema.
-- Avvisi e documentazione: `/usr/share/doc/cie-id-desktop` e
+- Avvisi e documentazione: `/usr/share/doc/firma-con-cie` e
   `/opt/firma-con-cie/cie_native/licenses`.
 
 La documentazione inclusa comprende anche `STATUS.md` e
@@ -68,7 +72,7 @@ confronta questi due documenti con i sorgenti correnti.
 L'installer non avvia app o browser, non configura moduli, non modifica permessi
 Snap e non legge o cancella gli abbinamenti. Le cache di sistema del menu/icone
 sono gestite dai normali trigger della distribuzione. Rimuovere il pacchetto con
-`sudo apt remove cie-id-desktop`; i dati personali dell'utente restano presenti.
+`sudo apt remove firma-con-cie`; i dati personali dell'utente restano presenti.
 Il collaudo automatico usa un database dpkg separato senza installare sull'host;
 la verifica visiva del menu e dell'icona resta un passaggio manuale.
 
@@ -111,11 +115,11 @@ KDE della finestra aggiornata e i cambi di monitor restano prove distinte.
 
 ## Cambio della cartella dell’app
 
-I nuovi pacchetti usano `/opt/firma-con-cie`. Il nome tecnico del pacchetto
-resta `cie-id-desktop`, quindi apt/dpkg eseguono un aggiornamento dello stesso
-pacchetto. I vecchi file di proprietà del pacchetto vengono rimossi dal
-precedente percorso; non si creano collegamenti di compatibilità. Abbinamenti,
-impostazioni e immagini dell’utente conservano i percorsi precedenti nella home.
+I pacchetti usano `/opt/firma-con-cie` e l'identificativo `firma-con-cie`.
+Gli aggiornamenti successivi della stessa identità sono gestiti da apt/dpkg;
+una precedente distribuzione con identità diversa va prima disinstallata.
+Non si creano collegamenti di compatibilità. Abbinamenti, impostazioni e
+immagini dell’utente conservano i percorsi precedenti nella home.
 L’installer non cancella o riconfigura alcun profilo browser: i moduli che
 puntavano alla vecchia cartella richiedono una nuova configurazione dell’utente.
 
@@ -146,7 +150,7 @@ Il riquadro compare solo nella Home quando la configurazione richiede attenzione
 Nessuna delle due procedure è presente nella pagina Impostazioni.
 Il pacchetto include l’helper Chrome e la stessa guardia PC/SC di Firefox;
 l’installer non modifica browser. Resta disponibile l’alternativa da terminale in
-`/usr/share/doc/cie-id-desktop/tools/configure_chrome_linux.py`: senza opzioni
+`/usr/share/doc/firma-con-cie/tools/configure_chrome_linux.py`: senza opzioni
 mostra soltanto il piano. L'installer non la esegue. Dopo l'installazione del
 pacchetto `0.1.0~test20261023.2` e la registrazione esplicita, l'utente ha
 confermato il 23 ottobre 2026 il login reale Chrome Linux riuscito con PIN

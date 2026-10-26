@@ -9,6 +9,9 @@
 #include <cctype>
 #include <cstring>
 #include "NetworkConfig.h"
+#ifdef __linux__
+#include "LinuxTlsTrust.h"
+#endif
 #ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -149,6 +152,13 @@ HttpResponse httpRequest(const std::string& url, const std::vector<unsigned char
     }
     Buffer output{{}, maximumBytes};
     auto set = [&](CURLoption option, auto value) { return curl_easy_setopt(handle.get(), option, value) == CURLE_OK; };
+#ifdef __linux__
+    const auto trust = linuxTlsTrust();
+    const char* caFile = trust.file.empty() ? nullptr : trust.file.c_str();
+    const char* caDirectory = trust.directory.empty() ? nullptr : trust.directory.c_str();
+    if (!set(CURLOPT_CAINFO, caFile) || !set(CURLOPT_CAPATH, caDirectory) ||
+        !set(CURLOPT_PROXY_CAINFO, caFile) || !set(CURLOPT_PROXY_CAPATH, caDirectory)) return result;
+#endif
     if (!set(CURLOPT_URL, url.c_str()) || !set(CURLOPT_SSL_VERIFYPEER, 1L) ||
         !set(CURLOPT_SSL_VERIFYHOST, 2L) || !set(CURLOPT_SSL_OPTIONS, long(CURLSSLOPT_NATIVE_CA)) ||
         !set(CURLOPT_SSLVERSION, long(CURL_SSLVERSION_TLSv1_2)) ||

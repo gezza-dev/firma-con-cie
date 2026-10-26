@@ -22,14 +22,14 @@ mentre il disegno interno resta raster.
 - `source/selected-proposal-B.png`: proposta selezionata, conservata come
   riferimento visivo; non è la risorsa usata dai runner.
 - `source/document-signature.png`: documento, pennino e firma su trasparenza.
-- `source/CIE-ID-light.svg` e `source/CIE-ID-dark.svg`: composizioni complete.
-- `master/CIE-ID-light.png` e `master/CIE-ID-dark.png`: master a 1024 px.
+- `source/firma-con-cie-light.svg` e `source/firma-con-cie-dark.svg`: composizioni complete.
+- `master/firma-con-cie-light.png` e `master/firma-con-cie-dark.png`: master a 1024 px.
 - **macOS:** `macos/AppIcon.icon`, catalogo nativo con simbolo e basi separati,
   copiato anche in `macos/Runner/AppIcon.icon`. Le varianti chiara e scura
   sono associate alle apparenze del sistema. ICNS e iconset da 16 a 1024 px
   sono in `macos/light` e `macos/dark`. Il catalogo PNG del runner è aggiornato
   per la compatibilità; vetro e traslucenza dei livelli sono disabilitati.
-- **Windows:** `windows/light/CIE-ID.ico` e `windows/dark/CIE-ID.ico`, ciascuno
+- **Windows:** `windows/light/firma-con-cie.ico` e `windows/dark/firma-con-cie.ico`, ciascuno
   con immagini da 16, 20, 24, 32, 40, 48, 64, 128 e 256 px. La risorsa
   `windows/runner/resources/app_icon.ico` dell’eseguibile usa il tema chiaro.
 - **Linux:** PNG da 16, 24, 32, 48, 64, 128, 256, 512 e 1024 px nelle cartelle
@@ -38,8 +38,8 @@ mentre il disegno interno resta raster.
   mantiene il suo application ID, anche su Wayland. La build e il pacchetto
   `.deb` includono icone e launcher; [procedura Linux](../../docs/LINUX_PACKAGE.md).
 
-I percorsi generici `CIE-ID.png`, `CIE-ID.icns` e `CIE-ID.ico` mantengono il
-nome precedente e puntano al nuovo disegno nella variante chiara.
+I percorsi generici `firma-con-cie.png`, `firma-con-cie.icns` e `firma-con-cie.ico`
+usano il nome attuale dell'app e il disegno nella variante chiara.
 
 ## Selezione del tema
 
@@ -65,7 +65,7 @@ python scripts/generate_app_icons.py
 
 Lo script usa i master PNG già presenti, aggiorna i formati nativi e le
 risorse dei runner, registra SHA-256 in `manifest.json` e crea l’archivio
-`dist/branding/CIE-ID-icons.zip`. Non richiede credenziali né nuove
+`dist/branding/firma-con-cie-icons.zip`. Non richiede credenziali né nuove
 operazioni di generazione con l’AI.
 
 Per ricreare anche i master PNG dalle composizioni SVG su macOS:

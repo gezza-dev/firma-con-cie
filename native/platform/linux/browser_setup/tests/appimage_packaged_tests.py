@@ -8,6 +8,71 @@ from pathlib import Path
 import shutil
 import subprocess
 import tempfile
+import hashlib
+
+
+def check_snap_interoperability(appdir,native_runtime,guard):
+    if not Path('/work/.cie-appimage-isolated-root').is_file() or Path('/run/pcscd/pcscd.comm').exists():
+        raise RuntimeError('Private build-root test only')
+    import sys
+    sys.path.insert(0,str(appdir/'usr/lib/firma-con-cie/cie_native/browser_setup'))
+    from firefox_setup import FirefoxSetup,LIBRARIES,NAME,SetupError,records
+    from appimage_setup import AppImageFirefox
+    app=appdir/'usr/lib/firma-con-cie';runtime=app/'cie_native'
+    sha=lambda path:hashlib.sha256(path.read_bytes()).hexdigest()
+    expected={name:sha(native_runtime/name) for name in LIBRARIES}
+    assert expected=={name:sha(runtime/name) for name in LIBRARIES}
+    os.umask(0o077)
+    results=[]
+    for appimage_first in [False,True]:
+        with tempfile.TemporaryDirectory(prefix='snap-interop-') as temp:
+            home=Path(temp);proc=home/'proc';proc.mkdir()
+            root=home/'snap/firefox/common/.mozilla/firefox';profile=root/'synthetic';profile.mkdir(parents=True)
+            (root/'profiles.ini').write_text('[Profile0]\nName=Synthetic Snap\nIsRelative=1\nPath=synthetic\n')
+            (profile/'cert9.db').write_bytes(b'synthetic certificates, never initialize')
+            (profile/'key4.db').write_bytes(b'synthetic keys, never initialize')
+            foreign=b'library=\nname=NSS Internal PKCS #11 Module\nNSS=Flags=internal,critical\n\nlibrary=/foreign/never-loaded.so\nname=Foreign provider\n\n'
+            (profile/'pkcs11.txt').write_bytes(foreign)
+            commands=[]
+            modutil=str(app/'tools/modutil')
+            def run(command,**kwargs):
+                if command[:2]==['/usr/bin/snap','connections']:
+                    return subprocess.CompletedProcess(command,0,'Interface Plug Slot Notes\npcscd firefox:pcscd :pcscd manual\n','')
+                assert command[0]==modutil,command
+                commands.append(command)
+                return subprocess.run(command,**kwargs)
+            native=FirefoxSetup(home,native_runtime,proc=proc,modutil=modutil,run=run)
+            portable=AppImageFirefox(home,runtime,proc=proc,modutil=modutil,run=run)
+            first,second=(portable,native) if appimage_first else (native,portable)
+            identity=first.profiles()[0]['id']
+            plan=first.plan(identity);assert not plan['alreadyConfigured']
+            first.apply(identity,plan['fingerprint'])
+            snapshot=lambda:{str(p.relative_to(home)):sha(p) for p in home.rglob('*') if p.is_file()}
+            before=snapshot()
+            for service in [second,first,second,first]:
+                current=service.plan(identity)
+                assert current['alreadyConfigured'] and current['library']==plan['library']
+                assert service.inspect()['profiles'][0]['state']=='configured'
+                service.apply(identity,current['fingerprint'])
+            assert before==snapshot() and len(commands)==1
+            assert (profile/'pkcs11.txt').read_bytes().startswith(foreign)
+            own=[entry for entry in records((profile/'pkcs11.txt').read_bytes()) if entry['name']==NAME]
+            assert len(own)==1 and own[0]['library']==plan['library']
+            for name in LIBRARIES:assert sha(Path(plan['library']).parent/name)==expected[name]
+            linked=subprocess.check_output(['ldd',plan['library']],text=True)
+            assert 'not found' not in linked and str(appdir) not in linked
+            # Load only: no PKCS#11 initialization or CIE operation.
+            subprocess.run(['/usr/bin/python3','-c','import ctypes,sys;ctypes.CDLL(sys.argv[1])',plan['library']],
+                           env=dict(os.environ,HOME=str(home),LD_PRELOAD=str(guard)),check=True)
+            Path(plan['library']).write_bytes(b'tampered synthetic copy')
+            for service in [native,portable]:
+                try:service.plan(identity)
+                except SetupError:pass
+                else:raise AssertionError('Corrupted Snap copy was accepted')
+            results.append(dict(first='appimage' if appimage_first else 'native',nssRegistrations=len(commands),
+                                repeatedSwitches=4,profileUnchangedAfterSwitches=True,corruptionRejected=True))
+    return dict(passed=True,realNssUsed=True,matchingProviderBytes=True,orders=results,
+                realBrowserConfigurationModified=False,snapPermissionsModified=False,realCardTestsRun=False)
 
 def check(appdir,guard):
     if not Path('/work/.cie-appimage-isolated-root').is_file() or Path('/run/pcscd/pcscd.comm').exists():
@@ -64,4 +129,7 @@ def check(appdir,guard):
             hostPcscLinked=True,fullPinOnly=True,realBrowserConfigurationModified=False,realCardTestsRun=False)
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--appdir',type=Path,required=True);p.add_argument('--guard',type=Path,required=True);p.add_argument('--report',type=Path,required=True)
-    a=p.parse_args();value=check(a.appdir,a.guard);a.report.write_text(json.dumps(value,indent=2)+'\n');print(json.dumps(value,indent=2))
+    p.add_argument('--snap-native-runtime',type=Path)
+    a=p.parse_args()
+    value=check_snap_interoperability(a.appdir,a.snap_native_runtime,a.guard) if a.snap_native_runtime else check(a.appdir,a.guard)
+    a.report.write_text(json.dumps(value,indent=2)+'\n');print(json.dumps(value,indent=2))

@@ -49,8 +49,8 @@ def write_sources(config):
         flat = svg(
             f'<rect width="{size}" height="{size}" rx="{config["cornerRadius"]}" fill="{color}"/>\n'
             f'<g transform="translate({margin} {margin}) scale({scale})">\n{body}\n</g>', size)
-        (ASSETS / f'source/CIE-ID-{theme}.svg').write_text(flat, encoding='utf-8')
-    shutil.copyfile(ASSETS / f'source/CIE-ID-{config["default"]}.svg', ASSETS / 'source/CIE-ID.svg')
+        (ASSETS / f'source/firma-con-cie-{theme}.svg').write_text(flat, encoding='utf-8')
+    shutil.copyfile(ASSETS / f'source/firma-con-cie-{config["default"]}.svg', ASSETS / 'source/firma-con-cie.svg')
     light, dark = config['themes']['light'], config['themes']['dark']
     def variants(prefix):
         return [{'value': f'{prefix}-light.svg'}] + [
@@ -75,7 +75,7 @@ def write_sources(config):
         'supported-platforms': {'squares': ['macOS']}}
     (native / 'icon.json').write_text(json.dumps(document, indent=2) + '\n')
     # Retire script-owned resources of the former official-derived logo.
-    for name in ('Black.svg', 'CIE-ID-circle.png', 'Circle-light.svg', 'Circle-dark.svg'):
+    for name in ('Black.svg', 'firma-con-cie-circle.png', 'Circle-light.svg', 'Circle-dark.svg'):
         (native_assets / name).unlink(missing_ok=True)
     return native
 
@@ -90,20 +90,20 @@ def main():
     outputs = [ASSETS / 'themes.json']
     masters = {}
     for theme in config['themes']:
-        target = ASSETS / f'master/CIE-ID-{theme}.png'
+        target = ASSETS / f'master/firma-con-cie-{theme}.png'
         if args.render_source:
             if not shutil.which('sips'):
                 raise SystemExit('--render-source requires macOS sips; use committed PNGs elsewhere')
             subprocess.run(['sips', '-s', 'format', 'png',
-                            str(ASSETS / f'source/CIE-ID-{theme}.svg'), '--out', str(target)],
+                            str(ASSETS / f'source/firma-con-cie-{theme}.svg'), '--out', str(target)],
                            check=True)
         masters[theme] = Image.open(target).convert('RGBA')
         if masters[theme].size != (1024, 1024):
             raise SystemExit('Expected 1024 × 1024 masters')
         outputs.append(target)
     default = config['default']
-    shutil.copyfile(ASSETS / f'master/CIE-ID-{default}.png', ASSETS / 'master/CIE-ID.png')
-    outputs.append(ASSETS / 'master/CIE-ID.png')
+    shutil.copyfile(ASSETS / f'master/firma-con-cie-{default}.png', ASSETS / 'master/firma-con-cie.png')
+    outputs.append(ASSETS / 'master/firma-con-cie.png')
 
     def png(path, size, theme=default):
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -112,19 +112,19 @@ def main():
 
     # Explicit export sets for both appearances on all three platforms.
     for theme, master in masters.items():
-        iconset = ASSETS / f'macos/{theme}/CIE-ID.iconset'
+        iconset = ASSETS / f'macos/{theme}/firma-con-cie.iconset'
         for logical in (16, 32, 128, 256, 512):
             for scale in (1, 2):
                 suffix = '@2x' if scale == 2 else ''
                 png(iconset / f'icon_{logical}x{logical}{suffix}.png', logical * scale, theme)
-        icns = ASSETS / f'macos/{theme}/CIE-ID.icns'
+        icns = ASSETS / f'macos/{theme}/firma-con-cie.icns'
         if shutil.which('iconutil'):
             subprocess.run(['iconutil', '--convert', 'icns', str(iconset),
                             '--output', str(icns)], check=True)
         else:
             master.save(icns, format='ICNS')
         outputs.append(icns)
-        ico = ASSETS / f'windows/{theme}/CIE-ID.ico'
+        ico = ASSETS / f'windows/{theme}/firma-con-cie.ico'
         ico.parent.mkdir(parents=True, exist_ok=True)
         master.save(ico, format='ICO', sizes=[(n, n) for n in ICO_SIZES])
         outputs.append(ico)
@@ -134,15 +134,15 @@ def main():
     # Compatibility paths and runners default to light; macOS uses the native
     # document's appearance selection. EXE/desktop launchers have static icons.
     for source, destination in [
-        (ASSETS / f'macos/{default}/CIE-ID.icns', ASSETS / 'macos/CIE-ID.icns'),
-        (ASSETS / f'windows/{default}/CIE-ID.ico', ASSETS / 'windows/CIE-ID.ico'),
-        (ASSETS / f'windows/{default}/CIE-ID.ico', ROOT / 'windows/runner/resources/app_icon.ico')]:
+        (ASSETS / f'macos/{default}/firma-con-cie.icns', ASSETS / 'macos/firma-con-cie.icns'),
+        (ASSETS / f'windows/{default}/firma-con-cie.ico', ASSETS / 'windows/firma-con-cie.ico'),
+        (ASSETS / f'windows/{default}/firma-con-cie.ico', ROOT / 'windows/runner/resources/app_icon.ico')]:
         shutil.copyfile(source, destination)
         outputs.append(destination)
     for logical in (16, 32, 128, 256, 512):
         for scale in (1, 2):
             suffix = '@2x' if scale == 2 else ''
-            png(ASSETS / f'macos/CIE-ID.iconset/icon_{logical}x{logical}{suffix}.png',
+            png(ASSETS / f'macos/firma-con-cie.iconset/icon_{logical}x{logical}{suffix}.png',
                 logical * scale)
     for size in (16, 32, 64, 128, 256, 512, 1024):
         png(ROOT / f'macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_{size}.png', size)
@@ -153,7 +153,7 @@ def main():
     packaged = ASSETS / 'macos/AppIcon.icon'
     shutil.copytree(native, packaged, dirs_exist_ok=True,
                     ignore=shutil.ignore_patterns('.DS_Store'))
-    for name in ('Black.svg', 'CIE-ID-circle.png', 'Circle-light.svg', 'Circle-dark.svg'):
+    for name in ('Black.svg', 'firma-con-cie-circle.png', 'Circle-light.svg', 'Circle-dark.svg'):
         (packaged / 'Assets' / name).unlink(missing_ok=True)
     outputs.extend(p for p in native.rglob('*') if p.is_file() and p.name != '.DS_Store')
     outputs.extend(p for p in packaged.rglob('*') if p.is_file() and p.name != '.DS_Store')
@@ -178,12 +178,12 @@ def main():
     manifest = {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest()
                 for path in sorted(set(outputs))}
     (ASSETS / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
-    archive = ROOT / 'dist/branding/CIE-ID-icons.zip'
+    archive = ROOT / 'dist/branding/firma-con-cie-icons.zip'
     archive.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(archive, 'w', compression=zipfile.ZIP_DEFLATED) as bundle:
         for path in sorted(ASSETS.rglob('*')):
             if path.is_file() and path.name != '.DS_Store':
-                bundle.write(path, Path('CIE-ID-icons') / path.relative_to(ASSETS))
+                bundle.write(path, Path('firma-con-cie-icons') / path.relative_to(ASSETS))
     print(f'Exported {len(manifest)} icon resources; archive: {archive}')
 
 

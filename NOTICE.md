@@ -1,16 +1,16 @@
-# Avvisi di CIE ID Desktop
+# Avvisi di Firma con CIE
 
-Repository: https://github.com/gezza-dev/cie-id-desktop.
+Repository: https://github.com/gezza-dev/firma-con-cie.
 Per l'ambito attuale delle licenze e i materiali necessari a una futura
 distribuzione binaria vedere `docs/LICENSING.md` e `LICENSES/README.md`.
 Gli audit inclusi in `native/backend` descrivono anche lo snapshot storico
-di provenienza; non attestano che una release di CIE ID Desktop sia già pubblicata.
+di provenienza; non attestano che una release di Firma con CIE sia già pubblicata.
 
 ## Icona dell'applicazione
 
 Le icone in `assets/branding`, nel catalogo macOS, nelle risorse Windows e
 in `linux/resources` usano il nuovo disegno documento e pennino selezionato
-per CIE ID Desktop, generato con OpenAI image_gen. Le basi chiara e scura
+per Firma con CIE, generato con OpenAI image_gen. Le basi chiara e scura
 riprendono gli sfondi della GUI. Il precedente logo derivato da CIE ID
 Universal/IPZS non è usato per l’icona dell’applicazione.
 Termini in `assets/branding/LICENSE.txt`; provenienza, prompt e ricetta di

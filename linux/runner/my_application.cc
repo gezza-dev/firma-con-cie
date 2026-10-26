@@ -2,6 +2,7 @@
 #include "text_scaling.h"
 #include "window_sizing.h"
 #include "window_chrome.h"
+#include "document_drop.h"
 
 #include <flutter_linux/flutter_linux.h>
 #ifdef GDK_WINDOWING_X11
@@ -114,6 +115,7 @@ static void my_application_activate(GApplication* application) {
   gtk_widget_realize(GTK_WIDGET(view));
 
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
+  cie_document_drop_prioritize_paths(GTK_WIDGET(view));
 
   // GTK resolves the desktop's logical font DPI independently of display DPI.
   // Keep the channel alive for the view and stop its settings observer on exit.

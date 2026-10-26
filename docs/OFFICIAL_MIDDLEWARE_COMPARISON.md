@@ -137,7 +137,7 @@ dal nostro progetto e verificarne provenienza/integrità.
 Fonti: ufficiali [CIEMiddleware.nsi](https://github.com/italia/cie-middleware/blob/8dd385e9b867c98fa099df689e427cfd6cb06d44/Setup/CIEMiddleware.nsi),
 `Setup/UpdateTask.xml` e
 [update.cpp](https://github.com/italia/cie-middleware/blob/8dd385e9b867c98fa099df689e427cfd6cb06d44/CSP/CSP/update.cpp);
-nostro [CIE-ID.iss](../packaging/windows/CIE-ID.iss).
+nostro [firma-con-cie.iss](../packaging/windows/firma-con-cie.iss).
 
 ## Controlli e funzioni riscontrati
 

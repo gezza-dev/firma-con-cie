@@ -151,11 +151,10 @@ def main():
     check(not install.exists(), 'preflight failure copied the application')
     before_text = (q / 'v1/build/before.txt').read_text(encoding='utf-8-sig')
     check('No reader, CIE or PIN is needed' in before_text, 'installer still requests a card')
-    check('ComponentMissing' not in (q / 'v1/build/CIE-ID.iss').read_text(encoding='utf-8-sig'), 'card-required message remains')
+    check('ComponentMissing' not in (q / 'v1/build/firma-con-cie.iss').read_text(encoding='utf-8-sig'), 'card-required message remains')
     run('install', install_args(first['installer'], 'install'))
     check((install / 'Firma con CIE.exe').read_bytes() == (release / 'Firma con CIE.exe').read_bytes(), 'fresh install file')
     # Model an installed release from before the public-name change.
-    (install / 'CIE-ID.exe').write_bytes(b'legacy app executable')
     check(all(not (install / name).exists() for name in audit['excludedFiles']), 'fresh install contains test files')
     # Simulate files left by the previous full development installer.
     for name in audit['excludedFiles']:
@@ -176,7 +175,6 @@ def main():
     check(all(not (install / name).exists() for name in audit['excludedFiles']), 'upgrade left known test files')
     check(unknown_test.read_bytes() == b'preserve unknown test-folder file', 'upgrade removed unknown test-folder file')
     check((install / 'Firma con CIE.exe').read_bytes() == b'new synthetic executable', 'upgrade did not replace app')
-    check(not (install / 'CIE-ID.exe').exists(), 'upgrade left the legacy executable')
     check(unknown.read_bytes() == b'preserve unknown file', 'upgrade removed unknown file')
     run('repair', install_args(second['installer'], 'repair'))
     uninstaller = install / 'uninstall/unins000.exe'

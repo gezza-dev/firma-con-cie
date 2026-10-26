@@ -10,10 +10,10 @@ import shutil
 import stat
 import subprocess
 from ltv_runtime import runtime_architecture
+from product_identity import PACKAGE_NAME, ARTIFACT_STEM
 
 ROOT = Path(__file__).resolve().parents[1]
-PACKAGE = 'cie-id-desktop'
-ARTIFACT_STEM = 'firma-con-cie'
+PACKAGE = PACKAGE_NAME
 APP_ID = 'it.giancarloezza.prototype.cie_flutter_prototype'
 PREFIX = Path('opt/firma-con-cie')
 
@@ -88,6 +88,12 @@ def stage_payload(bundle, stage, native_manifest, package_type="deb"):
     packaged = dict(native_manifest)
     packaged['files'] = {k: v for k, v in native_manifest['files'].items()
                          if 'tests' not in PurePosixPath(k).parts}
+    # Project notices belong to the current package, including when reusing
+    # verified native binaries. Preserve upstream notices and input provenance.
+    notice = 'licenses/prototype-NOTICE.md'
+    if notice in packaged['files']:
+        shutil.copy2(ROOT / 'NOTICE.md', app / 'cie_native' / notice)
+        packaged['files'][notice] = sha(app / 'cie_native' / notice)
     packaged['packaging'] = {'type': package_type, 'testProgramsIncluded': False,
                              'sourceManifestSha256': sha(bundle / 'cie_native/backend-manifest.json')}
     (app / 'cie_native/backend-manifest.json').write_text(json.dumps(packaged, indent=2) + '\n')

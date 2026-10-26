@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'dart:io';
 
 const appVersion = '1.0.0';
-const _repository = 'gezza-dev/cie-id-desktop';
+const _repository = 'gezza-dev/firma-con-cie';
 final releaseEndpoint = Uri.https(
   'api.github.com',
   '/repos/$_repository/releases/latest',
@@ -82,7 +82,7 @@ Future<AppUpdate> checkAppUpdates() async {
       );
       request.headers.set(
         HttpHeaders.userAgentHeader,
-        'CIE-ID-Desktop/$appVersion',
+        'Firma-con-CIE/$appVersion',
       );
       final response = await request.close();
       final bytes = <int>[];

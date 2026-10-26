@@ -9,7 +9,7 @@ def build_root(project_root):
     """Read the optional, Git-ignored local-build.json; never create folders."""
     config = Path(project_root) / 'local-build.json'
     if not config.exists():
-        return Path.home() / 'Developer/Builds/cie-id-desktop'
+        return Path.home() / 'Developer/Builds/firma-con-cie'
     settings = json.loads(config.read_text(encoding='utf-8'))
     if not isinstance(settings, dict) or set(settings) != {'build_root'}:
         raise ValueError('local-build.json must contain only build_root')

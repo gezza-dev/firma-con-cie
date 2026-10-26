@@ -1,6 +1,21 @@
 # Preparazione del repository GitHub
 
-Repository: [gezza-dev/cie-id-desktop](https://github.com/gezza-dev/cie-id-desktop), inizialmente **privato**.
+Repository: [gezza-dev/firma-con-cie](https://github.com/gezza-dev/firma-con-cie), inizialmente **privato**.
+
+Per aggiornare un checkout esistente dopo la rinomina, senza spostare cartelle
+locali o cambiare i file di lavoro:
+
+```sh
+git remote set-url origin https://github.com/gezza-dev/firma-con-cie.git
+git remote -v
+git config --get-all remote.origin.pushurl
+git ls-remote origin refs/heads/main
+```
+
+Se è configurato un `pushurl` separato, aggiornarlo con
+`git remote set-url --push origin https://github.com/gezza-dev/firma-con-cie.git`
+e verificare di nuovo entrambe le destinazioni. Non occorre rinominare il
+checkout locale. Questi comandi non cambiano la visibilità del repository.
 
 Descrizione:
 
@@ -24,13 +39,13 @@ Il controllo legge **l’indice Git**, cioè i contenuti effettivamente preparat
 git status --short
 git add .
 python3 scripts/check_repository.py --report reports/repository-readiness.json
-python3 scripts/prepare_repository.py --output dist/cie-id-desktop-sources.zip
+python3 scripts/prepare_repository.py --output dist/firma-con-cie-sources.zip
 git diff --cached --stat
 ```
 
 Il controllo verifica esclusioni, alcuni formati di credenziali, licenze richieste, copertura dei pacchetti Dart e JAR, hash dei testi Java e link della documentazione principale. Non sostituisce la lettura dei file e non garantisce di individuare ogni dato personale o segreto. Un file già tracciato non viene escluso retroattivamente dal solo `.gitignore`.
 
-Lo ZIP contiene soltanto i blob dell’indice, un manifest SHA-256 e il rapporto di verifica. Non contiene `.git`, configurazioni locali o vecchi oggetti Git; non è un installer né il pacchetto completo di sorgenti corrispondenti a una futura release binaria. L’output ZIP rimane locale e non viene aggiunto al commit.
+Lo ZIP contiene soltanto i blob dell’indice sotto la cartella `firma-con-cie/`, un manifest SHA-256 e il rapporto di verifica. Non contiene `.git`, configurazioni locali o vecchi oggetti Git; non è un installer né il pacchetto completo di sorgenti corrispondenti a una futura release binaria. L’output ZIP rimane locale e non viene aggiunto al commit.
 
 ## Caricamento
 
@@ -38,7 +53,7 @@ Verificare che il repository remoto sia ancora privato e che il remote sia quell
 
 ```sh
 git remote -v
-gh repo view gezza-dev/cie-id-desktop --json nameWithOwner,isPrivate
+gh repo view gezza-dev/firma-con-cie --json nameWithOwner,isPrivate
 git push -u origin main
 ```
 
@@ -47,3 +62,21 @@ Questi comandi non cambiano la visibilità in pubblico. La preparazione dello sn
 Le workflow CI sono predisposte ad avvio manuale tramite Actions. Non vengono lanciate automaticamente compilazioni complete a ogni push. Non includono CIE, PIN, chiavi di firma o notarizzazione e non rappresentano un collaudo hardware.
 
 Per rendere pubblico il repository o distribuire binari eseguire una verifica distinta dei materiali: vedere [LICENSING.md](LICENSING.md), [BUILDING.md](BUILDING.md) e [STATUS.md](STATUS.md).
+
+## Download e ricerca aggiornamenti
+
+I download appartengono alla pagina
+[Release](https://github.com/gezza-dev/firma-con-cie/releases); il collegamento
+all’[ultima release stabile](https://github.com/gezza-dev/firma-con-cie/releases/latest)
+non incorpora un numero di versione. Al controllo del 26 ottobre 2026 il
+repository è privato e non contiene release: non sono ancora disponibili
+pacchetti pubblicati.
+
+La ricerca manuale nell’app consulta
+`https://api.github.com/repos/gezza-dev/firma-con-cie/releases/latest`, con
+User-Agent `Firma-con-CIE/<versione>`. Accetta soltanto release stabili e link
+HTTPS delle release di questo repository, senza redirect automatici, token,
+download o esecuzione di pacchetti. Finché manca una release accessibile senza
+autenticazione, segnala correttamente l’indisponibilità della verifica.
+I nuovi link saranno presenti nell’app installata dopo la ricompilazione;
+aggiornare i sorgenti o il remote non modifica i binari già compilati.

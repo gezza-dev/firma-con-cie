@@ -7,7 +7,7 @@ project(cie_flutter_prototype LANGUAGES CXX)
 set(BINARY_NAME "Firma con CIE")
 set(APP_EXECUTABLE_NAME "${BINARY_NAME}")
 # Keep an internal target without spaces for generated Flutter plugin rules.
-set(BINARY_NAME "CIE-ID")
+set(BINARY_NAME "firma-con-cie")
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent
 # versions of CMake.

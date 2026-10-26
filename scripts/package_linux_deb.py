@@ -73,7 +73,7 @@ def package(bundle, output, version):
             'Maintainer: Gian Carlo Ezza <61827135+gezza-dev@users.noreply.github.com>\n'
             f'Installed-Size: {installed_size}\nDepends: {dep}\nRecommends: libccid\n'
             'Section: utils\nPriority: optional\n'
-            'Homepage: https://github.com/gezza-dev/cie-id-desktop\n'
+            'Homepage: https://github.com/gezza-dev/firma-con-cie\n'
             'Description: Firma con CIE\n'
             ' Independent desktop application for Italian CIE cards and document signing.\n'
             ' Includes the full-PIN Firefox/desktop Chrome PKCS#11 provider.\n'
@@ -96,6 +96,8 @@ def package(bundle, output, version):
         built = subprocess.run(['dpkg-deb', '--root-owner-group', '-Zxz', '-z6',
                                 '--threads-max=2', '--build', str(stage), str(target)],
                                env=environment, capture_output=True, text=True, check=True)
+        if run('dpkg-deb', '-f', target, 'Package').stdout.strip() != PACKAGE:
+            raise ValueError('DEB manager identity differs from the product name')
         metadata = {'package': PACKAGE, 'version': version, 'architecture': arch,
                     'file': target.name, 'sha256': sha(target), 'bytes': target.stat().st_size,
                     'baseCommit': commit, 'workingTreeModified': dirty,

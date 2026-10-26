@@ -2,7 +2,7 @@
 
 ## Stato corrente
 
-La sintesi aggiornata per CIE ID Desktop è in [STATUS.md](STATUS.md).
+La sintesi aggiornata per Firma con CIE è in [STATUS.md](STATUS.md).
 Le sezioni seguenti conservano il diario cronologico delle prove: indicazioni
 di funzionalità ancora da verificare si riferiscono alla data della singola voce.
 I percorsi locali dei vecchi artefatti sono esempi, non file distribuiti.
@@ -616,7 +616,7 @@ La GUI mostra gli stessi esiti sul PDF, senza accedere alla carta.
 I casi storici positivi usano fixture sintetiche: non è ancora stato provato
 un documento reale dotato di marca di una TSA esterna.
 
-Il pacchetto Windows `CIE-ID-windows-temporal-20261016.zip` contiene sorgenti e
+Il pacchetto Windows di verifica temporale Windows del 16 ottobre 2026 contiene sorgenti e
 runtime corrispondenti (471 fingerprint nativi/script, 83 file runtime),
 SHA-256 `82c1e51cb697ac1fd783ad3714090b41a8978a1f2b0a406acd160b39847f49c1`.
 Il PC Windows ha confermato checksum, smoke e controlli sui file reali con gli
@@ -683,7 +683,7 @@ per verificare i documenti già prodotti.
 
 ### Prova Windows del 16 ottobre 2026
 
-Pacchetto `CIE-ID-native-windows-x64-testkit-20261016.zip`, 30380060 byte,
+Pacchetto nativo Windows x64 del 16 ottobre 2026, 30380060 byte,
 SHA-256 `d5927d881e67621969fb29056aa59c3c310f27557b88818fde7fdd1efbedfe8d`.
 Tutti i 620 file elencati in `SHA256SUMS.txt` risultano corretti. ZIP ed estrazione
 originale sono conservati; le modifiche sono nella copia separata `prototype-windows`.
@@ -701,7 +701,7 @@ nella VM Linux con identica toolchain MinGW e dipendenze fissate. **La correzion
 terminano con codice 0. Il pacchetto originale e i report del fallimento sono
 conservati come evidenza storica.
 
-Aggiornamento `CIE-ID-windows-sdk-test-fix-20261016.zip`, 8774741 byte,
+Aggiornamento SDK Windows del 16 ottobre 2026, 8774741 byte,
 SHA-256 `4f009ccf684dbd3ab0ef8c6bf1a78a123696f9e6771da306cdd5f00a0bc9a5bc`,
 scaricato direttamente dal Mac nella rete locale. Verificati tutti e sei i file
 di `SHA256SUMS.txt`, `UPDATE.json`, hash del vecchio e nuovo EXE e identità dei due
@@ -750,7 +750,7 @@ Build Tools 2022 17.14.39 / MSVC 14.44.35207 e Windows SDK 10.0.26100.0.
 Tutti i 77 file nel manifest del runtime incluso nel bundle conservano i checksum;
 runner, plugin, motore Flutter e sei DLL private sono PE AMD64.
 
-Report sul PC, nella cartella `CIE-ID/reports`: `windows-native-report.json`
+Report sul PC, nella cartella `reports` del progetto: `windows-native-report.json`
 (fallimento SDK conservato), `windows-independent-bridge-report.json` e
 `dart-bundled-runtime-report.json`; log separati per dipendenze, analisi, test
 e build. `verify_windows_bridge.py` documenta la generazione indipendente.

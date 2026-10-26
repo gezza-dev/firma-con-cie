@@ -1,6 +1,6 @@
 # Compatibilità e funzioni successive al confronto ufficiale
 
-Implementazione del 21 ottobre 2026 per CIE ID Desktop 1.0.0, successiva a
+Implementazione del 21 ottobre 2026 per Firma con CIE 1.0.0, successiva a
 [OFFICIAL_MIDDLEWARE_COMPARISON.md](OFFICIAL_MIDDLEWARE_COMPARISON.md).
 
 ## Perimetro e PIN
@@ -128,8 +128,11 @@ creata una notifica desktop autonoma dentro il processo del browser.
 ## Aggiornamenti — C5
 
 Informazioni contiene «Verifica aggiornamenti». Consulta via HTTPS le release
-stabili di `gezza-dev/cie-id-desktop`, confronta le versioni numericamente e
+stabili di `gezza-dev/firma-con-cie`, confronta le versioni numericamente e
 propone soltanto la pagina GitHub della release di quello stesso repository.
+L’endpoint è `https://api.github.com/repos/gezza-dev/firma-con-cie/releases/latest`
+e lo User-Agent è `Firma-con-CIE/<versione>`. Il vecchio nome del repository
+non è ammesso negli URL di release restituiti dal servizio.
 Non segue redirect di rete, non scarica/esegue installer, non include token o
 credenziali e non confonde un errore con «versione aggiornata». Le risposte
 hanno un limite di 256 KiB e l'intera richiesta un timeout di 12 secondi.

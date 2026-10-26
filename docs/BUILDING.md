@@ -125,7 +125,7 @@ python3 scripts/build_macos.py \
   --web-extension .build/web-macos/CIEPrototypeToken.appex
 ```
 
-Le destinazioni generiche predefinite sono `~/Developer/Builds/cie-id-desktop/firma-con-cie` per il bundle e `~/Developer/Builds/cie-id-desktop/workspace-macos` per i file generati. Non dipendono dal nome dell’account o dalla disposizione delle cartelle di uno sviluppatore.
+Le destinazioni generiche predefinite sono `~/Developer/Builds/firma-con-cie/firma-con-cie` per il bundle e `~/Developer/Builds/firma-con-cie/workspace-macos` per i file generati. Non dipendono dal nome dell’account o dalla disposizione delle cartelle di uno sviluppatore.
 
 Per scegliere una destinazione propria, copiare l’esempio e modificare **solo** il file locale:
 
@@ -154,7 +154,7 @@ python3 -m venv .build/dmg-tools
   --report reports/macos-development-dmg.json
 ```
 
-Il comando usa il bundle sotto `build_root/firma-con-cie` e salva `Firma con CIE.dmg` sotto lo stesso `build_root`, risolto dalla configurazione locale o dal valore generico predefinito. È possibile indicare un’altra app o destinazione con `--app` e `--output`.
+Il comando usa il bundle sotto `build_root/firma-con-cie` e salva `firma-con-cie_1.0.0_universal.dmg` sotto lo stesso `build_root`, risolto dalla configurazione locale o dal valore generico predefinito. La versione viene letta dal bundle firmato. È possibile indicare un’altra app o destinazione con `--app` e `--output`.
 
 Il volume **Firma con CIE** contiene soltanto l’app e il collegamento
 **Applicazioni**; la finestra Finder usa una disposizione a due icone con
@@ -309,7 +309,7 @@ il confezionamento e i test `.deb` selezionano la JVM ARM64 separatamente.
 La compilazione e il collaudo possono usare un ambiente emulato privato.
 [Procedura ARM64, provenienza e limiti](LINUX_ARM64.md).
 
-### AppImage x86_64
+### AppImage x86_64 e ARM64
 
 La base di compilazione è Ubuntu 22.04 con due job, glibc 2.35 e runtime C++
 del sistema compatibile con `GLIBCXX_3.4.30`. Il pacchetto include Flutter,

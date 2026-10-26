@@ -10,6 +10,12 @@ Firma con CIE offre un’interfaccia condivisa per usare la CIE con un lettore s
 
 Il progetto è in sviluppo. Questo repository contiene i sorgenti; **non è ancora disponibile una release binaria pubblica di Firma con CIE**. È predisposto un [installer Windows x64 locale di test](docs/WINDOWS_INSTALLER.md), che include app e componente Web e conserva i dati personali. Le release di CIE ID Universal appartengono a un progetto distinto.
 
+Quando saranno pubblicati, i pacchetti saranno disponibili nella pagina
+[Release di Firma con CIE](https://github.com/gezza-dev/firma-con-cie/releases).
+Il collegamento all’[ultima release stabile](https://github.com/gezza-dev/firma-con-cie/releases/latest)
+non fissa un numero di versione; finché non esiste una release accessibile,
+non offre un pacchetto da scaricare.
+
 | Sistema | Stato verificato |
 | --- | --- |
 | macOS | Bundle Universal Apple Silicon/Intel compilato. Firma PDF/P7M, abbinamento, PIN parziale e accesso Safari con CIE reale verificati su Apple Silicon. L’esecuzione su Intel resta da collaudare. |
@@ -68,8 +74,8 @@ Per le build di sviluppo, prima di usare il browser verificare che il componente
 La compilazione completa comprende **interfaccia, backend e componenti di sistema**. Il solo comando `flutter build` non genera il middleware, le JVM private o il componente di autenticazione Web.
 
 ```sh
-git clone https://github.com/gezza-dev/cie-id-desktop.git
-cd cie-id-desktop
+git clone https://github.com/gezza-dev/firma-con-cie.git
+cd firma-con-cie
 flutter pub get --enforce-lockfile
 flutter analyze --no-pub
 flutter test --no-pub
@@ -108,6 +114,9 @@ La distribuzione portabile Linux comprende un [AppImage x86_64](docs/LINUX_APPIM
 compilato su Ubuntu 22.04, con PC/SC del sistema e modulo browser persistente
 nella home. Collaudati dall'utente interfaccia, abbinamento da zero e persistente,
 firme PDF/P7M con PIN parziale e accesso Firefox/Chrome con PIN completo.
+È predisposto anche l’[AppImage ARM64/AArch64](docs/LINUX_APPIMAGE.md), con
+base Ubuntu 22.04 e verifiche software in emulazione. Il collaudo su hardware
+ARM64 con desktop, lettore, carta e browser reali resta da eseguire.
 Restano da completare i collaudi su altri desktop reali e i materiali di release.
 La distribuzione Linux mantiene AppImage e pacchetti nativi `.deb`, `.rpm`
 e Arch, con le rispettive procedure di configurazione dei browser.
@@ -122,6 +131,6 @@ Il caricamento dei sorgenti e la pubblicazione di una release binaria sono passa
 
 - [Guida ufficiale al software CIE](https://www.cartaidentita.interno.gov.it/info-utili/software-cie-2/)
 - [Domande frequenti ufficiali](https://www.cartaidentita.interno.gov.it/Assistenza/#FAQ)
-- [Segnalazioni relative a questo progetto](https://github.com/gezza-dev/cie-id-desktop/issues)
+- [Segnalazioni relative a questo progetto](https://github.com/gezza-dev/firma-con-cie/issues)
 
 Non includere PIN, PUK, documenti personali, certificati della propria CIE o credenziali nei report e nelle segnalazioni. I servizi di assistenza ufficiali riguardano la CIE e i prodotti ufficiali, non il supporto di questa applicazione indipendente.

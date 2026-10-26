@@ -46,7 +46,7 @@ hanno anche le proprie destinazioni di installazione.
 
 ## Installazione e aggiornamento
 
-Avviare `Firma-con-CIE-1.0.0-Windows-x64-Setup.exe` e confermare UAC. App e
+Avviare `firma-con-cie_1.0.0_windows_x64_setup.exe` e confermare UAC. App e
 componente vengono installati nella stessa sessione amministrativa. Il
 prerequisito Microsoft viene eseguito senza un'altra elevazione e senza
 riavviare automaticamente Windows. Sono disponibili italiano e inglese.
@@ -86,8 +86,13 @@ dell'installer usano lo stesso nome pubblico. L'AppId dell'installer resta
 `{7D9C31E3-F685-48E7-88BF-152BF8D331F2}`: Inno Setup conserva la destinazione
 di una precedente installazione tramite la propria gestione della directory
 precedente. La directory predefinita `Program Files\Firma con CIE` riguarda
-le installazioni nuove. L'aggiornamento elimina soltanto il vecchio
-`CIE-ID.exe` e i collegamenti storici esplicitamente elencati.
+le installazioni nuove. Per passare da una distribuzione con denominazione
+precedente è prevista un'installazione pulita: prima rimuovere la precedente
+app dal gestore delle applicazioni. L'installer non contiene nomi o alias
+di migrazione della vecchia applicazione.
+
+Il sorgente è `packaging/windows/firma-con-cie.iss` e l'output predefinito è
+`firma-con-cie_1.0.0_windows_x64_setup.exe`.
 
 Su Windows impostazioni e preferenze di firma continuano a usare
 `%APPDATA%\gezza-dev\CIE ID`. Il percorso è risolto direttamente: il plugin

@@ -56,6 +56,16 @@ pacchetto precedente. [Contenuto e comportamento dell'installazione](LINUX_PACKA
 
 ## Verifiche software e isolamento
 
+Per AppImage, verificare anche il trasporto HTTPS nativo: una build libcurl
+incrociata può non rilevare alcun archivio CA nel sysroot. La selezione del
+bundle TLS deve avvenire sul sistema di destinazione. La verifica delle firme
+e la fiducia nella catena CIE sono distinte dal download delle prove di
+revoca: le prime possono riuscire anche quando il download HTTPS fallisce.
+`scripts/test_linux_tls_runtime.py` controlla HTTPS diretto e proxy HTTPS
+con CA sintetiche in un namespace privato, inclusi i rifiuti per CA estranea
+e nome del server errato. Eseguirlo soltanto nella radice di test isolata;
+non modifica gli archivi CA del sistema.
+
 Eseguire i test nativi e lo smoke nell'ambiente ARM64, usando soltanto
 fixture e identità sintetiche. Per una compilazione incrociata eseguire CTest
 esplicitamente sul target, dato che `build_native.py` non lo avvia sull'host.
@@ -130,3 +140,14 @@ Prima di una release restano da verificare hardware ARM64 reale, desktop
 GNOME/KDE, lettore, funzionalità CIE e browser disponibili sulla distribuzione.
 I collaudi software in emulazione non certificano questi aspetti. Il pacchetto
 resta locale e non firmato; si applicano i requisiti di [LICENSING.md](LICENSING.md).
+
+## AppImage ARM64
+
+È predisposto anche il confezionamento AppImage AArch64 su Ubuntu 22.04,
+con glibc massima 2.35 e runtime AppImage fissato per checksum. È distinto dal
+`.deb` ARM64 basato su Ubuntu 24.04: richiede un bundle ricompilato contro la
+base più vecchia. Il nome è `firma-con-cie-1.0.0-aarch64.AppImage`.
+[Preparazione, dipendenze esterne e limiti](LINUX_APPIMAGE.md).
+PC/SC rimane esterno e la configurazione dei browser richiede sempre una
+conferma esplicita nell’app. La disponibilità dei browser ARM64 e il collaudo
+con lettore, CIE e desktop reali restano verifiche separate.
