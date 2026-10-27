@@ -174,6 +174,12 @@ void main() {
         await openGuideLink(Uri.parse('https://example.invalid/')),
         isFalse,
       );
+      for (final old in [
+        'https://github.com/gezza-dev/cie-id-desktop',
+        'https://github.com/gezza-dev/cie-id-desktop/issues',
+      ]) {
+        expect(await openGuideLink(Uri.parse(old)), isFalse);
+      }
     },
   );
   testWidgets('offline guide expands without card or external navigation', (
@@ -204,6 +210,11 @@ void main() {
     await tester.tap(official);
     await tester.pumpAndSettle();
     expect(opened.single.toString(), guideLinks['Software CIE ufficiale']);
+    final project = find.text('Firma con CIE: progetto e documentazione');
+    await tester.ensureVisible(project);
+    await tester.tap(project);
+    await tester.pumpAndSettle();
+    expect(opened.last.toString(), 'https://github.com/gezza-dev/firma-con-cie');
   });
   testWidgets(
     'browser failure remains readable with the correct fallback URL',

@@ -78,16 +78,32 @@ nella finestra normale rispetto a quella massimizzata.
 Il nome nativo della finestra non viene svuotato:
 resta disponibile per taskbar, Alt+Tab e strumenti di accessibilità.
 
-Riduci, Ingrandisci/Ripristina e Chiudi sono ancora disegnati e gestiti da DWM;
-la loro area nel buffer resta trasparente. `DwmDefWindowProc` gestisce i pulsanti,
-mentre trascinamento, doppio clic, menu di sistema e bordi mantengono i normali
-messaggi Win32. Flutter riceve soltanto il rettangolo sottostante alla barra.
+Riduci, Ingrandisci/Ripristina e Chiudi mantengono i comandi nativi di Windows;
+normalmente la loro area nel buffer resta trasparente e i simboli sono disegnati
+da DWM. `DwmDefWindowProc` riceve sempre i messaggi prima del correttivo per la
+cornice massimizzata. Trascinamento, doppio clic, menu di sistema e bordi
+mantengono i normali messaggi Win32. Flutter riceve soltanto il rettangolo
+sottostante alla barra.
 Per `WM_NCHITTEST` i rettangoli di Riduci, Ingrandisci/Ripristina e Chiudi,
 letti con `WM_GETTITLEBARINFOEX`, hanno precedenza sulle aree di trascinamento.
 Questo evita che DWM, dopo la massimizzazione della cornice estesa, riconosca
 i clic sui pulsanti come trascinamento del titolo. Un test dedicato verifica
 cinque punti di ciascun pulsante in finestra normale, massimizzata e dopo
 minimizzazione/ripristino, per due cicli, usando il runner e DWM effettivi.
+
+Il passaggio del mouse viene seguito tramite `WM_NCMOUSEMOVE` e
+`WM_NCMOUSELEAVE`, inoltrati al runner anche quando un plugin restituisce un
+risultato. Poiché DWM può omettere l’hover sulla cornice estesa massimizzata,
+il solo pulsante sotto il mouse riceve un overlay con sfondo grigio per
+Riduci/Ingrandisci/Ripristina e rosso per Chiudi, con simbolo scalato ai DPI.
+L’overlay usa i rettangoli di accessibilità di Windows e viene rimosso all’uscita
+del mouse, alla disattivazione o al cambio dimensioni. I colori seguono il tema
+chiaro/scuro della cornice; in contrasto elevato resta la barra standard.
+Il test nativo verifica anche l’invalidazione dell’hover all’ingresso e
+all’uscita da ogni pulsante: 150 controlli complessivi. La prova visiva del
+27 ottobre 2026 verifica hover e rimozione dell’evidenziazione nelle finestre
+normale e massimizzata, oltre ai comandi Ingrandisci, Ripristina, Riduci e Chiudi.
+
 Il buffer della didascalia è separato dalla superficie Flutter e conserva Skia.
 Le modifiche di tema/font/DPI invalidano la didascalia; la cornice DWM viene
 aggiornata solo quando cambiano i relativi valori. Con contrasto elevato o

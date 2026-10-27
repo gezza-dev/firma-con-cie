@@ -1,6 +1,34 @@
 # Stato del progetto e verifiche
 
-Situazione al 25 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
+Situazione al 27 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
+
+## Hover dei pulsanti della barra Windows (27 ottobre)
+
+Ripristinato il feedback al passaggio del mouse su Riduci, Ingrandisci/Ripristina
+e Chiudi, anche con finestra massimizzata. DWM riceve prima i messaggi nativi;
+un overlay sul solo pulsante attivo rende coerente l’hover sulla cornice estesa,
+usando i rettangoli del sistema e mantenendo i comandi nativi. L’uscita del mouse,
+la disattivazione e il ridimensionamento eliminano l’evidenziazione.
+
+Build Windows Release riuscita con Skia. Superati entrambi i gruppi di test
+nativi: 150 controlli dei pulsanti, inclusi ingresso/uscita dell’hover, e la
+regressione con 300 cicli di ridimensionamento e rientranza simulata.
+Verificati visivamente hover normale/massimizzato e comandi Ingrandisci,
+Ripristina, Riduci e Chiudi nella build reale. Nessuna nuova prova sulla CIE,
+modifica al componente Web, installazione o modifica delle impostazioni.
+[Dettagli del runner](DESKTOP_WINDOW_SIZING.md#windows).
+
+L’utente ha confermato il **collaudo riuscito della correzione dell’hover** il
+27 ottobre 2026. La verifica manuale completa i controlli nativi automatici;
+non estende la prova a temi o DPI diversi da quelli effettivamente utilizzati.
+
+Le modifiche Windows comprendono anche il rifiuto esplicito degli URI remoti
+nel recupero del testo trascinato e l’adattamento dei test a separatori nativi
+e sequenza di ingresso nel bersaglio. Analisi Flutter pulita, **358 test
+superati e 4 integrazioni opzionali saltate**; 14 controlli Python su identità
+del prodotto e percorsi superati. Verificati i file del runtime distribuito e
+le licenze; la build finale conserva il payload Dart già collaudato e il
+componente Web precedente, senza aggiornamenti o installazioni automatiche.
 
 ## Firefox Snap condiviso tra pacchetto nativo e AppImage (26 ottobre)
 
@@ -528,11 +556,27 @@ Il controllo ripetibile
 | Middleware e SDK | Compilati ARM64/x86_64; test nativi su ARM64 | Backend MinGW x64 e componenti MSVC; test su Windows | Compilazione/test nativi senza carta |
 | Firma PAdES/CAdES | CIE reale verificata | CIE reale verificata | PDF e P7M con CIE reale e PIN parziale verificati |
 | Abbinamento e PIN parziale | Persistenza e firme reali verificate | Persistenza e firme reali verificate | Abbinamento, persistenza e firme con PIN parziale verificati |
-| Accesso ai siti | CryptoTokenKit e accesso Safari al portale CIE verificati | CSP/KSP aggiornato: accesso al portale CIE con Chrome, Edge e Firefox confermato dall'utente dopo la correzione dei contenitori | Test reali Mozilla Firefox, Firefox Snap e Chrome desktop con PIN completo confermati riusciti dall’utente |
+| Accesso ai siti | CryptoTokenKit e accesso Safari al portale CIE verificati; accesso riuscito anche con Chrome e Firefox confermato dall’utente | CSP/KSP aggiornato: accesso al portale CIE con Chrome, Edge e Firefox confermato dall'utente dopo la correzione dei contenitori | Test reali Mozilla Firefox, Firefox Snap e Chrome desktop con PIN completo confermati riusciti dall’utente |
 | Cambio PIN e Sblocco Carta | Test software; collaudo reale da completare | Test software; collaudo reale da completare | Collaudo reale non eseguito |
 | DSS/LTA con JVM privata | Predisposto e testato | Predisposto e testato | Integrato Linux x86_64 e ARM64 di test; worker privato e test software |
 
 L’esecuzione su un sistema non prova automaticamente la compatibilità con tutti i lettori, le CIE, i browser o i servizi. Il formato LTA non implica da solo una validazione storica positiva: servono prove e una catena di fiducia sufficienti.
+
+## Browser collaudati: conferma macOS del 27 ottobre 2026
+
+L’utente ha confermato che **Google Chrome e Mozilla Firefox su macOS** sono
+stati collaudati con successo per l’accesso ai siti con CIE. La data indica la
+conferma ricevuta, non una nuova prova eseguita dall’agente. Versioni dei browser
+e architettura del Mac di queste due prove non sono state rilevate
+indipendentemente; il collaudo su Intel resta da completare.
+
+La [tabella per browser e piattaforma](WEB_AUTHENTICATION.md#browser-collaudati)
+riporta anche Safari su macOS, Chrome/Edge/Firefox su Windows e Chrome/Firefox
+su Linux, incluso Firefox Snap. Edge su macOS resta da collaudare; su Linux
+occorre completare anche il rilevamento e la configurazione guidata.
+
+Aggiornata soltanto la documentazione: nessuna ricompilazione, installazione,
+modifica ai browser o nuova operazione sulla CIE.
 
 ## Configurazione guidata Chrome Linux (23 ottobre)
 

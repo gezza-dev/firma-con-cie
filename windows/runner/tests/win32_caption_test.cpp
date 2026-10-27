@@ -37,6 +37,19 @@ void CheckButtons(HWND window, const char* state) {
           static_cast<long long>(hit), static_cast<long long>(expected));
       Require(hit == expected, "visible caption button maps to its native hit code");
     }
+    // Exercise the production non-client hover/leave route without moving the
+    // real mouse or invoking a system command. Repainting must cover both edges.
+    ValidateRect(window, nullptr);
+    SendMessage(window, WM_NCMOUSEMOVE, expected,
+                MAKELPARAM((rect.left + rect.right) / 2,
+                           (rect.top + rect.bottom) / 2));
+    Require(GetUpdateRect(window, nullptr, FALSE) != FALSE,
+            "entering each native button invalidates its visual hover");
+    ValidateRect(window, nullptr);
+    SendMessage(window, WM_NCMOUSELEAVE, 0, 0);
+    Require(GetUpdateRect(window, nullptr, FALSE) != FALSE,
+            "leaving each native button invalidates its visual hover");
+    ValidateRect(window, nullptr);
   }
 }
 }

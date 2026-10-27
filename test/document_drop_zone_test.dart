@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
+import 'dart:io';
+
 import 'package:cie_flutter_prototype/document_drop_zone.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -12,14 +14,15 @@ void main() {
     },
   );
   test('URI list recovery handles CRLF, comments, escaping and duplicates', () {
+    final base = Platform.isWindows ? 'file:///C:/tmp' : 'file:///tmp';
     expect(
       droppedDocumentPaths(
         [],
         rawText:
-            '# URI list\r\nfile:///tmp/a%20b.pdf\r\n'
-            'file:///tmp/a%20b.pdf\r\n',
+            '# URI list\r\n$base/a%20b.pdf\r\n'
+            '$base/a%20b.pdf\r\n',
       ),
-      ['/tmp/a b.pdf'],
+      [Platform.isWindows ? r'C:\tmp\a b.pdf' : '/tmp/a b.pdf'],
     );
   });
   test('STRING recovery accepts an explicit absolute local path', () {

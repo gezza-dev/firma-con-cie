@@ -168,6 +168,7 @@ bool Win32Window::Create(const std::wstring& title,
                          bool center_in_work_area) {
   Destroy();
   custom_caption_ = false;
+  hovered_caption_button_ = HTNOWHERE;
   caption_frame_height_ = -1;
   caption_background_ = DWMWA_COLOR_DEFAULT;
 
@@ -232,6 +233,19 @@ Win32Window::MessageHandler(HWND hwnd,
                             WPARAM const wparam,
                             LPARAM const lparam) noexcept {
   if (custom_caption_) {
+    if (message == WM_NCMOUSEMOVE) {
+      UpdateCaptionHover(static_cast<int>(wparam));
+      TRACKMOUSEEVENT tracking{sizeof(tracking), TME_LEAVE | TME_NONCLIENT,
+                               hwnd, 0};
+      TrackMouseEvent(&tracking);
+    } else if (message == WM_NCMOUSELEAVE) {
+      UpdateCaptionHover(HTNOWHERE);
+    }
+    // DWM must see hit testing before our maximized-frame fallback, even when
+    // its return value needs correcting. It also maintains native hover state.
+    LRESULT dwm_result = 0;
+    const bool dwm_handled =
+        DwmDefWindowProc(hwnd, message, wparam, lparam, &dwm_result) != FALSE;
     if (message == WM_NCHITTEST) {
       // After maximization DWM can report the extended caption as client/drag
       // area even over its visible buttons. Use the OS button rectangles (the
@@ -249,9 +263,7 @@ Win32Window::MessageHandler(HWND hwnd,
           return button.hit;
       }
     }
-    LRESULT dwm_result = 0;
-    if (DwmDefWindowProc(hwnd, message, wparam, lparam, &dwm_result))
-      return dwm_result;
+    if (dwm_handled) return dwm_result;
     if (message == WM_NCCALCSIZE && wparam) {
       auto* params = reinterpret_cast<NCCALCSIZE_PARAMS*>(lparam);
       const LONG top = params->rgrc[0].top;
@@ -342,6 +354,7 @@ Win32Window::MessageHandler(HWND hwnd,
       return result;
     }
     case WM_SIZE:
+      UpdateCaptionHover(HTNOWHERE);
       UpdateCaptionFrame();
       InvalidateCaption();
       if (wparam != SIZE_MINIMIZED) ResizeChildContent();
@@ -354,6 +367,7 @@ Win32Window::MessageHandler(HWND hwnd,
 
     case WM_ACTIVATE:
       active_caption_ = LOWORD(wparam) != WA_INACTIVE;
+      if (!active_caption_) UpdateCaptionHover(HTNOWHERE);
       UpdateCaptionFrame();
       InvalidateCaption();
       if (active_caption_ && child_content_ != nullptr) {
@@ -396,6 +410,7 @@ void Win32Window::UpdateCaptionFrame() {
   BOOL composition = FALSE;
   DwmIsCompositionEnabled(&composition);
   const bool enabled = composition && !(contrast.dwFlags & HCF_HIGHCONTRASTON);
+  if (!enabled) UpdateCaptionHover(HTNOWHERE);
   if (enabled != custom_caption_) {
     custom_caption_ = enabled;
     SetWindowPos(window_handle_, nullptr, 0, 0, 0, 0,
@@ -472,8 +487,83 @@ void Win32Window::PaintCaption(HDC dc) {
       native_buttons.left = std::max(0L, buttons.left - (origin.x - outer.left));
     }
     BufferedPaintClear(paint, &native_buttons);
+  }
+  const RECT hover = PaintCaptionHover(buffer, caption, dark != FALSE);
+  if (paint) {
+    if (hover.right > hover.left && hover.bottom > hover.top)
+      BufferedPaintSetAlpha(paint, &hover, 255);
     EndBufferedPaint(paint, TRUE);
   }
+}
+
+void Win32Window::UpdateCaptionHover(int hit) {
+  if (hit != HTMINBUTTON && hit != HTMAXBUTTON && hit != HTCLOSE)
+    hit = HTNOWHERE;
+  if (hit == hovered_caption_button_) return;
+  hovered_caption_button_ = hit;
+  InvalidateCaption();
+}
+
+RECT Win32Window::PaintCaptionHover(HDC dc, const RECT& caption, bool dark) {
+  if (hovered_caption_button_ == HTNOWHERE) return {};
+  // DWM's extended frame can omit hover in maximized windows. Use its actual
+  // accessible button rectangles for a temporary hot overlay; input stays native.
+  TITLEBARINFOEX title{};
+  title.cbSize = sizeof(title);
+  SendMessage(window_handle_, WM_GETTITLEBARINFOEX, 0,
+              reinterpret_cast<LPARAM>(&title));
+  const int index = hovered_caption_button_ == HTMINBUTTON ? 2 :
+                    hovered_caption_button_ == HTMAXBUTTON ? 3 : 5;
+  if (title.rgstate[index] & (STATE_SYSTEM_UNAVAILABLE | STATE_SYSTEM_INVISIBLE |
+                              STATE_SYSTEM_OFFSCREEN)) return {};
+  RECT bounds = title.rgrect[index];
+  MapWindowPoints(nullptr, window_handle_, reinterpret_cast<POINT*>(&bounds), 2);
+  RECT hot{};
+  if (!IntersectRect(&hot, &bounds, &caption)) return {};
+  const COLORREF background = hovered_caption_button_ == HTCLOSE
+      ? RGB(196, 43, 28) : dark ? RGB(56, 56, 56) : RGB(229, 229, 229);
+  HBRUSH brush = CreateSolidBrush(background);
+  FillRect(dc, &hot, brush);
+  DeleteObject(brush);
+
+  // The opaque hot overlay must include its glyph; all other buttons remain
+  // transparent and are drawn by DWM. Scale the standard symbols with DPI.
+  const int size = Scale(10, current_dpi_);
+  const int left = (bounds.left + bounds.right - size) / 2;
+  const int top = (bounds.top + bounds.bottom - size) / 2;
+  const int right = left + size;
+  const int bottom = top + size;
+  const COLORREF foreground = dark || hovered_caption_button_ == HTCLOSE
+      ? RGB(255, 255, 255) : RGB(0, 0, 0);
+  HPEN pen = CreatePen(PS_SOLID, std::max(1, Scale(1, current_dpi_)), foreground);
+  const HGDIOBJ previous_pen = SelectObject(dc, pen);
+  const HGDIOBJ previous_brush = SelectObject(dc, GetStockObject(NULL_BRUSH));
+  if (hovered_caption_button_ == HTMINBUTTON) {
+    const int middle = (top + bottom) / 2;
+    MoveToEx(dc, left, middle, nullptr);
+    LineTo(dc, right + 1, middle);
+  } else if (hovered_caption_button_ == HTMAXBUTTON) {
+    if (IsZoomed(window_handle_)) {
+      const int offset = std::max(2, Scale(2, current_dpi_));
+      Rectangle(dc, left + offset, top, right + 1, bottom - offset + 1);
+      HBRUSH cover = CreateSolidBrush(background);
+      const RECT front{left, top + offset, right - offset + 1, bottom + 1};
+      FillRect(dc, &front, cover);
+      DeleteObject(cover);
+      Rectangle(dc, front.left, front.top, front.right, front.bottom);
+    } else {
+      Rectangle(dc, left, top, right + 1, bottom + 1);
+    }
+  } else {
+    MoveToEx(dc, left, top, nullptr);
+    LineTo(dc, right + 1, bottom + 1);
+    MoveToEx(dc, right, top, nullptr);
+    LineTo(dc, left - 1, bottom + 1);
+  }
+  SelectObject(dc, previous_brush);
+  SelectObject(dc, previous_pen);
+  DeleteObject(pen);
+  return hot;
 }
 
 void Win32Window::ResizeChildContent() {

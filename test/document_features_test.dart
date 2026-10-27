@@ -98,11 +98,23 @@ void main() {
       await tester.tap(find.text(page).first);
       await tester.pumpAndSettle();
       // Exercise the real Linux channel parser, as used by a GTK URI-list
-      // drop, including CRLF and repeated references to the same file.
+      // drop, including CRLF and repeated references to the same file. The
+      // URI parser returns native separators on the host running this test.
       final position = tester.getCenter(find.byType(DropTarget));
       await tester.runAsync(() async {
-        final completed = Completer<void>();
         const codec = StandardMethodCodec();
+        // Linux accepts a drop after GTK's early exit notification. Other
+        // hosts require entry first, even when testing the Linux URI parser.
+        final entered = Completer<void>();
+        tester.binding.defaultBinaryMessenger.handlePlatformMessage(
+          'desktop_drop',
+          codec.encodeMethodCall(
+            MethodCall('entered', [position.dx, position.dy]),
+          ),
+          (_) => entered.complete(),
+        );
+        await entered.future;
+        final completed = Completer<void>();
         tester.binding.defaultBinaryMessenger.handlePlatformMessage(
           'desktop_drop',
           codec.encodeMethodCall(
@@ -119,7 +131,7 @@ void main() {
         await Future<void>.delayed(const Duration(milliseconds: 100));
       });
       await tester.pumpAndSettle();
-      expect(find.text(file.path), findsOneWidget);
+      expect(find.text(file.uri.toFilePath()), findsOneWidget);
       expect(
         find.text('Trascinare un solo documento alla volta.'),
         findsNothing,

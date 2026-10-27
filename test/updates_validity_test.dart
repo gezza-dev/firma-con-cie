@@ -22,6 +22,12 @@ void main() {
     'html_url':
         url ?? 'https://github.com/gezza-dev/firma-con-cie/releases/tag/$tag',
   });
+  test('updates query the renamed repository directly over HTTPS', () {
+    expect(
+      releaseEndpoint.toString(),
+      'https://api.github.com/repos/gezza-dev/firma-con-cie/releases/latest',
+    );
+  });
   test('updates compare numeric versions and accept only this project release pages', () {
     expect(
       releaseEndpoint.toString(),
@@ -73,6 +79,10 @@ void main() {
       release(
         '1.1.0',
         url: 'https://user@github.com/gezza-dev/firma-con-cie/releases/tag/1.1.0',
+      ),
+      release(
+        '1.1.0',
+        url: 'https://github.com/gezza-dev/cie-id-desktop/releases/tag/1.1.0',
       ),
       '{}',
       'not json',

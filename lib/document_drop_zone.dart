@@ -17,7 +17,10 @@ List<String> droppedDocumentPaths(Iterable<String> paths, {String? rawText}) {
     try {
       final uri = Uri.tryParse(line);
       if (uri?.scheme == 'file') {
-        unique.add(uri!.toFilePath());
+        // Windows also converts remote authorities to UNC paths. This raw
+        // text fallback recovers local documents only, on every platform.
+        if (uri!.host.isNotEmpty && uri.host != 'localhost') continue;
+        unique.add(uri.toFilePath());
       } else if (line.startsWith('/')) {
         unique.add(line);
       }

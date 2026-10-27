@@ -5,8 +5,10 @@
 La sintesi aggiornata è in [STATUS.md](STATUS.md). L'accesso reale al portale CIE
 è stato verificato con Safari su macOS Apple Silicon e Chrome/Firefox su Windows
 x64. L'utente ha confermato il 21 ottobre anche il collaudo riuscito con Microsoft
-Edge su Windows; versione del browser e protocollo TLS non sono stati rilevati
-indipendentemente. Per l'accesso si usa il PIN completo di otto cifre. L'installazione Windows è descritta in [WINDOWS_INSTALLER.md](WINDOWS_INSTALLER.md).
+Edge su Windows e, il 27 ottobre 2026, l’accesso riuscito con Google Chrome e
+Mozilla Firefox su macOS. Quest’ultima è la data della conferma, non una nuova
+prova eseguita dall’agente. Versioni dei browser e protocollo TLS non sono stati
+rilevati indipendentemente. Per l'accesso si usa il PIN completo di otto cifre. L'installazione Windows è descritta in [WINDOWS_INSTALLER.md](WINDOWS_INSTALLER.md).
 Le note successive conservano anche passaggi e limiti storici del porting.
 
 Il 20 ottobre 2026 l’utente ha confermato anche l’esito positivo del test reale
@@ -19,6 +21,29 @@ Il prototipo aggiunge l’autenticazione con carta fisica e lettore (livello 3).
 Non modifica CIE ID Universal pubblicata, non implementa il login tramite
 smartphone e non abilita il login al sistema operativo. Le prove reali di
 Cambio PIN e Sblocco Carta rimangono rinviate.
+
+## Browser collaudati
+
+La tabella riepiloga i collaudi reali di accesso ai siti con CIE e lettore,
+confermati dall’utente. La compatibilità tecnica attesa non equivale a un
+collaudo riuscito.
+
+| Browser | Windows x64 | macOS | Linux |
+| --- | --- | --- | --- |
+| Microsoft Edge | Collaudato | Da collaudare | Integrazione e collaudo da completare |
+| Google Chrome | Collaudato | Collaudato | Collaudato, versione desktop |
+| Mozilla Firefox | Collaudato | Collaudato | Collaudato, anche Firefox Snap |
+| Safari | Non disponibile | Collaudato | Non disponibile |
+
+La conferma per Chrome e Firefox su macOS è stata ricevuta il **27 ottobre
+2026**; non specifica le versioni dei browser né estende il collaudo ai Mac
+Intel. Per Safari la prova documentata riguarda macOS Apple Silicon.
+Su Linux la procedura guidata gestisce Firefox, Firefox Snap e Google Chrome;
+Edge non è ancora incluso nel rilevamento e nella configurazione guidata.
+Il collaudo Chrome Linux non comprende Chromium Snap/Flatpak.
+
+Gli esiti riguardano gli ambienti provati e non garantiscono il funzionamento
+di ogni versione del browser, lettore, architettura o servizio Web.
 
 ## Base condivisa
 

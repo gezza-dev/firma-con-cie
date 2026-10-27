@@ -136,6 +136,10 @@ non è ammesso negli URL di release restituiti dal servizio.
 Non segue redirect di rete, non scarica/esegue installer, non include token o
 credenziali e non confonde un errore con «versione aggiornata». Le risposte
 hanno un limite di 256 KiB e l'intera richiesta un timeout di 12 secondi.
+L’endpoint è `https://api.github.com/repos/gezza-dev/firma-con-cie/releases/latest`;
+la pagina dei [download](https://github.com/gezza-dev/firma-con-cie/releases)
+e l’[ultima release stabile](https://github.com/gezza-dev/firma-con-cie/releases/latest)
+diventano utilizzabili quando vengono pubblicate release accessibili.
 
 L'utente ha richiesto di mantenere questo repository, che diventerà pubblico
 solo dopo il completamento dei test. Finché è privato o manca una release

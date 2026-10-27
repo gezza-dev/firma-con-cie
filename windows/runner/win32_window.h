@@ -100,12 +100,14 @@ class Win32Window {
   // nested WM_SIZE messages from resizing the same child recursively.
   void ResizeChildContent();
 
-  // Keep the OS frame/buttons and native window title, but paint its text at
-  // the horizontal center. High contrast uses the unmodified system caption.
+  // Keep OS frame/button actions and the accessible native window title.
+  // Paint the icon and hover; high contrast uses the unmodified system caption.
   int CaptionHeight() const;
   void UpdateCaptionFrame();
   void InvalidateCaption();
   void PaintCaption(HDC dc);
+  void UpdateCaptionHover(int hit);
+  RECT PaintCaptionHover(HDC dc, const RECT& caption, bool dark);
 
   bool quit_on_close_ = false;
   bool start_maximized_ = false;
@@ -115,6 +117,7 @@ class Win32Window {
   bool custom_caption_ = false;
   bool active_caption_ = true;
   bool buffered_paint_initialized_ = false;
+  int hovered_caption_button_ = HTNOWHERE;
   int caption_frame_height_ = -1;
   COLORREF caption_background_ = 0xFFFFFFFF;
   UINT current_dpi_ = 96;

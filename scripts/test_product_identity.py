@@ -21,7 +21,7 @@ class ProductIdentity(unittest.TestCase):
         self.assertEqual(PACKAGE_NAME, 'firma-con-cie')
         self.assertEqual(linux.PACKAGE, ARTIFACT_STEM)
         self.assertEqual(linux.PACKAGE, PACKAGE_NAME)
-        self.assertEqual(str(linux.PREFIX), 'opt/firma-con-cie')
+        self.assertEqual(linux.PREFIX.as_posix(), 'opt/firma-con-cie')
 
     def test_windows_and_macos_default_artifact_names(self):
         self.assertEqual(windows_installer_name('1.0.0') + '.exe',
@@ -49,8 +49,21 @@ class ProductIdentity(unittest.TestCase):
                 dirs[:] = [name for name in dirs if name not in ignored]
                 paths.extend((Path(directory)/name).relative_to(ROOT).as_posix() for name in files)
         pattern = re.compile(rb'cie[-_ ]id[-_ ]desktop', re.I)
-        findings = [name for name in set(paths) if name and (ROOT/name).is_file()
-                    and pattern.search((ROOT/name).read_bytes())]
+        negative_url_tests = {'test/preferences_guide_test.dart',
+                              'test/updates_validity_test.dart'}
+        previous_repository_url = re.compile(
+            rb"'https://github\.com/gezza-dev/cie\-id\-desktop(?:/issues|/releases/tag/1\.1\.0)?'")
+        findings = []
+        for name in set(paths):
+            if not name or not (ROOT/name).is_file():
+                continue
+            content = (ROOT/name).read_bytes()
+            if name in negative_url_tests:
+                # Exact previous repository URLs are intentional rejection cases.
+                # Keep checking all other strings and all production sources.
+                content = previous_repository_url.sub(b"''", content)
+            if pattern.search(content):
+                findings.append(name)
         self.assertEqual(findings, [])
 
     def test_linux_and_windows_compile_targets_and_windows_metadata(self):
