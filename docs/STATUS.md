@@ -2,6 +2,26 @@
 
 Situazione al 27 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
 
+## Configurazione automatica dei browser (27 ottobre)
+
+Implementato nei sorgenti il coordinatore condiviso avviato dopo il
+caricamento del middleware, con inventario su worker/isolati e registrazione
+Linux in processi helper. L’app resta utilizzabile durante il controllo.
+Il componente Windows rimane nell’installer con UAC; nessuna elevazione
+viene avviata dall’app. Browser aperti/profili non inizializzati vengono
+ricontrollati automaticamente; tutti i profili Firefox inizializzati sono
+trattati conservando impostazioni e moduli in conflitto.
+
+La Home uniforma gli stati sulle tre piattaforme, elenca i browser pronti
+con il predefinito per primo e lascia i dettagli degli errori ai log.
+[Implementazione, verifiche e limiti](AUTOMATIC_BROWSER_SETUP.md).
+Il collaudo nativo del nuovo avvio automatico su macOS/Linux resta necessario.
+
+Il 27 ottobre 2026 l’utente ha confermato il **collaudo riuscito della nuova
+build Windows** con la configurazione automatica dei browser. La conferma
+completa le regressioni automatiche e la verifica visiva Windows già eseguite;
+non estende il collaudo a macOS/Linux o a browser/versioni non specificati.
+
 ## Hover dei pulsanti della barra Windows (27 ottobre)
 
 Ripristinato il feedback al passaggio del mouse su Riduci, Ingrandisci/Ripristina

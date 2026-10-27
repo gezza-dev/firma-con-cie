@@ -39,8 +39,13 @@ La conferma per Chrome e Firefox su macOS è stata ricevuta il **27 ottobre
 2026**; non specifica le versioni dei browser né estende il collaudo ai Mac
 Intel. Per Safari la prova documentata riguarda macOS Apple Silicon.
 Su Linux la procedura guidata gestisce Firefox, Firefox Snap e Google Chrome;
-Edge non è ancora incluso nel rilevamento e nella configurazione guidata.
+Edge Linux viene riconosciuto ma non configurato né indicato tra i browser pronti.
 Il collaudo Chrome Linux non comprende Chromium Snap/Flatpak.
+
+Il nuovo avvio della configurazione automatica è descritto in
+[AUTOMATIC_BROWSER_SETUP.md](AUTOMATIC_BROWSER_SETUP.md). I collaudi della
+tabella precedono questa modifica e non costituiscono una nuova prova del
+coordinatore automatico su macOS/Linux.
 
 Gli esiti riguardano gli ambienti provati e non garantiscono il funzionamento
 di ogni versione del browser, lettore, architettura o servizio Web.

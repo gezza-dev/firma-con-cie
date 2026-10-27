@@ -41,6 +41,7 @@ import 'web_component_setup.dart';
 import 'firefox_setup.dart';
 import 'chrome_setup.dart';
 import 'linux_browser_status.dart';
+import 'browser_setup.dart';
 import 'enrollment_diagnostics_view.dart';
 import 'home_card_status.dart';
 import 'paired_card_identity.dart';
@@ -58,6 +59,34 @@ void main() {
   final browserPython = appimage
       ? '${File(Platform.resolvedExecutable).parent.path}/tools/python3'
       : '/usr/bin/python3';
+  final nativeService = FfiCieService(BridgePaths.discover());
+  final firefox = Platform.isLinux
+      ? LinuxFirefoxSetupService(
+          helperName: appimage
+              ? 'appimage_firefox_setup.py'
+              : 'firefox_setup.py',
+          pythonExecutable: browserPython,
+        )
+      : null;
+  final chrome = Platform.isLinux
+      ? LinuxChromeSetupService(
+          helperName: appimage ? 'appimage_chrome_setup.py' : 'chrome_setup.py',
+          pythonExecutable: browserPython,
+        )
+      : null;
+  final browserSetup = BrowserSetupCoordinator(
+    platform: Platform.operatingSystem,
+    inventory: readBrowserInventory,
+    systemReader: Platform.isWindows
+        ? readWindowsWebComponentStatus
+        : Platform.isLinux
+        ? nativeService.webStatus
+        : readWebSystemStatus,
+    firefox: firefox,
+    chrome: chrome,
+    activate: Platform.isMacOS ? activateWebComponent : null,
+    log: BrowserSetupLog().record,
+  );
   LicenseRegistry.addLicense(() async* {
     for (final item in {
       'CIE middleware e SDK': 'assets/licenses/native-LICENSE.txt',
@@ -72,31 +101,16 @@ void main() {
   });
   runApp(
     CiePrototype(
-      service: FfiCieService(BridgePaths.discover()),
+      service: nativeService,
       preferences: FilePreferencesStore(),
       settings: FileSettingsStore(),
-      webStatusReader: Platform.isWindows
-          ? readWindowsWebComponentStatus
-          : readWebSystemStatus,
+      webStatusReader: browserSetup.cachedSystemStatus,
+      browserSetup: browserSetup,
       windowsWebComponentChecker: Platform.isWindows
           ? checkWindowsWebComponent
           : null,
-      firefoxSetupService: Platform.isLinux
-          ? LinuxFirefoxSetupService(
-              helperName: appimage
-                  ? 'appimage_firefox_setup.py'
-                  : 'firefox_setup.py',
-              pythonExecutable: browserPython,
-            )
-          : null,
-      chromeSetupService: Platform.isLinux
-          ? LinuxChromeSetupService(
-              helperName: appimage
-                  ? 'appimage_chrome_setup.py'
-                  : 'chrome_setup.py',
-              pythonExecutable: browserPython,
-            )
-          : null,
+      firefoxSetupService: firefox,
+      chromeSetupService: chrome,
     ),
   );
 }
@@ -117,6 +131,7 @@ class CiePrototype extends StatefulWidget {
     this.windowsWebComponentChecker,
     this.firefoxSetupService,
     this.chromeSetupService,
+    this.browserSetup,
   });
   final PreferencesStore? preferences;
   final SettingsStore? settings;
@@ -131,6 +146,7 @@ class CiePrototype extends StatefulWidget {
   final WindowsWebComponentChecker? windowsWebComponentChecker;
   final FirefoxSetupService? firefoxSetupService;
   final ChromeSetupService? chromeSetupService;
+  final BrowserSetupCoordinator? browserSetup;
   @override
   State<CiePrototype> createState() => _CiePrototypeState();
 }
@@ -191,6 +207,7 @@ class _CiePrototypeState extends State<CiePrototype> {
           windowsWebComponentChecker: widget.windowsWebComponentChecker,
           firefoxSetupService: widget.firefoxSetupService,
           chromeSetupService: widget.chromeSetupService,
+          browserSetup: widget.browserSetup,
         ),
       ),
     ),
@@ -213,6 +230,7 @@ class PrototypeHome extends StatefulWidget {
     this.windowsWebComponentChecker,
     this.firefoxSetupService,
     this.chromeSetupService,
+    this.browserSetup,
   });
   final PreferencesStore? preferences;
   final SettingsStore? settings;
@@ -227,6 +245,7 @@ class PrototypeHome extends StatefulWidget {
   final WindowsWebComponentChecker? windowsWebComponentChecker;
   final FirefoxSetupService? firefoxSetupService;
   final ChromeSetupService? chromeSetupService;
+  final BrowserSetupCoordinator? browserSetup;
   @override
   State<PrototypeHome> createState() => _PrototypeHomeState();
 }
@@ -323,7 +342,10 @@ class _PrototypeHomeState extends State<PrototypeHome>
       widget.firefoxSetupService != null ||
       widget.chromeSetupService != null;
 
-  String _pairedWebStatus(EnrollmentRecord record) => _linuxBrowserSetupEnabled
+  String _pairedWebStatus(EnrollmentRecord record) =>
+      widget.browserSetup != null
+      ? widget.browserSetup!.pairedMessage(record)
+      : _linuxBrowserSetupEnabled
       ? linuxPairedWebStatus(
           record,
           LinuxBrowserConfiguration(
@@ -372,10 +394,17 @@ class _PrototypeHomeState extends State<PrototypeHome>
         state == AppLifecycleState.paused ||
         state == AppLifecycleState.detached;
     if (state == AppLifecycleState.resumed) {
+      unawaited(widget.browserSetup?.refresh(forceSystem: true));
       unawaited(_resumeWebStatus());
     } else {
       unawaited(_coordinateMonitor());
     }
+  }
+
+  void _browserSetupChanged() {
+    if (!mounted) return;
+    setState(() {});
+    if (!busy) unawaited(_resumeWebStatus());
   }
 
   bool refreshingWebStatus = false, waitingForWebSettings = false;
@@ -575,6 +604,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     verifyFlow.addListener(_verificationChanged);
+    widget.browserSetup?.addListener(_browserSetupChanged);
     _load();
   }
 
@@ -582,6 +612,8 @@ class _PrototypeHomeState extends State<PrototypeHome>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     monitor?.dispose();
+    widget.browserSetup?.removeListener(_browserSetupChanged);
+    widget.browserSetup?.dispose();
     verifyFlow.removeListener(_verificationChanged);
     verifyFlow.dispose();
     if (!busy) {
@@ -704,6 +736,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
           busy = false;
           progress = '';
         });
+        if (widget.browserSetup != null) unawaited(_resumeWebStatus());
         unawaited(_coordinateMonitor());
       } else {
         await preparedPdf?.dispose();
@@ -762,6 +795,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
       error = loaded;
       return;
     }
+    widget.browserSetup?.start();
     if (canPair) await _refreshPairings();
     // Start after runtime load. Observation has its own PC/SC context, performs
     // only idle identification, and never blocks verification/startup navigation.
@@ -1303,8 +1337,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
       setState(
         () => error = {
           'ok': false,
-          'message':
-              'Il documento trascinato non è disponibile. Usa «Seleziona un documento».',
+          'message': 'Il documento trascinato non è disponibile. Usa «Seleziona un documento».',
         },
       );
       return;
@@ -1961,7 +1994,9 @@ class _PrototypeHomeState extends State<PrototypeHome>
 
   List<Widget> _webComponentSetupCards(BuildContext context) {
     final notice = _webComponentNotice;
-    if (notice == null) return [];
+    if (notice == null || widget.browserSetup?.hasConfiguredBrowser == true) {
+      return [];
+    }
     return [
       Card(
         key: const ValueKey('web-component-setup-home'),
@@ -1975,7 +2010,14 @@ class _PrototypeHomeState extends State<PrototypeHome>
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 8),
-              Text(tr(context, notice.message)),
+              Text(
+                tr(
+                  context,
+                  widget.browserSetup == null
+                      ? notice.message
+                      : browserNotConfigured,
+                ),
+              ),
               const SizedBox(height: 12),
               OutlinedButton.icon(
                 onPressed: busy || modalInteraction
@@ -2003,7 +2045,9 @@ class _PrototypeHomeState extends State<PrototypeHome>
       ? _unifiedHome(context)
       : [
           ..._webComponentSetupCards(context),
-          if (_linuxBrowserSetupEnabled && widget.firefoxSetupService != null)
+          if (widget.browserSetup == null &&
+              _linuxBrowserSetupEnabled &&
+              widget.firefoxSetupService != null)
             FirefoxSetupHomeCard(
               service: widget.firefoxSetupService!,
               onStatus: (status) =>
@@ -2011,7 +2055,9 @@ class _PrototypeHomeState extends State<PrototypeHome>
               busy: busy,
               onBusy: _browserSetupBusy,
             ),
-          if (_linuxBrowserSetupEnabled && widget.chromeSetupService != null)
+          if (widget.browserSetup == null &&
+              _linuxBrowserSetupEnabled &&
+              widget.chromeSetupService != null)
             ChromeSetupHomeCard(
               service: widget.chromeSetupService!,
               onStatus: (status) =>
@@ -2235,14 +2281,18 @@ class _PrototypeHomeState extends State<PrototypeHome>
     final candidates = readers.where(_homeCanPair).toList();
     return [
       ..._webComponentSetupCards(context),
-      if (_linuxBrowserSetupEnabled && widget.firefoxSetupService != null)
+      if (widget.browserSetup == null &&
+          _linuxBrowserSetupEnabled &&
+          widget.firefoxSetupService != null)
         FirefoxSetupHomeCard(
           service: widget.firefoxSetupService!,
           onStatus: (status) => setState(() => _firefoxBrowserStatus = status),
           busy: busy,
           onBusy: _browserSetupBusy,
         ),
-      if (_linuxBrowserSetupEnabled && widget.chromeSetupService != null)
+      if (widget.browserSetup == null &&
+          _linuxBrowserSetupEnabled &&
+          widget.chromeSetupService != null)
         ChromeSetupHomeCard(
           service: widget.chromeSetupService!,
           onStatus: (status) => setState(() => _chromeBrowserStatus = status),
@@ -2321,7 +2371,8 @@ class _PrototypeHomeState extends State<PrototypeHome>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(tr(context, record.status)),
-                      if (_webComponentNotice == null ||
+                      if (widget.browserSetup != null ||
+                          _webComponentNotice == null ||
                           record.removalPending ||
                           !record.hasPublicData)
                         Text(

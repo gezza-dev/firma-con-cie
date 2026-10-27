@@ -1,5 +1,21 @@
 # Configurazione guidata Firefox su Linux
 
+## Comportamento corrente: configurazione automatica
+
+Dal 27 ottobre 2026 l’app configura in background tutti i profili Firefox e
+Firefox Snap già inizializzati. Se il browser è aperto, rinvia la scrittura
+e riprova ogni trenta secondi e al ritorno nell’app. Non chiude o avvia Firefox,
+non crea profili e non sostituisce moduli in conflitto. Gli helper conservano
+lock, verifiche del piano, backup e impostazioni estranee.
+La Home mostra soltanto i browser pronti, con il predefinito per primo;
+gli errori sono registrati nei log. Il vecchio riquadro manuale non compare
+nel flusso automatico. [Contratto condiviso e limiti](AUTOMATIC_BROWSER_SETUP.md).
+
+## Procedura manuale precedente
+
+Le sezioni seguenti documentano il wizard conservato nel codice e i suoi
+controlli; non descrivono il nuovo avvio automatico dell’app.
+
 **Configura Firefox** è disponibile solo in cima alla **Home**, anche senza
 lettore o carta, se occorre configurare/aggiornare un profilo inizializzato,
 correggere un conflitto o

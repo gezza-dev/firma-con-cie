@@ -7,6 +7,44 @@ Le sezioni seguenti conservano il diario cronologico delle prove: indicazioni
 di funzionalità ancora da verificare si riferiscono alla data della singola voce.
 I percorsi locali dei vecchi artefatti sono esempi, non file distribuiti.
 
+## Configurazione automatica dei browser — Windows, 27 ottobre 2026
+
+Implementato il coordinatore condiviso, con rilevamento separato dal thread
+UI e registrazione Linux affidata agli helper esistenti. La configurazione
+Windows non installa componenti né richiede UAC: questa responsabilità resta
+all’installer. La Home uniforma lo stato e ordina prima il browser predefinito
+quando pronto. [Contratto e limiti](AUTOMATIC_BROWSER_SETUP.md).
+
+Analisi Flutter senza segnalazioni; **374 test superati, 4 integrazioni
+opzionali saltate**. Sono inclusi 16 nuovi test del coordinatore, dei log e
+della navigazione con inventario pendente. Dopo gli ultimi ritocchi ai log,
+superati nuovamente 21 test mirati su configurazione e localizzazione.
+Superati 14 controlli Python su identità del prodotto e percorsi, tutti i tre
+gruppi CTest Windows (150 controlli sui pulsanti, 300 cicli di ridimensionamento
+e inventario browser in sola lettura) e 49 controlli dell’installer isolato.
+
+Build Windows Release e installer rigenerati, con runtime e licenze verificati.
+Inventario reale: Chrome, Edge, Firefox; browser predefinito Chrome.
+Verificati visivamente elenco Home «Google Chrome, Firefox, Microsoft Edge»
+e apertura di Verifica Firma nella build distribuita. Una prima acquisizione
+della finestra aveva mostrato bianco; il comportamento non si è riprodotto
+all’avvio diagnostico e al successivo avvio della stessa copia distribuita,
+con payload Dart identico e senza eccezioni nel log del runtime.
+Confronto prima/dopo: impostazioni e archivio cifrato degli abbinamenti
+conservati byte per byte (sei file; esclusi i nuovi log previsti).
+Nessuna installazione di produzione, UAC o operazione privata sulla CIE.
+
+Rapporto locale: `reports/browser-auto-setup-20261027/result.json` nella
+cartella di lavoro Windows, esterna al repository. Compilazione/collaudo
+nativi del nuovo avvio automatico macOS/Linux e nuovi accessi reali restano
+da eseguire; i test condivisi non sostituiscono quelle verifiche.
+
+Il **27 ottobre 2026** l’utente ha confermato «Test eseguito con successo»
+per la nuova build Windows consegnata con configurazione automatica dei
+browser. L’esito è una conferma manuale dell’utente, distinta dai controlli
+automatici sopra riportati. Non specifica nuovi accessi o versioni dei browser
+e non costituisce collaudo nativo macOS/Linux.
+
 ## UX2: Home automatica e abbinamento unico
 
 Implementazione condivisa di riconoscimento automatico, ciclo di vita,

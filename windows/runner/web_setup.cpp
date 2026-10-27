@@ -23,6 +23,27 @@ DWORD checkSetup(const std::wstring& reader,bool package=false){
 WebSetupChannel::WebSetupChannel(flutter::BinaryMessenger* messenger,HWND){
  channel_=std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(messenger,"cie.id/windows-web-setup",&flutter::StandardMethodCodec::GetInstance());
  channel_->SetMethodCallHandler([this](const auto& call,auto reply){
+  if(call.method_name()=="checkBrowsers"){
+   if(browser_job_&&browser_job_->pending){reply->Success(flutter::EncodableValue(true));return;}
+   auto job=browser_job_=std::make_shared<BrowserJob>();
+   std::thread([job]{cie_browser::Inventory found;try{found=cie_browser::Discover();}catch(...){found.code=ERROR_GEN_FAILURE;}
+     {std::lock_guard<std::mutex> lock(job->mutex);job->inventory=std::move(found);}job->pending=false;}).detach();
+   reply->Success(flutter::EncodableValue(true));return;
+  }
+  if(call.method_name()=="browserStatus"){
+   flutter::EncodableMap response;
+   response[flutter::EncodableValue("pending")]=flutter::EncodableValue(browser_job_&&browser_job_->pending);
+   if(browser_job_&&!browser_job_->pending){
+    std::lock_guard<std::mutex> lock(browser_job_->mutex);
+    flutter::EncodableList installed;
+    for(const auto& id:browser_job_->inventory.installed)installed.emplace_back(id);
+    response[flutter::EncodableValue("installed")]=flutter::EncodableValue(installed);
+    response[flutter::EncodableValue("default")]=flutter::EncodableValue(browser_job_->inventory.default_browser);
+    response[flutter::EncodableValue("ok")]=flutter::EncodableValue(browser_job_->inventory.code==0);
+    response[flutter::EncodableValue("nativeCode")]=flutter::EncodableValue(static_cast<int64_t>(browser_job_->inventory.code));
+   }
+   reply->Success(flutter::EncodableValue(response));return;
+  }
   if(call.method_name()=="checkPackage"){
    if(package_job_&&package_job_->code==STILL_ACTIVE){reply->Success(flutter::EncodableValue(true));return;}
    auto job=package_job_=std::make_shared<Job>();

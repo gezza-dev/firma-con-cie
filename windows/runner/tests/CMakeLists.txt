@@ -28,3 +28,11 @@ add_custom_command(TARGET win32_caption_test POST_BUILD
   "${FLUTTER_EPHEMERAL}/flutter_windows.dll" "$<TARGET_FILE_DIR:win32_caption_test>")
 add_test(NAME win32_caption_buttons COMMAND win32_caption_test)
 set_tests_properties(win32_caption_buttons PROPERTIES TIMEOUT 20)
+
+add_executable(browser_inventory_test browser_inventory_test.cpp)
+target_compile_features(browser_inventory_test PRIVATE cxx_std_17)
+target_compile_definitions(browser_inventory_test PRIVATE UNICODE _UNICODE NOMINMAX)
+target_compile_options(browser_inventory_test PRIVATE /W4 /WX /utf-8)
+target_link_libraries(browser_inventory_test PRIVATE advapi32 ole32 shell32 uuid)
+add_test(NAME windows_browser_inventory COMMAND browser_inventory_test)
+set_tests_properties(windows_browser_inventory PROPERTIES TIMEOUT 20)

@@ -44,6 +44,16 @@ osservato la sessione autenticata né avviato la prova sulla CIE.
 
 ## Configurazione guidata nell’app
 
+Dal 27 ottobre 2026 l’app configura automaticamente Chrome desktop in
+background, a browser chiuso e con archivio NSS già inizializzato. I tentativi
+rinviati vengono ripresi ogni trenta secondi e al ritorno nell’app, senza
+bloccare la navigazione o chiedere il PIN. Non si creano database né si
+sostituiscono moduli in conflitto. La Home elenca i browser pronti; dettagli
+e codici finiscono nei log. [Comportamento condiviso](AUTOMATIC_BROWSER_SETUP.md).
+
+Le istruzioni successive descrivono il wizard manuale precedente conservato
+nel codice, non più mostrato dalla Home nel flusso automatico.
+
 **Configura Chrome** apre la procedura per Google
 Chrome desktop. Il riquadro compare solo in cima alla Home quando Chrome
 è rilevato e la configurazione richiede attenzione. Il riquadro scompare

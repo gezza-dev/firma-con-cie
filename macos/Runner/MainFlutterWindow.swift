@@ -47,6 +47,20 @@ class MainFlutterWindow: NSWindow {
     let channel = FlutterMethodChannel(name: "cie.prototype/web", binaryMessenger: flutterViewController.engine.binaryMessenger)
     webChannel = channel
     channel.setMethodCallHandler { call, result in
+      if call.method == "browserInventory" {
+        guard call.arguments == nil else { result(FlutterMethodNotImplemented); return }
+        DispatchQueue.global(qos: .utility).async {
+          let workspace = NSWorkspace.shared
+          let browsers = [("safari", "com.apple.Safari"), ("chrome", "com.google.Chrome"),
+                          ("firefox", "org.mozilla.firefox"), ("edge", "com.microsoft.edgemac")]
+          let installed = browsers.filter { workspace.urlForApplication(withBundleIdentifier: $0.1) != nil }.map { $0.0 }
+          let selected = workspace.urlForApplication(toOpen: URL(string: "https://www.cartaidentita.interno.gov.it/")!)
+            .flatMap { Bundle(url: $0)?.bundleIdentifier }
+          let defaultBrowser = browsers.first { $0.1 == selected }?.0 ?? ""
+          DispatchQueue.main.async { result(["ok": true, "installed": installed, "default": defaultBrowser]) }
+        }
+        return
+      }
       let classID = "it.giancarloezza.CIEID.FlutterPrototype.WebToken"
       if call.method == "activateComponent" {
         // Fixed command and our embedded extension only. No path, identifier,

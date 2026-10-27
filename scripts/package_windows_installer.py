@@ -188,6 +188,8 @@ def prepare(release, output, version, vc_redist, *, test_root=None):
     manifest['distribution'] = {k: v for k, v in audit.items() if k != 'excludedFiles'}
     manifest['cardCatalog'] = json.loads((ROOT / 'packaging/windows/card-catalog.json').read_text())
     source_paths = ['lib/main.dart', 'lib/windows_web_setup.dart', 'lib/guide_view.dart',
+                    'lib/browser_setup.dart', 'windows/runner/browser_inventory.h',
+                    'windows/runner/web_setup.h', 'macos/Runner/MainFlutterWindow.swift',
                     'lib/app_updates.dart', 'lib/certificate_validity.dart', 'lib/information_view.dart',
                     'lib/enrollment.dart', 'native/platform/linux/web/pkcs11.cpp',
                     'native/platform/windows/pkcs11/CMakeLists.txt',
