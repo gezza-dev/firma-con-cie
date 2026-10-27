@@ -21,10 +21,16 @@ richiesta non riuscita non viene ripresentata ogni trenta secondi.
 
 Firefox su Windows/macOS usa il modulo OS integrato, attivo per impostazione
 predefinita da Firefox 90 ([documentazione Mozilla](https://blog.mozilla.org/security/2021/07/28/making-client-certificates-available-by-default-in-firefox-90/)).
-Si leggono gli indici dei profili già inizializzati e le preferenze relative
-al supporto OS. Un’esplicita disattivazione viene rispettata; nessuna
-preferenza viene sovrascritta. Non viene installata un’altra DLL Firefox.
-Policy aziendali e configurazioni non standard richiedono una verifica locale.
+Su Windows si leggono gli indici dei profili già inizializzati e le preferenze
+relative al supporto OS; un'esplicita disattivazione mantiene il browser escluso
+dall'elenco dei pronti. Su macOS si usano Launch Services e la versione pubblica
+del bundle Firefox: versioni precedenti alla 90, o non verificabili, restano
+escluse. Il profilo privato non viene letto e non è richiesto l'accesso ai dati
+di altre app o l'accesso completo al disco. Nessuna preferenza viene modificata
+e non viene installata un'altra libreria Firefox. Eventuali disattivazioni
+private del modulo OS o policy aziendali su macOS restano operative nel browser
+e non sono certificabili da questo inventario dei prerequisiti. Il collaudo
+di accesso e le configurazioni non standard restano verifiche distinte.
 
 Su Linux vengono trattati tutti i profili Firefox inizializzati individuati
 dagli helper esistenti, inclusi Snap. Chrome usa il database NSS condiviso
@@ -86,8 +92,45 @@ con successo 21 test mirati; impostazioni e abbinamenti Windows sono risultati
 identici byte per byte prima e dopo l’avvio. Nessuna nuova prova privata sulla
 CIE è stata eseguita dall’agente.
 
-La compilazione Windows e i test condivisi non equivalgono a collaudo nativo
-macOS/Linux del nuovo avvio automatico. Questi due collaudi e le prove di
-accesso reali della nuova build rimangono da completare sui rispettivi sistemi.
+Il 27 ottobre 2026 il commit `1628af0` è stato compilato anche per macOS
+Universal, con firma Apple Development e DMG verificato dopo montaggio e copia.
+Sono superati analisi Flutter, 374 test Flutter (4 integrazioni opzionali
+saltate), 27 gruppi nativi, 21 controlli del componente macOS, 14 casi DSS/LTA,
+19 casi storici e 37 controlli di trasporto. Avvio, navigazione e chiusura
+dell'app sono riusciti; la Home ha mostrato Safari e Chrome pronti. Le
+impostazioni, gli abbinamenti, i certificati pubblici e i file dei browser
+controllati sono rimasti invariati. Nessuna autenticazione o richiesta PIN
+è stata avviata durante queste verifiche.
+
+L'utente ha confermato riuscito l'accesso CIE tramite Firefox su macOS. Il
+successivo controllo diagnostico ha individuato la causa di
+`profile_inspection_failed`: la protezione macOS dei dati di altre app negava
+la lettura di `profiles.ini` (`PathAccessException`, errore POSIX 1, Operation
+not permitted). L'inventario corretto non legge più il profilo Firefox macOS;
+usa soltanto metadati pubblici del browser e stato del componente di sistema.
+I test verificano che il lettore dei profili non venga chiamato su macOS, che
+versioni sconosciute/non supportate non siano dichiarate pronte e che Windows
+conservi i controlli delle preferenze. Le protezioni di macOS restano invariate.
+
+Il nuovo helper nativo si verifica senza aprire browser o profili:
+
+```sh
+mkdir -p .build/macos-browser-inventory
+xcrun swiftc macos/Runner/BrowserInventory.swift test/macos_browser_inventory/main.swift \
+  -o .build/macos-browser-inventory/tests
+.build/macos-browser-inventory/tests
+```
+
+L'opzione facoltativa `--inspect-installed` aggiunge il solo inventario di
+browser/versioni installati. Il collaudo nativo Linux del nuovo avvio automatico
+e gli accessi reali rimangono distinti dai test condivisi.
+
+La correzione macOS è stata ricompilata Universal e verificata nell'app firmata:
+la Home e il log dedicato mostrano Safari, Firefox e Chrome pronti, senza nuovi
+`profile_inspection_failed`. Sono passati 377 test Flutter (4 integrazioni
+opzionali saltate), 19 controlli nativi dell'inventario e i controlli del
+componente CryptoTokenKit. Profilo/preferenze Firefox e dati locali delle CIE
+sono risultati identici nei confronti prima e dopo l'avvio. Il DMG Apple
+Development è stato verificato dopo montaggio e copia; non è notarizzato.
 I precedenti accessi confermati restano documentati in
 [WEB_AUTHENTICATION.md](WEB_AUTHENTICATION.md).

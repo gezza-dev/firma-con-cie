@@ -21,6 +21,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		AA2026102700000000000001 /* BrowserInventory.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2026102700000000000002 /* BrowserInventory.swift */; };
 		AA2010200000000000000001 /* WebComponentActivation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2010200000000000000002 /* WebComponentActivation.swift */; };
 		331C80D8294CF71000263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C80D7294CF71000263BE5 /* RunnerTests.swift */; };
 		335BBD1B22A9A15E00E9071D /* GeneratedPluginRegistrant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 335BBD1A22A9A15E00E9071D /* GeneratedPluginRegistrant.swift */; };
@@ -63,6 +64,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		AA2026102700000000000002 /* BrowserInventory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserInventory.swift; sourceTree = "<group>"; };
 		AA2010200000000000000002 /* WebComponentActivation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebComponentActivation.swift; sourceTree = "<group>"; };
 		331C80D5294CF71000263BE5 /* RunnerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RunnerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		331C80D7294CF71000263BE5 /* RunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunnerTests.swift; sourceTree = "<group>"; };
@@ -175,6 +177,7 @@
 			children = (
 				33CC10F02044A3C60003C045 /* AppDelegate.swift */,
 				33CC11122044BFA00003C045 /* MainFlutterWindow.swift */,
+				AA2026102700000000000002 /* BrowserInventory.swift */,
 				AA2010200000000000000002 /* WebComponentActivation.swift */,
 				33E51913231747F40026EE4D /* DebugProfile.entitlements */,
 				33E51914231749380026EE4D /* Release.entitlements */,
@@ -365,6 +368,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				33CC11132044BFA00003C045 /* MainFlutterWindow.swift in Sources */,
+				AA2026102700000000000001 /* BrowserInventory.swift in Sources */,
 				AA2010200000000000000001 /* WebComponentActivation.swift in Sources */,
 				33CC10F12044A3C60003C045 /* AppDelegate.swift in Sources */,
 				335BBD1B22A9A15E00E9071D /* GeneratedPluginRegistrant.swift in Sources */,

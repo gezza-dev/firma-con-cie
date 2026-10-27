@@ -1,3 +1,4 @@
 {
-  "build_root": "~/build-output/firma-con-cie"
+  "build_root": "~/build-output/firma-con-cie",
+  "macos_output": "macos-artifacts"
 }

@@ -16,7 +16,7 @@ import subprocess
 import tempfile
 
 from ds_store import DSStore
-from build_paths import build_root
+from build_paths import macos_paths
 from product_identity import macos_image_name
 
 # Finder stores absolute AppKit coordinates, with y increasing upwards.
@@ -129,11 +129,11 @@ def main():
     parser.add_argument('--report', type=Path)
     args = parser.parse_args()
     if args.app is None or args.output is None:
-        local_root = build_root(Path(__file__).resolve().parents[1])
-        args.app = args.app or local_root / 'firma-con-cie/Firma con CIE.app'
+        local_paths = macos_paths(Path(__file__).resolve().parents[1])
+        args.app = args.app or local_paths['destination'] / 'Firma con CIE.app'
         if args.output is None:
             version = plistlib.loads((args.app / 'Contents/Info.plist').read_bytes())['CFBundleShortVersionString']
-            args.output = local_root / macos_image_name(version)
+            args.output = local_paths['dmg'].parent / macos_image_name(version)
     if args.app.is_symlink() or args.app.name != 'Firma con CIE.app':
         raise ValueError('Provide a real signed Firma con CIE.app bundle')
     app, output = args.app.resolve(), args.output.absolute()

@@ -133,7 +133,9 @@ Per scegliere una destinazione propria, copiare l’esempio e modificare **solo*
 cp local-build.example.json local-build.json
 ```
 
-`local-build.json` contiene la chiave `build_root`, con un percorso assoluto oppure iniziante con `~/`. Gli script lo leggono dalla cartella del progetto, indipendentemente dalla directory da cui sono avviati. Il file è ignorato da Git, escluso dalla copia di compilazione e rifiutato dal controllo degli snapshot da pubblicare. L’esempio versionato contiene solo un percorso generico; non inserirvi le proprie impostazioni. I parametri espliciti `--destination`, `--build-workspace`, `--app` e `--output` prevalgono sulla configurazione locale. Senza configurazione locale si usano i valori generici indicati sopra.
+`local-build.json` richiede la chiave `build_root`, con un percorso assoluto oppure iniziante con `~/`. Gli script lo leggono dalla cartella del progetto, indipendentemente dalla directory da cui sono avviati. Il file è ignorato da Git, escluso dalla copia di compilazione e rifiutato dal controllo degli snapshot da pubblicare. L’esempio versionato contiene solo un percorso generico; non inserirvi le proprie impostazioni. I parametri espliciti `--destination`, `--build-workspace`, `--app` e `--output` prevalgono sulla configurazione locale. Senza configurazione locale si usano i valori generici indicati sopra.
+
+La chiave locale facoltativa `macos_output` permette di salvare app e DMG nella stessa cartella: un percorso relativo è risolto sotto `build_root`, mentre un percorso assoluto è usato direttamente. Il workspace resta separato sotto `build_root/workspace-macos`. Il nome scelto da ciascuno sviluppatore rimane nel proprio `local-build.json`; l’esempio versionato usa un nome generico. Omettendo questa chiave resta valida la disposizione predefinita precedente.
 
 Il workspace non contiene gli archivi personali dell’app. L’estensione firmata può essere conservata fuori dai sorgenti e passata esplicitamente con `--web-extension`; i percorsi effettivi e i comandi personali possono essere annotati in `LOCAL_SETUP.md`, anch’esso escluso da Git. La copia dell’estensione deve conservare i permessi di esecuzione (per esempio con `ditto`): la sola verifica della firma digitale non rileva la perdita di tali permessi. La compilazione e il confezionamento del DMG controllano anche che i programmi necessari siano eseguibili.
 
@@ -154,7 +156,7 @@ python3 -m venv .build/dmg-tools
   --report reports/macos-development-dmg.json
 ```
 
-Il comando usa il bundle sotto `build_root/firma-con-cie` e salva `firma-con-cie_1.0.0_universal.dmg` sotto lo stesso `build_root`, risolto dalla configurazione locale o dal valore generico predefinito. La versione viene letta dal bundle firmato. È possibile indicare un’altra app o destinazione con `--app` e `--output`.
+Il comando usa l’app e la cartella DMG risolte dalla configurazione locale. Con `macos_output` app e DMG sono nella stessa cartella; senza questa chiave il bundle resta sotto `build_root/firma-con-cie` e il DMG sotto `build_root`. Il nome del DMG, per esempio `firma-con-cie_1.0.0_universal.dmg`, usa la versione letta dal bundle firmato. È possibile indicare un’altra app o destinazione con `--app` e `--output`.
 
 Il volume **Firma con CIE** contiene soltanto l’app e il collegamento
 **Applicazioni**; la finestra Finder usa una disposizione a due icone con

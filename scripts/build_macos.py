@@ -10,7 +10,7 @@ import re
 import shutil
 import subprocess
 from pathlib import Path
-from build_paths import build_root
+from build_paths import macos_paths
 ROOT = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--flutter', default='flutter')
@@ -24,9 +24,9 @@ parser.add_argument('--skip-build', action='store_true', help='Reassemble the ex
 parser.add_argument('--web-extension',type=Path,help='Optional separately built prototype CryptoTokenKit appex')
 args = parser.parse_args()
 if args.destination is None or args.build_workspace is None:
-    local_root = build_root(ROOT)
-    args.destination = args.destination or local_root / 'firma-con-cie'
-    args.build_workspace = args.build_workspace or local_root / 'workspace-macos'
+    local_paths = macos_paths(ROOT)
+    args.destination = args.destination or local_paths['destination']
+    args.build_workspace = args.build_workspace or local_paths['workspace']
 if args.web_extension:
     extension = args.web_extension.resolve()
     extension_info = plistlib.loads((extension/'Contents/Info.plist').read_bytes())

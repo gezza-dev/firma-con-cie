@@ -33,6 +33,8 @@ const _outcomeMessages = <String, String>{
       'Conflicting module found; existing configuration preserved',
   'os_certificates_disabled':
       'OS client certificates explicitly disabled; preferences preserved',
+  'browser_version_unavailable': 'Browser version could not be verified',
+  'browser_version_unsupported': 'Browser version does not provide the supported OS certificate integration',
   'component_not_ready': 'System component unavailable or outdated',
   'component_ready': 'System component ready',
   'permission_required': 'Browser reader permission is not connected',
@@ -140,9 +142,7 @@ class BrowserSetupCoordinator extends ChangeNotifier {
           final result = await activate!().timeout(const Duration(seconds: 30));
           await _record(
             'system',
-            result['ok'] == true
-                ? 'component_activated'
-                : _code(result),
+            result['ok'] == true ? 'component_activated' : _code(result),
           );
           system = await systemReader().timeout(const Duration(seconds: 40));
         }
@@ -422,7 +422,10 @@ Future<JsonResult> readBrowserInventory() async {
         'browserStatus',
       );
       if (result?['pending'] != true) {
-        return _withNativeFirefoxState(Map<String, dynamic>.from(result ?? {}));
+        return completeNativeBrowserInventory(
+          Map<String, dynamic>.from(result ?? {}),
+          platform: 'windows',
+        );
       }
       await Future<void>.delayed(const Duration(milliseconds: 100));
     }
@@ -431,16 +434,38 @@ Future<JsonResult> readBrowserInventory() async {
   if (Platform.isMacOS) {
     final result = await const MethodChannel('cie.prototype/web')
         .invokeMapMethod<String, dynamic>('browserInventory');
-    return _withNativeFirefoxState(Map<String, dynamic>.from(result ?? {}));
+    return completeNativeBrowserInventory(
+      Map<String, dynamic>.from(result ?? {}),
+      platform: 'macos',
+    );
   }
   return Isolate.run(_linuxBrowserInventory);
 }
 
-Future<JsonResult> _withNativeFirefoxState(JsonResult found) async {
+Future<JsonResult> completeNativeBrowserInventory(
+  JsonResult found, {
+  required String platform,
+  Future<String> Function()? firefoxInspector,
+}) async {
+  if (platform == 'macos') {
+    // macOS protects other apps' profile data. Firefox's public bundle metadata
+    // establishes OS-certificate capability; never read its private profiles.
+    final states = found['nativeStates'];
+    if ((found['installed'] as List? ?? []).contains('firefox') &&
+        (states is! Map || states['firefox'] is! String)) {
+      found['nativeStates'] = {
+        if (states is Map) ...states,
+        'firefox': 'browser_version_unavailable',
+      };
+    }
+    return found;
+  }
   if ((found['installed'] as List? ?? []).contains('firefox')) {
     try {
       found['nativeStates'] = {
-        'firefox': await Isolate.run(_nativeFirefoxState),
+        'firefox':
+            await (firefoxInspector?.call() ??
+                Isolate.run(_nativeFirefoxState)),
       };
     } catch (_) {
       // A damaged Firefox profile must not hide healthy OS-store browsers.

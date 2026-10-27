@@ -375,6 +375,99 @@ void main() {
       expect(chrome.writes, 0);
     },
   );
+  test(
+    'macOS uses native Firefox capability without opening private profiles',
+    () async {
+      var inspections = 0;
+      final found = await completeNativeBrowserInventory(
+        {
+          'ok': true,
+          'installed': ['safari', 'firefox'],
+          'nativeStates': {'firefox': 'configured'},
+          'default': 'firefox',
+        },
+        platform: 'macos',
+        firefoxInspector: () async {
+          inspections++;
+          throw const FileSystemException('Protected browser profile');
+        },
+      );
+      expect(inspections, 0);
+      expect(found['nativeStates'], {'firefox': 'configured'});
+      final coordinator = BrowserSetupCoordinator(
+        platform: 'macos',
+        inventory: () async => found,
+        systemReader: () async => {'available': true},
+        log: (_, _, _) async {},
+      );
+      addTearDown(coordinator.dispose);
+      await coordinator.refresh();
+      expect(coordinator.configured, ['firefox', 'safari']);
+    },
+  );
+  test(
+    'macOS does not certify missing or unsupported Firefox capability',
+    () async {
+      for (final state in [null, 'browser_version_unsupported']) {
+        var inspected = false;
+        final found = await completeNativeBrowserInventory(
+          {
+            'ok': true,
+            'installed': ['safari', 'firefox'],
+            if (state != null) 'nativeStates': {'firefox': state},
+          },
+          platform: 'macos',
+          firefoxInspector: () async {
+            inspected = true;
+            return 'configured';
+          },
+        );
+        expect(inspected, false);
+        expect(
+          (found['nativeStates'] as Map)['firefox'],
+          state ?? 'browser_version_unavailable',
+        );
+        final coordinator = BrowserSetupCoordinator(
+          platform: 'macos',
+          inventory: () async => found,
+          systemReader: () async => {'available': true},
+          log: (_, _, _) async {},
+        );
+        await coordinator.refresh();
+        expect(coordinator.configured, ['safari']);
+        coordinator.dispose();
+      }
+    },
+  );
+  test('Windows retains profile overrides and inspection failures', () async {
+    for (final state in ['configured', 'os_certificates_disabled']) {
+      var inspections = 0;
+      final found = await completeNativeBrowserInventory(
+        {
+          'ok': true,
+          'installed': ['firefox'],
+        },
+        platform: 'windows',
+        firefoxInspector: () async {
+          inspections++;
+          return state;
+        },
+      );
+      expect(inspections, 1);
+      expect(found['nativeStates'], {'firefox': state});
+    }
+    final failed = await completeNativeBrowserInventory(
+      {
+        'ok': true,
+        'installed': ['firefox'],
+      },
+      platform: 'windows',
+      firefoxInspector: () async {
+        throw const FileSystemException('Unreadable synthetic profile');
+      },
+    );
+    expect(failed['nativeStates'], {'firefox': 'profile_inspection_failed'});
+  });
   test('native Firefox checks initialized profiles and respects explicit OS-certificate overrides', () async {
     final dir = await Directory.systemTemp.createTemp('browser-profiles-');
     addTearDown(() => dir.delete(recursive: true));

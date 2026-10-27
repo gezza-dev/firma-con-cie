@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from build_paths import build_root
+from build_paths import build_root, macos_paths
 
 
 class BuildPathTests(unittest.TestCase):
@@ -58,6 +58,31 @@ class BuildPathTests(unittest.TestCase):
         self.config.write_text('{', encoding='utf-8')
         with self.assertRaises(ValueError):
             build_root(self.project)
+
+    def test_default_macos_layout_is_backward_compatible(self):
+        root = build_root(self.project)
+        self.assertEqual(macos_paths(self.project), dict(
+            destination=root / 'firma-con-cie', workspace=root / 'workspace-macos',
+            dmg=root / 'Firma con CIE.dmg'))
+
+    def test_relative_macos_output_colocates_artifacts_without_moving_workspace(self):
+        root = Path(self.temporary.name) / 'Private build root'
+        self.configure({'build_root': str(root), 'macos_output': 'Mac output'})
+        paths = macos_paths(self.project)
+        self.assertEqual(paths['destination'], root / 'Mac output')
+        self.assertEqual(paths['dmg'], paths['destination'] / 'Firma con CIE.dmg')
+        self.assertEqual(paths['workspace'], root / 'workspace-macos')
+        self.assertFalse(root.exists())
+
+    def test_absolute_macos_output_and_invalid_values(self):
+        output = Path(self.temporary.name) / 'Separate artifacts'
+        self.configure({'build_root': '~/build-root', 'macos_output': str(output)})
+        self.assertEqual(macos_paths(self.project)['destination'], output)
+        self.assertEqual(macos_paths(self.project)['dmg'], output / 'Firma con CIE.dmg')
+        for value in ['', None, 1, []]:
+            self.configure({'build_root': '~/build-root', 'macos_output': value})
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                macos_paths(self.project)
 
 
 if __name__ == '__main__':
