@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cie_flutter_prototype/browser_setup.dart';
+import 'package:cie_flutter_prototype/app_settings.dart';
 import 'package:cie_flutter_prototype/enrollment.dart';
 import 'package:cie_flutter_prototype/firefox_setup.dart';
 import 'package:cie_flutter_prototype/main.dart';
@@ -73,7 +74,189 @@ EnrollmentRecord paired([bool published = true]) => EnrollmentRecord(
   {'available': true},
 );
 
+class PendingStartupSettings extends MemorySettingsStore {
+  final pending = Completer<AppSettings>();
+  @override
+  Future<AppSettings> load() => pending.future;
+}
+
+class StartupService extends UnifiedFake {
+  final metadata = Completer<void>();
+  final pairingRead = Completer<void>();
+  bool holdPairings = false, readingMetadata = false;
+  int loadCalls = 0, enrollmentReads = 0, metadataReads = 0;
+
+  @override
+  Future<JsonResult> load() async {
+    loadCalls++;
+    if (readingMetadata) {
+      return {
+        'ok': false,
+        'code': 'busy',
+        'message': 'Attendere il completamento dell’operazione',
+      };
+    }
+    return super.load();
+  }
+
+  @override
+  Future<JsonResult> enrollments() async {
+    enrollmentReads++;
+    if (holdPairings) await pairingRead.future;
+    return super.enrollments();
+  }
+
+  Future<JsonResult> browserMetadata() async {
+    metadataReads++;
+    readingMetadata = true;
+    await metadata.future;
+    readingMetadata = false;
+    return {'ok': true, 'available': true};
+  }
+}
+
 void main() {
+  testWidgets(
+    'initial focus cannot occupy native service before runtime load',
+    (t) async {
+      size(t);
+      final settings = PendingStartupSettings();
+      final service = StartupService();
+      final coordinator = BrowserSetupCoordinator(
+        platform: 'linux',
+        inventory: () async => {'ok': true, 'installed': <String>[]},
+        systemReader: service.browserMetadata,
+        log: (_, _, _) async {},
+      );
+      await t.pumpWidget(
+        CiePrototype(
+          service: service,
+          settings: settings,
+          browserSetup: coordinator,
+          webStatusReader: coordinator.cachedSystemStatus,
+        ),
+      );
+      t.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      t.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      for (var i = 0; i < 5; i++) {
+        await t.pump(const Duration(milliseconds: 20));
+      }
+      final earlyMetadataReads = service.metadataReads;
+      settings.pending.complete(const AppSettings(languageCode: 'it'));
+      await t.pumpAndSettle();
+      expect(service.loadCalls, 1);
+      expect(
+        find.text('Attendere il completamento dell’operazione'),
+        findsNothing,
+      );
+      expect(earlyMetadataReads, 0);
+      expect(service.enrollmentReads, 1);
+      service.metadata.complete();
+      await t.pumpAndSettle();
+      expect(service.metadataReads, greaterThanOrEqualTo(1));
+      expect(service.enrollCalls, 0);
+      expect(service.signCalls, 0);
+      await t.pumpWidget(const SizedBox.shrink());
+    },
+  );
+
+  testWidgets('browser startup waits for initial paired-card metadata', (
+    t,
+  ) async {
+    size(t);
+    final service = StartupService()..holdPairings = true;
+    service.records['TEST'] = {
+      'card': 'TEST',
+      'readyForSigning': true,
+      'publicDataSaved': true,
+      'webProvisioned': true,
+    };
+    final coordinator = BrowserSetupCoordinator(
+      platform: 'linux',
+      inventory: () async => {'ok': true, 'installed': <String>[]},
+      systemReader: service.browserMetadata,
+      log: (_, _, _) async {},
+    );
+    await t.pumpWidget(
+      CiePrototype(
+        service: service,
+        browserSetup: coordinator,
+        webStatusReader: coordinator.cachedSystemStatus,
+      ),
+    );
+    for (var i = 0; i < 5; i++) {
+      await t.pump(const Duration(milliseconds: 20));
+    }
+    expect(service.enrollmentReads, 1);
+    final earlyMetadataReads = service.metadataReads;
+    service.pairingRead.complete();
+    service.metadata.complete();
+    await t.pumpAndSettle();
+    expect(earlyMetadataReads, 0);
+    expect(service.metadataReads, greaterThanOrEqualTo(1));
+    expect(find.text('CIE abbinata. Puoi firmare documenti.'), findsOneWidget);
+    expect(service.enrollCalls, 0);
+    expect(service.signCalls, 0);
+    await t.pumpWidget(const SizedBox.shrink());
+  });
+
+  test(
+    'initial native busy metadata is retried before configuring browsers',
+    () async {
+      var reads = 0;
+      final profiles = Profiles();
+      final coordinator = BrowserSetupCoordinator(
+        platform: 'linux',
+        inventory: () async => {
+          'ok': true,
+          'installed': ['firefox'],
+        },
+        systemReader: () async => ++reads == 1
+            ? {'ok': false, 'code': 'busy'}
+            : {'ok': true, 'available': true},
+        firefox: profiles,
+        statusRetryDelay: Duration.zero,
+        log: (_, _, _) async {},
+      );
+      addTearDown(coordinator.dispose);
+      await coordinator.refresh();
+      expect(reads, 2);
+      expect(coordinator.configured, ['firefox']);
+      expect(profiles.writes, ['one', 'two']);
+    },
+  );
+
+  test(
+    'busy metadata is bounded and not cached as component absence',
+    () async {
+      var busy = true, reads = 0;
+      final profiles = Profiles();
+      final coordinator = BrowserSetupCoordinator(
+        platform: 'linux',
+        inventory: () async => {
+          'ok': true,
+          'installed': ['firefox'],
+        },
+        systemReader: () async {
+          reads++;
+          return busy ? {'ok': false, 'code': 'busy'} : {'available': true};
+        },
+        firefox: profiles,
+        statusRetryDelay: Duration.zero,
+        log: (_, _, _) async {},
+      );
+      addTearDown(coordinator.dispose);
+      await coordinator.refresh();
+      expect(reads, 5);
+      expect(coordinator.configured, isEmpty);
+      expect(profiles.writes, isEmpty);
+      busy = false;
+      await coordinator.refresh();
+      expect(reads, 6);
+      expect(coordinator.configured, ['firefox']);
+    },
+  );
+
   test(
     'Snap authorization failure is requested once and preserves native Firefox',
     () async {

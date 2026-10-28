@@ -115,7 +115,7 @@ def stage_payload(bundle, stage, native_manifest, package_type="deb"):
     doc.mkdir(parents=True)
     shutil.copy2(ROOT / 'LICENSE', doc / 'copyright')
     shutil.copy2(ROOT / 'NOTICE.md', doc / 'NOTICE.md')
-    for name in ('BUILDING.md', 'STATUS.md', 'WEB_AUTHENTICATION.md', 'LINUX_DSS_LTA.md', 'LINUX_PACKAGE.md', 'LINUX_FIREFOX.md', 'LINUX_FIREFOX_SETUP.md', 'LINUX_DISTRIBUTION_PACKAGES.md', 'LINUX_ARM64.md', 'LICENSING.md'):
+    for name in ('BUILDING.md', 'STATUS.md', 'WEB_AUTHENTICATION.md', 'AUTOMATIC_BROWSER_SETUP.md', 'LINUX_DSS_LTA.md', 'LINUX_PACKAGE.md', 'LINUX_FIREFOX.md', 'LINUX_FIREFOX_SETUP.md', 'LINUX_DISTRIBUTION_PACKAGES.md', 'LINUX_ARM64.md', 'LICENSING.md'):
         shutil.copy2(ROOT / 'docs' / name, doc / name)
     shutil.copy2(ROOT / 'docs/LINUX_CHROME.md', doc / 'LINUX_CHROME.md')
     (doc / 'tools').mkdir()

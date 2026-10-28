@@ -114,6 +114,8 @@ class PackageBoundaries(unittest.TestCase):
                 self.assertEqual((stage / 'usr/bin/Firma con CIE').read_text(),
                                  '#!/bin/sh\nexec "/opt/firma-con-cie/Firma con CIE" "$@"\n')
                 self.assertTrue((stage / 'usr/share/doc/firma-con-cie/BUILDING.md').is_file())
+                self.assertEqual((stage / 'usr/share/doc/firma-con-cie/AUTOMATIC_BROWSER_SETUP.md').read_bytes(),
+                                 (common.ROOT / 'docs/AUTOMATIC_BROWSER_SETUP.md').read_bytes())
                 self.assertFalse(list(stage.glob('**/postinst')))
 
     def test_release_version_is_mandatory_before_creating_output(self):

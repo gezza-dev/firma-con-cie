@@ -11,6 +11,7 @@ import 'application_storage.dart';
 import 'chrome_setup.dart';
 import 'enrollment.dart';
 import 'firefox_setup.dart';
+import 'linux_browser_inventory.dart';
 import 'native_bridge.dart';
 import 'web_access.dart';
 
@@ -60,6 +61,7 @@ class BrowserSetupCoordinator extends ChangeNotifier {
     this.chrome,
     this.activate,
     this.interval = const Duration(seconds: 30),
+    this.statusRetryDelay = const Duration(milliseconds: 200),
   });
   final String platform;
   final BrowserInventoryReader inventory;
@@ -69,6 +71,7 @@ class BrowserSetupCoordinator extends ChangeNotifier {
   final ChromeSetupService? chrome;
   final WebComponentActivator? activate;
   final Duration interval;
+  final Duration statusRetryDelay;
   JsonResult system = {};
   List<String> configured = const [];
   String? defaultBrowser;
@@ -80,6 +83,16 @@ class BrowserSetupCoordinator extends ChangeNotifier {
 
   Future<JsonResult> cachedSystemStatus() async => system;
   bool get hasConfiguredBrowser => configured.isNotEmpty;
+
+  Future<JsonResult> _readSystem() async {
+    for (var attempt = 0; ; attempt++) {
+      final result = await systemReader().timeout(const Duration(seconds: 40));
+      if (result['code'] != 'busy' || attempt == 4 || _disposed) return result;
+      // The initial pairing/reader status may still own the native service.
+      // Retry only this metadata query, never a card or PIN operation.
+      await Future<void>.delayed(statusRetryDelay);
+    }
+  }
 
   void start() {
     if (_disposed || _timer != null) return;
@@ -130,8 +143,8 @@ class BrowserSetupCoordinator extends ChangeNotifier {
           _lastSystemRead == null ||
           DateTime.now().difference(_lastSystemRead!) >=
               const Duration(minutes: 1)) {
-        system = await systemReader().timeout(const Duration(seconds: 40));
-        _lastSystemRead = DateTime.now();
+        system = await _readSystem();
+        _lastSystemRead = system['code'] == 'busy' ? null : DateTime.now();
         if (platform == 'macos' &&
             system['available'] != true &&
             system['canActivateComponent'] == true &&
@@ -144,7 +157,7 @@ class BrowserSetupCoordinator extends ChangeNotifier {
             'system',
             result['ok'] == true ? 'component_activated' : _code(result),
           );
-          system = await systemReader().timeout(const Duration(seconds: 40));
+          system = await _readSystem();
         }
       }
       await _record(
@@ -539,22 +552,7 @@ String inspectNativeFirefoxProfiles(Directory base) {
 }
 
 Future<JsonResult> _linuxBrowserInventory() async {
-  bool exists(String path) => File(path).existsSync();
-  final snap = exists('/snap/bin/firefox');
-  final installed = <String>[
-    if (exists('/usr/bin/google-chrome') ||
-        exists('/usr/bin/google-chrome-stable') ||
-        exists('/opt/google/chrome/chrome'))
-      'chrome',
-    if (exists('/usr/lib/firefox/firefox') ||
-        exists('/opt/firefox/firefox') ||
-        (!snap && exists('/usr/bin/firefox')))
-      'firefox',
-    if (snap) 'firefox-snap',
-    if (exists('/usr/bin/microsoft-edge') ||
-        exists('/usr/bin/microsoft-edge-stable'))
-      'edge',
-  ];
+  final installed = installedLinuxBrowsers();
   String? selected;
   Process? process;
   try {

@@ -12,7 +12,7 @@ Non vengono avviati browser, accessi, operazioni sulla CIE o richieste PIN.
 | --- | --- | --- |
 | Windows | Edge, Chrome, Firefox | Rilevamento dalle registrazioni di Windows, verifica del componente e uso dell’archivio certificati di sistema |
 | macOS | Safari, Chrome, Firefox | Rilevamento Launch Services, verifica/attivazione dell’estensione CryptoTokenKit incorporata |
-| Linux | Chrome desktop, Firefox, Firefox Snap | Rilevamento nelle posizioni standard, registrazione NSS tramite gli helper verificati già distribuiti |
+| Linux | Chrome desktop, Firefox, Firefox Snap | Rilevamento nelle posizioni standard e dai metadati dei profili Firefox inizializzati, registrazione NSS tramite gli helper verificati già distribuiti |
 
 Il componente Windows continua a essere installato/aggiornato soltanto
 dall’installer con UAC. L’app non eleva i privilegi. Le autorizzazioni macOS
@@ -47,6 +47,31 @@ vengono accorpate. Se un browser è aperto o manca un profilo inizializzato,
 non viene modificato: il lavoro viene ripreso quando le condizioni lo consentono.
 Non vengono creati profili o chiusi processi al posto dell’utente.
 
+La verifica Linux ha rilevato una possibile sovrapposizione tra la lettura
+iniziale degli abbinamenti e quella dello stato del componente. La correzione
+locale ritenta soltanto la query dei metadati quando riceve `busy`, fino a
+cinque letture con attese asincrone di 200 ms. Uno stato ancora occupato non
+viene conservato per un minuto come assenza del componente. Non vengono
+ritentate operazioni sulla carta, firme o invii del PIN.
+
+Il controllo automatico parte dopo il caricamento del middleware e la lettura
+iniziale degli abbinamenti. Gli eventi di attivazione della finestra durante
+questo caricamento non avviano controlli concorrenti. Questo evita il falso
+errore iniziale «Attendere il completamento dell’operazione», riprodotto con
+un evento di focus anticipato e coperto da test software con dati sintetici.
+
+L'inventario Linux riconosce Chrome e Firefox nelle posizioni standard del
+sistema, oltre a `/snap/bin/firefox`. Riconosce anche Firefox estratto in una
+cartella personale, per esempio Download: legge `LastPlatformDir` da
+`compatibility.ini` dei profili nativi inizializzati indicizzati da `profiles.ini`
+(cartelle Mozilla tradizionale e XDG). Verifica che l'installazione indicata
+esista ancora, abbia l'identità Firefox in `application.ini` e un eseguibile ELF
+con permesso di esecuzione. Non esegue il browser, non scandisce Download o
+l'intera Home e non modifica questi metadati. Profili obsoleti, non inizializzati,
+Snap o Flatpak non fanno dichiarare presente Firefox standard. Il coordinatore
+continua a includere un browser tra i pronti solo dopo la verifica della sua
+configurazione NSS; la sola presenza dell'eseguibile non basta.
+
 Sotto una CIE abbinata, sulle tre piattaforme:
 
 - nessun browser verificato o certificato/componente non pronto:
@@ -80,6 +105,10 @@ restano conservati. Non sono state modificate le DLL del middleware.
 `test/browser_setup_test.dart` copre esiti parziali, ordine del browser
 predefinito, tutti i profili, conflitti, browser aperti/non inizializzati,
 riavvio del controllo, log e navigazione durante un inventario pendente.
+`test/linux_browser_inventory_test.dart` copre Firefox estratto nelle cartelle
+personali, coesistenza con Snap, percorsi XDG, installazioni rimosse, identità
+ed eseguibili non validi, metadati mancanti e conservazione dei file. Verifica
+anche che entrambi i Firefox già configurati compaiano senza nuove scritture NSS.
 `windows/runner/tests/browser_inventory_test.cpp` verifica le mappature e
 l’inventario Windows in sola lettura, senza scritture nel registro.
 Gli helper Linux mantengono i test isolati esistenti.

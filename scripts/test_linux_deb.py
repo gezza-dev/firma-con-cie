@@ -51,7 +51,7 @@ def check(package, report, upgrade_from=None):
         tool = extracted / 'usr/share/doc/firma-con-cie/tools/configure_chrome_linux.py'
         assert tool.read_bytes() == (ROOT / 'scripts/configure_chrome_linux.py').read_bytes()
         assert (extracted / 'usr/share/doc/firma-con-cie/LINUX_CHROME.md').is_file()
-        for name in ('STATUS.md', 'WEB_AUTHENTICATION.md'):
+        for name in ('STATUS.md', 'WEB_AUTHENTICATION.md', 'AUTOMATIC_BROWSER_SETUP.md'):
             assert (extracted / 'usr/share/doc/firma-con-cie' / name).read_bytes() == (ROOT / 'docs' / name).read_bytes()
         launcher = extracted / 'usr/bin/Firma con CIE'
         assert launcher.stat().st_mode & 0o111

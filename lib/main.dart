@@ -394,7 +394,11 @@ class _PrototypeHomeState extends State<PrototypeHome>
         state == AppLifecycleState.paused ||
         state == AppLifecycleState.detached;
     if (state == AppLifecycleState.resumed) {
-      unawaited(widget.browserSetup?.refresh(forceSystem: true));
+      // Initial desktop focus can arrive while settings/runtime/pairings are
+      // still loading. Startup will perform a fresh browser check afterwards.
+      if (ready && !busy) {
+        unawaited(widget.browserSetup?.refresh(forceSystem: true));
+      }
       unawaited(_resumeWebStatus());
     } else {
       unawaited(_coordinateMonitor());
@@ -795,7 +799,6 @@ class _PrototypeHomeState extends State<PrototypeHome>
       error = loaded;
       return;
     }
-    widget.browserSetup?.start();
     if (canPair) await _refreshPairings();
     // Start after runtime load. Observation has its own PC/SC context, performs
     // only idle identification, and never blocks verification/startup navigation.
@@ -810,6 +813,9 @@ class _PrototypeHomeState extends State<PrototypeHome>
         },
       )..addListener(_monitorChanged);
     }
+    // Browser metadata shares the native service with load/enrollments. Start
+    // only after those reads finish, including any certificate-name recovery.
+    widget.browserSetup?.start();
   });
   Future<void> _readCards() async {
     pin.clear();
