@@ -11,10 +11,12 @@ import shutil
 import subprocess
 from pathlib import Path
 from build_paths import macos_paths
+from macos_signing import MacCodeSigner
 ROOT = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--flutter', default='flutter')
 parser.add_argument('--identity', default='-', help='Optional Apple Development identity; default ad hoc')
+parser.add_argument('--developer-id', action='store_true', help='Require Developer ID Application; use hardened runtime and secure timestamps')
 parser.add_argument('--destination', type=Path,
     help='Override the local/default bundle destination')
 parser.add_argument('--build-workspace', type=Path,
@@ -23,6 +25,7 @@ parser.add_argument('--runtime', type=Path, default=ROOT/'native/runtime/macos',
 parser.add_argument('--skip-build', action='store_true', help='Reassemble the existing prototype build only')
 parser.add_argument('--web-extension',type=Path,help='Optional separately built prototype CryptoTokenKit appex')
 args = parser.parse_args()
+signer = MacCodeSigner(args.identity, args.developer_id)
 if args.destination is None or args.build_workspace is None:
     local_paths = macos_paths(ROOT)
     args.destination = args.destination or local_paths['destination']
@@ -91,17 +94,22 @@ for key in ['com.apple.FinderInfo', 'com.apple.ResourceFork']:
     subprocess.run(['xattr', '-dr', key, str(target)],
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 for library in embedded.glob('*.dylib'):
-    subprocess.run(['codesign', '--force', '--sign', args.identity, str(library)], check=True)
-subprocess.run(['codesign', '--force', '--sign', args.identity, str(embedded/observer.name)], check=True)
+    signer.sign(library)
+signer.sign(embedded/observer.name)
 # JVM launchers and native libraries stay private in Resources. Sign each
 # Mach-O for its own architecture; Dart chooses the matching JVM at runtime.
 if (notices/'ltv').exists():
+    java_entitlements = args.destination/'JavaRuntime.entitlements'
+    if args.developer_id:
+        # Only the private JVM needs JIT. Keep the host and CTK restrictions;
+        # all bundled libraries are signed by the same identity.
+        java_entitlements.write_bytes(plistlib.dumps({'com.apple.security.cs.allow-jit': True}))
     mach_o_magic = {b'\xcf\xfa\xed\xfe', b'\xce\xfa\xed\xfe', b'\xfe\xed\xfa\xcf', b'\xfe\xed\xfa\xce', b'\xca\xfe\xba\xbe', b'\xbe\xba\xfe\xca'}
     for binary in sorted((notices/'ltv').rglob('*')):
         if binary.is_file():
             with binary.open('rb') as handle: magic=handle.read(4)
             if magic in mach_o_magic:
-                subprocess.run(['codesign','--force','--sign',args.identity,str(binary)],check=True)
+                signer.sign(binary, java_entitlements if args.developer_id and binary.name == 'java' else None)
     ltv_hashes={str(p.relative_to(notices/'ltv')):hashlib.sha256(p.read_bytes()).hexdigest()
         for p in sorted((notices/'ltv').rglob('*')) if p.is_file()}
     (notices/'ltv-signed-manifest.json').write_text(json.dumps(ltv_hashes,indent=2)+'\n')
@@ -116,12 +124,18 @@ bundled_manifest['files'] = {p.name: hashlib.sha256(p.read_bytes()).hexdigest()
     for p in sorted(embedded.iterdir()) if p.is_file()}
 manifest_text = json.dumps(bundled_manifest, indent=2)+'\n'
 (notices/'backend-manifest.json').write_text(manifest_text)
+# The preview vendor uses a lowercase install name in a framework linked as
+# PDFium by Flutter. Hardened dyld requires the requested leaf name to match.
+# Normalize only our disposable bundle copy, then sign its framework below.
+pdfium = target/'Contents/Frameworks/PDFium.framework/PDFium'
+if pdfium.is_file():
+    subprocess.run(['install_name_tool', '-id', '@rpath/PDFium.framework/PDFium', str(pdfium)], check=True)
 for framework in (target/'Contents/Frameworks').glob('*.framework'):
-    subprocess.run(['codesign', '--force', '--sign', args.identity, str(framework)], check=True)
+    signer.sign(framework)
 if args.web_extension:
     extension=args.web_extension.resolve()
     if extension.name!='CIEPrototypeToken.appex':raise SystemExit('Unexpected CryptoTokenKit bundle')
-    subprocess.run(['codesign','--verify','--deep','--strict',str(extension)],check=True)
+    signer.verify(extension)
     plugins=target/'Contents/PlugIns';plugins.mkdir(exist_ok=True)
     shutil.copytree(extension,plugins/extension.name)
 host_entitlements=ROOT/'macos/Runner/Release.entitlements'
@@ -132,7 +146,6 @@ if args.web_extension:
     entitlements['com.apple.security.application-groups']=[group]
     host_entitlements=args.destination/'WebHost.entitlements'
     host_entitlements.write_bytes(plistlib.dumps(entitlements))
-subprocess.run(['codesign', '--force', '--sign', args.identity, '--entitlements',
-    str(host_entitlements), str(target)], check=True)
-subprocess.run(['codesign', '--verify', '--deep', '--strict', str(target)], check=True)
+signer.sign(target, host_entitlements)
+signer.verify(target)
 print('Local prototype (not notarized):', target)

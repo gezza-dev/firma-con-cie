@@ -132,6 +132,16 @@ python3 scripts/build_macos.py \
 
 Le destinazioni generiche predefinite sono `~/Developer/Builds/firma-con-cie/firma-con-cie` per il bundle e `~/Developer/Builds/firma-con-cie/workspace-macos` per i file generati. Non dipendono dal nome dell’account o dalla disposizione delle cartelle di uno sviluppatore.
 
+Per firmare con **Developer ID Application**, impostare `CIE_SIGNING_IDENTITY`
+al nome completo o all'impronta del proprio certificato e aggiungere
+`--developer-id` sia a `build_web_macos.py` sia a `build_macos.py`.
+Questa modalità richiede il certificato corrispondente nel Portachiavi, applica
+Hardened Runtime e timestamp sicuri a tutto il codice incorporato e assegna
+il permesso JIT soltanto ai launcher Java privati. Non cambia gli identificativi
+dell'app o l'archivio delle CIE. Per il DMG usare la stessa identità e aggiungere
+`--developer-id` a `package_macos_dmg.py`: anche il contenitore riceve un
+timestamp sicuro. La firma Developer ID non esegue la notarizzazione.
+
 Per scegliere una destinazione propria, copiare l’esempio e modificare **solo** il file locale:
 
 ```sh

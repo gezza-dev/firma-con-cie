@@ -18,6 +18,7 @@ import tempfile
 from ds_store import DSStore
 from build_paths import macos_paths
 from product_identity import macos_image_name
+from macos_signing import MacCodeSigner
 
 # Finder stores absolute AppKit coordinates, with y increasing upwards.
 # A high y asks Finder to fit the window near the top of the opening display,
@@ -123,11 +124,14 @@ def main():
     parser.add_argument('--app', type=Path,
                         help='Override the local/default signed app location')
     parser.add_argument('--identity', required=True,
-                        help='Apple Development identity for the disk image')
+                        help='Apple code signing identity for the disk image')
+    parser.add_argument('--developer-id', action='store_true',
+                        help='Require Developer ID Application and a secure timestamp')
     parser.add_argument('--output', type=Path,
                         help='Override the local/default DMG destination')
     parser.add_argument('--report', type=Path)
     args = parser.parse_args()
+    signer = MacCodeSigner(args.identity, args.developer_id)
     if args.app is None or args.output is None:
         local_paths = macos_paths(Path(__file__).resolve().parents[1])
         args.app = args.app or local_paths['destination'] / 'Firma con CIE.app'
@@ -142,6 +146,7 @@ def main():
     if output.suffix.lower() != '.dmg' or app in output.parents:
         raise ValueError('Output must be a DMG outside the source app')
     original = validate_app(app)
+    signer.verify(app)
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='.firma-con-cie-dmg-', dir=output.parent) as temporary:
         work = Path(temporary)
@@ -172,9 +177,11 @@ def main():
         image = work / output.name
         run('hdiutil', 'convert', writable, '-format', 'UDZO',
             '-imagekey', 'zlib-level=9', '-o', image)
-        run('codesign', '--sign', args.identity,
-            '--identifier', 'it.giancarloezza.CIEID.Desktop.dmg', image)
+        # Keep the product identifier stable for both signing modes.
+        signer.sign(image, disk_image=True,
+                    identifier='it.giancarloezza.CIEID.Desktop.dmg')
         run('codesign', '--verify', '--strict', '--verbose=2', image)
+        signer.verify(image, disk_image=True)
         run('hdiutil', 'verify', image)
         attached = False
         try:
@@ -206,6 +213,7 @@ def main():
     receipt = dict(image=str(output), application=str(app),
                    volume='Firma con CIE', format='UDZO',
                    signing_identity=args.identity, notarized=False,
+                   signing_type='Developer ID Application' if args.developer_id else 'Apple Development',
                    bytes=output.stat().st_size, sha256=sha256(output),
                    layout=dict(window_size=[640, 420],
                                window_bounds=WINDOW_BOUNDS,
@@ -217,7 +225,7 @@ def main():
     if args.report:
         args.report.parent.mkdir(parents=True, exist_ok=True)
         args.report.write_text(json.dumps(receipt, indent=2) + '\n')
-    print('Signed development DMG (not notarized):', output)
+    print('Signed DMG (not notarized):', output)
     print('SHA256:', receipt['sha256'])
 
 

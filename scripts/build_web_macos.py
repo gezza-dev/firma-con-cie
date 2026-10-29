@@ -3,13 +3,16 @@
 """Build an isolated Universal CryptoTokenKit extension. Does not register it."""
 import argparse,hashlib,json,plistlib,re,shutil,subprocess
 from pathlib import Path
+from macos_signing import MacCodeSigner
 ROOT=Path(__file__).resolve().parents[1]
 p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('--runtime',type=Path,required=True)
 p.add_argument('--output',type=Path,required=True)
 p.add_argument('--identity',required=True)
+p.add_argument('--developer-id',action='store_true',help='Require Developer ID Application; use hardened runtime and secure timestamps')
 p.add_argument('--team-id',required=True,help='Apple signing team for the public-certificate-only App Group')
 a=p.parse_args()
+signer=MacCodeSigner(a.identity,a.developer_id)
 if not re.fullmatch(r"[A-Z0-9]{10}",a.team_id):raise SystemExit("Invalid signing team")
 public_group=a.team_id+".it.giancarloezza.CIEID.FlutterPrototype.web-public"
 if a.output.exists():raise SystemExit('Choose a new output directory')
@@ -27,13 +30,13 @@ info=dict(CFBundleIdentifier=bundle,CFBundleExecutable='CIEPrototypeToken',CFBun
 info['CIEWebPublicAppGroup']=public_group
 (contents/'Info.plist').write_bytes(plistlib.dumps(info))
 subprocess.run(['xcrun','clang++','-std=c++17','-fobjc-arc','-fmodules','-arch','arm64','-arch','x86_64','-mmacosx-version-min=12.0','-I',str(ROOT/'native/include'),'-I',str(ROOT/'native/src'),str(ROOT/'native/platform/macos/web/CIEPrototypeToken.mm'),'-L',str(runtime),'-lcie_web','-framework','Foundation','-framework','CryptoTokenKit','-framework','Security','-Wl,-e,_NSExtensionMain','-Wl,-rpath,@executable_path/../Frameworks','-o',str(executable)],check=True)
-for binary in frameworks.glob('*.dylib'):subprocess.run(['codesign','--force','--sign',a.identity,str(binary)],check=True)
+for binary in frameworks.glob('*.dylib'):signer.sign(binary)
 entitlements=a.output/'WebToken.entitlements'
 entitlements.write_bytes(plistlib.dumps({'com.apple.security.app-sandbox':True,'com.apple.security.smartcard':True,'com.apple.security.application-groups':[public_group]}))
-subprocess.run(['codesign','--force','--sign',a.identity,'--entitlements',str(entitlements),str(extension)],check=True)
-subprocess.run(['codesign','--verify','--deep','--strict',str(extension)],check=True)
+signer.sign(extension,entitlements)
+signer.verify(extension)
 shutil.copytree(runtime/'licenses',contents/'Resources/licenses')
 # Resources must be sealed after copying the notices.
-subprocess.run(['codesign','--force','--sign',a.identity,'--entitlements',str(entitlements),str(extension)],check=True)
-subprocess.run(['codesign','--verify','--deep','--strict',str(extension)],check=True)
+signer.sign(extension,entitlements)
+signer.verify(extension)
 print(extension.resolve())
