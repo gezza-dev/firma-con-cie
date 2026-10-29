@@ -11,7 +11,6 @@ static void* dlopen(const char* name,int){return LoadLibraryA(name);}
 static auto dlsym(void* module,const char* name){return GetProcAddress(static_cast<HMODULE>(module),name);}
 static void dlclose(void* module){FreeLibrary(static_cast<HMODULE>(module));}
 static const char* dlerror(){return "test library load failed";}
-static void chmod(const char*,int){}
 static void setenv(const char* name,const char* value,int){_putenv_s(name,value);SetEnvironmentVariableA(name,value);}
 #define RTLD_LOCAL 0
 #define RTLD_NOW 0
@@ -34,7 +33,12 @@ static void check(bool condition,const char* message){++checks;if(!condition)thr
 int main(int argc,char** argv){try{
     check(argc==2,"test module required");
     auto root=std::filesystem::temp_directory_path()/("cie-linux-pkcs11-"+std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
-    check(std::filesystem::create_directory(root),"isolated directory");chmod(root.string().c_str(),0700);
+    check(std::filesystem::create_directory(root),"isolated directory");
+#ifndef _WIN32
+    // POSIX permissions only. A global Windows shim conflicts with MinGW's
+    // real chmod declaration pulled in by <filesystem>.
+    chmod(root.string().c_str(),0700);
+#endif
     struct Cleanup {std::filesystem::path path;~Cleanup(){std::error_code e;std::filesystem::remove_all(path,e);}} cleanup{root};
     setenv("CIE_PAIRING_TEST_CACHE",root.string().c_str(),1);
     auto module=dlopen(argv[1],RTLD_LOCAL|RTLD_NOW);if(!module)throw std::runtime_error(dlerror());

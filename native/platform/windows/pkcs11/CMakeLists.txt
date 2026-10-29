@@ -37,6 +37,8 @@ foreach(name libgcc_s_seh-1.dll libstdc++-6.dll libwinpthread-1.dll)
 endforeach()
 if(BUILD_TESTING)
   add_library(cie_windows_pkcs11_fake SHARED ${WEB}/pkcs11.cpp ${WEB}/card.cpp ${WEB}/tests/fake_card.cpp ${CACHE_SOURCES})
+  # Match the test DLL name on MSVC and MinGW, including the ARM64 CI runner.
+  set_target_properties(cie_windows_pkcs11_fake PROPERTIES PREFIX "")
   target_sources(cie_windows_pkcs11_fake PRIVATE pkcs11.def)
   configure_provider(cie_windows_pkcs11_fake)
   # All PC/SC and Web engine functions are local test doubles. No winscard link.

@@ -216,6 +216,28 @@ preservati. Superati inoltre 17 test ARM64, 8 test dell'identità del prodotto e
 actionlint. Nessuna installazione di produzione, richiesta UAC o operazione
 sulla CIE; l'esecuzione ARM64 resta affidata al runner GitHub.
 
+## Compilazione del test PKCS#11 con gli header MinGW
+
+L'esecuzione `40888376852` (commit `a410b3f`) ha superato il collegamento
+dell'helper dell'installer e del modulo PKCS#11 di produzione. Il test
+`pkcs11_tests.cpp` si è fermato perché il suo sostituto Windows globale
+`void chmod(...)` entrava in conflitto con la vera dichiarazione MinGW
+`int chmod(...)`, inclusa da `<filesystem>`.
+
+Il sostituto è stato rimosso; la chiamata POSIX ai permessi `0700` rimane
+nel solo ramo non Windows, conservando il comportamento Linux. Nessuna
+operazione aggiuntiva viene eseguita su Windows. Il target della DLL simulata
+ha inoltre `PREFIX ""` per mantenere lo stesso nome su MSVC e MinGW e
+corrispondere a `cie_windows_pkcs11_fake.dll` richiesto dal job Windows.
+
+Verifica locale: il sorgente precedente riproduce l'errore con LLVM-MinGW
+20261020 per ARM64; il sorgente corretto compila e il tipo COFF ARM64 è
+verificato. La build CMake x64 con LLVM e runtime statici supera tutti i
+203 controlli PKCS#11 contro il modulo simulato, senza operazioni reali
+sulla carta né configurazione dei browser. Superati anche 17 test ARM64,
+8 test dell'identità del prodotto e actionlint. Collegamento ed esecuzione
+del test ARM64 completo restano da verificare nella nuova esecuzione Actions.
+
 Riferimenti: [LLVM-MinGW](https://github.com/mstorsjo/llvm-mingw),
 [architetture Inno Setup](https://jrsoftware.org/ishelp/topic_archidentifiers.htm),
 [installer Windows](WINDOWS_INSTALLER.md).
