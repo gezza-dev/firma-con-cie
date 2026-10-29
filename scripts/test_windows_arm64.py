@@ -14,6 +14,7 @@ from windows_architecture import MACHINES, pe_machine, check_pe_tree, check_rele
 from package_windows_installer import prepare, sha
 from ci_windows_arm64 import download
 from check_openssl_arm64 import validate_configuration as validate_openssl_arm64
+from prepare_cryptopp_arm64 import prepare_windows_arm64 as prepare_cryptopp_arm64
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -51,6 +52,32 @@ class WindowsArm64(unittest.TestCase):
         for cpu in ('arm64','ARM64','aarch64'):
             self.assertEqual(runtime_architecture('Windows',cpu),'windows-arm64')
         self.assertEqual(runtime_architecture('Windows','AMD64'),'windows-x86_64')
+
+    def test_cryptopp_windows_header_case_fix_preserves_other_bytes(self):
+        original = (b'// Original upstream notice\r\n'
+                    b'#if defined(_WIN32) && defined(_M_ARM64)\r\n'
+                    b'# include <Windows.h>\r\n# include <processthreadsapi.h>\r\n'
+                    b'#endif\r\n// UTF-8: \xc3\xa8\r\n')
+        path = self.root/'cpu.cpp'
+        path.write_bytes(original)
+        prepare_cryptopp_arm64(self.root)
+        self.assertEqual(path.read_bytes(), original.replace(b'<Windows.h>', b'<windows.h>'))
+
+    def test_cryptopp_missing_expected_include_fails_without_writing(self):
+        path = self.root/'cpu.cpp'
+        for original in (b'# include <windows.h>\n', b'// Different upstream source\n'):
+            path.write_bytes(original)
+            with self.assertRaisesRegex(ValueError,'Unexpected Crypto'):
+                prepare_cryptopp_arm64(self.root)
+            self.assertEqual(path.read_bytes(),original)
+
+    def test_cryptopp_ambiguous_include_fails_without_writing(self):
+        path = self.root/'cpu.cpp'
+        original = b'# include <Windows.h>\n# include <Windows.h>\n'
+        path.write_bytes(original)
+        with self.assertRaisesRegex(ValueError,'Unexpected Crypto'):
+            prepare_cryptopp_arm64(self.root)
+        self.assertEqual(path.read_bytes(),original)
 
     def test_openssl_windows_initializer_is_in_generated_graph(self):
         (self.root/'configdata.pm').write_text("'apps/lib/win32_init.c'")

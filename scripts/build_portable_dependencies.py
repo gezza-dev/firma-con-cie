@@ -12,6 +12,7 @@ import subprocess
 import tarfile
 import urllib.request
 from check_openssl_arm64 import validate_configuration as validate_openssl_arm64
+from prepare_cryptopp_arm64 import prepare_windows_arm64 as prepare_cryptopp_arm64
 
 ROOT = Path(__file__).resolve().parents[1]
 LOCK = json.loads((ROOT / "native/backend/scripts/dependencies.lock.json").read_text())
@@ -131,6 +132,8 @@ def main():
                         openssl_source=LOCK["openssl"] if name in ["libcurl", "podofo"] else None)
         if is_windows_arm and name == 'openssl':
             identity['arm64_config_sha256'] = hashlib.sha256((ROOT/'native/backend/scripts/windows-arm64-openssl.conf').read_bytes()).hexdigest()
+        if is_windows_arm and name == 'cryptopp':
+            identity['arm64_source_fix_sha256'] = hashlib.sha256((ROOT/'scripts/prepare_cryptopp_arm64.py').read_bytes()).hexdigest()
         if not args.force and stamp.exists() and json.loads(stamp.read_text()) == identity:
             print("Already built: " + name, flush=True)
             continue
@@ -165,6 +168,8 @@ def main():
                     run(["make", "-j" + str(args.jobs)], build, env, log)
                     run(["make", "install_sw"], build, env, log)
                 elif name == "cryptopp":
+                    if is_windows_arm:
+                        prepare_cryptopp_arm64(source)
                     run(["make", "-j" + str(args.jobs), "libcryptopp.a", "CXX=" + env["CXX"],
                          "IS_ARM32=0", *(["IS_MINGW=1", "AR=" + env["AR"], "RANLIB=" + env["RANLIB"]] if is_windows else []), "CXXFLAGS=" + flags + " -std=c++17 -DCRYPTOPP_DISABLE_ASM"], source, env, log)
                     shutil.copy2(source / "libcryptopp.a", prefix / "lib")

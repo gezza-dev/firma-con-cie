@@ -139,6 +139,29 @@ grafo OpenSSL), 8 test dell'identità del prodotto e actionlint sul workflow.
 Il collegamento effettivo ARM64 viene verificato dalla nuova esecuzione Actions;
 questi test locali non ne attestano il completamento.
 
+## Include SDK Windows di Crypto++ durante la compilazione da Linux
+
+Nell'esecuzione `40875860520` (commit `4212ab8`), OpenSSL è stato compilato e
+installato correttamente nel prefisso privato. La fase successiva si è fermata
+in Crypto++ 8.9.0: `cpu.cpp` includeva `<Windows.h>` nel ramo `_M_ARM64`, mentre
+gli header LLVM-MinGW sul filesystem Linux hanno nome `<windows.h>`.
+L'installer non è stato generato.
+
+La ricetta applica `scripts/prepare_cryptopp_arm64.py` esclusivamente ai sorgenti
+Crypto++ estratti dall'archivio verificato, prima della build Windows ARM64.
+Cambia la sola direttiva in `<windows.h>`, preservando byte, avvisi e terminatori
+di riga del resto del file. Se la direttiva attesa manca o è ambigua, la build
+si interrompe senza modificare il sorgente. Il checksum dello script entra
+nell'identità della cache delle dipendenze, così una correzione della ricetta
+non riutilizza silenziosamente un precedente archivio statico.
+
+Versione e checksum del download upstream restano quelli del lock. Le ricette
+Windows x64, macOS e Linux native non applicano questa trasformazione; funzioni
+crittografiche e impostazioni `CRYPTOPP_DISABLE_ASM` rimangono invariate.
+La prova locale sull'archivio Crypto++ fissato conferma una sola sostituzione;
+i test ARM64 sono ora 15, con tre regressioni per include corretto, assente e
+ambiguo. Il completamento della build ARM64 resta da verificare su Actions.
+
 Riferimenti: [LLVM-MinGW](https://github.com/mstorsjo/llvm-mingw),
 [architetture Inno Setup](https://jrsoftware.org/ishelp/topic_archidentifiers.htm),
 [installer Windows](WINDOWS_INSTALLER.md).
