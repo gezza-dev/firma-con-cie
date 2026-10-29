@@ -57,8 +57,10 @@ seleziona Windows ARM64 dall'ABI del **Dart SDK eseguito** e non offre l'opzione
 `flutter build windows --target-platform`. Il workflow verifica che Python e
 Dart siano ARM64 e termina se il bootstrap ripiega su x64.
 
-Il controllo PE esamina eseguibili, DLL, libreria AOT `data/app.so`, PDFium,
-provider e JVM; rifiuta anche un singolo binario x64 o un manifest incoerente.
+Il controllo PE esamina eseguibili e DLL, inclusi PDFium, provider e JVM.
+La libreria AOT Dart `data/app.so` usa invece ELF64 anche su Windows: un
+controllo distinto ne verifica formato e CPU. Sono rifiutati anche un singolo
+binario x64 nel pacchetto ARM64 o un manifest incoerente.
 Il binario PDFium prodotto dall'hook Dart viene confrontato con l'archivio
 ARM64 verificato separatamente. Il bootstrap di Inno può essere x64 ed essere
 eseguito in emulazione su Windows 11 ARM64; i binari dell'app e del componente
@@ -237,6 +239,34 @@ verificato. La build CMake x64 con LLVM e runtime statici supera tutti i
 sulla carta né configurazione dei browser. Superati anche 17 test ARM64,
 8 test dell'identità del prodotto e actionlint. Collegamento ed esecuzione
 del test ARM64 completo restano da verificare nella nuova esecuzione Actions.
+
+## Formato della libreria AOT Flutter su Windows
+
+L'esecuzione `40893166907` (commit `1396dd3`) ha completato il job nativo,
+superato 381 test Flutter (14 saltati) sul runner ARM64 e compilato l'app.
+Il controllo successivo si è fermato con `Invalid PE header` per `data/app.so`:
+la pipeline presumeva erroneamente che anche questo file fosse PE.
+
+Il Flutter SDK fissato in `toolchain.lock.json` usa `AotElfRelease` per
+Windows; la VM Dart carica lo snapshot AOT in formato ELF anche su quel sistema.
+`scripts/windows_architecture.py` verifica ora separatamente:
+
+- EXE e DLL: formato PE e Machine `0xAA64` per ARM64 oppure `0x8664` per x64;
+- `data/app.so`: ELF64 little-endian, tipo condiviso `ET_DYN`, versione/header,
+  dimensioni e limiti delle tabelle, Machine 183 per ARM64 oppure 62 per x64;
+- manifest nativo e JVM: coerenza con l'architettura richiesta.
+
+Il controllo non carica o esegue alcun binario. Un ELF non può sostituire una
+DLL Windows e un PE non può sostituire lo snapshot Dart. La verifica dei
+checksum del payload resta attiva.
+
+Regressioni locali: il controllo precedente riproduce l'errore sul vero
+`app.so` Windows x64 già compilato; quello corretto verifica la stessa Release
+senza modificarne i file (152 binari/AOT controllati). Superati 25 test dei
+confini ARM64, inclusi AOT con CPU errata in entrambe le direzioni, ELF32,
+endianness/versione non valide, file troncati e tabelle fuori limite; superati
+anche 8 test dell'identità del prodotto e actionlint. Il pacchetto ARM64 finale
+resta da generare nella nuova esecuzione Actions.
 
 Riferimenti: [LLVM-MinGW](https://github.com/mstorsjo/llvm-mingw),
 [architetture Inno Setup](https://jrsoftware.org/ishelp/topic_archidentifiers.htm),

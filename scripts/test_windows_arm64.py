@@ -10,7 +10,7 @@ import unittest
 
 from ltv_runtime import runtime_architecture
 from product_identity import windows_installer_name
-from windows_architecture import MACHINES, pe_machine, check_pe_tree, check_release_architecture
+from windows_architecture import MACHINES, ELF_MACHINES, pe_machine, elf_machine, check_pe_tree, check_release_architecture
 from package_windows_installer import prepare, sha
 from ci_windows_arm64 import download
 from check_openssl_arm64 import validate_configuration as validate_openssl_arm64
@@ -30,17 +30,29 @@ def pe(path, architecture='arm64'):
     path.write_bytes(data)
 
 
+def elf(path, architecture='arm64'):
+    path.parent.mkdir(parents=True,exist_ok=True)
+    data = bytearray(64+56+64)
+    data[:7] = b'\x7fELF\x02\x01\x01'
+    struct.pack_into('<HHI',data,16,3,ELF_MACHINES[architecture],1)
+    struct.pack_into('<Q',data,32,64)
+    struct.pack_into('<Q',data,40,120)
+    struct.pack_into('<HHHHH',data,52,64,56,1,64,1)
+    path.write_bytes(data)
+
+
 class WindowsArm64(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         self.release = self.root/'release'
-        for name in ('Firma con CIE.exe','flutter_windows.dll','pdfium.dll','data/app.so',
+        for name in ('Firma con CIE.exe','flutter_windows.dll','pdfium.dll',
                      'cie_native/cie_bridge.dll','cie_native/cie_card_observer.exe',
                      'cie_native/ltv/jre/windows-arm64/bin/java.exe',
                      'web-component/cie_prototype_minidriver.dll','web-component/CIE-Web-Setup.exe'):
             pe(self.release/name)
+        elf(self.release/'data/app.so')
         (self.release/'cie_native/ltv/cie-ltv-worker.jar').write_bytes(b'synthetic JAR')
         manifest = {'system':'windows','architectures':['arm64'],
                     'ltv':{'architectures':['windows-arm64']}, 'source_files':{
@@ -131,7 +143,7 @@ class WindowsArm64(unittest.TestCase):
         self.assertEqual(len(check_release_architecture(self.release,'arm64')),9)
 
     def test_x64_flutter_or_pdfium_or_jvm_or_minidriver_rejected(self):
-        for name in ('Firma con CIE.exe','pdfium.dll','data/app.so',
+        for name in ('Firma con CIE.exe','pdfium.dll',
                      'cie_native/ltv/jre/windows-arm64/bin/java.exe',
                      'web-component/cie_prototype_minidriver.dll'):
             with self.subTest(name=name):
@@ -139,6 +151,68 @@ class WindowsArm64(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError,'Expected arm64 PE'):
                     check_release_architecture(self.release,'arm64')
                 pe(self.release/name)
+
+    def test_x64_elf_snapshot_cannot_be_packaged_as_arm64(self):
+        elf(self.release/'data/app.so','x64')
+        with self.assertRaisesRegex(ValueError,'Expected arm64 ELF AOT'):
+            check_release_architecture(self.release,'arm64')
+
+    def test_arm64_elf_snapshot_cannot_be_packaged_as_x64(self):
+        for path in self.release.rglob('*'):
+            if path.suffix.lower() in ('.dll','.exe'):
+                pe(path,'x64')
+        with self.assertRaisesRegex(ValueError,'Expected x64 ELF AOT'):
+            check_release_architecture(self.release,'x64')
+
+    def test_unknown_elf_cpu_is_rejected(self):
+        snapshot = self.release/'data/app.so'
+        data = bytearray(snapshot.read_bytes())
+        struct.pack_into('<H',data,18,40)  # ARM32 is not ARM64.
+        snapshot.write_bytes(data)
+        with self.assertRaisesRegex(ValueError,'Expected arm64 ELF AOT'):
+            check_release_architecture(self.release,'arm64')
+
+    def test_elf_cpus_are_identified_independently_of_pe_machine_codes(self):
+        snapshot = self.release/'data/app.so'
+        for arch in ('arm64','x64'):
+            elf(snapshot,arch)
+            self.assertEqual(elf_machine(snapshot),ELF_MACHINES[arch])
+
+    def test_pe_cannot_replace_the_dart_elf_snapshot(self):
+        pe(self.release/'data/app.so')
+        with self.assertRaisesRegex(ValueError,'Invalid ELF'):
+            check_release_architecture(self.release,'arm64')
+
+    def test_elf_cannot_replace_a_windows_dll(self):
+        elf(self.release/'flutter_windows.dll')
+        with self.assertRaisesRegex(ValueError,'Invalid PE'):
+            check_release_architecture(self.release,'arm64')
+
+    def test_invalid_elf_headers_are_rejected(self):
+        snapshot = self.release/'data/app.so'
+        original = snapshot.read_bytes()
+        variants = [b'', b'\x7fELF', original[:63]]
+        for offset, value in ((4,1),(5,2),(6,0),(16,2),(20,0),(52,32),(54,32),(56,0),(58,40),(60,0)):
+            data = bytearray(original)
+            data[offset] = value
+            variants.append(data)
+        for data in variants:
+            snapshot.write_bytes(data)
+            with self.assertRaisesRegex(ValueError,'Invalid ELF'):
+                check_release_architecture(self.release,'arm64')
+
+    def test_elf_tables_outside_the_file_are_rejected(self):
+        snapshot = self.release/'data/app.so'
+        original = snapshot.read_bytes()
+        for offset in (32,40):
+            data = bytearray(original)
+            struct.pack_into('<Q',data,offset,0xffffffffffffffff)
+            snapshot.write_bytes(data)
+            with self.assertRaisesRegex(ValueError,'Invalid ELF64 header table'):
+                check_release_architecture(self.release,'arm64')
+        snapshot.write_bytes(original[:-1])
+        with self.assertRaisesRegex(ValueError,'Invalid ELF64 header table'):
+            check_release_architecture(self.release,'arm64')
 
     def test_arm64_cannot_be_labeled_x64(self):
         with self.assertRaisesRegex(ValueError,'Expected x64 PE'):
