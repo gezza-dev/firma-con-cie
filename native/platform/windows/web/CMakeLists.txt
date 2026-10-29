@@ -54,6 +54,11 @@ if(BUILD_TESTING)
  if(MSVC)
   set_property(TARGET cie_installer_fake PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
  endif()
+ if(MINGW)
+  # installer_fake.cpp uses wmain, like the real setup helper. Select the
+  # Unicode CRT entry point rather than the default main/WinMain startup.
+  target_link_options(cie_installer_fake PRIVATE -municode -static -static-libgcc -static-libstdc++)
+ endif()
  add_executable(cie_web_setup_policy_tests setup_policy_tests.cpp)
  target_include_directories(cie_web_setup_policy_tests PRIVATE ../../../src)
  target_link_libraries(cie_web_setup_policy_tests PRIVATE shell32)

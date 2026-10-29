@@ -192,6 +192,30 @@ correttamente su Windows. Superati 17 test ARM64, 8 test dell'identità del
 prodotto e actionlint. Il probe ARM64 non è stato eseguito sul PC x64: tale
 esecuzione e il completamento dell'app restano affidati al workflow.
 
+## Punto d'ingresso Unicode del programma simulato dell'installer
+
+L'esecuzione `40882037662` (commit `bb9728a`) ha superato PoDoFo, compilato il
+backend e assemblato il runtime DSS. La fase Web si è fermata nel collegamento
+del solo `cie_installer_fake.exe`, con `undefined symbol: WinMain`.
+
+Il programma espone `wmain`; al suo target MinGW mancava `-municode`, già usato
+dagli helper Windows di produzione. Il CMake applica ora tale opzione anche
+al programma simulato, insieme al collegamento statico dei runtime. Non cambia
+il comportamento MSVC né quello del componente installato.
+
+`scripts/test_windows_installer_helper.py` verifica otto casi con log in una
+cartella temporanea Unicode: i quattro comandi accettati, argomenti assenti o
+non validi e un errore simulato. Il job Windows esegue il controllo sul binario
+ARM64 prima dei test del provider e dei 49 casi dell'installer.
+
+Verifica locale con LLVM-MinGW 20261020 e il vero progetto CMake: la versione
+precedente riproduce `WinMain`, quella corretta compila e si collega per ARM64
+(tipo PE verificato). Compilata anche la variante x64, sulla quale passano gli
+otto casi dell'helper e i 49 controlli Inno con payload sintetici e dati
+preservati. Superati inoltre 17 test ARM64, 8 test dell'identità del prodotto e
+actionlint. Nessuna installazione di produzione, richiesta UAC o operazione
+sulla CIE; l'esecuzione ARM64 resta affidata al runner GitHub.
+
 Riferimenti: [LLVM-MinGW](https://github.com/mstorsjo/llvm-mingw),
 [architetture Inno Setup](https://jrsoftware.org/ishelp/topic_archidentifiers.htm),
 [installer Windows](WINDOWS_INSTALLER.md).

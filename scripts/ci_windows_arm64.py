@@ -170,6 +170,8 @@ def windows():
     python('test_ltv.py','--runtime',runtime,'--report',REPORTS/'ltv.json')
     test_tools = TRANSFER/'test-tools'
     run(test_tools/'podofo_charconv_probe.exe')
+    python('test_windows_installer_helper.py','--helper',test_tools/'web/cie_installer_fake.exe',
+           '--report',REPORTS/'installer-helper.json')
     for name in ('cie_web_package_status_tests','cie_web_catalog_tests','cie_web_setup_policy_tests'):
         run(test_tools/'web'/(name+'.exe'))
     run(test_tools/'web/cie_minidriver_tests.exe',test_tools/'provider-fixtures/provider/cie_prototype_minidriver.dll')
