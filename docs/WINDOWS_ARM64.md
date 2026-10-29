@@ -162,6 +162,36 @@ La prova locale sull'archivio Crypto++ fissato conferma una sola sostituzione;
 i test ARM64 sono ora 15, con tre regressioni per include corretto, assente e
 ambiguo. Il completamento della build ARM64 resta da verificare su Actions.
 
+## Conversioni numeriche PoDoFo e libc++
+
+L'esecuzione `40877350560` (commit `55b9797`) ha superato OpenSSL, Crypto++ e le
+successive dipendenze fino a PoDoFo 1.1.2. La build si è fermata per chiamate
+ambigue a `std::to_chars`: `charconv_compat.h` attivava i sostituti per vecchio
+MinGW/GCC anche con la moderna libc++ di LLVM-MinGW. La macro di compatibilità
+`__GNUC__` di Clang non rappresenta la versione della libreria C++ utilizzata.
+
+`scripts/prepare_podofo_arm64.py` aggiunge `!defined(_LIBCPP_VERSION)` alle due
+condizioni MinGW interessate, per `from_chars` e `to_chars`, nei soli sorgenti
+estratti per Windows ARM64. Rimangono gli altri controlli upstream, inclusi
+quelli per le vecchie libc++ e per i sistemi Apple. Il download resta fissato
+al lock; tutte le altre parti e gli avvisi dell'header restano identici.
+Se le condizioni attese cambiano, la trasformazione si interrompe senza
+scrivere. Hash dello script e del probe sono inclusi nell'identità della cache.
+
+Prima della build PoDoFo, la ricetta compila e collega
+`native/tests/podofo_charconv_probe.cpp` per ARM64 contro l'header effettivamente
+preparato e la libreria standard della toolchain. Il job Windows esegue questo
+programma con casi float/double, precisione fissa, zero negativo, buffer
+insufficiente e input non numerico. Il binario rimane negli strumenti CI,
+senza entrare nell'app o nel componente installato.
+
+Verifica locale con LLVM-MinGW 20261020: l'header originale dell'archivio
+verificato riproduce l'ambiguità; quello corretto compila e si collega per
+ARM64, con tipo PE controllato. Lo stesso probe compilato per x64 termina
+correttamente su Windows. Superati 17 test ARM64, 8 test dell'identità del
+prodotto e actionlint. Il probe ARM64 non è stato eseguito sul PC x64: tale
+esecuzione e il completamento dell'app restano affidati al workflow.
+
 Riferimenti: [LLVM-MinGW](https://github.com/mstorsjo/llvm-mingw),
 [architetture Inno Setup](https://jrsoftware.org/ishelp/topic_archidentifiers.htm),
 [installer Windows](WINDOWS_INSTALLER.md).

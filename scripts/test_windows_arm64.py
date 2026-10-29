@@ -15,6 +15,7 @@ from package_windows_installer import prepare, sha
 from ci_windows_arm64 import download
 from check_openssl_arm64 import validate_configuration as validate_openssl_arm64
 from prepare_cryptopp_arm64 import prepare_windows_arm64 as prepare_cryptopp_arm64
+from prepare_podofo_arm64 import prepare_windows_arm64 as prepare_podofo_arm64
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -62,6 +63,27 @@ class WindowsArm64(unittest.TestCase):
         path.write_bytes(original)
         prepare_cryptopp_arm64(self.root)
         self.assertEqual(path.read_bytes(), original.replace(b'<Windows.h>', b'<windows.h>'))
+
+    def test_podofo_both_charconv_guards_exclude_libcpp_only(self):
+        path = self.root/'src/podofo/private/charconv_compat.h'
+        path.parent.mkdir(parents=True)
+        guard = b'(defined(__MINGW32__) &&  __GNUC__ < 12)'
+        original = b'// Original notice\r\n#if '+guard+b'\r\n#define WANT_FROM_CHARS\r\n#endif\r\n#if '+guard+b'\r\n#define WANT_TO_CHARS\r\n#endif\r\n'
+        path.write_bytes(original)
+        prepare_podofo_arm64(self.root)
+        expected = original.replace(guard,b'(defined(__MINGW32__) && !defined(_LIBCPP_VERSION) && __GNUC__ < 12)')
+        self.assertEqual(path.read_bytes(),expected)
+
+    def test_podofo_missing_or_ambiguous_guard_fails_without_writing(self):
+        path = self.root/'src/podofo/private/charconv_compat.h'
+        path.parent.mkdir(parents=True)
+        guard = b'(defined(__MINGW32__) &&  __GNUC__ < 12)'
+        for count in (0,1,3):
+            original = b'// Different upstream source\n'+guard*count
+            path.write_bytes(original)
+            with self.assertRaisesRegex(ValueError,'Unexpected PoDoFo'):
+                prepare_podofo_arm64(self.root)
+            self.assertEqual(path.read_bytes(),original)
 
     def test_cryptopp_missing_expected_include_fails_without_writing(self):
         path = self.root/'cpu.cpp'

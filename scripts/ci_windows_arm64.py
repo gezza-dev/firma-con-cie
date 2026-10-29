@@ -137,6 +137,7 @@ def native():
     # Regression binaries are CI-only; never merge these into the system payload.
     test_tools = TRANSFER/'test-tools'
     shutil.copytree(provider/'tests', test_tools/'provider-fixtures')
+    shutil.copy2(deps/'build/podofo/podofo_charconv_probe.exe',test_tools/'podofo_charconv_probe.exe')
     for build, target in ((provider,test_tools/'web'), (pkcs,test_tools/'pkcs11')):
         target.mkdir(parents=True)
         for p in build.iterdir():
@@ -168,6 +169,7 @@ def windows():
     python('smoke_native.py','--runtime',runtime,'--report',REPORTS/'native.json')
     python('test_ltv.py','--runtime',runtime,'--report',REPORTS/'ltv.json')
     test_tools = TRANSFER/'test-tools'
+    run(test_tools/'podofo_charconv_probe.exe')
     for name in ('cie_web_package_status_tests','cie_web_catalog_tests','cie_web_setup_policy_tests'):
         run(test_tools/'web'/(name+'.exe'))
     run(test_tools/'web/cie_minidriver_tests.exe',test_tools/'provider-fixtures/provider/cie_prototype_minidriver.dll')

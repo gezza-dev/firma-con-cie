@@ -13,6 +13,7 @@ import tarfile
 import urllib.request
 from check_openssl_arm64 import validate_configuration as validate_openssl_arm64
 from prepare_cryptopp_arm64 import prepare_windows_arm64 as prepare_cryptopp_arm64
+from prepare_podofo_arm64 import prepare_windows_arm64 as prepare_podofo_arm64
 
 ROOT = Path(__file__).resolve().parents[1]
 LOCK = json.loads((ROOT / "native/backend/scripts/dependencies.lock.json").read_text())
@@ -134,6 +135,9 @@ def main():
             identity['arm64_config_sha256'] = hashlib.sha256((ROOT/'native/backend/scripts/windows-arm64-openssl.conf').read_bytes()).hexdigest()
         if is_windows_arm and name == 'cryptopp':
             identity['arm64_source_fix_sha256'] = hashlib.sha256((ROOT/'scripts/prepare_cryptopp_arm64.py').read_bytes()).hexdigest()
+        if is_windows_arm and name == 'podofo':
+            identity['arm64_source_fix_sha256'] = hashlib.sha256((ROOT/'scripts/prepare_podofo_arm64.py').read_bytes()).hexdigest()
+            identity['arm64_charconv_probe_sha256'] = hashlib.sha256((ROOT/'native/tests/podofo_charconv_probe.cpp').read_bytes()).hexdigest()
         if not args.force and stamp.exists() and json.loads(stamp.read_text()) == identity:
             print("Already built: " + name, flush=True)
             continue
@@ -240,6 +244,12 @@ def main():
                           "-DCURL_BROTLI=OFF", "-DCURL_ZSTD=OFF", "-DUSE_LIBIDN2=OFF",
                           "-DCURL_USE_GSSAPI=OFF", "-DCURL_USE_SECTRANSP=OFF"], log)
                 elif name == "podofo":
+                    if is_windows_arm:
+                        prepare_podofo_arm64(source)
+                        run([env['CXX'], '-std=c++17', '-static',
+                             '-I'+str(source/'src/podofo/private'),
+                             ROOT/'native/tests/podofo_charconv_probe.cpp',
+                             '-o', build/'podofo_charconv_probe.exe'], ROOT, env, log)
                     cmake(source, build, (["-DCMAKE_CXX_FLAGS=" + env["CXXFLAGS"] + " -DLIBXML_STATIC"] if is_windows else []) + ["-DPODOFO_BUILD_STATIC=ON", "-DPODOFO_BUILD_LIB_ONLY=ON",
                           "-DPODOFO_WITH_AFDKO=OFF", "-DCMAKE_CXX_STANDARD=17",
                           "-DCMAKE_DISABLE_FIND_PACKAGE_JPEG=ON", "-DCMAKE_DISABLE_FIND_PACKAGE_TIFF=ON",
