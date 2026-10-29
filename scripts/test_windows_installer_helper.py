@@ -7,9 +7,11 @@ import os
 from pathlib import Path
 import subprocess
 import tempfile
+from windows_helper_manifest import check_helper_manifest
 
 
 def verify(helper):
+    manifest = check_helper_manifest(helper)
     checks = 0
     with tempfile.TemporaryDirectory(prefix='cie-fake-cli-') as temporary:
         folder = Path(temporary)/'prova-\u00e8-\u6f22\u5b57'
@@ -39,7 +41,7 @@ def verify(helper):
         run(['--\u00e8-\u6f22\u5b57'], 6)
         calls.append('--install-package')
         run(['--install-package'], 4, {'CIE_INSTALLER_TEST_FAIL':'--install-package'})
-    return {'passed':True,'checks':checks,'unicodeLogPathVerified':True,
+    return {'passed':True,'checks':checks,'unicodeLogPathVerified':True,'manifest':manifest,
             'productionInstallations':0,'realCardOperations':0,'uacRequests':0}
 
 

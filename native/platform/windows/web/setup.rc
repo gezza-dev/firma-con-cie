@@ -1,0 +1,4 @@
+// SPDX-License-Identifier: BSD-3-Clause
+// Embed resource #1 for both LLVM-MinGW and MSVC. An explicit asInvoker level
+// prevents Windows installer detection from elevating read-only status queries.
+1 24 "setup.manifest"

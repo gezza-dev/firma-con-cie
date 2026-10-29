@@ -16,6 +16,7 @@ from ci_windows_arm64 import download
 from check_openssl_arm64 import validate_configuration as validate_openssl_arm64
 from prepare_cryptopp_arm64 import prepare_windows_arm64 as prepare_cryptopp_arm64
 from prepare_podofo_arm64 import prepare_windows_arm64 as prepare_podofo_arm64
+from test_windows_helper_manifest import helper_pe, HelperManifest
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -52,6 +53,7 @@ class WindowsArm64(unittest.TestCase):
                      'cie_native/ltv/jre/windows-arm64/bin/java.exe',
                      'web-component/cie_prototype_minidriver.dll','web-component/CIE-Web-Setup.exe'):
             pe(self.release/name)
+        helper_pe(self.release/'web-component/CIE-Web-Setup.exe')
         elf(self.release/'data/app.so')
         (self.release/'cie_native/ltv/cie-ltv-worker.jar').write_bytes(b'synthetic JAR')
         manifest = {'system':'windows','architectures':['arm64'],
@@ -261,6 +263,17 @@ class WindowsArm64(unittest.TestCase):
         (web/'payload-manifest.json').write_text(json.dumps({'files':files,'version':hashlib.sha256(json.dumps(files,sort_keys=True).encode()).hexdigest()}))
         redist = self.root/'redist.exe'
         redist.write_bytes(b'not executed')
+        helper = web/'CIE-Web-Setup.exe'
+        original_helper = helper.read_bytes()
+        for invalid in (None, b'<assembly xmlns="urn:schemas-microsoft-com:asm.v3"><requestedExecutionLevel level="requireAdministrator" uiAccess="false"/></assembly>'):
+            if invalid is None:
+                pe(helper)  # A matching CPU alone must not certify the helper.
+            else:
+                helper_pe(helper, manifest=invalid)
+            with self.assertRaisesRegex(ValueError, 'helper|Helper'):
+                prepare(self.release,self.root/'Setup','1.0.0',redist,architecture='arm64')
+            self.assertFalse((self.root/'Setup').exists())
+        helper.write_bytes(original_helper)
         script, installer, manifest = prepare(self.release,self.root/'Setup','1.0.0',redist,architecture='arm64')
         config = (script.parent/'build-config.iss').read_text(encoding='utf-8-sig')
         self.assertIn('#define TargetArchitecture "arm64"',config)

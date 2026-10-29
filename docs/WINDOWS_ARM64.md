@@ -5,9 +5,11 @@ prepara app, middleware, componente Web e installer per **Windows 11 ARM64**.
 La macchina virtuale dell'utente serve soltanto per installazione e collaudo:
 non richiede Flutter, Visual Studio, Python, Java o Maven di sviluppo.
 
-**Stato:** infrastruttura predisposta; la prima esecuzione completa su GitHub
-e il collaudo con lettore/CIE su Windows ARM64 devono ancora essere eseguiti.
-La riuscita dei test x64 precedenti non attesta quella dei binari ARM64.
+**Stato:** esecuzione completa `40899079721` riuscita sul commit `eeae681`,
+con installer generato e scaricato. L'utente ha confermato installazione e avvio
+sulla VM Windows 11 ARM64. Il controllo del componente ha poi evidenziato
+l'errore di avvio 740 descritto sotto; il nuovo installer corretto e il collaudo
+con lettore/CIE su Windows ARM64 restano da verificare.
 
 ## Avvio e risultati
 
@@ -267,6 +269,47 @@ confini ARM64, inclusi AOT con CPU errata in entrambe le direzioni, ELF32,
 endianness/versione non valide, file troncati e tabelle fuori limite; superati
 anche 8 test dell'identità del prodotto e actionlint. Il pacchetto ARM64 finale
 resta da generare nella nuova esecuzione Actions.
+
+## Controllo del componente senza elevazione (29 ottobre 2026)
+
+La diagnosi sulla VM ha confermato l'errore Windows 740 prima dell'avvio di
+`CIE-Web-Setup.exe --status-package`. I 91 file del payload e le registrazioni
+proprie erano presenti; il coordinatore browser registrava `component_not_ready`
+con codice 6 perché il runner convertiva ogni errore di avvio in quel codice.
+Il manifest PE del helper ARM64 compilato con LLVM-MinGW era assente; quello
+x64 precedentemente compilato con MSVC conteneva già `asInvoker`.
+
+Il progetto CMake comune ora incorpora esplicitamente `setup.manifest` tramite
+`setup.rc` per MSVC e MinGW, su entrambe le CPU. Il livello è `asInvoker`,
+`uiAccess=false`; installazione/rimozione richiedono ancora un token elevato
+e restano responsabilità dell'installer. L'app non richiede UAC per i controlli.
+Il runner conserva inoltre i codici di avvio effettivi e il timeout, evitando
+di presentarli come prova di un componente da aggiornare.
+
+`windows_helper_manifest.py` ispeziona senza esecuzione la risorsa PE numero 1,
+tipo 24, su Linux e Windows. Build nativa ARM64 e packager di produzione
+rifiutano manifest assenti, privilegi elevati o `uiAccess=true`.
+`test_windows_web_helper.py` verifica il manifest del helper reale ed esegue
+soltanto `--validate-package` e `--status-package`; è incluso nel job Windows.
+
+Verifiche della correzione:
+
+- Compilati con CMake il vero helper ARM64 LLVM-MinGW e i due helper x64
+  LLVM-MinGW/MSVC: tipo PE e manifest `asInvoker` verificati.
+- Su x64, entrambi gli helper restituiscono 0 alle due query da processo
+  non elevato, senza PC/SC, UAC o scritture di sistema.
+- Sulla VM ARM64, lo stesso manifest aggiunto esclusivamente a una copia
+  privata del helper già compilato elimina l'errore 740: entrambe le query
+  restituiscono 0 da processo non elevato. I 91 file del payload e il helper
+  installato sono rimasti invariati. Questa prova conferma la correzione del
+  manifest; non equivale al collaudo del nuovo binario o di un nuovo installer.
+- Superati 30 test dei confini architettura/manifest/packaging, 44 test Flutter
+  di stato/Home/configurazione browser e 8 test dell'identità del prodotto.
+  Su ciascuna build x64 passano anche gli 8 casi CLI Unicode del helper
+  simulato; superati i 49 controlli Inno isolati, senza installazioni reali.
+
+Il nuovo pacchetto ARM64 deve essere generato dalla successiva build Actions;
+rimangono da collaudare il suo aggiornamento e l'accesso reale ai siti.
 
 Riferimenti: [LLVM-MinGW](https://github.com/mstorsjo/llvm-mingw),
 [architetture Inno Setup](https://jrsoftware.org/ishelp/topic_archidentifiers.htm),

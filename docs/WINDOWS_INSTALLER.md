@@ -1,8 +1,8 @@
 # Pacchetto di installazione Windows x64
 
 È predisposta anche la [pipeline Windows ARM64](WINDOWS_ARM64.md), con output
-separato, controllo delle architetture e prerequisito VC ARM64. La prima build
-Actions e il collaudo reale ARM64 restano da eseguire.
+separato, controllo delle architetture e prerequisito VC ARM64. La build Actions
+`40899079721` ha generato il pacchetto; il collaudo reale ARM64 è in corso.
 
 Il pacchetto locale di test del 21 ottobre 2026 include l'app Flutter completa,
 runtime MinGW, PDFium, DSS/JVM privata, licenze, componente di accesso ai siti e
@@ -75,6 +75,31 @@ sovrapposti non vengono sovrascritte: il conflitto interrompe la configurazione.
 La fase finale completa la registrazione con ripristino in caso di errore;
 un errore viene riportato come installazione non completata, senza cancellare
 gli archivi personali. La riesecuzione dell'installer consente di riprovare.
+
+Il programma `CIE-Web-Setup.exe` include un manifest `asInvoker` esplicito,
+con `uiAccess=false`, sia su x64 sia su ARM64, con MSVC e LLVM-MinGW. Le query
+`--validate-package` e `--status-package` partono con i privilegi dell'utente,
+senza UAC. I comandi che scrivono nel sistema continuano a verificare
+l'elevazione e sono avviati dall'installer amministrativo. Non viene aggiunta
+alcuna elevazione automatica all'app.
+
+Prima di creare un pacchetto di produzione, il packager ispeziona la risorsa
+PE `RT_MANIFEST` numero 1 e rifiuta un helper senza `asInvoker`, con elevazione
+richiesta o con accesso UI privilegiato. Il controllo funziona anche durante
+la compilazione ARM64 su Linux e non esegue il binario. Il runner conserva
+nei log gli errori nativi di avvio, incluso 740, e il timeout 1460: questi
+non vengono più convertiti nel codice 6 di payload non valido.
+
+Verifica in sola lettura, da PowerShell non amministrativo:
+
+```powershell
+python scripts/test_windows_web_helper.py --helper 'C:/Program Files/Firma con CIE/web-component/CIE-Web-Setup.exe'
+```
+
+Il test ispeziona il manifest ed esegue soltanto le due query di metadati,
+senza PC/SC, PIN, modifiche ai browser o scritture di sistema. Il risultato
+registra anche se il processo di test era elevato; un test eseguito da un
+runner amministrativo non sostituisce la prova da utente normale.
 
 L'app è in `Program Files\Firma con CIE`; il componente mantiene la propria
 cartella immutabile in `Program Files\CIE ID Flutter Prototype\WebToken\<hash>`.

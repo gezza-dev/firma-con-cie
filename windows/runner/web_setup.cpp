@@ -13,10 +13,12 @@ DWORD checkSetup(const std::wstring& reader,bool package=false){
  if(GetFileAttributesW(helper.c_str())==INVALID_FILE_ATTRIBUTES)return 6;
  auto arguments=package?std::wstring(L" --status-package"):L" --check "+cie_setup::quote(reader);auto command=cie_setup::quote(helper.wstring())+arguments;
  STARTUPINFOW start{};start.cb=sizeof(start);start.dwFlags=STARTF_USESHOWWINDOW;start.wShowWindow=SW_HIDE;PROCESS_INFORMATION child{};
- if(!CreateProcessW(helper.c_str(),command.data(),nullptr,nullptr,FALSE,CREATE_NO_WINDOW,nullptr,directory.c_str(),&start,&child))return 6;
+ // Preserve launch failures (e.g. ERROR_ELEVATION_REQUIRED=740). They are
+ // diagnostic failures, not evidence that the installed payload is outdated.
+ if(!CreateProcessW(helper.c_str(),command.data(),nullptr,nullptr,FALSE,CREATE_NO_WINDOW,nullptr,directory.c_str(),&start,&child))return GetLastError();
  CloseHandle(child.hThread);DWORD code=6;
  if(WaitForSingleObject(child.hProcess,30000)==WAIT_OBJECT_0)GetExitCodeProcess(child.hProcess,&code);
- else {TerminateProcess(child.hProcess,6);WaitForSingleObject(child.hProcess,5000);}
+ else {code=ERROR_TIMEOUT;TerminateProcess(child.hProcess,code);WaitForSingleObject(child.hProcess,5000);}
  CloseHandle(child.hProcess);return code;
 }
 }

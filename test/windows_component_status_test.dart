@@ -13,7 +13,7 @@ import 'web_completion_feedback_test.dart' show pairedService, size;
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   const channel = MethodChannel('cie.id/windows-web-setup');
-  for (final code in [0, 3, 6, 7, 9, 10, 11]) {
+  for (final code in [0, 3, 6, 7, 9, 10, 11, 740, 1460]) {
     test(
       'package status $code only invokes reader-free read-only methods',
       () async {
@@ -42,6 +42,13 @@ void main() {
           expect(result['componentNeedsUpdate'], [6, 9, 10, 11].contains(code));
           expect(result['componentVersionMatches'], code == 0);
           expect(result['componentInstallerRequired'], code != 0);
+          expect(result['componentStatusCode'], code);
+          if ([740, 1460].contains(code)) {
+            expect(
+              result['componentStatusMessage'],
+              contains('Non è stato possibile verificare'),
+            );
+          }
         }
       },
     );

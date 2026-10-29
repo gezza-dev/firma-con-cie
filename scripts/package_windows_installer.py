@@ -15,6 +15,7 @@ import shutil
 import subprocess
 from product_identity import windows_installer_name
 from windows_architecture import check_release_architecture
+from windows_helper_manifest import check_helper_manifest
 
 ROOT = Path(__file__).resolve().parents[1]
 POLICY = ROOT / 'packaging/windows/release-policy.json'
@@ -150,6 +151,7 @@ def prepare(release, output, version, vc_redist, *, test_root=None, architecture
     validate_release(release)
     if architecture and not test_root:
         check_release_architecture(release, architecture)
+        check_helper_manifest(release / 'web-component/CIE-Web-Setup.exe')
     output.mkdir(parents=True)
     work = output / 'build'
     work.mkdir()
@@ -199,6 +201,8 @@ def prepare(release, output, version, vc_redist, *, test_root=None, architecture
                     'native/platform/windows/pkcs11/CMakeLists.txt',
                     'lib/l10n/catalog.g.dart', 'windows/runner/web_setup.cpp',
                     'native/platform/windows/web/setup.cpp', 'native/platform/windows/web/setup_policy.h',
+                    'native/platform/windows/web/setup.manifest', 'native/platform/windows/web/setup.rc',
+                    'native/platform/windows/web/CMakeLists.txt', 'scripts/windows_helper_manifest.py',
                     'native/platform/windows/web/minidriver.cpp', 'packaging/windows/firma-con-cie.iss',
                     'scripts/package_windows_installer.py', 'scripts/product_identity.py', 'packaging/windows/release-policy.json',
                     'packaging/windows/card-catalog.json', 'native/platform/windows/web/card_catalog.h',

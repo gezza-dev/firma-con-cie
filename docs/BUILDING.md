@@ -213,6 +213,7 @@ $ciePayloadHeader = (Resolve-Path native/runtime/windows-web-component/setup_pay
 cmake -S native/platform/windows/web -B .build/web-windows -A x64 "-DCIE_CARDMOD_INCLUDE=C:/percorso/CPDK/Include" "-DCIE_WEB_SETUP_MANIFEST=$ciePayloadHeader"
 cmake --build .build/web-windows --config Release --target cie_web_setup
 Copy-Item .build/web-windows/Release/CIE-Web-Setup.exe native/runtime/windows-web-component/
+py -3 scripts/test_windows_web_helper.py --helper native/runtime/windows-web-component/CIE-Web-Setup.exe
 flutter pub get --enforce-lockfile
 flutter build windows --release
 ```

@@ -22,6 +22,7 @@ import urllib.request
 from build_portable_dependencies import unpack
 from build_ltv import extract
 from windows_architecture import check_pe_tree, check_release_architecture, pe_machine, MACHINES
+from windows_helper_manifest import check_helper_manifest
 
 ROOT = Path(__file__).resolve().parents[1]
 WORK = ROOT/'.build/windows-arm64-ci'
@@ -134,6 +135,8 @@ def native():
               '-DCIE_CARDMOD_INCLUDE='+str(WORK/'cpdk/include'),
               '-DCIE_WEB_SETUP_MANIFEST='+str(web/'setup_payload.h'))
     shutil.copy2(provider/'CIE-Web-Setup.exe', web/'CIE-Web-Setup.exe')
+    check_helper_manifest(web/'CIE-Web-Setup.exe')
+    check_helper_manifest(provider/'cie_installer_fake.exe')
     # Regression binaries are CI-only; never merge these into the system payload.
     test_tools = TRANSFER/'test-tools'
     shutil.copytree(provider/'tests', test_tools/'provider-fixtures')
@@ -177,6 +180,8 @@ def windows():
     run(test_tools/'web/cie_minidriver_tests.exe',test_tools/'provider-fixtures/provider/cie_prototype_minidriver.dll')
     run(test_tools/'pkcs11/cie_windows_pkcs11_tests.exe',test_tools/'pkcs11/cie_windows_pkcs11_fake.dll')
     run(web/'CIE-Web-Setup.exe','--validate-package')
+    python('test_windows_web_helper.py','--helper',web/'CIE-Web-Setup.exe',
+           '--report',REPORTS/'web-helper.json')
     flutter = shutil.which('flutter.bat')
     if not flutter:
         raise ValueError('Pinned Flutter SDK missing from PATH')
