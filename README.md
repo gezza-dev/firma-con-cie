@@ -20,6 +20,7 @@ non offre un pacchetto da scaricare.
 | --- | --- |
 | macOS | Bundle Universal Apple Silicon/Intel compilato. Firma PDF/P7M, abbinamento, PIN parziale e accesso Safari con CIE reale verificati su Apple Silicon. L’utente ha confermato anche l’accesso riuscito con Google Chrome e Mozilla Firefox. L’esecuzione su Intel resta da collaudare. |
 | Windows x64 | Interfaccia e componenti nativi compilati e verificati. Firma PDF/P7M, abbinamento persistente e PIN parziale collaudati. Accesso al portale CIE con Chrome e Firefox verificato con CIE reale e PIN completo; collaudo riuscito anche con Microsoft Edge confermato dall'utente. |
+| Windows ARM64 | [Workflow GitHub Actions](docs/WINDOWS_ARM64.md) predisposto per app, middleware, componente Web e installer. Prima esecuzione completa e collaudo reale da effettuare. |
 | Linux | Backend e interfaccia compilati e testati. Abbinamento persistente e firma PDF/P7M con PIN parziale verificati con CIE reale. Test reali di accesso ai siti con Mozilla Firefox, Firefox Snap e Chrome desktop con PIN completo confermati riusciti dall’utente. Pacchetto `.deb` con launcher e icone; collaudo desktop completo da completare. |
 
 La [tabella dei browser collaudati](docs/WEB_AUTHENTICATION.md#browser-collaudati)

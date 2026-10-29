@@ -1,5 +1,9 @@
 # Pacchetto di installazione Windows x64
 
+È predisposta anche la [pipeline Windows ARM64](WINDOWS_ARM64.md), con output
+separato, controllo delle architetture e prerequisito VC ARM64. La prima build
+Actions e il collaudo reale ARM64 restano da eseguire.
+
 Il pacchetto locale di test del 21 ottobre 2026 include l'app Flutter completa,
 runtime MinGW, PDFium, DSS/JVM privata, licenze, componente di accesso ai siti e
 Microsoft Visual C++ Redistributable x64. Non è una release pubblica firmata.

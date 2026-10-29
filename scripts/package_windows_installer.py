@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: BSD-3-Clause
-"""Build the Windows x64 installer from a complete, validated Release folder.
+"""Build the Windows x64/ARM64 installer from a complete, validated Release folder.
 
 Does not install anything, contact a card or read a user profile. Requires Inno
-Setup 7.1 and Microsoft's signed x64 VC redistributable (VS Build Tools/Redist).
+Setup 7.1 and Microsoft's signed matching VC redistributable (VS Build Tools/Redist).
 """
 import argparse
 import hashlib
@@ -14,6 +14,7 @@ import re
 import shutil
 import subprocess
 from product_identity import windows_installer_name
+from windows_architecture import check_release_architecture
 
 ROOT = Path(__file__).resolve().parents[1]
 POLICY = ROOT / 'packaging/windows/release-policy.json'
@@ -138,7 +139,7 @@ def quote(value):
     return '"' + value + '"'
 
 
-def prepare(release, output, version, vc_redist, *, test_root=None):
+def prepare(release, output, version, vc_redist, *, test_root=None, architecture=None):
     release, output = release.resolve(), output.resolve()
     if output.is_relative_to(release) or release.is_relative_to(output):
         raise ValueError('Release and installer output directories must not overlap')
@@ -147,6 +148,8 @@ def prepare(release, output, version, vc_redist, *, test_root=None):
     if not re.fullmatch(r'\d+\.\d+\.\d+(?:\.\d+)?', version):
         raise ValueError('Invalid installer version')
     validate_release(release)
+    if architecture and not test_root:
+        check_release_architecture(release, architecture)
     output.mkdir(parents=True)
     work = output / 'build'
     work.mkdir()
@@ -158,7 +161,7 @@ def prepare(release, output, version, vc_redist, *, test_root=None):
     web, counts = validate_release(release)
     script = work / 'firma-con-cie.iss'
     shutil.copy2(ROOT / 'packaging/windows/firma-con-cie.iss', script)
-    name = windows_installer_name(version)
+    name = windows_installer_name(version, architecture or 'x64')
     if test_root:
         name += '-ISOLATED-TEST'
     before = work / 'before.txt'
@@ -170,14 +173,14 @@ def prepare(release, output, version, vc_redist, *, test_root=None):
         'Gli aggiornamenti preservano le registrazioni compatibili esistenti.\n'
         'Abbinamenti, impostazioni e immagini personali vengono conservati, anche durante la disinstallazione. '
         'Non è necessario avviare l’app prima di ogni accesso dal browser.\n'
-        'È incluso Microsoft Visual C++ Redistributable x64. Firma con CIE è un progetto indipendente, non un prodotto ufficiale IPZS.\n\n'
+        f'È incluso Microsoft Visual C++ Redistributable {architecture or "x64"}. Firma con CIE è un progetto indipendente, non un prodotto ufficiale IPZS.\n\n'
         'English\nSetup installs the app and website access component. '
         'No reader, CIE or PIN is needed during installation. '
         'The ATRs and masks of the 12 official middleware card models are registered. '
         'Updates preserve compatible existing registrations.\n'
         'Pairings, settings and personal images are preserved, including when uninstalling. '
         'The app does not need to stay open for browser authentication.\n'
-        'Microsoft Visual C++ Redistributable x64 is included. Firma con CIE is an independent project, not an official IPZS product.\n',
+        f'Microsoft Visual C++ Redistributable {architecture or "x64"} is included. Firma con CIE is an independent project, not an official IPZS product.\n',
         encoding='utf-8-sig')
     files = {f.relative_to(release).as_posix(): sha(f) for f in sorted(release.rglob('*')) if f.is_file()}
     manifest_path = work / 'installation-manifest.json'
@@ -185,6 +188,7 @@ def prepare(release, output, version, vc_redist, *, test_root=None):
                 'sourceChanges': subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT, text=True).splitlines(),
                 'releaseFiles': files, 'webPayloadVersion': web['version'], 'validatedPayloadCounts': counts,
                 'vcRedistSha256': sha(vc_redist), 'userDataActions': [], 'uacOwner': 'installer', 'cardPinRequested': False}
+    manifest['architecture'] = architecture or 'x64'
     manifest['distribution'] = {k: v for k, v in audit.items() if k != 'excludedFiles'}
     manifest['cardCatalog'] = json.loads((ROOT / 'packaging/windows/card-catalog.json').read_text())
     source_paths = ['lib/main.dart', 'lib/windows_web_setup.dart', 'lib/guide_view.dart',
@@ -204,7 +208,10 @@ def prepare(release, output, version, vc_redist, *, test_root=None):
     config = {'AppVersion': version, 'ReleasePath': release, 'OutputPath': output,
               'OutputName': name, 'AppIcon': ROOT / 'windows/runner/resources/app_icon.ico',
               'ProjectLicense': ROOT / 'LICENSE', 'BeforeFile': before,
-              'BuildManifest': manifest_path, 'VcRedist': vc_redist.resolve()}
+              'BuildManifest': manifest_path, 'VcRedist': vc_redist.resolve(),
+              'TargetArchitecture': 'arm64' if architecture == 'arm64' else 'x64os',
+              'MinimumWindowsVersion': '10.0.22000' if architecture == 'arm64' else '10.0',
+              'VcRedistName': 'vc_redist.' + (architecture or 'x64') + '.exe'}
     if test_root:
         config['TestInstallPath'] = test_root.resolve()
     lines = [f'#define {k} {quote(v)}' for k, v in config.items()]
@@ -253,6 +260,7 @@ def main():
     p.add_argument('--iscc', required=True, type=Path)
     p.add_argument('--vc-redist', required=True, type=Path)
     p.add_argument('--version', default='1.0.0')
+    p.add_argument('--architecture', choices=['x64', 'arm64'], default='x64')
     args = p.parse_args()
     # Verify Microsoft's prerequisite before it is embedded in an elevated setup.
     environment = dict(os.environ, CIE_INSTALLER_VC_REDIST=str(args.vc_redist.resolve()))
@@ -264,7 +272,16 @@ def main():
         env=environment, capture_output=True)
     if check.returncode:
         raise SystemExit('Microsoft VC redistributable signature verification failed')
-    print(json.dumps(build(args.release, args.output, args.version, args.iscc, args.vc_redist), indent=2))
+    # The signed bootstrapper can be x86 on either target. Verify its product
+    # description as well, rather than inferring its payload CPU from PE Machine.
+    environment['CIE_INSTALLER_EXPECTED_CPU'] = args.architecture
+    check = subprocess.run([shell, '-NoProfile', '-NonInteractive', '-Command',
+        '$d=(Get-Item -LiteralPath $env:CIE_INSTALLER_VC_REDIST).VersionInfo.FileDescription; '
+        'if($d -notmatch [regex]::Escape($env:CIE_INSTALLER_EXPECTED_CPU)){exit 1}'], env=environment)
+    if check.returncode:
+        raise SystemExit('Microsoft VC redistributable architecture mismatch')
+    print(json.dumps(build(args.release, args.output, args.version, args.iscc, args.vc_redist,
+                           architecture=args.architecture), indent=2))
 
 
 if __name__ == '__main__':

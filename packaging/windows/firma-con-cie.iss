@@ -21,9 +21,9 @@ AppPublisher=gezza-dev
 AppPublisherURL=https://github.com/gezza-dev/firma-con-cie
 DefaultGroupName=Firma con CIE
 DisableProgramGroupPage=yes
-ArchitecturesAllowed=x64os
-ArchitecturesInstallIn64BitMode=x64os
-MinVersion=10.0
+ArchitecturesAllowed={#TargetArchitecture}
+ArchitecturesInstallIn64BitMode={#TargetArchitecture}
+MinVersion={#MinimumWindowsVersion}
 OutputDir={#OutputPath}
 OutputBaseFilename={#OutputName}
 SetupIconFile={#AppIcon}
@@ -49,7 +49,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
 
 [Files]
-Source: "{#VcRedist}"; DestDir: "{tmp}"; DestName: "vc_redist.x64.exe"; Flags: dontcopy noencryption
+Source: "{#VcRedist}"; DestDir: "{tmp}"; DestName: "{#VcRedistName}"; Flags: dontcopy noencryption
 ; Extract only the helper package during the prerequisite check, before copying
 ; the application. This pass never changes the card database or user profile.
 Source: "{#ReleasePath}\web-component\*"; DestDir: "{tmp}\cie-web-preflight"; Flags: dontcopy noencryption recursesubdirs
@@ -121,8 +121,8 @@ begin
     Result := ComponentError(-1)
   else if Code <> 0 then Result := ComponentError(Code);
   if Result <> '' then exit;
-  ExtractTemporaryFile('vc_redist.x64.exe');
-  if not Exec(ExpandConstant('{tmp}\vc_redist.x64.exe'), '/install /quiet /norestart',
+  ExtractTemporaryFile('{#VcRedistName}');
+  if not Exec(ExpandConstant('{tmp}\{#VcRedistName}'), '/install /quiet /norestart',
     ExpandConstant('{tmp}'), SW_HIDE, ewWaitUntilTerminated, Code) then
     Result := ComponentError(-2)
   else if Code = 3010 then RuntimeNeedsRestart := True

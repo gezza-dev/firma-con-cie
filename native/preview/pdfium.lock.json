@@ -1,27 +1,38 @@
 {
   "engine": "PDFium chromium/7811",
-  "flutterPackages": {"pdfrx":"2.6.5","pdfrx_engine":"0.6.1","pdfium_flutter":"0.3.1","pdfium_dart":"0.3.1","desktop_drop":"0.8.4"},
+  "flutterPackages": {
+    "pdfrx": "2.6.5",
+    "pdfrx_engine": "0.6.1",
+    "pdfium_flutter": "0.3.1",
+    "pdfium_dart": "0.3.1",
+    "desktop_drop": "0.8.4"
+  },
   "provenance": "SHA-256 from publisher release assets; Darwin checksum also pinned by pdfium_flutter SwiftPM/CocoaPods",
   "artifacts": {
     "darwin-universal": {
-      "archive":"PDFium-chromium-7811-20260502-190206.xcframework.zip",
-      "url":"https://github.com/espresso3389/pdfium-xcframework/releases/download/v144.0.7811.0-20260502-190206/PDFium-chromium-7811-20260502-190206.xcframework.zip",
-      "sha256":"948d9257f53f01cbed74b81bb8adc8758e52ac9390751772de7889026d32d5a1"
+      "archive": "PDFium-chromium-7811-20260502-190206.xcframework.zip",
+      "url": "https://github.com/espresso3389/pdfium-xcframework/releases/download/v144.0.7811.0-20260502-190206/PDFium-chromium-7811-20260502-190206.xcframework.zip",
+      "sha256": "948d9257f53f01cbed74b81bb8adc8758e52ac9390751772de7889026d32d5a1"
     },
     "windows-x64": {
-      "archive":"pdfium-win-x64.tgz",
-      "url":"https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7811/pdfium-win-x64.tgz",
-      "sha256":"2e7af12674ac3716cb0e20369bb9fb269ceadfa2f0b0597097a520e6834175a0"
+      "archive": "pdfium-win-x64.tgz",
+      "url": "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7811/pdfium-win-x64.tgz",
+      "sha256": "2e7af12674ac3716cb0e20369bb9fb269ceadfa2f0b0597097a520e6834175a0"
     },
     "linux-x64": {
-      "archive":"pdfium-linux-x64.tgz",
-      "url":"https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7811/pdfium-linux-x64.tgz",
-      "sha256":"e76e0a37aefb843d56f04657475ce612157021b1ebc53d801f2fbfcc537ccf64"
+      "archive": "pdfium-linux-x64.tgz",
+      "url": "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7811/pdfium-linux-x64.tgz",
+      "sha256": "e76e0a37aefb843d56f04657475ce612157021b1ebc53d801f2fbfcc537ccf64"
     },
     "linux-arm64": {
-      "archive":"pdfium-linux-arm64.tgz",
-      "url":"https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7811/pdfium-linux-arm64.tgz",
-      "sha256":"1682079aae24d73fcfb4f1ae115dd7b661780ad31ad43c8804da2d518dc546e8"
+      "archive": "pdfium-linux-arm64.tgz",
+      "url": "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7811/pdfium-linux-arm64.tgz",
+      "sha256": "1682079aae24d73fcfb4f1ae115dd7b661780ad31ad43c8804da2d518dc546e8"
+    },
+    "windows-arm64": {
+      "archive": "pdfium-win-arm64.tgz",
+      "url": "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7811/pdfium-win-arm64.tgz",
+      "sha256": "fa52ad62562a7bbe258c19fbf12adb794af2c204daba52a088ac1315a9968211"
     }
   }
 }

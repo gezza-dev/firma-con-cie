@@ -31,6 +31,7 @@ Map<String, dynamic> ltvUnavailable(String code) => {
 
 String? ltvRuntimeArchitecture(Abi abi) => switch (abi) {
   Abi.windowsX64 => 'windows-x86_64',
+  Abi.windowsArm64 => 'windows-arm64',
   Abi.macosArm64 => 'macos-arm64',
   Abi.macosX64 => 'macos-x86_64',
   Abi.linuxX64 => 'linux-x86_64',

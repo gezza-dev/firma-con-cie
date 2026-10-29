@@ -1,0 +1,127 @@
+name: Windows ARM64 package
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-arm64-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  native:
+    name: Cross-compile ARM64 middleware and private JVM
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install build tools on the disposable runner
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake ninja-build pkg-config perl autoconf automake libtool gettext p7zip-full msitools python3-venv
+          python3 -m venv "$RUNNER_TEMP/cie-python"
+          "$RUNNER_TEMP/cie-python/bin/pip" install meson==1.11.0
+          echo "$RUNNER_TEMP/cie-python/bin" >> "$GITHUB_PATH"
+      - name: Check packaging regressions
+        run: python3 scripts/test_windows_arm64.py
+      - name: Build all native ARM64 components from the locked sources
+        run: python scripts/ci_windows_arm64.py native
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-arm64-native-${{ github.sha }}
+          path: .build/windows-arm64-transfer
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-arm64-native-logs-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .build/dependencies/windows-arm64/logs
+            .build/windows-arm64-ci/**/CMakeConfigureLog.yaml
+          if-no-files-found: ignore
+          retention-days: 14
+
+  package:
+    name: Test and package on native Windows ARM64
+    needs: native
+    runs-on: windows-11-arm
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-arm64-native-${{ github.sha }}
+          path: .build/windows-arm64-transfer
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          architecture: arm64
+      - name: Select the installed Visual Studio ARM64 tools
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vs = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.ARM64 -property installationPath
+          if (!$vs) { throw 'Visual Studio C++ ARM64 tools missing from this runner image' }
+          $devcmd = Join-Path $vs 'Common7\Tools\VsDevCmd.bat'
+          $nativeEnv = & cmd.exe /d /s /c "`"$devcmd`" -no_logo -host_arch=arm64 -arch=arm64 >nul && set"
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot select the ARM64 MSVC environment' }
+          foreach ($line in $nativeEnv) {
+            if ($line -match '^(PATH|INCLUDE|LIB|LIBPATH|VisualStudioVersion|VSINSTALLDIR|VCINSTALLDIR|VCToolsInstallDir|WindowsSdkDir|WindowsSDKVersion|UniversalCRTSdkDir|UCRTVersion)=(.*)$') {
+              "$($Matches[1])=$($Matches[2])" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+            }
+          }
+          $vc = Get-ChildItem -LiteralPath (Join-Path $vs 'VC\Redist\MSVC') -Filter vc_redist.arm64.exe -Recurse -File | Sort-Object FullName -Descending | Select-Object -First 1 -ExpandProperty FullName
+          if (!$vc) { throw 'Signed ARM64 VC redistributable missing' }
+          "CIE_CI_VC_REDIST_ARM64=$vc" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Install the pinned Flutter SDK from its official repository
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $lock = Get-Content toolchain.lock.json -Raw | ConvertFrom-Json
+          $sdk = Join-Path $env:RUNNER_TEMP 'flutter'
+          git clone --depth 1 --branch $lock.flutter.version https://github.com/flutter/flutter.git $sdk
+          if ($LASTEXITCODE -ne 0) { throw 'Flutter checkout failed' }
+          $actual = git -C $sdk rev-parse HEAD
+          if ($actual -ne $lock.flutter.hash) { throw 'Flutter commit differs from toolchain.lock.json' }
+          (Join-Path $sdk 'bin') | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          # Bootstrap's native ARM64 Dart SDK determines the Windows target.
+          if ($env:PROCESSOR_ARCHITECTURE -ne 'ARM64') { throw 'Native ARM64 shell required' }
+      - name: Verify source inventory, regressions, ARM64 binaries and installer
+        run: |
+          python scripts/check_repository.py --report reports/windows-arm64/source-audit.json
+          if ($LASTEXITCODE -ne 0) { throw 'Source audit failed' }
+          python scripts/test_windows_arm64.py
+          if ($LASTEXITCODE -ne 0) { throw 'ARM64 packaging regression failed' }
+          python scripts/ci_windows_arm64.py windows
+          if ($LASTEXITCODE -ne 0) { throw 'Windows ARM64 build or tests failed' }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firma-con-cie-windows-arm64-${{ github.sha }}
+          path: |
+            dist/windows-arm64/Setup/*.exe
+            dist/windows-arm64/Setup/*.sha256
+            dist/windows-arm64/Setup/package-result.json
+            dist/windows-arm64/Setup/Release
+          if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-arm64-validation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            reports/windows-arm64
+            dist/windows-arm64/Setup/build
+            dist/windows-arm64/Setup/build.log
+            .build/windows-arm64-ci/**/CMakeConfigureLog.yaml
+          if-no-files-found: ignore
+          retention-days: 14

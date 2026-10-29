@@ -66,7 +66,7 @@ extern "C" {
 #ifndef CARD_DATA_VERSION_SEVEN
 #error "CPDK cardmod.h v7 is required; the MinGW v4 header is insufficient"
 #endif
-static_assert(sizeof(void*)==8,"Windows x64 only");
+static_assert(sizeof(void*)==8,"64-bit Windows only");
 static_assert(sizeof(CARD_KEY_HANDLE)==8,"Cardmod pointer-sized key handle");
-static_assert(offsetof(CARD_DATA,pfnCardDeleteContext)==120,"Cardmod x64 callback ABI");
+static_assert(offsetof(CARD_DATA,pfnCardDeleteContext)==120,"Cardmod 64-bit callback ABI");
 static_assert(sizeof(CONTAINER_MAP_RECORD)==86,"Cardmod container map wire layout");

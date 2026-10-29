@@ -4,7 +4,7 @@ if(MSVC)
   add_compile_options(/utf-8)
 endif()
 if(NOT WIN32 OR NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
-  message(FATAL_ERROR "The prototype minidriver currently requires Windows x64")
+  message(FATAL_ERROR "The minidriver requires 64-bit Windows (x64 or ARM64)")
 endif()
 set(CMAKE_CXX_STANDARD 17)
 # CPDK v7 header. Older MinGW installations ship a v4-only cardmod.h, which

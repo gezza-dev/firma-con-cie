@@ -47,7 +47,7 @@ def unpack(archive, destination):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--arch", choices=["arm64", "aarch64", "x86_64"], default=platform.machine())
-    parser.add_argument("--target", choices=["native", "windows-x64"], default="native")
+    parser.add_argument("--target", choices=["native", "windows-x64", "windows-arm64"], default="native")
     parser.add_argument("--deployment-target", default="12.0")
     parser.add_argument("--jobs", type=int, default=min(os.cpu_count() or 2, 6))
     parser.add_argument("--only", choices=ORDER, help="Build one dependency (prerequisites must exist)")
@@ -61,8 +61,12 @@ def main():
 
     work = ROOT / ".build/dependencies"
     is_mac = platform.system() == "Darwin"
-    is_windows = args.target == "windows-x64"
-    target_name = "windows-x64" if is_windows else ("macos-" if is_mac else "linux-") + args.arch
+    is_windows = args.target in ("windows-x64", "windows-arm64")
+    is_windows_arm = args.target == "windows-arm64"
+    if is_windows_arm and (platform.system() != 'Linux' or args.arch not in ('arm64', 'aarch64')):
+        parser.error('windows-arm64 requires a Linux host and --arch arm64')
+    triplet = 'aarch64-w64-mingw32' if is_windows_arm else 'x86_64-w64-mingw32'
+    target_name = args.target if is_windows else ("macos-" if is_mac else "linux-") + args.arch
     build_root = work / target_name
     prefix = build_root / "prefix"
     for path in [work / "downloads", build_root / "logs", prefix / "lib", prefix / "include"]:
@@ -77,18 +81,25 @@ def main():
     else:
         env.update(CC="gcc", CXX="g++")
     if is_windows:
-        env.update(CC="x86_64-w64-mingw32-gcc-posix", CXX="x86_64-w64-mingw32-g++-posix",
-                   AR="x86_64-w64-mingw32-ar", RANLIB="x86_64-w64-mingw32-ranlib", RC="x86_64-w64-mingw32-windres")
-        flags += " -D_WIN32_WINNT=0x0601"
+        env.update(CC=triplet+('-clang' if is_windows_arm else '-gcc-posix'),
+                   CXX=triplet+('-clang++' if is_windows_arm else '-g++-posix'),
+                   AR=triplet+'-ar', RANLIB=triplet+'-ranlib', RC=triplet+'-windres')
+        flags += " -D_WIN32_WINNT=" + ('0x0A00' if is_windows_arm else '0x0601')
+        for tool in (env['CC'],env['CXX'],env['AR'],env['RANLIB'],env['RC']):
+            if not shutil.which(tool):
+                parser.error('Missing Windows cross compiler tool: '+tool)
     env.update(CFLAGS=flags, CXXFLAGS=flags + " -std=c++17", CPPFLAGS="-I" + shlex.quote(str(prefix / "include")),
                LDFLAGS=flags + (" -Wl,-adhoc_codesign" if is_mac else "") + " -L" + shlex.quote(str(prefix / "lib")),
                PKG_CONFIG_LIBDIR=os.pathsep.join([str(prefix / "lib/pkgconfig"), str(prefix / "share/pkgconfig")]), PKG_CONFIG_PATH="")
+    if is_windows_arm:
+        env['LDFLAGS'] += ' -static'
     toolchain = build_root / "mingw.cmake"
     if is_windows:
-        toolchain.write_text("set(CMAKE_SYSTEM_NAME Windows)\nset(CMAKE_SYSTEM_PROCESSOR x86_64)\n"
-            "set(CMAKE_C_COMPILER x86_64-w64-mingw32-gcc-posix)\nset(CMAKE_CXX_COMPILER x86_64-w64-mingw32-g++-posix)\n"
-            "set(CMAKE_RC_COMPILER x86_64-w64-mingw32-windres)\n"
-            "set(CMAKE_FIND_ROOT_PATH /usr/x86_64-w64-mingw32 " + str(prefix) + ")\n"
+        toolchain.write_text("set(CMAKE_SYSTEM_NAME Windows)\nset(CMAKE_SYSTEM_PROCESSOR " + ('ARM64' if is_windows_arm else 'x86_64') + ")\n"
+            "set(CMAKE_C_COMPILER " + env['CC'] + ")\nset(CMAKE_CXX_COMPILER " + env['CXX'] + ")\n"
+            "set(CMAKE_RC_COMPILER " + env['RC'] + ")\n"
+            + ('set(CMAKE_EXE_LINKER_FLAGS_INIT "-static")\nset(CMAKE_SHARED_LINKER_FLAGS_INIT "-static")\n' if is_windows_arm else '') +
+            "set(CMAKE_FIND_ROOT_PATH " + (str(Path(shutil.which(env['CC'])).resolve().parents[1] / triplet) if is_windows_arm else '/usr/'+triplet) + ' "' + str(prefix) + "\")\n"
             "set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)\nset(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)\n"
             "set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)\nset(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)\n")
     recipe_hash = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
@@ -117,6 +128,8 @@ def main():
         identity = dict(target=target_name, source=item, arch=args.arch, deployment_target=args.deployment_target,
                         recipe_hash=recipe_hash, compiler=compiler, sdk_version=sdk_version,
                         openssl_source=LOCK["openssl"] if name in ["libcurl", "podofo"] else None)
+        if is_windows_arm and name == 'openssl':
+            identity['arm64_config_sha256'] = hashlib.sha256((ROOT/'native/backend/scripts/windows-arm64-openssl.conf').read_bytes()).hexdigest()
         if not args.force and stamp.exists() and json.loads(stamp.read_text()) == identity:
             print("Already built: " + name, flush=True)
             continue
@@ -141,7 +154,9 @@ def main():
         try:
             with log_path.open("w") as log:
                 if name == "openssl":
-                    target = "mingw64" if is_windows else ("darwin64-" + ("arm64" if args.arch == "arm64" else "x86_64") + "-cc" if is_mac else "linux-aarch64" if args.arch in ["arm64", "aarch64"] else "linux-x86_64")
+                    if is_windows_arm:
+                        shutil.copy2(ROOT/'native/backend/scripts/windows-arm64-openssl.conf', source/'Configurations/99-cie-windows-arm64.conf')
+                    target = "cie-mingw-arm64" if is_windows_arm else "mingw64" if is_windows else ("darwin64-" + ("arm64" if args.arch == "arm64" else "x86_64") + "-cc" if is_mac else "linux-aarch64" if args.arch in ["arm64", "aarch64"] else "linux-x86_64")
                     run(["perl", source / "Configure", target, "no-shared", "no-module", "no-autoload-config", "no-tests", "no-asm",
                          "--libdir=lib", "--prefix=" + str(prefix), "--openssldir=" + str(prefix / "ssl")], build, env, log)
                     run(["make", "-j" + str(args.jobs)], build, env, log)
@@ -163,7 +178,7 @@ def main():
                         ["sh", source / "build-aux/config.guess"], text=True).strip()
                     run([source / "configure", "--prefix=" + str(prefix),
                          "--build=" + build_triplet,
-                         "--host=" + ("x86_64-w64-mingw32" if is_windows else ("aarch64" if args.arch in ["arm64", "aarch64"] else "x86_64") + ("-apple-darwin" if is_mac else "-linux-gnu")),
+                         "--host=" + (triplet if is_windows else ("aarch64" if args.arch in ["arm64", "aarch64"] else "x86_64") + ("-apple-darwin" if is_mac else "-linux-gnu")),
                          "--enable-static", "--disable-shared", "--disable-nls"], build, env, log)
                     run(["make", "-j" + str(args.jobs)], build, env, log)
                     run(["make", "install"], build, env, log)
@@ -171,8 +186,8 @@ def main():
                     cross = build_root / "fontconfig-cross.ini"
                     if is_windows:
                         cross.write_text("[binaries]\nc = " + repr(env["CC"]) + "\ncpp = " + repr(env["CXX"]) +
-                            "\nar = 'x86_64-w64-mingw32-ar'\nstrip = 'x86_64-w64-mingw32-strip'\npkg-config = 'pkg-config'\n"
-                            "[host_machine]\nsystem = 'windows'\ncpu_family = 'x86_64'\ncpu = 'x86_64'\nendian = 'little'\n")
+                            "\nar = '" + env['AR'] + "'\nstrip = '" + triplet + "-strip'\npkg-config = 'pkg-config'\n"
+                            "[host_machine]\nsystem = 'windows'\ncpu_family = '" + ('aarch64' if is_windows_arm else 'x86_64') + "'\ncpu = '" + ('aarch64' if is_windows_arm else 'x86_64') + "'\nendian = 'little'\n")
                     run(["meson", "setup", build, source, *(["--cross-file", cross] if is_windows else []), "--prefix=" + str(prefix), "--libdir=lib", "--buildtype=release", "-Ddefault_library=static", "-Ddoc=disabled", "-Dnls=disabled", "-Dtests=disabled", "-Dtools=disabled", "-Dcache-build=disabled", "-Dtests-external-fonts=disabled", "-Dxml-backend=expat"], ROOT, env, log)
                     run(["meson", "compile", "-C", build, "-j", args.jobs], ROOT, env, log)
                     run(["meson", "install", "-C", build], ROOT, env, log)

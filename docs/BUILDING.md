@@ -1,5 +1,10 @@
 # Compilare Firma con CIE
 
+Per il pacchetto completo **Windows ARM64** tramite GitHub Actions, senza
+installare l'ambiente di sviluppo nella VM, vedere [WINDOWS_ARM64.md](WINDOWS_ARM64.md).
+La pipeline è predisposta; esecuzione completa e collaudo hardware ARM64 restano
+da effettuare.
+
 L'adattamento delle finestre macOS/Windows usa il modulo C in
 `native/desktop`, da conservare insieme agli altri sorgenti. Test eseguibili
 su Linux, collegamento al runner Swift e limiti della compilazione incrociata

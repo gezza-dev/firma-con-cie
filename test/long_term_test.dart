@@ -33,6 +33,7 @@ void main() {
   test('private JVM matches the OS ABI and rejects unsupported platforms', () {
     expect(ltvRuntimeArchitecture(Abi.linuxX64), 'linux-x86_64');
     expect(ltvRuntimeArchitecture(Abi.windowsX64), 'windows-x86_64');
+    expect(ltvRuntimeArchitecture(Abi.windowsArm64), 'windows-arm64');
     expect(ltvRuntimeArchitecture(Abi.macosArm64), 'macos-arm64');
     expect(ltvRuntimeArchitecture(Abi.macosX64), 'macos-x86_64');
     expect(ltvRuntimeArchitecture(Abi.linuxArm64), 'linux-arm64');

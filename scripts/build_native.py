@@ -41,8 +41,11 @@ def main():
     parser.add_argument('--build-dir', type=Path)
     parser.add_argument('--output', type=Path)
     parser.add_argument('--architectures', help='macOS: arm64 or arm64;x86_64; prefix must match')
+    parser.add_argument('--windows-architecture', choices=['x86_64', 'arm64'], default='x86_64')
     parser.add_argument('--jobs', type=int, default=min(os.cpu_count() or 2, 6))
     args = parser.parse_args()
+    if args.windows_architecture == 'arm64' and (args.system != 'windows' or not args.toolchain):
+        parser.error('Windows ARM64 requires the explicit LLVM-MinGW cross toolchain')
     prefix = args.dependency_prefix.resolve()
     build = (args.build_dir or ROOT/'.build'/('native-'+args.system)).resolve()
     output = (args.output or ROOT/'native/runtime'/args.system).resolve()
@@ -77,7 +80,7 @@ def main():
         copy_binary(path, output/path.name)
     # A Windows MinGW runtime stays private; do not copy files into System32 or
     # mix MinGW C++ objects with those produced by the Flutter MSVC toolchain.
-    if args.system == 'windows':
+    if args.system == 'windows' and args.windows_architecture == 'x86_64':
         compiler = 'x86_64-w64-mingw32-g++-posix' if cross else 'g++'
         for name in ['libwinpthread-1.dll','libgcc_s_seh-1.dll','libstdc++-6.dll']:
             path = Path(subprocess.check_output([compiler, '-print-file-name='+name], text=True).strip())
@@ -129,7 +132,7 @@ def main():
         for p in sorted((ROOT/folder).rglob('*'))
         if p.is_file() and not any(part in ['runtime','__pycache__'] for part in p.relative_to(ROOT).parts)}
     manifest = dict(system=args.system, bridge_abi=1, backend='source-vendored portable backend',
-        architectures=(args.architectures.split(';') if args.architectures else ['x86_64'] if args.system == 'windows' else [platform.machine()]),
+        architectures=(args.architectures.split(';') if args.architectures else [args.windows_architecture] if args.system == 'windows' else [platform.machine()]),
         upstream=json.loads((ROOT/'native/backend-upstream.json').read_text())['commit'],
         source_files=sources, dependency_lock=json.loads((ROOT/'native/backend/scripts/dependencies.lock.json').read_text()),
         cross_compiled=cross, tests_executed_on_build_host=not cross,
@@ -146,6 +149,10 @@ def main():
         browser_registration_performed=False,
         pin_change=True, puk_unblock=True, persistent_pairing_invalidation=True, nonblocking_pairing_cleanup=True,
         files={str(p.relative_to(output)):sha(p) for p in output.rglob('*') if p.is_file() and p.name!='backend-manifest.json'})
+    if args.system == 'windows':
+        manifest['windows_runtime_dlls'] = (['libwinpthread-1.dll','libgcc_s_seh-1.dll','libstdc++-6.dll']
+                                           if args.windows_architecture == 'x86_64' else [])
+        manifest['windows_toolchain'] = 'mingw-w64-gcc' if args.windows_architecture == 'x86_64' else 'llvm-mingw-static-ucrt'
     (output/'backend-manifest.json').write_text(json.dumps(manifest, indent=2)+'\n')
     print('Private runtime prepared:', output)
     if cross:

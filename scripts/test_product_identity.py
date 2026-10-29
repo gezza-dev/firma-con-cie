@@ -81,7 +81,7 @@ class ProductIdentity(unittest.TestCase):
         self.assertIn('AppName=' + DISPLAY_NAME, source)
         self.assertIn('CloseApplicationsFilter=' + DISPLAY_NAME + '.exe\n', source)
         packager = (ROOT/'scripts/package_windows_installer.py').read_text()
-        self.assertIn('windows_installer_name(version)', packager)
+        self.assertIn('windows_installer_name(version, architecture', packager)
         self.assertIn('packaging/windows/firma-con-cie.iss', packager)
 
     def test_macos_product_and_version_derived_dmg_name(self):

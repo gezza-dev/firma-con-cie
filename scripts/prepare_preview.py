@@ -5,15 +5,19 @@
 No native code is executed. Cached archives are immutable checksum inputs;
 Flutter packages keep their normal pubspec.lock and generated NOTICES.Z.
 """
-import hashlib,json,shutil,tarfile,urllib.request,zipfile
+import argparse,hashlib,json,shutil,tarfile,urllib.request,zipfile
 from pathlib import Path
 from urllib.parse import urlparse,unquote
 ROOT=Path(__file__).resolve().parents[1]
 cache=ROOT/'.build/preview-downloads';cache.mkdir(parents=True,exist_ok=True)
 lock=json.loads((ROOT/'native/preview/pdfium.lock.json').read_text())
 notices=ROOT/'LICENSES/preview';notices.mkdir(parents=True,exist_ok=True)
-inventory={}
+parser=argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--platform',action='append',choices=sorted(lock['artifacts']))
+args=parser.parse_args()
+inventory=json.loads((notices/'manifest.json').read_text()) if (notices/'manifest.json').exists() else {}
 for platform,item in lock['artifacts'].items():
+    if args.platform and platform not in args.platform:continue
     archive=cache/item['archive']
     if not archive.exists():
         with urllib.request.urlopen(item['url'],timeout=60) as source,archive.open('wb') as dest:shutil.copyfileobj(source,dest)
@@ -36,16 +40,16 @@ for platform,item in lock['artifacts'].items():
 # Keep direct and transitive package notices; Flutter also emits its actual
 # bundled package inventory. Do not replace any component's own license.
 config=ROOT/'.dart_tool/package_config.json';packages={}
-if config.exists():
+if config.exists() and not args.platform:
     for item in json.loads(config.read_text())['packages']:
-        uri=item['rootUri'];folder=Path(unquote(urlparse(uri).path)) if uri.startswith('file:') else (config.parent/uri).resolve()
+        uri=item['rootUri'];folder=Path(urllib.request.url2pathname(urlparse(uri).path)) if uri.startswith('file:') else (config.parent/uri).resolve()
         if folder==ROOT:continue
         for name in ['LICENSE','LICENSE.txt','COPYING','NOTICE','NOTICE.txt']:
             p=folder/name
             if p.is_file():
                 target=notices/'dart'/item['name']/name;target.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(p,target)
                 packages[item['name']+'/'+name]=hashlib.sha256(p.read_bytes()).hexdigest()
-inventory['dartNotices']=packages
+if not args.platform:inventory['dartNotices']=packages
 (notices/'manifest.json').write_text(json.dumps(inventory,indent=2)+'\n')
 print('Pinned preview artifacts verified:',', '.join(lock['artifacts']))
 print('Native notice files:',sum(len(i['notices']) for p,i in inventory.items() if p!='dartNotices'),'Dart notices:',len(packages))

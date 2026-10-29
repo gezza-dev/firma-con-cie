@@ -22,6 +22,7 @@ def main():
     p.add_argument('--iscc', type=Path, required=True)
     p.add_argument('--fake-helper', type=Path, required=True)
     p.add_argument('--output', type=Path, required=True)
+    p.add_argument('--architecture', choices=['x64', 'arm64'], default='x64')
     a = p.parse_args()
     q = a.output.resolve()
     if q.exists():
@@ -135,7 +136,7 @@ def main():
     def install_args(exe, name):
         return [exe, '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/SP-', '/LANG=english', '/LOG=' + str(q / (name + '.log'))]
 
-    first = build(release, q / 'v1', '0.1.0', a.iscc.resolve(), a.fake_helper.resolve(), test_root=install)
+    first = build(release, q / 'v1', '0.1.0', a.iscc.resolve(), a.fake_helper.resolve(), test_root=install, architecture=a.architecture)
     staged = Path(first['release'])
     audit = json.loads((q / 'v1/build/release-audit.json').read_text())
     check(len(audit['excludedFiles']) == 5, 'wrong development exclusions')
@@ -167,7 +168,7 @@ def main():
     unknown = install / 'user-added.txt'
     unknown.write_bytes(b'preserve unknown file')
     (release / 'Firma con CIE.exe').write_bytes(b'new synthetic executable')
-    second = build(release, q / 'v2', '0.1.1', a.iscc.resolve(), a.fake_helper.resolve(), test_root=install)
+    second = build(release, q / 'v2', '0.1.1', a.iscc.resolve(), a.fake_helper.resolve(), test_root=install, architecture=a.architecture)
     run('component-install-failure', install_args(second['installer'], 'component-install-failure'), False,
         {'CIE_INSTALLER_TEST_FAIL': '--install-package'})
     check(unknown.read_bytes() == b'preserve unknown file', 'component failure removed unknown file')

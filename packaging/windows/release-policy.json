@@ -6,6 +6,8 @@
     "cie_native/provenance/": "Development assembly records retained in the external build report"
   },
   "excludeFiles": {
+    "cie_native/ltv/jre/windows-arm64/lib/jawt.lib": "Link-time import library; the runtime DLL remains included",
+    "cie_native/ltv/jre/windows-arm64/lib/jvm.lib": "Link-time import library; the runtime DLL remains included",
     "cie_native/ltv/jre/windows-x86_64/lib/jawt.lib": "Link-time import library; the runtime DLL remains included",
     "cie_native/ltv/jre/windows-x86_64/lib/jvm.lib": "Link-time import library; the runtime DLL remains included"
   }

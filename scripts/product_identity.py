@@ -8,10 +8,12 @@ PACKAGE_NAME = 'firma-con-cie'
 ARTIFACT_STEM = PACKAGE_NAME
 
 
-def windows_installer_name(version):
+def windows_installer_name(version, architecture='x64'):
     if not re.fullmatch(r'\d+\.\d+\.\d+(?:\.\d+)?', version):
         raise ValueError('Invalid installer version')
-    return f'{ARTIFACT_STEM}_{version}_windows_x64_setup'
+    if architecture not in ('x64', 'arm64'):
+        raise ValueError('Invalid Windows architecture')
+    return f'{ARTIFACT_STEM}_{version}_windows_{architecture}_setup'
 
 
 def macos_image_name(version):

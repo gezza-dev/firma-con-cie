@@ -37,13 +37,13 @@ def main():
     for name in ['java-home','maven','base-runtime','output']: parser.add_argument('--'+name,type=Path,required=True)
     parser.add_argument('--system',choices=['macos','windows','linux'],required=True)
     parser.add_argument('--architecture',choices=['x86_64','arm64','aarch64'],
-                        help='Linux target CPU when assembling a cross-compiled runtime')
+                        help='Linux/Windows target CPU when assembling a cross-compiled runtime')
     parser.add_argument('--tools-cache',type=Path,default=ROOT/'.build/ltv-tools')
     parser.add_argument('--skip-java-build',action='store_true')
     parser.add_argument('--refresh-dependency-lock',action='store_true',help='Explicitly accept the resolved JAR hashes after dependency review')
     a=parser.parse_args(); build=ROOT/'.build/ltv-java'; repo=ROOT/'.build/ltv-maven-repository'
-    if a.architecture and a.system != 'linux':
-        parser.error('--architecture is supported only for Linux')
+    if a.architecture and a.system not in ('linux', 'windows'):
+        parser.error('--architecture is supported only for Linux/Windows')
     env=os.environ.copy(); env['JAVA_HOME']=str(a.java_home.resolve())
     maven=[str(a.maven.resolve()),'-B','-f',str(ROOT/'native/ltv/pom.xml'),'-Dmaven.repo.local='+str(repo)]
     if not a.skip_java_build:
@@ -72,11 +72,11 @@ def main():
         lockfile.write_text(json.dumps({'dssVersion':'6.5.1','jars':jars},indent=2)+'\n')
     if not lockfile.exists() or jars!=json.loads(lockfile.read_text())['jars']: raise RuntimeError('JAR dependency lock mismatch')
     architectures=(['macos-arm64','macos-x86_64'] if a.system=='macos' else
-                   ['windows-x86_64'] if a.system=='windows' else
+                   [runtime_architecture('Windows',a.architecture or 'x86_64')] if a.system=='windows' else
                    [runtime_architecture('Linux',a.architecture)])
     manifest=json.loads((a.base_runtime/'backend-manifest.json').read_text())
-    if a.system == 'linux':
-        base_architectures=[runtime_architecture('Linux',arch) for arch in manifest['architectures']]
+    if a.system in ('linux', 'windows'):
+        base_architectures=[runtime_architecture(a.system.title(),arch) for arch in manifest['architectures']]
         if base_architectures != architectures:
             raise RuntimeError('Private JVM architecture differs from the native base runtime')
     if a.output.exists(): raise RuntimeError('Choose a new output folder; existing runtimes are preserved')
@@ -87,7 +87,7 @@ def main():
     (target/'fetcher').mkdir()
     shutil.copy2(fetcher,target/'fetcher'/fetcher.name)
     if a.system == 'windows':
-        for name in ['libwinpthread-1.dll','libgcc_s_seh-1.dll','libstdc++-6.dll']:
+        for name in manifest.get('windows_runtime_dlls', ['libwinpthread-1.dll','libgcc_s_seh-1.dll','libstdc++-6.dll']):
             shutil.copy2(a.base_runtime/name,target/'fetcher'/name)
     shutil.copyfile(build/'cie-ltv-worker.jar',target/'cie-ltv-worker.jar')
     (target/'lib').mkdir()
