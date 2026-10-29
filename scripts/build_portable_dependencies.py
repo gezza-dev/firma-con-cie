@@ -11,6 +11,7 @@ import shutil
 import subprocess
 import tarfile
 import urllib.request
+from check_openssl_arm64 import validate_configuration as validate_openssl_arm64
 
 ROOT = Path(__file__).resolve().parents[1]
 LOCK = json.loads((ROOT / "native/backend/scripts/dependencies.lock.json").read_text())
@@ -156,9 +157,11 @@ def main():
                 if name == "openssl":
                     if is_windows_arm:
                         shutil.copy2(ROOT/'native/backend/scripts/windows-arm64-openssl.conf', source/'Configurations/99-cie-windows-arm64.conf')
-                    target = "cie-mingw-arm64" if is_windows_arm else "mingw64" if is_windows else ("darwin64-" + ("arm64" if args.arch == "arm64" else "x86_64") + "-cc" if is_mac else "linux-aarch64" if args.arch in ["arm64", "aarch64"] else "linux-x86_64")
+                    target = "mingw-arm64-cie" if is_windows_arm else "mingw64" if is_windows else ("darwin64-" + ("arm64" if args.arch == "arm64" else "x86_64") + "-cc" if is_mac else "linux-aarch64" if args.arch in ["arm64", "aarch64"] else "linux-x86_64")
                     run(["perl", source / "Configure", target, "no-shared", "no-module", "no-autoload-config", "no-tests", "no-asm",
                          "--libdir=lib", "--prefix=" + str(prefix), "--openssldir=" + str(prefix / "ssl")], build, env, log)
+                    if is_windows_arm:
+                        validate_openssl_arm64(build)
                     run(["make", "-j" + str(args.jobs)], build, env, log)
                     run(["make", "install_sw"], build, env, log)
                 elif name == "cryptopp":

@@ -13,6 +13,7 @@ from product_identity import windows_installer_name
 from windows_architecture import MACHINES, pe_machine, check_pe_tree, check_release_architecture
 from package_windows_installer import prepare, sha
 from ci_windows_arm64 import download
+from check_openssl_arm64 import validate_configuration as validate_openssl_arm64
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -50,6 +51,26 @@ class WindowsArm64(unittest.TestCase):
         for cpu in ('arm64','ARM64','aarch64'):
             self.assertEqual(runtime_architecture('Windows',cpu),'windows-arm64')
         self.assertEqual(runtime_architecture('Windows','AMD64'),'windows-x86_64')
+
+    def test_openssl_windows_initializer_is_in_generated_graph(self):
+        (self.root/'configdata.pm').write_text("'apps/lib/win32_init.c'")
+        (self.root/'Makefile').write_text('apps/libapps.a: apps/lib/libapps-lib-win32_init.obj\n'
+                                          'apps/lib/libapps-lib-win32_init.obj: apps/lib/win32_init.c\n')
+        validate_openssl_arm64(self.root)
+
+    def test_openssl_graph_without_windows_initializer_is_rejected(self):
+        (self.root/'configdata.pm').write_text("'apps/lib/apps.c'")
+        (self.root/'Makefile').write_text('apps/libapps.a: apps/lib/libapps-lib-apps.obj\n')
+        with self.assertRaisesRegex(ValueError,'win32_utf8argv'):
+            validate_openssl_arm64(self.root)
+
+    def test_openssl_makefile_without_initializer_object_is_rejected(self):
+        (self.root/'configdata.pm').write_text("'apps/lib/win32_init.c'")
+        for text in ('apps/libapps.a: apps/lib/libapps-lib-apps.obj\n',
+                     '# apps/lib/win32_init.c\n'):
+            (self.root/'Makefile').write_text(text)
+            with self.assertRaisesRegex(ValueError,'win32_utf8argv'):
+                validate_openssl_arm64(self.root)
 
     def test_installer_name_and_reject_architecture_injection(self):
         self.assertEqual(windows_installer_name('1.0.0','arm64'),'firma-con-cie_1.0.0_windows_arm64_setup')

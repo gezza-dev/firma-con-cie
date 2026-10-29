@@ -116,6 +116,29 @@ L'archivio PDFium ARM64 è stato scaricato, verificato e i suoi 16 avvisi conser
 Non è stata eseguita una compilazione dell'app ARM64 né un'installazione del
 componente di produzione durante questa preparazione.
 
+## Correzione dell'inizializzazione Windows di OpenSSL
+
+La prima esecuzione Actions (`40869545859`, commit `84f3dd5`) si è fermata nel
+collegamento di `openssl.exe`: simbolo `win32_utf8argv` non definito. Non sono
+stati prodotti installer o runtime ARM64 completi.
+
+OpenSSL 3.5.9 seleziona `apps/lib/win32_init.c` tramite un controllo sul nome
+del target in `apps/lib/build.info`. Il precedente nome `cie-mingw-arm64` non
+corrispondeva al prefisso `mingw`, pur ereditando `mingw-common`. Il target è
+ora `mingw-arm64-cie`; rimangono le impostazioni ARM64, statiche e `no-asm`.
+Il codice upstream e le funzioni crittografiche non vengono modificati.
+
+Dopo `Configure`, `scripts/check_openssl_arm64.py` verifica che `configdata.pm`
+includa il sorgente Windows e che il Makefile generi il relativo oggetto.
+Una configurazione incompleta viene rifiutata prima di avviare `make`.
+
+Verifica locale della correzione: il controllo Perl di selezione sorgenti del
+tarball OpenSSL fissato dal lock omette l'inizializzatore con il vecchio nome
+e lo include con quello nuovo. Superati 12 test ARM64 (inclusi tre casi del
+grafo OpenSSL), 8 test dell'identità del prodotto e actionlint sul workflow.
+Il collegamento effettivo ARM64 viene verificato dalla nuova esecuzione Actions;
+questi test locali non ne attestano il completamento.
+
 Riferimenti: [LLVM-MinGW](https://github.com/mstorsjo/llvm-mingw),
 [architetture Inno Setup](https://jrsoftware.org/ishelp/topic_archidentifiers.htm),
 [installer Windows](WINDOWS_INSTALLER.md).
