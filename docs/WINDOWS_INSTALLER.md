@@ -2,7 +2,10 @@
 
 È predisposta anche la [pipeline Windows ARM64](WINDOWS_ARM64.md), con output
 separato, controllo delle architetture e prerequisito VC ARM64. La build Actions
-`40899079721` ha generato il pacchetto; il collaudo reale ARM64 è in corso.
+`40914057599` ha generato il pacchetto corretto; il 29 ottobre 2026 l'utente ha
+confermato su Windows 11 ARM64 abbinamento CIE, configurazione automatica per
+i browser, firma, verifica firma e accesso ai siti. I dettagli sono nel rapporto
+[Windows ARM64](WINDOWS_ARM64.md).
 
 Il pacchetto locale di test del 21 ottobre 2026 include l'app Flutter completa,
 runtime MinGW, PDFium, DSS/JVM privata, licenze, componente di accesso ai siti e

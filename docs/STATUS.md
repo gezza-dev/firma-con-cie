@@ -1,6 +1,18 @@
 # Stato del progetto e verifiche
 
-Situazione al 27 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
+Situazione al 29 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
+
+## Collaudo Windows 11 ARM64 (29 ottobre)
+
+La build Actions `40914057599`, commit `ed49908`, ha prodotto l'installer ARM64
+con il controllo del componente senza elevazione corretto. Superati 383 test
+Flutter (14 saltati), 49 controlli Inno isolati e le verifiche del payload.
+
+L'utente ha confermato il successo del collaudo sulla VM Windows 11 ARM64:
+abbinamento della CIE, configurazione automatica per i browser, firma,
+verifica firma e accesso ai siti con CIE. Non sono stati specificati browser,
+versioni o formati di firma: la conferma non viene estesa a singole combinazioni
+non dichiarate. [Pacchetto, provenienza ed esiti](WINDOWS_ARM64.md).
 
 ## Configurazione automatica dei browser (27 ottobre)
 

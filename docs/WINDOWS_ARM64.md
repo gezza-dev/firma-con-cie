@@ -5,11 +5,33 @@ prepara app, middleware, componente Web e installer per **Windows 11 ARM64**.
 La macchina virtuale dell'utente serve soltanto per installazione e collaudo:
 non richiede Flutter, Visual Studio, Python, Java o Maven di sviluppo.
 
-**Stato:** esecuzione completa `40899079721` riuscita sul commit `eeae681`,
-con installer generato e scaricato. L'utente ha confermato installazione e avvio
-sulla VM Windows 11 ARM64. Il controllo del componente ha poi evidenziato
-l'errore di avvio 740 descritto sotto; il nuovo installer corretto e il collaudo
-con lettore/CIE su Windows ARM64 restano da verificare.
+**Stato:** esecuzione completa `40914057599` riuscita sul commit `ed49908`,
+con installer corretto generato e scaricato. Il 29 ottobre 2026 l'utente ha
+confermato sulla VM Windows 11 ARM64 il successo dei test di abbinamento CIE,
+configurazione automatica per i browser, firma, verifica firma e accesso ai siti
+con CIE. L'errore di avvio 740 del controllo del componente è stato corretto.
+
+## Collaudo confermato dall'utente (29 ottobre 2026)
+
+Pacchetto `firma-con-cie_1.0.0_windows_arm64_setup.exe`, prodotto dalla
+[build Actions 40914057599](https://github.com/gezza-dev/firma-con-cie/actions/runs/40914057599)
+sul commit `ed499088f4d8dd22444aaa7e4feb0c40a0e1854b`.
+SHA-256 dell'installer:
+`4a318a8e536e753f2497da219e6c15fde8311e9dd6d7f2c765f9866797866599`.
+
+| Prova su Windows 11 ARM64 | Esito confermato |
+| --- | --- |
+| Abbinamento della CIE | Riuscito |
+| Configurazione automatica dell'accesso ai siti per i browser | Riuscita |
+| Firma | Riuscita |
+| Verifica firma | Riuscita |
+| Accesso ai siti con CIE | Riuscito |
+
+La conferma riguarda il pacchetto installato sulla VM dell'utente. Non sono
+stati specificati i nomi/versioni dei browser o i formati di firma utilizzati;
+il risultato non viene attribuito separatamente a ogni browser o formato.
+La build automatica ha inoltre superato 383 test Flutter (14 saltati),
+49 controlli Inno isolati e le verifiche di architettura, integrità e manifest.
 
 ## Avvio e risultati
 
@@ -308,8 +330,10 @@ Verifiche della correzione:
   Su ciascuna build x64 passano anche gli 8 casi CLI Unicode del helper
   simulato; superati i 49 controlli Inno isolati, senza installazioni reali.
 
-Il nuovo pacchetto ARM64 deve essere generato dalla successiva build Actions;
-rimangono da collaudare il suo aggiornamento e l'accesso reale ai siti.
+Il nuovo pacchetto è stato generato dalla build Actions `40914057599` e
+collaudato dall'utente come riportato nella sezione iniziale. Restano da
+documentare separatamente eventuali prove di riparazione/disinstallazione,
+conservazione dei dati negli aggiornamenti e i dettagli per browser/formato.
 
 Riferimenti: [LLVM-MinGW](https://github.com/mstorsjo/llvm-mingw),
 [architetture Inno Setup](https://jrsoftware.org/ishelp/topic_archidentifiers.htm),
