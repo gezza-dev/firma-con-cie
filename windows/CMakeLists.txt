@@ -95,7 +95,10 @@ endif()
 set(NATIVE_ASSETS_DIR "${PROJECT_BUILD_DIR}native_assets/windows/")
 install(DIRECTORY "${NATIVE_ASSETS_DIR}"
    DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
-   COMPONENT Runtime)
+   COMPONENT Runtime
+   # This build-tool map contains absolute compiler/cache paths. The VM uses
+   # data/flutter_assets/NativeAssetsManifest.json with the bundled DLL name.
+   PATTERN "native_assets.json" EXCLUDE)
 
 # Fully re-copy the assets directory on each build to avoid having stale files
 # from a previous install.
