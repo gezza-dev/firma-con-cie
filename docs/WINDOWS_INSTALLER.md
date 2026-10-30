@@ -1,5 +1,9 @@
 # Pacchetto di installazione Windows x64
 
+Per i percorsi generici di compilazione, l'esclusione delle mappe di sviluppo
+e l'audit dei file/archivi dell'installer vedere
+[Riservatezza delle distribuzioni Windows](WINDOWS_BUILD_PRIVACY.md).
+
 È predisposta anche la [pipeline Windows ARM64](WINDOWS_ARM64.md), con output
 separato, controllo delle architetture e prerequisito VC ARM64. La build Actions
 `40914057599` ha generato il pacchetto corretto; il 29 ottobre 2026 l'utente ha

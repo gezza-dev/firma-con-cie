@@ -51,6 +51,9 @@ def main():
         f = release / name
         f.parent.mkdir(parents=True, exist_ok=True)
         f.write_bytes(b'synthetic installer fixture: ' + name.encode())
+    (release / 'native_assets.json').write_text('{"buildOnly":"C:/build/native_assets/windows/pdfium.dll"}')
+    bundled_assets = release / 'data/flutter_assets/NativeAssetsManifest.json'
+    bundled_assets.write_text('{"format-version":[1,0,0],"native-assets":{"windows_x64":{"package:pdfium_dart/libpdfium":["absolute","pdfium.dll"]}}}')
     (release / 'web-component/backend/cie_web.dll').write_bytes(b'fake unexecuted DLL')
     shutil.copy2(a.fake_helper, release / 'web-component/CIE-Web-Setup.exe')
     native = release / 'cie_native'
@@ -139,13 +142,14 @@ def main():
     first = build(release, q / 'v1', '0.1.0', a.iscc.resolve(), a.fake_helper.resolve(), test_root=install, architecture=a.architecture)
     staged = Path(first['release'])
     audit = json.loads((q / 'v1/build/release-audit.json').read_text())
-    check(len(audit['excludedFiles']) == 5, 'wrong development exclusions')
+    check(len(audit['excludedFiles']) == 6, 'wrong development exclusions')
     for name in audit['excludedFiles']:
         check(not (staged / name).exists(), 'development file in staged release')
     for name in ('cie_native/licenses/ltv/dependency-sources/test-sources.jar',
                  'cie_native/ltv/jre/windows-x86_64/legal/java.base/LICENSE',
                  'cie_native/ltv/jre/windows-x86_64/bin/server/jvm.dll',
-                 'data/flutter_assets/NOTICES.Z'):
+                 'data/flutter_assets/NOTICES.Z',
+                 'data/flutter_assets/NativeAssetsManifest.json'):
         check(sha(staged / name) == sha(release / name), 'runtime/license changed: ' + name)
     run('preflight-failure', install_args(first['installer'], 'preflight-failure'), False,
         {'CIE_INSTALLER_TEST_FAIL': '--plan-package'})

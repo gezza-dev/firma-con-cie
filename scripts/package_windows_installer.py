@@ -16,6 +16,7 @@ import subprocess
 from product_identity import windows_installer_name
 from windows_architecture import check_release_architecture
 from windows_helper_manifest import check_helper_manifest
+from build_privacy import check_public_paths, local_path_markers
 
 ROOT = Path(__file__).resolve().parents[1]
 POLICY = ROOT / 'packaging/windows/release-policy.json'
@@ -140,7 +141,7 @@ def quote(value):
     return '"' + value + '"'
 
 
-def prepare(release, output, version, vc_redist, *, test_root=None, architecture=None):
+def prepare(release, output, version, vc_redist, *, test_root=None, architecture=None, private_path_roots=None):
     release, output = release.resolve(), output.resolve()
     if output.is_relative_to(release) or release.is_relative_to(output):
         raise ValueError('Release and installer output directories must not overlap')
@@ -158,6 +159,13 @@ def prepare(release, output, version, vc_redist, *, test_root=None, architecture
     source_release = release
     release = output / 'Release'
     audit = stage_release(source_release, release)
+    # Check the actual distribution after explicit development-file exclusions.
+    # Extra roots cover old builds produced on a different computer/OS. Never
+    # persist the private root strings in the public installation manifest.
+    privacy = check_public_paths(release)
+    if private_path_roots:
+        check_public_paths(release, roots=private_path_roots)
+    privacy['additionalRootsChecked'] = len(private_path_roots or [])
     (work / 'release-audit.json').write_text(json.dumps(audit, indent=2) + '\n', encoding='utf-8')
     shutil.copy2(source_release / 'cie_native/backend-manifest.json', work / 'source-backend-manifest.json')
     web, counts = validate_release(release)
@@ -191,6 +199,7 @@ def prepare(release, output, version, vc_redist, *, test_root=None, architecture
                 'releaseFiles': files, 'webPayloadVersion': web['version'], 'validatedPayloadCounts': counts,
                 'vcRedistSha256': sha(vc_redist), 'userDataActions': [], 'uacOwner': 'installer', 'cardPinRequested': False}
     manifest['architecture'] = architecture or 'x64'
+    manifest['buildPrivacy'] = privacy
     manifest['distribution'] = {k: v for k, v in audit.items() if k != 'excludedFiles'}
     manifest['cardCatalog'] = json.loads((ROOT / 'packaging/windows/card-catalog.json').read_text())
     source_paths = ['lib/main.dart', 'lib/windows_web_setup.dart', 'lib/guide_view.dart',
@@ -203,6 +212,8 @@ def prepare(release, output, version, vc_redist, *, test_root=None, architecture
                     'native/platform/windows/web/setup.cpp', 'native/platform/windows/web/setup_policy.h',
                     'native/platform/windows/web/setup.manifest', 'native/platform/windows/web/setup.rc',
                     'native/platform/windows/web/CMakeLists.txt', 'scripts/windows_helper_manifest.py',
+                    'scripts/build_privacy.py', 'windows/CMakeLists.txt',
+                    'scripts/windows_build_privacy.py',
                     'native/platform/windows/web/minidriver.cpp', 'packaging/windows/firma-con-cie.iss',
                     'scripts/package_windows_installer.py', 'scripts/product_identity.py', 'packaging/windows/release-policy.json',
                     'packaging/windows/card-catalog.json', 'native/platform/windows/web/card_catalog.h',
@@ -247,6 +258,9 @@ def build(release, output, version, compiler, vc_redist, **kwargs):
     (output / 'build.log').write_bytes(result.stdout + result.stderr)
     if result.returncode:
         raise RuntimeError('Inno Setup failed: ' + (result.stdout + result.stderr).decode(errors='replace')[-3500:])
+    if local_path_markers(installer.read_bytes()) or (kwargs.get('private_path_roots') and
+            local_path_markers(installer.read_bytes(), roots=kwargs['private_path_roots'])):
+        raise ValueError('Local profile path embedded in installer header')
     result = {'installer': str(installer), 'bytes': installer.stat().st_size,
               'sha256': sha(installer), 'releaseFiles': len(manifest['releaseFiles']),
               'validatedPayloadCounts': manifest['validatedPayloadCounts'], 'sourceCommit': manifest['sourceCommit']}
@@ -265,6 +279,8 @@ def main():
     p.add_argument('--vc-redist', required=True, type=Path)
     p.add_argument('--version', default='1.0.0')
     p.add_argument('--architecture', choices=['x64', 'arm64'], default='x64')
+    p.add_argument('--private-path-root', action='append', type=Path, default=[],
+                   help='Additional old build/profile root to reject; repeatable, never recorded in the public manifest')
     args = p.parse_args()
     # Verify Microsoft's prerequisite before it is embedded in an elevated setup.
     environment = dict(os.environ, CIE_INSTALLER_VC_REDIST=str(args.vc_redist.resolve()))
@@ -285,7 +301,7 @@ def main():
     if check.returncode:
         raise SystemExit('Microsoft VC redistributable architecture mismatch')
     print(json.dumps(build(args.release, args.output, args.version, args.iscc, args.vc_redist,
-                           architecture=args.architecture), indent=2))
+                           architecture=args.architecture, private_path_roots=args.private_path_root), indent=2))
 
 
 if __name__ == '__main__':
