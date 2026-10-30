@@ -18,6 +18,11 @@ I binari sono allegati alla release, non committati nei sorgenti. I file ZIP/tar
 creati automaticamente da GitHub dal tag non contengono le dipendenze esterne:
 non sostituiscono l'archivio separato dei sorgenti corrispondenti.
 
+I pacchetti Linux non duplicano i source JAR Java nel runtime: i sorgenti
+originali, incluse le annotazioni generate a monte, restano invariati in
+`firma-con-cie_1.0.0_dependency-sources.zip`. I JAR di produzione, i testi
+di licenza e gli avvisi delle dipendenze restano inclusi nei pacchetti.
+
 ## Corrispondenza tra sorgenti e pacchetti
 
 Per ciascun pacchetto si conserva la revisione di compilazione. Un pacchetto

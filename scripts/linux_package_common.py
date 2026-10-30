@@ -85,9 +85,17 @@ def validate_bundle(bundle):
 def stage_payload(bundle, stage, native_manifest, package_type="deb"):
     app = stage / PREFIX
     shutil.copytree(bundle, app, ignore=shutil.ignore_patterns('tests', 'share'))
+    # Original source JARs are supplied, unchanged, in the separate release
+    # dependency-sources archive. They are not runtime inputs; some carry
+    # upstream developer paths in generated source annotations.
+    source_jars = 'licenses/ltv/dependency-sources/'
+    source_directory = app / 'cie_native' / source_jars
+    if source_directory.exists():
+        shutil.rmtree(source_directory)
     packaged = dict(native_manifest)
     packaged['files'] = {k: v for k, v in native_manifest['files'].items()
-                         if 'tests' not in PurePosixPath(k).parts}
+                         if 'tests' not in PurePosixPath(k).parts
+                         and not k.startswith(source_jars)}
     # Project notices belong to the current package, including when reusing
     # verified native binaries. Preserve upstream notices and input provenance.
     notice = 'licenses/prototype-NOTICE.md'
@@ -95,6 +103,7 @@ def stage_payload(bundle, stage, native_manifest, package_type="deb"):
         shutil.copy2(ROOT / 'NOTICE.md', app / 'cie_native' / notice)
         packaged['files'][notice] = sha(app / 'cie_native' / notice)
     packaged['packaging'] = {'type': package_type, 'testProgramsIncluded': False,
+                             'dependencySourceJarsIncluded': False,
                              'sourceManifestSha256': sha(bundle / 'cie_native/backend-manifest.json')}
     (app / 'cie_native/backend-manifest.json').write_text(json.dumps(packaged, indent=2) + '\n')
     bindir = stage / 'usr/bin'

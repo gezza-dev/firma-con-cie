@@ -100,6 +100,31 @@ class PackageBoundaries(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Executable permission'):
             common.validate_bundle(self.bundle)
 
+    def test_dependency_sources_are_separate_without_removing_runtime_or_notices(self):
+        names = ['licenses/ltv/dependency-sources/upstream-sources.jar',
+                 'licenses/ltv/upstream-LICENSE.txt', 'ltv/lib/upstream.jar']
+        for name in names:
+            path = self.native / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text('synthetic upstream material: ' + name)
+            self.manifest['files'][name] = common.sha(path)
+        self.save()
+        manifest = common.validate_bundle(self.bundle)
+        for kind in ['deb', 'rpm', 'arch', 'appimage']:
+            with self.subTest(kind=kind):
+                stage = self.root / kind
+                common.stage_payload(self.bundle, stage, manifest, kind)
+                native = stage / common.PREFIX / 'cie_native'
+                packaged = json.loads((native / 'backend-manifest.json').read_text())
+                self.assertFalse((native / 'licenses/ltv/dependency-sources').exists())
+                self.assertNotIn(names[0], packaged['files'])
+                for name in names[1:]:
+                    self.assertEqual(common.sha(native / name), self.manifest['files'][name])
+                    self.assertIn(name, packaged['files'])
+                self.assertFalse(packaged['packaging']['dependencySourceJarsIncluded'])
+                self.assertEqual(common.sha(self.native / names[0]),
+                                 self.manifest['files'][names[0]])
+
     def test_staging_excludes_tests_and_preserves_format_provenance(self):
         manifest = common.validate_bundle(self.bundle)
         for kind in ['deb', 'rpm', 'arch']:
