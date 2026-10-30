@@ -1,0 +1,104 @@
+{
+  "ubuntuSourcePackages": {
+    "gcc-mingw-w64": {
+      "version": "26.1",
+      "publication": "https://api.launchpad.net/1.0/ubuntu/+archive/primary/+sourcepub/18336155",
+      "files": {
+        "gcc-mingw-w64_26.1.tar.xz": {
+          "url": "https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/gcc-mingw-w64/26.1/gcc-mingw-w64_26.1.tar.xz",
+          "sha256": "57ad0cef766683b97b37de82a16a5b69f81a28c1469512832f557bca2506c8ef",
+          "bytes": 34428
+        },
+        "gcc-mingw-w64_26.1.dsc": {
+          "url": "https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/gcc-mingw-w64/26.1/gcc-mingw-w64_26.1.dsc",
+          "sha256": "9cc5a84101b1c1641c001b43e457ea710619c5c8301151f0080a917e9fe64272",
+          "bytes": 6777
+        }
+      }
+    },
+    "gcc-13": {
+      "version": "13.2.0-6ubuntu1",
+      "publication": "https://api.launchpad.net/1.0/ubuntu/+archive/primary/+sourcepub/15350613",
+      "files": {
+        "gcc-13_13.2.0-6ubuntu1.dsc": {
+          "url": "https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/gcc-13/13.2.0-6ubuntu1/gcc-13_13.2.0-6ubuntu1.dsc",
+          "sha256": "49a7446a379bfa3efeafcbf7fd6fd812d7319f516aceba1806777d9c53bf4472",
+          "bytes": 27688
+        },
+        "gcc-13_13.2.0-6ubuntu1.debian.tar.xz": {
+          "url": "https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/gcc-13/13.2.0-6ubuntu1/gcc-13_13.2.0-6ubuntu1.debian.tar.xz",
+          "sha256": "03d3cd0699bf75c3629af27e17b0799b933a9031e14863a08e7f31a5897634bf",
+          "bytes": 1654360
+        },
+        "gcc-13_13.2.0.orig.tar.gz": {
+          "url": "https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/gcc-13/13.2.0-6ubuntu1/gcc-13_13.2.0.orig.tar.gz",
+          "sha256": "84d4bbded73e549b2af0411691cbd7bea6a86e15796881a92518fb741cdaad2f",
+          "bytes": 92596024
+        }
+      }
+    },
+    "mingw-w64": {
+      "version": "11.0.1-3build1",
+      "publication": "https://api.launchpad.net/1.0/ubuntu/+archive/primary/+sourcepub/16008131",
+      "files": {
+        "mingw-w64_11.0.1-3build1.dsc": {
+          "url": "https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/mingw-w64/11.0.1-3build1/mingw-w64_11.0.1-3build1.dsc",
+          "sha256": "a9c601ae428084b0d4d1685e41fad9d5aaa4c67ab8a3ac99d3dae0ec2999db4f",
+          "bytes": 2737
+        },
+        "mingw-w64_11.0.1-3build1.debian.tar.xz": {
+          "url": "https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/mingw-w64/11.0.1-3build1/mingw-w64_11.0.1-3build1.debian.tar.xz",
+          "sha256": "8c182708e1b329bb6d5b6ea95f5cafeb7681027604b89dfb3e2031a73bc90576",
+          "bytes": 108804
+        },
+        "mingw-w64_11.0.1.orig.tar.bz2.asc": {
+          "url": "https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/mingw-w64/11.0.1-3build1/mingw-w64_11.0.1.orig.tar.bz2.asc",
+          "sha256": "2d0fbff66504777860c5970b2dd1699159721d030566e928e2b730abb3e049e2",
+          "bytes": 269
+        },
+        "mingw-w64_11.0.1.orig.tar.bz2": {
+          "url": "https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/mingw-w64/11.0.1-3build1/mingw-w64_11.0.1.orig.tar.bz2",
+          "sha256": "3f66bce069ee8bed7439a1a13da7cb91a5e67ea6170f21317ac7f5794625ee10",
+          "bytes": 10057401
+        }
+      }
+    },
+    "binutils-mingw-w64": {
+      "version": "11.4",
+      "publication": "https://api.launchpad.net/1.0/ubuntu/+archive/primary/+sourcepub/16009659",
+      "files": {
+        "binutils-mingw-w64_11.4.tar.xz": {
+          "url": "https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/binutils-mingw-w64/11.4/binutils-mingw-w64_11.4.tar.xz",
+          "sha256": "92108291c471332f586421046b383f8df441becde8373fd9471f8e78d2ee02e5",
+          "bytes": 10300
+        },
+        "binutils-mingw-w64_11.4.dsc": {
+          "url": "https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/binutils-mingw-w64/11.4/binutils-mingw-w64_11.4.dsc",
+          "sha256": "a1fccf3922eb16bf0543140a69c04eadd3328c577e2f121dc7b19cea270bf5c5",
+          "bytes": 1898
+        }
+      }
+    },
+    "binutils": {
+      "version": "2.41.90.20240122-1ubuntu1",
+      "publication": "https://api.launchpad.net/1.0/ubuntu/+archive/primary/+sourcepub/15724538",
+      "files": {
+        "binutils_2.41.90.20240122-1ubuntu1.dsc": {
+          "url": "https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/binutils/2.41.90.20240122-1ubuntu1/binutils_2.41.90.20240122-1ubuntu1.dsc",
+          "sha256": "b35e801b26e59951577f396a3ba4bd9d83a5c48e14e34e35f23a524cb6edc414",
+          "bytes": 10145
+        },
+        "binutils_2.41.90.20240122-1ubuntu1.debian.tar.xz": {
+          "url": "https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/binutils/2.41.90.20240122-1ubuntu1/binutils_2.41.90.20240122-1ubuntu1.debian.tar.xz",
+          "sha256": "68feb9f792a5b36f409816f1b4d14b11e1358c1fe11d3e4adc035d41ff28246f",
+          "bytes": 130308
+        },
+        "binutils_2.41.90.20240122.orig.tar.xz": {
+          "url": "https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/binutils/2.41.90.20240122-1ubuntu1/binutils_2.41.90.20240122.orig.tar.xz",
+          "sha256": "29f40ef181a467d2bbce7199faf43d7c532f09db7c4949eca22cec05669f2e08",
+          "bytes": 23894044
+        }
+      }
+    }
+  }
+}

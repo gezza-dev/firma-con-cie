@@ -1,0 +1,17 @@
+{
+  "xcframeworkPublisherCommit": "e3b3cbd227d6b76b9a59ef60617a531b183ccaea",
+  "xcframeworkPublisherTag": "v144.0.7811.0-20260502-190206",
+  "upstreamRelease": "https://github.com/bblanchon/pdfium-binaries/releases/tag/chromium/7811",
+  "archives": {
+    "arm64": {
+      "archive": "pdfium-mac-arm64.tgz",
+      "url": "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7811/pdfium-mac-arm64.tgz",
+      "sha256": "f9bbf1ebdc459e5f5ff25b2d457cc21db55ebfc0cf3d89fc1b90ce5445dac394"
+    },
+    "x64": {
+      "archive": "pdfium-mac-x64.tgz",
+      "url": "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7811/pdfium-mac-x64.tgz",
+      "sha256": "b31565aacda1f84393cd98438b06b49f21124888785e7dd1ddf015fa4406bd80"
+    }
+  }
+}

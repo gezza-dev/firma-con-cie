@@ -36,7 +36,29 @@ for platform,item in lock['artifacts'].items():
             entry['notices'][name]=hashlib.sha256(content).hexdigest()
         if path.name in ['pdfium.dll','libpdfium.so','PDFium']:
             entry['libraries'][name]=hashlib.sha256(read()).hexdigest()
-    source.close();inventory[platform]=entry
+    source.close()
+    if platform == 'darwin-universal':
+        # The XCFramework omits notices. Its publisher combines these exact
+        # upstream Mac archives; retain their original, platform-specific texts.
+        supplemental=json.loads((ROOT/'native/preview/darwin-notices.lock.json').read_text())
+        entry['supplementalNoticeSources']=supplemental
+        entry['supplementalNotices']={}
+        for arch,pinned in supplemental['archives'].items():
+            original=cache/pinned['archive']
+            if not original.exists():
+                with urllib.request.urlopen(pinned['url'],timeout=60) as src,original.open('wb') as dst:shutil.copyfileobj(src,dst)
+            if hashlib.sha256(original.read_bytes()).hexdigest()!=pinned['sha256']:
+                raise RuntimeError('Darwin notice archive checksum mismatch: '+arch)
+            with tarfile.open(original) as upstream:
+                for member in upstream.getmembers():
+                    if not member.isfile() or not any(n in member.name.upper() for n in ['LICENSE','COPYING','NOTICE']):continue
+                    relative=Path(member.name)
+                    if relative.is_absolute() or '..' in relative.parts:raise RuntimeError('Unsafe notice path')
+                    content=upstream.extractfile(member).read()
+                    name=arch+'/'+relative.as_posix();target=notices/platform/name
+                    target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(content)
+                    entry['supplementalNotices'][name]=hashlib.sha256(content).hexdigest()
+    inventory[platform]=entry
 # Keep direct and transitive package notices; Flutter also emits its actual
 # bundled package inventory. Do not replace any component's own license.
 config=ROOT/'.dart_tool/package_config.json';packages={}

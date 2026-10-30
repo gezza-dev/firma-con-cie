@@ -142,6 +142,27 @@ dell'app o l'archivio delle CIE. Per il DMG usare la stessa identità e aggiunge
 `--developer-id` a `package_macos_dmg.py`: anche il contenitore riceve un
 timestamp sicuro. La firma Developer ID non esegue la notarizzazione.
 
+### Notarizzazione per la distribuzione
+
+Prima del rilascio aggiungere tutti gli avvisi al bundle e completare la firma.
+Preparare uno ZIP con `ditto -c -k --keepParent`, poi inviarlo con
+`xcrun notarytool submit --keychain-profile "$CIE_NOTARY_PROFILE" --wait`.
+`CIE_NOTARY_PROFILE` è il nome del proprio profilo locale nel Portachiavi:
+credenziali, nomi effettivi dei profili e ricevute locali restano fuori da Git.
+
+Attendere lo stato **Accepted**, applicare il ticket all'app con
+`xcrun stapler staple` e verificarlo con `xcrun stapler validate`.
+Confezionare quindi il DMG con `package_macos_dmg.py --developer-id`, inviare
+anche il DMG a `notarytool`, attendere Accepted e applicare/verificare il suo
+ticket. La verifica finale comprende montaggio in sola lettura, copia dell'app,
+validazione del ticket della copia e `spctl --assess --type execute`.
+Per il contenitore usare `spctl --assess --type open --context context:primary-signature`.
+Il checksum definitivo del DMG si calcola **dopo** l'applicazione del ticket.
+
+Non modificare né rifirmare i pacchetti dopo la verifica finale. Una variazione
+successiva richiede di ripetere le fasi interessate; una firma valida da sola
+non sostituisce l'accettazione del servizio di notarizzazione.
+
 Per scegliere una destinazione propria, copiare l’esempio e modificare **solo** il file locale:
 
 ```sh

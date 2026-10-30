@@ -68,9 +68,10 @@ Per rendere pubblico il repository o distribuire binari eseguire una verifica di
 I download appartengono alla pagina
 [Release](https://github.com/gezza-dev/firma-con-cie/releases); il collegamento
 all’[ultima release stabile](https://github.com/gezza-dev/firma-con-cie/releases/latest)
-non incorpora un numero di versione. Al controllo del 26 ottobre 2026 il
-repository è privato e non contiene release: non sono ancora disponibili
-pacchetti pubblicati.
+non incorpora un numero di versione. La prima release è preparata come bozza
+nel repository privato. I download pubblici diventano disponibili dopo il
+cambio di visibilità e la pubblicazione della release stabile, che rimangono
+azioni distinte dalla preparazione dei materiali. [Procedura](RELEASE.md).
 
 La ricerca manuale nell’app consulta
 `https://api.github.com/repos/gezza-dev/firma-con-cie/releases/latest`, con
@@ -78,5 +79,5 @@ User-Agent `Firma-con-CIE/<versione>`. Accetta soltanto release stabili e link
 HTTPS delle release di questo repository, senza redirect automatici, token,
 download o esecuzione di pacchetti. Finché manca una release accessibile senza
 autenticazione, segnala correttamente l’indisponibilità della verifica.
-I nuovi link saranno presenti nell’app installata dopo la ricompilazione;
-aggiornare i sorgenti o il remote non modifica i binari già compilati.
+I pacchetti correnti contengono già questo riferimento. Aggiornare in futuro
+i soli sorgenti o il remote non cambia i riferimenti di un binario compilato.

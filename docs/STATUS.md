@@ -1,6 +1,50 @@
 # Stato del progetto e verifiche
 
-Situazione al 29 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
+Situazione al 30 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
+
+## Preparazione della release 1.0.0 (30 ottobre)
+
+La release viene assemblata come bozza nel repository privato, senza
+pubblicazione automatica. README e istruzioni di installazione sono aggiornati
+per macOS Universal, Windows x64/ARM64 e i formati Linux documentati.
+
+Il bundle macOS è firmato Developer ID Application con timestamp e Hardened
+Runtime. La correzione del nome interno PDFium permette l'avvio con le
+restrizioni hardened. Sono verificati 107 oggetti di codice, 383 test Flutter
+(14 saltati), 21 controlli del componente, 14 casi DSS/LTA e 19 storici. Le JVM
+ARM64 e x86_64 si avviano in modalità compilata, la seconda tramite Rosetta.
+Avvio, navigazione e chiusura dell'app sono riusciti; gli archivi personali e
+le impostazioni Firefox controllati sono rimasti invariati. App e DMG sono accettati dal servizio di notarizzazione Apple; i ticket
+sono validi anche dopo montaggio e copia, e Gatekeeper accetta il pacchetto.
+Le ricevute e i checksum definitivi sono nei materiali della release.
+
+I 32 avvisi PDFium specifici Mac sono recuperati dagli archivi ARM64/x64
+originali fissati. Il confronto di 15 sezioni Mach-O ARM64 e 14 x86_64 con il
+framework del distributore conferma la corrispondenza dei binari, distintamente
+dalle modifiche a firma/metadati di caricamento. Sono raccolti anche i dodici
+archivi nativi, cinquanta source JAR verificati, sorgenti completi OpenJDK e
+sorgenti/patch Ubuntu del runtime GCC/MinGW x64. [Materiali](RELEASE.md).
+
+Il pacchetto Windows x64 corrisponde al codice Windows corrente; sette file
+hanno convenzioni CRLF/LF diverse fra i checkout ma contenuto equivalente.
+Il pacchetto ARM64 corrisponde alla build collaudata dall'utente; verificati
+71 binari/AOT per architettura e 724 hash del manifest nativo. Installer, app
+e helper del progetto non hanno firma Authenticode; la firma Microsoft del
+prerequisito Visual C++ rimane distinta. I manifest pubblici dichiarano questa
+condizione senza attribuire ai binari una firma inesistente.
+
+I sei pacchetti Linux comprendono AppImage x86_64/AArch64, DEB amd64/ARM64,
+RPM e Arch x86_64. Hash, payload e architetture sono controllati separatamente
+dai test reali dell’utente. Le prove isolate x86_64 coprono avvio, navigazione,
+configurazione browser sintetica e chiusura; avvio e chiusura ARM64 sono
+verificati in emulazione. Non sono stati ripetuti accessi reali, firme o
+operazioni PIN/PUK durante questa raccolta.
+
+Per le due AppImage sono associati 178 file ELF Ubuntu per architettura ai
+pacchetti binari/sorgente esatti. Il supplemento raccoglie 87 versioni sorgente
+Ubuntu e 283 file originali, verificati anche contro i descriptor `.dsc`;
+conserva separatamente le due revisioni systemd distribuite. Patch degli
+strumenti Flutter ARM64, inventario e istruzioni sono materiali distinti.
 
 ## Collaudo Windows 11 ARM64 (29 ottobre)
 
@@ -27,7 +71,8 @@ trattati conservando impostazioni e moduli in conflitto.
 La Home uniforma gli stati sulle tre piattaforme, elenca i browser pronti
 con il predefinito per primo e lascia i dettagli degli errori ai log.
 [Implementazione, verifiche e limiti](AUTOMATIC_BROWSER_SETUP.md).
-Il collaudo nativo del nuovo avvio automatico su macOS/Linux resta necessario.
+Gli esiti del collaudo nativo macOS/Linux sono distinti dalle prove software
+condivise e sono riportati nel documento collegato.
 
 Il 27 ottobre 2026 l’utente ha confermato il **collaudo riuscito della nuova
 build Windows** con la configurazione automatica dei browser. La conferma

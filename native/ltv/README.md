@@ -39,8 +39,10 @@ all'aggiornamento esplicito delle dipendenze. Sono inclusi JRE privati, senza
 installazione, JAR originali separati, sorgenti Maven e avvisi di licenza.
 DSS è LGPL-2.1-or-later; i nuovi sorgenti sono BSD-3-Clause. OpenJDK/Temurin
 usa GPL-2.0 con Classpath Exception, con licenze in ciascun `jre/*/legal`.
-Questi pacchetti sono prototipi privati: una distribuzione pubblica richiede
-anche il corrispondente sorgente completo OpenJDK e la verifica degli avvisi.
+I materiali della release includono anche il corrispondente sorgente completo
+OpenJDK e i source JAR verificati. Sono raccolti separatamente dai binari,
+insieme agli avvisi e alle istruzioni di ricompilazione: vedere
+[materiali della release](../../docs/RELEASE.md).
 Provenienza OpenJDK: https://github.com/adoptium/temurin21-binaries/releases/tag/jdk-21.0.12.1%2B1
 DSS e sorgenti: https://github.com/esig/dss/tree/6.5.1
 Documentazione: https://ec.europa.eu/digital-building-blocks/DSS/webapp-demo/doc/dss-documentation.html

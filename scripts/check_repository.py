@@ -108,6 +108,19 @@ def check(sources):
         if hashlib.sha256(read('LICENSES/ltv/' + name)).hexdigest() != digest:
             errors.append('Original Java notice checksum differs: ' + name)
 
+    preview = json.loads(read('LICENSES/preview/manifest.json'))
+    darwin = preview.get('darwin-universal', {})
+    notice_lock = json.loads(read('native/preview/darwin-notices.lock.json'))
+    if darwin.get('supplementalNoticeSources') != notice_lock:
+        errors.append('Darwin PDFium notice provenance differs from its lock')
+    supplemental = darwin.get('supplementalNotices', {})
+    if not supplemental or not all(any(p.startswith(arch + '/') for p in supplemental)
+                                   for arch in notice_lock['archives']):
+        errors.append('Darwin PDFium notices missing for one or more architectures')
+    for name, digest in supplemental.items():
+        if hashlib.sha256(read('LICENSES/preview/darwin-universal/' + name)).hexdigest() != digest:
+            errors.append('Original Darwin PDFium notice checksum differs: ' + name)
+
     for name in ['README.md', 'docs/BUILDING.md', 'docs/LICENSING.md', 'docs/STATUS.md',
                  'docs/REPOSITORY.md', 'LICENSES/README.md', 'LICENSES/ltv/README.md']:
         for target in re.findall(r'\]\(([^)]+)\)', read(name).decode()):
