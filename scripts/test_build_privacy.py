@@ -12,6 +12,11 @@ from build_privacy import compiler_path_flags, local_path_markers, check_public_
 
 
 class BuildPrivacyTests(unittest.TestCase):
+    def test_neutral_build_flags_do_not_add_an_unrelated_private_home(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            flags = compiler_path_flags(tmp)
+            self.assertNotIn(str(Path.home()), ' '.join(flags))
+
     def test_generic_ci_account_is_not_treated_as_a_personal_identity(self):
         with patch('build_privacy.Path.home', return_value=Path('/home/runner')), \
                 patch.dict('os.environ', {'GITHUB_ACTIONS': 'true'}):

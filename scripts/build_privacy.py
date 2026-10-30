@@ -10,8 +10,9 @@ from urllib.parse import unquote_to_bytes
 
 def compiler_path_flags(source, build=None, dependencies=None):
     mappings = {}
-    for path, destination in [(Path.home(), '/home/build'),
-                              (source, '/src/firma-con-cie'),
+    # Do not add unrelated profile paths: OpenSSL stores compiler flags in its
+    # build information, so even an unused mapping would disclose that profile.
+    for path, destination in [(source, '/src/firma-con-cie'),
                               (build, '/build/firma-con-cie'),
                               (dependencies, '/build/dependencies')]:
         if path is not None:

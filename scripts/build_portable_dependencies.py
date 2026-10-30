@@ -80,7 +80,7 @@ def main():
     flags = "-O2 -fPIC"
     if is_mac:
         sdk = subprocess.check_output(["xcrun", "--sdk", "macosx", "--show-sdk-path"], text=True).strip()
-        flags += shlex.join(["", "-arch", args.arch, "-isysroot", sdk, "-mmacosx-version-min=" + args.deployment_target])
+        flags += " " + shlex.join(["-arch", args.arch, "-isysroot", sdk, "-mmacosx-version-min=" + args.deployment_target])
         env.update(CC="clang", CXX="clang++", MACOSX_DEPLOYMENT_TARGET=args.deployment_target, SDKROOT=sdk)
     else:
         env.update(CC="gcc", CXX="g++")
@@ -107,7 +107,8 @@ def main():
             "set(CMAKE_FIND_ROOT_PATH " + (str(Path(shutil.which(env['CC'])).resolve().parents[1] / triplet) if is_windows_arm else '/usr/'+triplet) + ' "' + str(prefix) + "\")\n"
             "set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)\nset(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)\n"
             "set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)\nset(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)\n")
-    recipe_hash = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+    recipe_hash = hashlib.sha256(Path(__file__).read_bytes() +
+        (ROOT/'scripts/build_privacy.py').read_bytes()).hexdigest()
     compiler = subprocess.check_output([env["CC"], "--version"], text=True).splitlines()[0]
     sdk_version = platform.platform() if not is_mac else subprocess.check_output(["xcrun", "--sdk", "macosx", "--show-sdk-version"], text=True).strip()
 
