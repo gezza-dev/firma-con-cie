@@ -115,6 +115,42 @@ nei browser. L'installer può chiedere di chiudere Firma con CIE prima di aggior
 Il collegamento sul desktop è facoltativo; quello nel menu Start è incluso.
 L'avvio a fine installazione è facoltativo e usa il token dell'utente originario.
 
+### Pulizia finale del programma di disinstallazione
+
+Inno Setup esegue la disinstallazione da una copia temporanea esterna alla
+cartella dell'app e tenta di eliminare il programma `uninsNNN.exe` originale.
+Il motore 7.1.0 ripete questa eliminazione per circa tre secondi: un blocco
+temporaneo dell'immagine eseguibile può durare più a lungo. Il residuo è stato
+segnalato su Windows ARM64; la causa concreta su quella macchina non è stata
+attribuita con certezza ai permessi, all'emulazione o a un altro processo.
+
+Al termine, il nostro script riprova per un massimo di circa 30 secondi sul
+solo percorso `{uninstallexe}` gestito da Inno, controllando che sia nella
+cartella dell'app o nella sottocartella di disinstallazione prevista. Rimuove
+poi esclusivamente le directory vuote. Non usa cancellazioni ricorsive,
+wildcard, processi di pulizia esterni o modifiche ad ACL/permessi; file estranei,
+abbinamenti, impostazioni e profili browser restano conservati. Un blocco
+persistente viene registrato nel log senza forzare la rimozione.
+
+Il test isolato mantiene aperto il file senza condivisione per l'eliminazione
+per otto secondi dopo l'inizio della pulizia del motore: la versione precedente
+lascia l'EXE, quella corretta lo elimina dopo il rilascio. Verifica inoltre una
+disinstallazione pulita con rimozione della cartella e la conservazione di file
+estranei. La posizione del programma di disinstallazione nei nuovi test è la
+stessa del pacchetto distribuito, direttamente nella cartella dell'app.
+
+Il 30 ottobre 2026 l'utente ha confermato il buon esito della disinstallazione
+con il pacchetto corretto sulla propria macchina Windows ARM64. Questa prova
+riguarda la disinstallazione; non implica nuove firme, autenticazioni browser
+o altre operazioni reali sulla CIE. Su Windows x64 sono passati 60 controlli
+isolati del ciclo dell'installer, oltre a 30 test di packaging ARM64 e 6 test
+di riservatezza del confezionamento. Entrambi i nuovi installer hanno superato
+la scansione completa dei contenuti estratti e degli archivi interni.
+
+Fonte del comportamento del motore:
+[Inno Setup 7.1.0, Setup.Uninstall.pas](https://github.com/jrsoftware/issrc/blob/is-7_1_0/Projects/Src/Setup.Uninstall.pas)
+e [SetupLdrAndSetup.InstFunc.pas](https://github.com/jrsoftware/issrc/blob/is-7_1_0/Projects/Src/SetupLdrAndSetup.InstFunc.pas).
+
 ### Nuovo nome pubblico e conservazione degli archivi
 
 L'eseguibile è `Firma con CIE.exe`; descrizione, icona, collegamenti e nome

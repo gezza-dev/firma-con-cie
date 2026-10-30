@@ -6,6 +6,8 @@ Uses a distinct application ID, a non-administrative test installer and a fake
 component/prerequisite. Never installs the production minidriver or uses a CIE.
 """
 import argparse
+from contextlib import contextmanager
+import ctypes
 import hashlib
 import json
 import os
@@ -13,8 +15,59 @@ from pathlib import Path
 import shutil
 import subprocess
 import tempfile
+import threading
+import time
 
 from package_windows_installer import build, validate_release, sha
+
+
+def eventually(predicate, timeout=40):
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if predicate():
+            return True
+        time.sleep(0.1)
+    return predicate()
+
+
+@contextmanager
+def delayed_image_lock(executable, log):
+    """Deny delete sharing after launch, like a transient scanner/image lock.
+
+    No ACL changes. Release eight seconds after the engine begins deleting its
+    own data files, exceeding Inno 7.1.0's built-in roughly three-second retry.
+    """
+    from ctypes import wintypes
+    kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+    kernel.CreateFileW.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD,
+                                  ctypes.c_void_p, wintypes.DWORD, wintypes.DWORD, wintypes.HANDLE]
+    kernel.CreateFileW.restype = wintypes.HANDLE
+    kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+    handle = kernel.CreateFileW(str(executable), 0x80000000, 1 | 2, None, 3, 0, None)
+    if handle == ctypes.c_void_p(-1).value:
+        raise ctypes.WinError(ctypes.get_last_error())
+    cancel = threading.Event()
+    evidence = {'cleanupReachedWhileLocked': False}
+
+    def release():
+        try:
+            deadline = time.monotonic() + 30
+            while not cancel.is_set() and time.monotonic() < deadline:
+                if log.exists() and 'Deleting Uninstall data files.' in log.read_text(encoding='utf-8-sig', errors='replace'):
+                    evidence['cleanupReachedWhileLocked'] = True
+                    cancel.wait(8)
+                    return
+                cancel.wait(0.05)
+        finally:
+            kernel.CloseHandle(handle)
+
+    worker = threading.Thread(target=release, daemon=True)
+    worker.start()
+    try:
+        yield evidence
+    finally:
+        cancel.set()
+        worker.join(5)
 
 
 def main():
@@ -182,20 +235,34 @@ def main():
     check((install / 'Firma con CIE.exe').read_bytes() == b'new synthetic executable', 'upgrade did not replace app')
     check(unknown.read_bytes() == b'preserve unknown file', 'upgrade removed unknown file')
     run('repair', install_args(second['installer'], 'repair'))
-    uninstaller = install / 'uninstall/unins000.exe'
+    # Keep the same uninstaller placement as the production package.
+    uninstaller = install / 'unins000.exe'
     check(uninstaller.is_file(), 'uninstaller missing')
     run('unregister-failure', [uninstaller, '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART'], False,
         {'CIE_INSTALLER_TEST_FAIL': '--unregister-package'})
     check((install / 'Firma con CIE.exe').exists(), 'failed unregister removed app files')
-    run('uninstall', [uninstaller, '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/LOG=' + str(q / 'uninstall.log')])
+    with delayed_image_lock(uninstaller, q / 'uninstall.log') as lock:
+        run('uninstall', [uninstaller, '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/LOG=' + str(q / 'uninstall.log')])
+        check(eventually(lambda: not uninstaller.exists()), 'uninstaller EXE remained after temporary image lock')
+        check(lock['cleanupReachedWhileLocked'], 'uninstaller lock did not cover engine cleanup')
+    check(not uninstaller.with_suffix('.dat').exists(), 'uninstaller data log remained')
+    check(not uninstaller.with_suffix('.msg').exists(), 'uninstaller message file remained')
     check(not (install / 'Firma con CIE.exe').exists(), 'uninstall left app executable')
     check(unknown.read_bytes() == b'preserve unknown file', 'uninstall removed unknown file')
     check(unknown_test.read_bytes() == b'preserve unknown test-folder file', 'uninstall removed unknown test-folder file')
+    clean_install = q / 'clean installed app'
+    clean = build(release, q / 'clean', '0.1.1', a.iscc.resolve(), a.fake_helper.resolve(), test_root=clean_install, architecture=a.architecture)
+    run('clean-install', install_args(clean['installer'], 'clean-install'))
+    clean_uninstaller = clean_install / 'unins000.exe'
+    run('clean-uninstall', [clean_uninstaller, '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/LOG=' + str(q / 'clean-uninstall.log')])
+    check(eventually(lambda: not clean_install.exists()), 'clean application directory remained')
     calls = (q / 'helper-calls.txt').read_text().splitlines()
     for command in ('--plan-package', '--install-package', '--unregister-package', '/install'):
         check(command in calls, 'missing integration call: ' + command)
     result = {'checks': checks, 'passed': True, 'realCardOperations': 0, 'productionInstallations': 0,
-              'uacRequests': 0, 'syntheticProfileUnchanged': True, 'scope': 'real Inno engine with isolated fake component', 'helperCalls': calls}
+              'uacRequests': 0, 'syntheticProfileUnchanged': True,
+              'uninstallerRemovedAfterTransientImageLock': True, 'cleanApplicationDirectoryRemoved': True,
+              'scope': 'real Inno engine with isolated fake component', 'helperCalls': calls}
     (q / 'result.json').write_text(json.dumps(result, indent=2) + '\n')
     print(json.dumps(result, indent=2))
 

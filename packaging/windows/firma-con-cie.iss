@@ -13,7 +13,6 @@ PrivilegesRequired=lowest
 DefaultDirName={#TestInstallPath}
 DisableDirPage=yes
 CreateUninstallRegKey=no
-UninstallFilesDir={app}\uninstall
 #endif
 AppName=Firma con CIE
 AppVersion={#AppVersion}
@@ -147,12 +146,36 @@ begin
 end;
 
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
-var Code: Integer; Folder: String;
+var Code: Integer; Folder, Uninstaller, AppFolder: String;
 begin
   if CurUninstallStep = usUninstall then begin
     Folder := ExpandConstant('{app}\web-component');
     if not Exec(Folder + '\CIE-Web-Setup.exe', '--unregister-package', Folder,
       SW_HIDE, ewWaitUntilTerminated, Code) then RaiseException(ComponentError(-1));
     if Code <> 0 then RaiseException(ComponentError(Code));
+  end;
+  if CurUninstallStep = usPostUninstall then begin
+    // Inno's temporary second phase runs outside {app}. Its built-in retry
+    // for removing the original EXE is short; emulation/scanner image locks
+    // can outlive it. Retry this exact engine-owned file, never an app tree.
+    Uninstaller := ExpandConstant('{uninstallexe}');
+    Folder := ExtractFileDir(Uninstaller);
+    AppFolder := ExpandConstant('{app}');
+    if (CompareText(Folder, AppFolder) <> 0) and
+       (CompareText(Folder, AppFolder + '\uninstall') <> 0) then begin
+      Log('Uninstaller cleanup skipped: unexpected uninstall directory.');
+      exit;
+    end;
+    if FileExists(Uninstaller) then begin
+      Log('Retrying removal of the original uninstaller after engine cleanup.');
+      DelayDeleteFile(Uninstaller, 120);
+      if FileExists(Uninstaller) then begin
+        Log('Original uninstaller remains locked or access was denied; no permissions changed.');
+        exit;
+      end;
+    end;
+    // RemoveDir removes empty directories only. Unknown/user files are kept.
+    if CompareText(Folder, AppFolder) <> 0 then RemoveDir(Folder);
+    RemoveDir(AppFolder);
   end;
 end;

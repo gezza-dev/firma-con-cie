@@ -1248,3 +1248,20 @@ La preparazione conserva il repository privato e la release in bozza. Nessuna
 ricompilazione di piattaforma risulta pendente per le correzioni condivise;
 questa indicazione non estende i collaudi software a hardware o operazioni
 sulla carta mai provati.
+
+### Disinstallazione Windows ARM64 — 30 ottobre 2026
+
+Corretto il residuo `unins000.exe` e della cartella dell'app dopo la
+disinstallazione. La pulizia finale riprova sul solo programma di
+disinstallazione gestito da Inno e rimuove esclusivamente le directory vuote,
+senza modificare ACL o cancellare ricorsivamente file estranei. Il test
+isolato riproduce il residuo della versione precedente con un blocco
+temporaneo di otto secondi e verifica che la versione corretta lo elimini.
+
+Superati 60 controlli isolati dell'installer su Windows x64, 30 test di
+packaging ARM64 e 6 controlli di riservatezza; audit completi dei pacchetti
+x64 e ARM64 senza rilevamenti dei percorsi personali. L'utente ha confermato
+il successo della disinstallazione reale su Windows ARM64 con il pacchetto
+corretto. Il collaudo non comprende nuove operazioni sulla CIE, firme o
+autenticazioni browser. La correzione riguarda il confezionamento Windows;
+GUI e runtime nativi precedentemente verificati sono riutilizzati.
