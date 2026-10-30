@@ -160,7 +160,9 @@ timestamp sicuro. La firma Developer ID non esegue la notarizzazione.
 Senza un `--build-workspace` esplicito, la GUI Developer ID viene compilata in
 una nuova cartella privata `/private/tmp/firma-con-cie-macos-*`: Flutter conserva
 l'URI del registrante generato nel codice AOT e la sola mappatura C/C++ non lo
-rimuoverebbe. Il bundle finale rimane nella destinazione locale scelta.
+rimuoverebbe. Anche la cache dei pacchetti della GUI viene risolta all'interno
+di quel workspace, per non conservare i percorsi dei sorgenti Swift dei plugin
+nel launcher. Il bundle finale rimane nella destinazione locale scelta.
 Un controllo sui file rifiuta il percorso del profilo locale prima della firma
 finale; non modifica nome dell'autore, identità Developer ID o identificativi
 dell'app. Il controllo completa, senza sostituirla, l'ispezione dell'intero

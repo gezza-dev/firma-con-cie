@@ -64,15 +64,20 @@ if not args.skip_build:
 shutil.copytree(ROOT, workspace, dirs_exist_ok=True, copy_function=shutil.copyfile,
     ignore=shutil.ignore_patterns('build', '.dart_tool', '.git', 'dist', 'reports', 'output',
         'runtime', '.build', '__pycache__', '.idea', 'ephemeral', '.plugin_symlinks', 'Pods',
-        'local-build.json', 'LOCAL_SETUP.md', 'local-backend.json'))
+        '.pub-cache', 'local-build.json', 'LOCAL_SETUP.md', 'local-backend.json'))
 # Only generated/copy-owned build files are cleaned, never original sources or
 # existing CIE ID bundles. File-provider FinderInfo prevents codesign in iCloud.
 for key in ['com.apple.FinderInfo', 'com.apple.ResourceFork']:
     subprocess.run(['xattr', '-dr', key, str(workspace)],
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 if not args.skip_build:
-    subprocess.run([args.flutter, 'pub', 'get', '--enforce-lockfile'], cwd=workspace, check=True)
-    subprocess.run([args.flutter, 'build', 'macos', '--release', '--no-pub'], cwd=workspace, check=True)
+    build_environment = os.environ.copy()
+    if args.developer_id:
+        # Swift plugin source locations also enter the host symbol table.
+        # Resolve the pinned packages outside the developer's profile too.
+        build_environment['PUB_CACHE'] = str(workspace/'.pub-cache')
+    subprocess.run([args.flutter, 'pub', 'get', '--enforce-lockfile'], cwd=workspace, env=build_environment, check=True)
+    subprocess.run([args.flutter, 'build', 'macos', '--release', '--no-pub'], cwd=workspace, env=build_environment, check=True)
 source = workspace/'build/macos/Build/Products/Release/Firma con CIE.app'
 args.destination.mkdir(parents=True, exist_ok=True)
 target = args.destination/'Firma con CIE.app'
