@@ -1210,6 +1210,41 @@ confermato che i propri test funzionano correttamente; questa conferma non
 specifica singolarmente le operazioni eseguite. L’agente non ha inserito
 credenziali né eseguito operazioni di modifica sulla carta.
 
-Il pacchetto macOS aggiornato contiene queste correzioni. Gli installer Windows
-e Linux già presenti nella bozza v1.0.0 devono essere ricompilati e verificati
-con le correzioni condivise prima della pubblicazione.
+Il pacchetto macOS aggiornato contiene queste correzioni. Al momento di
+questa verifica gli installer Windows e Linux erano ancora da aggiornare;
+la ricompilazione successiva è riepilogata qui sotto.
+
+## Pacchetti multipiattaforma della bozza v1.0.0 — 30 ottobre 2026
+
+La GUI macOS, Windows x64/ARM64 e Linux x86_64/ARM64 include le correzioni
+condivise di `7c23253`. Il confezionamento Linux `435ec42` separa i cinquanta
+source JAR originali dai pacchetti eseguibili, conservandoli nell’archivio
+delle dipendenze; non modifica il codice della GUI. Gli archivi sorgente del
+progetto seguono anche i successivi aggiornamenti della documentazione,
+mentre i manifest registrano le revisioni effettive di ciascun binario.
+
+Windows: analisi e 404 test Flutter superati, 14 saltati, audit completi dei
+due installer e GUI x64 controllata in isolamento. I controlli ARM64 attuali
+provengono da CI; l’app completa non è stata nuovamente collaudata su hardware
+ARM64 dell’utente. Installer e componenti del progetto non sono firmati
+Authenticode; il prerequisito Microsoft Visual C++ mantiene la propria firma.
+
+Linux: analisi senza segnalazioni, 414 test standard superati con 4 saltati e
+418 test superati abilitando le integrazioni native sintetiche; 26 test di
+confezionamento, 4 gruppi GTK e 14 casi DSS/LTA per architettura. Avvio,
+navigazione e chiusura della GUI sono stati controllati in ambienti isolati,
+con ARM64 eseguito in emulazione. I sei pacchetti hanno superato gli audit
+dei contenuti e il confronto dei checksum dopo il download. I DEB sono stati
+provati in root temporanee; i cicli completi d’installazione RPM/Arch non sono
+stati ripetuti. Non sono state eseguite nuove operazioni reali sulla CIE.
+
+macOS: app e DMG aggiornati, firmati Developer ID Application e accettati da
+Apple; ticket e Gatekeeper verificati anche dopo montaggio e copia. Restano
+distinte le verifiche Universal/Rosetta da un nuovo collaudo su Mac Intel
+fisico. I limiti delle prove e la provenienza dei runtime nativi riutilizzati
+sono conservati nei manifest della release.
+
+La preparazione conserva il repository privato e la release in bozza. Nessuna
+ricompilazione di piattaforma risulta pendente per le correzioni condivise;
+questa indicazione non estende i collaudi software a hardware o operazioni
+sulla carta mai provati.

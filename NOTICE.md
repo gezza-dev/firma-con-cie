@@ -26,11 +26,11 @@ Per le CA CIE, provenienza, checksum e policy sono in
 Non vengono installati nell'archivio di fiducia del sistema e non viene loro
 attribuita la licenza del nuovo codice.
 
-Prototipo indipendente collegato al fork `gezza-dev/cie-id-macos-universal`.
-Non è un prodotto ufficiale dell'Istituto Poligrafico e Zecca dello Stato Italiano
+Applicazione indipendente derivata dal fork `gezza-dev/cie-id-macos-universal`.
+Non è un prodotto ufficiale dell'Istituto Poligrafico e Zecca dello Stato italiano
 e non è supportato da IPZS.
 
-Il nuovo codice del prototipo dichiara BSD-3-Clause. I termini dei componenti
+Il nuovo codice del progetto dichiara BSD-3-Clause. I termini dei componenti
 riutilizzati restano quelli dei rispettivi titolari: il collegamento FFI non
 modifica la licenza del middleware, dell'SDK o delle librerie incorporate.
 
@@ -41,14 +41,15 @@ La copia in `native/backend` contiene modifiche per il porting, descritte in
 registrati in `native/backend-upstream.json`. Le licenze individuali, inclusa
 LGPL per le utility che la dichiarano, restano applicabili.
 
-Il runtime portabile copia gli avvisi del backend e quelli del prototipo.
+Il runtime portabile copia gli avvisi del backend e quelli del progetto.
 Le dipendenze sono ricompilate dagli archivi identificati nel lockfile.
 Le DLL Windows private libgcc/libstdc++ sono accompagnate dai termini GCC con
 Runtime Library Exception 3.1; winpthreads/MinGW-w64 mantengono i propri avvisi.
 I testi forniti dalla distribuzione della toolchain sono in `LICENSES/mingw`.
-I loro copyright e le eccezioni non vengono sostituiti dalla licenza del prototipo.
-Il pacchetto di test include una copia delle sorgenti del progetto e le ricette
-per ricompilare backend e dipendenze; non è una release per utenti finali.
+I loro copyright e le eccezioni non vengono sostituiti dalla licenza del progetto.
+Le release affiancano ai pacchetti gli archivi dei sorgenti del progetto e delle
+dipendenze, con le ricette per ricompilare backend e librerie. Gli inventari e
+le revisioni effettive sono registrati nei manifest allegati.
 
 Flutter, Dart, il motore grafico e i pacchetti mantengono i propri avvisi.
 Gli avvisi diretti di Flutter, `ffi` e `file_selector` sono in `LICENSES`;
@@ -62,23 +63,27 @@ La raccolta include le licenze native dei terzi e quelle dei pacchetti Dart;
 vedere `LICENSES/preview/README.md` per la copertura degli avvisi Darwin.
 Il bundle copia i testi diretti in `Contents/Resources/CIEPrototype`.
 
-Nessun eseguibile del prototipo è stato pubblicato come release. La firma
-Apple Development serve alle prove locali e non equivale a notarizzazione.
+Lo stato di distribuzione, firma e notarizzazione dei singoli pacchetti è
+riportato nelle note e nei manifest della release. La firma Apple Development
+riguarda le sole prove locali e non equivale alla distribuzione Developer ID
+con notarizzazione Apple. Gli avvisi inclusi nelle build precedenti possono
+conservare riferimenti storici alla fase di prototipo.
 
 ## Validatore DSS/LTA locale
 
 EU DSS 6.5.1 (Commissione europea), LGPL-2.1-or-later, è usato come worker
 locale tramite JAR originali separati. Dipendenze e JVM Eclipse Temurin 21
-sono fissate in native/ltv e accompagnate da sorgenti JAR e avvisi nei runtime.
+sono fissate in native/ltv. Gli avvisi accompagnano i runtime; i source JAR
+originali sono forniti nell’archivio separato dei sorgenti delle dipendenze.
 OpenJDK/Temurin è GPL-2.0 con Classpath Exception; licenze in jre/*/legal.
-Non sono installate CA di test. Il prototipo non afferma qualificazione eIDAS.
+Non sono installate CA di test. Il progetto non afferma qualificazione eIDAS.
 Vedere native/ltv/README.md per provenienza e condizioni di distribuzione.
 
 ## Adapter per autenticazione Web
 
 Il nuovo motore di autenticazione riusa IAS e il backend CIE con le rispettive
 licenze già riportate. Gli adapter CryptoTokenKit e cardmod sono sorgenti del
-prototipo; non includono codice del vecchio CSP Windows. Il CPDK Microsoft
+progetto; non includono codice del vecchio CSP Windows. Il CPDK Microsoft
 10.1.19041.953 è una dipendenza di compilazione: header e installer restano
 fuori dal progetto e dai pacchetti di prova. Provenienza, checksum e procedura
 sono in scripts/prepare_cpdk.py e docs/WEB_AUTHENTICATION.md. La build locale

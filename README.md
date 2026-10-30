@@ -13,7 +13,7 @@ Apri la pagina dell’**[ultima release stabile](https://github.com/gezza-dev/fi
 | Sistema | Architettura | Pacchetto |
 | --- | --- | --- |
 | macOS 12 o successivo | Apple Silicon e Intel | DMG Universal |
-| Windows | x64 | Installer `.exe` x64 |
+| Windows 10 o successivo | x64 | Installer `.exe` x64 |
 | Windows 11 | ARM64 | Installer `.exe` ARM64 |
 | Linux | x86_64 | AppImage, `.deb`, `.rpm`, `.pkg.tar.zst` |
 | Linux | ARM64 / AArch64 | AppImage e `.deb` |
