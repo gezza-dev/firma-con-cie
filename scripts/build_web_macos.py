@@ -4,6 +4,7 @@
 import argparse,hashlib,json,plistlib,re,shutil,subprocess
 from pathlib import Path
 from macos_signing import MacCodeSigner
+from build_privacy import compiler_path_flags, check_public_paths
 ROOT=Path(__file__).resolve().parents[1]
 p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('--runtime',type=Path,required=True)
@@ -29,13 +30,14 @@ info=dict(CFBundleIdentifier=bundle,CFBundleExecutable='CIEPrototypeToken',CFBun
 # Each token request opens one TKSmartCard session; IAS selects MF/IAS/CIE.
 info['CIEWebPublicAppGroup']=public_group
 (contents/'Info.plist').write_bytes(plistlib.dumps(info))
-subprocess.run(['xcrun','clang++','-std=c++17','-fobjc-arc','-fmodules','-arch','arm64','-arch','x86_64','-mmacosx-version-min=12.0','-I',str(ROOT/'native/include'),'-I',str(ROOT/'native/src'),str(ROOT/'native/platform/macos/web/CIEPrototypeToken.mm'),'-L',str(runtime),'-lcie_web','-framework','Foundation','-framework','CryptoTokenKit','-framework','Security','-Wl,-e,_NSExtensionMain','-Wl,-rpath,@executable_path/../Frameworks','-o',str(executable)],check=True)
+subprocess.run(['xcrun','clang++','-std=c++17','-fobjc-arc','-fmodules',*compiler_path_flags(ROOT,a.output,runtime),'-arch','arm64','-arch','x86_64','-mmacosx-version-min=12.0','-I',str(ROOT/'native/include'),'-I',str(ROOT/'native/src'),str(ROOT/'native/platform/macos/web/CIEPrototypeToken.mm'),'-L',str(runtime),'-lcie_web','-framework','Foundation','-framework','CryptoTokenKit','-framework','Security','-Wl,-e,_NSExtensionMain','-Wl,-rpath,@executable_path/../Frameworks','-o',str(executable)],check=True)
 for binary in frameworks.glob('*.dylib'):signer.sign(binary)
 entitlements=a.output/'WebToken.entitlements'
 entitlements.write_bytes(plistlib.dumps({'com.apple.security.app-sandbox':True,'com.apple.security.smartcard':True,'com.apple.security.application-groups':[public_group]}))
 signer.sign(extension,entitlements)
 signer.verify(extension)
 shutil.copytree(runtime/'licenses',contents/'Resources/licenses')
+check_public_paths(extension)
 # Resources must be sealed after copying the notices.
 signer.sign(extension,entitlements)
 signer.verify(extension)

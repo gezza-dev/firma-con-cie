@@ -14,6 +14,7 @@ import urllib.request
 from check_openssl_arm64 import validate_configuration as validate_openssl_arm64
 from prepare_cryptopp_arm64 import prepare_windows_arm64 as prepare_cryptopp_arm64
 from prepare_podofo_arm64 import prepare_windows_arm64 as prepare_podofo_arm64
+from build_privacy import compiler_flags_text
 
 ROOT = Path(__file__).resolve().parents[1]
 LOCK = json.loads((ROOT / "native/backend/scripts/dependencies.lock.json").read_text())
@@ -91,6 +92,7 @@ def main():
         for tool in (env['CC'],env['CXX'],env['AR'],env['RANLIB'],env['RC']):
             if not shutil.which(tool):
                 parser.error('Missing Windows cross compiler tool: '+tool)
+    flags = compiler_flags_text(flags, ROOT, build_root, prefix)
     env.update(CFLAGS=flags, CXXFLAGS=flags + " -std=c++17", CPPFLAGS="-I" + shlex.quote(str(prefix / "include")),
                LDFLAGS=flags + (" -Wl,-adhoc_codesign" if is_mac else "") + " -L" + shlex.quote(str(prefix / "lib")),
                PKG_CONFIG_LIBDIR=os.pathsep.join([str(prefix / "lib/pkgconfig"), str(prefix / "share/pkgconfig")]), PKG_CONFIG_PATH="")
@@ -117,6 +119,7 @@ def main():
              "-DCMAKE_OSX_ARCHITECTURES=" + args.arch,
              "-DCMAKE_OSX_DEPLOYMENT_TARGET=" + args.deployment_target,
              "-DCMAKE_OSX_SYSROOT=" + sdk, "-DCMAKE_INSTALL_PREFIX=" + str(prefix),
+             "-DCMAKE_C_FLAGS=" + env['CFLAGS'], "-DCMAKE_CXX_FLAGS=" + env['CXXFLAGS'],
              "-DCMAKE_INSTALL_LIBDIR=lib", "-DCMAKE_PREFIX_PATH=" + str(prefix),
              "-DCMAKE_IGNORE_PREFIX_PATH=/opt/homebrew;/usr/local",
              "-DCMAKE_FIND_FRAMEWORK=LAST",

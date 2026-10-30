@@ -9,9 +9,11 @@ import plistlib
 import re
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 from build_paths import macos_paths
 from macos_signing import MacCodeSigner
+from build_privacy import check_public_paths
 ROOT = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--flutter', default='flutter')
@@ -26,6 +28,10 @@ parser.add_argument('--skip-build', action='store_true', help='Reassemble the ex
 parser.add_argument('--web-extension',type=Path,help='Optional separately built prototype CryptoTokenKit appex')
 args = parser.parse_args()
 signer = MacCodeSigner(args.identity, args.developer_id)
+if args.developer_id and args.build_workspace is None:
+    # Flutter embeds the generated registrant's file URI in AOT code. Compiler
+    # prefix flags cannot rewrite it: compile from a fresh non-profile workspace.
+    args.build_workspace = Path(tempfile.mkdtemp(prefix='firma-con-cie-macos-', dir='/private/tmp'))
 if args.destination is None or args.build_workspace is None:
     local_paths = macos_paths(ROOT)
     args.destination = args.destination or local_paths['destination']
@@ -146,6 +152,7 @@ if args.web_extension:
     entitlements['com.apple.security.application-groups']=[group]
     host_entitlements=args.destination/'WebHost.entitlements'
     host_entitlements.write_bytes(plistlib.dumps(entitlements))
+check_public_paths(target)
 signer.sign(target, host_entitlements)
 signer.verify(target)
-print('Local prototype (not notarized):', target)
+print('Local app (not notarized):', target)

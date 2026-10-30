@@ -92,6 +92,21 @@ di packaging rifiutano un runtime privo del nuovo eseguibile.
 
 Servono Xcode completo con supporto ai cataloghi `.icon` (Xcode 26 o successivo), SDK macOS, CMake/Ninja e gli strumenti della tabella. Il deployment target dell’app e del backend è macOS 12.0. Il toolchain di compilazione può richiedere un macOS più recente.
 
+Per una release compilare anche le dipendenze da una copia sorgente in un
+percorso neutro, fuori dal profilo personale. Per esempio, da un checkout pulito:
+
+```sh
+CIE_RELEASE_SOURCE="$(mktemp -d /private/tmp/firma-con-cie-source-XXXXXX)"
+git archive HEAD | tar -x -C "$CIE_RELEASE_SOURCE"
+cd "$CIE_RELEASE_SOURCE"
+```
+
+I compilatori C/C++ mappano i percorsi sorgente, build e dipendenze a nomi
+generici per macro e simboli. Questo non riscrive stringhe di configurazione
+generate dalle dipendenze: perciò anche i prefissi statici devono essere
+ricostruiti nella copia neutra, evitando il riuso di librerie contenenti vecchi
+percorsi personali. Le versioni e gli hash dei sorgenti restano fissati.
+
 Preparare Meson in un ambiente isolato e compilare le dipendenze nelle due architetture:
 
 ```sh
@@ -130,7 +145,7 @@ python3 scripts/build_macos.py \
   --web-extension .build/web-macos/CIEPrototypeToken.appex
 ```
 
-Le destinazioni generiche predefinite sono `~/Developer/Builds/firma-con-cie/firma-con-cie` per il bundle e `~/Developer/Builds/firma-con-cie/workspace-macos` per i file generati. Non dipendono dal nome dell’account o dalla disposizione delle cartelle di uno sviluppatore.
+Le destinazioni predefinite locali sono `~/Developer/Builds/firma-con-cie/firma-con-cie` per il bundle e `~/Developer/Builds/firma-con-cie/workspace-macos` per i file generati di sviluppo. Le impostazioni locali possono cambiarle senza entrare nei sorgenti pubblicati.
 
 Per firmare con **Developer ID Application**, impostare `CIE_SIGNING_IDENTITY`
 al nome completo o all'impronta del proprio certificato e aggiungere
@@ -141,6 +156,15 @@ il permesso JIT soltanto ai launcher Java privati. Non cambia gli identificativi
 dell'app o l'archivio delle CIE. Per il DMG usare la stessa identità e aggiungere
 `--developer-id` a `package_macos_dmg.py`: anche il contenitore riceve un
 timestamp sicuro. La firma Developer ID non esegue la notarizzazione.
+
+Senza un `--build-workspace` esplicito, la GUI Developer ID viene compilata in
+una nuova cartella privata `/private/tmp/firma-con-cie-macos-*`: Flutter conserva
+l'URI del registrante generato nel codice AOT e la sola mappatura C/C++ non lo
+rimuoverebbe. Il bundle finale rimane nella destinazione locale scelta.
+Un controllo sui file rifiuta il percorso del profilo locale prima della firma
+finale; non modifica nome dell'autore, identità Developer ID o identificativi
+dell'app. Il controllo completa, senza sostituirla, l'ispezione dell'intero
+payload prima della pubblicazione.
 
 ### Notarizzazione per la distribuzione
 

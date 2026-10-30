@@ -11,6 +11,7 @@ import shutil
 import subprocess
 import tempfile
 import stat
+from build_privacy import compiler_flags_text, check_public_paths
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -51,6 +52,8 @@ def main():
     output = (args.output or ROOT/'native/runtime'/args.system).resolve()
     cross = args.toolchain is not None
     options = ['-DCMAKE_BUILD_TYPE=Release', '-DCIE_BUILD_BACKEND=ON', '-DCIE_DEPENDENCY_PREFIX='+str(prefix)]
+    options += ['-DCMAKE_C_FLAGS='+compiler_flags_text(os.environ.get('CFLAGS', ''), ROOT, build, prefix),
+                '-DCMAKE_CXX_FLAGS='+compiler_flags_text(os.environ.get('CXXFLAGS', ''), ROOT, build, prefix)]
     if cross:
         options += ['-DCMAKE_TOOLCHAIN_FILE='+str(args.toolchain.resolve())]
     if args.system == 'macos':
@@ -154,6 +157,7 @@ def main():
                                            if args.windows_architecture == 'x86_64' else [])
         manifest['windows_toolchain'] = 'mingw-w64-gcc' if args.windows_architecture == 'x86_64' else 'llvm-mingw-static-ucrt'
     (output/'backend-manifest.json').write_text(json.dumps(manifest, indent=2)+'\n')
+    check_public_paths(output)
     print('Private runtime prepared:', output)
     if cross:
         print('Cross-compiled only: run the tests on the target OS before claiming runtime/hardware support.')
