@@ -237,7 +237,7 @@ e conferma della configurazione. L'autorizzazione separata del lettore appare
 solo per Firefox Snap quando necessaria. Rimossi il passaggio intermedio e le
 etichette sotto i pulsanti; errori ed esiti rimangono nella finestra iniziale.
 
-Dopo la rimozione Flatpak: analisi Flutter senza problemi, 351 test Flutter,
+Verifiche software: analisi Flutter senza problemi, 351 test Flutter,
 39 gruppi CTest nativi, 3 gruppi GTK e 25 test Python superati; build Release
 Linux e smoke software senza rilevamento carta completati. I vecchi artefatti
 locali sono stati eliminati, conservando un pacchetto per formato e
@@ -262,9 +262,8 @@ Firefox/Chrome con PIN completo, anche a AppImage chiuso per Chrome.
 Dopo la rimozione del pacchetto nativo è riuscito un nuovo abbinamento,
 conservato dopo la riapertura senza reinserire il PIN. [Dettagli e limiti](LINUX_APPIMAGE.md).
 
-La sperimentazione Flatpak e il componente browser esterno sono stati rimossi
-dal progetto. Restano AppImage e pacchetti nativi, con configurazione diretta
-dei browser. Sono conservate le correzioni condivise per salvataggio tramite
+La distribuzione Linux comprende AppImage e pacchetti nativi, con configurazione
+diretta dei browser. Sono incluse le correzioni condivise per salvataggio tramite
 portali, icona e decorazioni della finestra.
 
 I collaudi hardware precedenti sono conferme dell'utente, distinte dai test
