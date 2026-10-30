@@ -6,6 +6,11 @@ invece comparire nei file dell'app, nei manifest o negli installer.
 
 ## Compilazione da directory generiche
 
+Su Windows gli strumenti di audit/confezionamento richiedono Python 3.12 o
+successivo per controllare esplicitamente le junction. Gli strumenti di sola
+ispezione funzionano anche su POSIX con Python 3.9, dove restano attivi i
+controlli dei link simbolici e non viene invocata l'API delle junction Windows.
+
 Preparare una copia reale dei sorgenti, SDK Flutter fissato e cache Pub fuori
 dal profilo, per esempio sotto `C:\Build`. Un collegamento che risolve nel
 profilo originale non sostituisce questa copia. Non cambiare le dipendenze

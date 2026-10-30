@@ -17,6 +17,7 @@ from product_identity import windows_installer_name
 from windows_architecture import check_release_architecture
 from windows_helper_manifest import check_helper_manifest
 from build_privacy import check_public_paths, local_path_markers
+from windows_file_safety import is_link_or_junction
 
 ROOT = Path(__file__).resolve().parents[1]
 POLICY = ROOT / 'packaging/windows/release-policy.json'
@@ -32,7 +33,7 @@ def safe_file(root, name):
         raise ValueError('Invalid package path: ' + name)
     path = root.joinpath(*rel.parts)
     for item in (path, *path.parents):
-        if item.is_symlink() or item.is_junction():
+        if is_link_or_junction(item):
             raise ValueError('Package contains a link: ' + name)
         if item == root:
             break
@@ -79,7 +80,7 @@ def validate_release(release):
     # Reject accidental inclusion of personal data, even outside the manifests.
     for path in release.rglob('*'):
         rel = path.relative_to(release).as_posix()
-        if path.is_symlink() or path.is_junction():
+        if is_link_or_junction(path):
             raise ValueError('Link in Release: ' + rel)
         if path.is_file() and (path.name in ('.key', 'settings.json', 'preferences.json') or
                                path.suffix.lower() in ('.card', '.web', '.pfx', '.p12')):
@@ -214,6 +215,7 @@ def prepare(release, output, version, vc_redist, *, test_root=None, architecture
                     'native/platform/windows/web/CMakeLists.txt', 'scripts/windows_helper_manifest.py',
                     'scripts/build_privacy.py', 'windows/CMakeLists.txt',
                     'scripts/windows_build_privacy.py',
+                    'scripts/windows_file_safety.py',
                     'native/platform/windows/web/minidriver.cpp', 'packaging/windows/firma-con-cie.iss',
                     'scripts/package_windows_installer.py', 'scripts/product_identity.py', 'packaging/windows/release-policy.json',
                     'packaging/windows/card-catalog.json', 'native/platform/windows/web/card_catalog.h',

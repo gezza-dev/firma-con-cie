@@ -10,6 +10,7 @@ import argparse
 import gzip
 import io
 import json
+import os
 from pathlib import Path
 import subprocess
 import tempfile
@@ -17,6 +18,7 @@ import zipfile
 import zlib
 
 from build_privacy import local_path_markers
+from windows_file_safety import is_link_or_junction
 
 
 class DistributionAudit:
@@ -55,12 +57,26 @@ class DistributionAudit:
 
     def directory(self, directory):
         directory = Path(directory)
-        for file in sorted(directory.rglob('*')):
-            if file.is_symlink() or file.is_junction():
-                self.errors.append(file.relative_to(directory).as_posix() + ': unexpected link')
-            elif file.is_file():
-                self.files += 1
-                self.blob(file.read_bytes(), file.relative_to(directory).as_posix())
+        if is_link_or_junction(directory):
+            self.errors.append('$payload-root: unexpected link')
+            return
+        # Prune links/junctions before descent, not after entering their targets.
+        for folder, directories, files in os.walk(directory, followlinks=False):
+            keep = []
+            for name in sorted(directories):
+                child = Path(folder) / name
+                if is_link_or_junction(child):
+                    self.errors.append(child.relative_to(directory).as_posix() + ': unexpected link')
+                else:
+                    keep.append(name)
+            directories[:] = keep
+            for name in sorted(files):
+                file = Path(folder) / name
+                if is_link_or_junction(file):
+                    self.errors.append(file.relative_to(directory).as_posix() + ': unexpected link')
+                elif file.is_file():
+                    self.files += 1
+                    self.blob(file.read_bytes(), file.relative_to(directory).as_posix())
 
     def result(self):
         return {'passed': not self.findings and not self.errors, 'filesChecked': self.files,
