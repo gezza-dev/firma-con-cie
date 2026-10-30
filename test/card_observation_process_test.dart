@@ -161,7 +161,10 @@ void main() {
       final monitor = CardMonitor(service);
       await monitor.setPaused(false);
       await entered(w);
-      await monitor.setPaused(true).timeout(const Duration(seconds: 2));
+      final pause = monitor.setPaused(true);
+      await service
+          .cancelCardObservation(); // Explicit app shutdown, not an edit pause.
+      await pause.timeout(const Duration(seconds: 2));
       await reaped(w);
       expect((await service.load())['code'], 'native_unavailable');
       monitor.dispose();

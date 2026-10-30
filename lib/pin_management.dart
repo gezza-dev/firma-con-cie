@@ -40,6 +40,7 @@ class PinManagementPage extends StatefulWidget {
     required this.onDetect,
     this.automaticDetection = false,
     this.onPairingsChanged,
+    this.onInteractionChanged,
   });
   final CieService service;
   final bool unblock, busy, available, automaticDetection;
@@ -47,6 +48,7 @@ class PinManagementPage extends StatefulWidget {
   final Future<void> Function(String, Future<void> Function()) onRun;
   final Future<void> Function() onDetect;
   final Future<void> Function()? onPairingsChanged;
+  final ValueChanged<bool>? onInteractionChanged;
   @override
   State<PinManagementPage> createState() => _PinManagementState();
 }
@@ -57,15 +59,41 @@ class _PinManagementState extends State<PinManagementPage> {
       confirmation = TextEditingController();
   JsonResult? result;
   bool submitting = false;
+  int targetRevision = 0;
+  bool focused = false, interactionReported = false;
+  @override
+  void initState() {
+    super.initState();
+    for (final controller in [authentication, replacement, confirmation]) {
+      controller.addListener(_reportInteraction);
+    }
+  }
+
+  void _reportInteraction() {
+    final active =
+        focused ||
+        submitting ||
+        authentication.text.isNotEmpty ||
+        replacement.text.isNotEmpty ||
+        confirmation.text.isNotEmpty;
+    if (active == interactionReported) return;
+    interactionReported = active;
+    widget.onInteractionChanged?.call(active);
+  }
+
   @override
   void didUpdateWidget(covariant PinManagementPage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.selected?['cardId'] != widget.selected?['cardId'] ||
+    // A reader becoming busy does not change the card or the user's draft.
+    // Only an actual target/session change invalidates entered credentials.
+    if (oldWidget.unblock != widget.unblock ||
+        oldWidget.selected?['cardId'] != widget.selected?['cardId'] ||
         oldWidget.selected?['name'] != widget.selected?['name'] ||
-        (widget.selected?['occupied'] == true &&
-            oldWidget.selected?['occupied'] != true)) {
+        oldWidget.selected?['eventCounter'] !=
+            widget.selected?['eventCounter']) {
       clear();
       result = null;
+      targetRevision++;
     }
   }
 
@@ -77,6 +105,10 @@ class _PinManagementState extends State<PinManagementPage> {
 
   @override
   void dispose() {
+    for (final controller in [authentication, replacement, confirmation]) {
+      controller.removeListener(_reportInteraction);
+    }
+    if (interactionReported) widget.onInteractionChanged?.call(false);
     clear();
     authentication.dispose();
     replacement.dispose();
@@ -103,7 +135,9 @@ class _PinManagementState extends State<PinManagementPage> {
       return;
     }
     final target = Map<String, dynamic>.from(widget.selected!);
+    final confirmedRevision = targetRevision;
     setState(() => submitting = true);
+    _reportInteraction();
     final operationNotice = widget.unblock
         ? 'Questa operazione usa il PUK e imposta realmente un nuovo PIN sulla CIE selezionata. Un PUK errato riduce i tentativi disponibili. Mantieni la carta sul lettore. Nessun tentativo viene ripetuto automaticamente.'
         : 'Questa operazione modifica realmente il PIN della CIE selezionata. Un PIN attuale errato riduce i tentativi disponibili. Mantieni la carta sul lettore. Nessun tentativo viene ripetuto automaticamente.';
@@ -140,6 +174,28 @@ class _PinManagementState extends State<PinManagementPage> {
     if (approved != true) {
       clear();
       setState(() => submitting = false);
+      _reportInteraction();
+      return;
+    }
+    // Detection can change while the confirmation dialog is open. Never send
+    // credentials cleared by that change, or target a card now in use.
+    if (confirmedRevision != targetRevision ||
+        widget.selected == null ||
+        target['name'] != widget.selected?['name'] ||
+        target['cardId'] != widget.selected?['cardId'] ||
+        target['eventCounter'] != widget.selected?['eventCounter'] ||
+        widget.selected?['occupied'] == true ||
+        !widget.available ||
+        widget.busy) {
+      clear();
+      setState(() {
+        submitting = false;
+        result = {
+          'ok': false,
+          'message': 'La sessione della carta è cambiata.',
+        };
+      });
+      _reportInteraction();
       return;
     }
     final secret = authentication.text, next = replacement.text;
@@ -168,6 +224,7 @@ class _PinManagementState extends State<PinManagementPage> {
       if (mounted) setState(() => result = Map<String, dynamic>.from(response));
     });
     if (mounted) setState(() => submitting = false);
+    if (mounted) _reportInteraction();
   }
 
   Widget field(String label, TextEditingController controller) => Padding(
@@ -178,7 +235,7 @@ class _PinManagementState extends State<PinManagementPage> {
           !widget.busy &&
           !submitting &&
           widget.available &&
-          widget.selected?['occupied'] != true,
+          widget.selected != null,
       obscureText: true,
       autocorrect: false,
       enableSuggestions: false,
@@ -190,121 +247,132 @@ class _PinManagementState extends State<PinManagementPage> {
     ),
   );
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      const SizedBox(height: 12),
-      Text(
-        widget.unblock
-            ? tr(
-                context,
-                "Usa il PUK completo di otto cifre e scegli un nuovo PIN.",
-              )
-            : tr(
-                context,
-                "Inserisci il PIN attuale completo e scegli un nuovo PIN.",
-              ),
-      ),
-      const SizedBox(height: 12),
-      Text(
-        widget.selected == null
-            ? tr(context, "Nessuna CIE selezionata.")
-            : tr(context, "CIE selezionata: {p0} · {p1}", [
-                widget.selected!['fullName'] ?? tr(context, 'Carta CIE'),
-                widget.selected!['name'],
-              ]),
-      ),
-      if (!widget.automaticDetection)
-        Align(
-          alignment: Alignment.centerLeft,
-          child: TextButton(
-            onPressed: widget.busy || submitting ? null : widget.onDetect,
-            child: Text(tr(context, "Rileva carta")),
-          ),
-        ),
-      if (widget.automaticDetection && widget.selected == null)
-        Text(
-          tr(
-            context,
-            "Appoggia la CIE al lettore; verrà riconosciuta automaticamente.",
-          ),
-        ),
-      if (widget.selected?['occupied'] == true)
-        Text(
-          tr(
-            context,
-            "Carta in uso: attendi che l’altra applicazione abbia terminato.",
-          ),
-        ),
-      if (!widget.available)
-        Text(
-          tr(
-            context,
-            "Questa operazione richiede il runtime aggiornato per PIN e PUK.",
-          ),
-        ),
-      const SizedBox(height: 16),
-      field(
-        widget.unblock ? 'PUK completo · 8 cifre' : 'PIN attuale · 8 cifre',
-        authentication,
-      ),
-      field('Nuovo PIN · 8 cifre', replacement),
-      field('Conferma nuovo PIN', confirmation),
-      const SizedBox(height: 16),
-      Text(
-        tr(
-          context,
-          "Confermando l’operazione, disabiliti l’abbinamento locale della CIE. Dovrai abbinarla nuovamente dalla Home con il PIN completo.",
-        ),
-      ),
-      const SizedBox(height: 16),
-      Align(
-        alignment: Alignment.centerLeft,
-        child: FilledButton(
-          onPressed:
-              widget.busy ||
-                  submitting ||
-                  !widget.available ||
-                  widget.selected?['occupied'] == true ||
-                  widget.selected == null
-              ? null
-              : submit,
-          child: Text(
+  Widget build(BuildContext context) => FocusTraversalGroup(
+    policy: WidgetOrderTraversalPolicy(),
+    child: Focus(
+      canRequestFocus: false,
+      skipTraversal: true,
+      onFocusChange: (value) {
+        focused = value;
+        _reportInteraction();
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: 12),
+          Text(
             widget.unblock
-                ? tr(context, "Sblocca e imposta il PIN")
-                : tr(context, "Modifica il PIN"),
+                ? tr(
+                    context,
+                    "Usa il PUK completo di otto cifre e scegli un nuovo PIN.",
+                  )
+                : tr(
+                    context,
+                    "Inserisci il PIN attuale completo e scegli un nuovo PIN.",
+                  ),
           ),
-        ),
-      ),
-      AppNotification(
-        event: result,
-        enabled: !submitting && !widget.busy,
-        title: result?['ok'] == true
-            ? 'Operazione completata'
-            : result?['code'] == 'pin_operation_indeterminate'
-            ? 'Esito non determinabile'
-            : 'Operazione non completata',
-        error: result?['ok'] == false,
-        message: result == null
-            ? null
-            : result!['code'] == 'pairing_store_unavailable' ||
-                  result!['message'] == 'pairing_store_unavailable'
-            ? 'Archivio protetto non accessibile. Questa versione del runtime ha interrotto l’operazione prima di inviare il PIN alla carta. Aggiorna il runtime; nessun tentativo automatico verrà eseguito.'
-            : result!['message'] as String? ??
-                  (result!['ok'] == true
-                      ? 'Operazione completata'
-                      : 'Operazione non completata.'),
-        details: result == null
-            ? null
-            : [
-                if (result!['cleanupWarning'] is String)
-                  tr(context, result!['cleanupWarning'] as String),
-                if (result!['attemptsRemaining'] is int)
-                  tr(context, 'Tentativi residui: {p0}', [
-                    result!['attemptsRemaining'],
+          const SizedBox(height: 12),
+          Text(
+            widget.selected == null
+                ? tr(context, "Nessuna CIE selezionata.")
+                : tr(context, "CIE selezionata: {p0} · {p1}", [
+                    widget.selected!['fullName'] ?? tr(context, 'Carta CIE'),
+                    widget.selected!['name'],
                   ]),
-              ].join('\n'),
+          ),
+          if (!widget.automaticDetection)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton(
+                onPressed: widget.busy || submitting ? null : widget.onDetect,
+                child: Text(tr(context, "Rileva carta")),
+              ),
+            ),
+          if (widget.automaticDetection && widget.selected == null)
+            Text(
+              tr(
+                context,
+                "Appoggia la CIE al lettore; verrà riconosciuta automaticamente.",
+              ),
+            ),
+          if (widget.selected?['occupied'] == true)
+            Text(
+              tr(
+                context,
+                "Carta in uso: attendi che l’altra applicazione abbia terminato.",
+              ),
+            ),
+          if (!widget.available)
+            Text(
+              tr(
+                context,
+                "Questa operazione richiede il runtime aggiornato per PIN e PUK.",
+              ),
+            ),
+          const SizedBox(height: 16),
+          field(
+            widget.unblock ? 'PUK completo · 8 cifre' : 'PIN attuale · 8 cifre',
+            authentication,
+          ),
+          field('Nuovo PIN · 8 cifre', replacement),
+          field('Conferma nuovo PIN', confirmation),
+          const SizedBox(height: 16),
+          Text(
+            tr(
+              context,
+              "Confermando l’operazione, disabiliti l’abbinamento locale della CIE. Dovrai abbinarla nuovamente dalla Home con il PIN completo.",
+            ),
+          ),
+          const SizedBox(height: 16),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: FilledButton(
+              onPressed:
+                  widget.busy ||
+                      submitting ||
+                      !widget.available ||
+                      widget.selected?['occupied'] == true ||
+                      widget.selected == null
+                  ? null
+                  : submit,
+              child: Text(
+                widget.unblock
+                    ? tr(context, "Sblocca e imposta il PIN")
+                    : tr(context, "Modifica il PIN"),
+              ),
+            ),
+          ),
+          AppNotification(
+            event: result,
+            enabled: !submitting && !widget.busy,
+            title: result?['ok'] == true
+                ? 'Operazione completata'
+                : result?['code'] == 'pin_operation_indeterminate'
+                ? 'Esito non determinabile'
+                : 'Operazione non completata',
+            error: result?['ok'] == false,
+            message: result == null
+                ? null
+                : result!['code'] == 'pairing_store_unavailable' ||
+                      result!['message'] == 'pairing_store_unavailable'
+                ? 'Archivio protetto non accessibile. Questa versione del runtime ha interrotto l’operazione prima di inviare il PIN alla carta. Aggiorna il runtime; nessun tentativo automatico verrà eseguito.'
+                : result!['message'] as String? ??
+                      (result!['ok'] == true
+                          ? 'Operazione completata'
+                          : 'Operazione non completata.'),
+            details: result == null
+                ? null
+                : [
+                    if (result!['cleanupWarning'] is String)
+                      tr(context, result!['cleanupWarning'] as String),
+                    if (result!['attemptsRemaining'] is int)
+                      tr(context, 'Tentativi residui: {p0}', [
+                        result!['attemptsRemaining'],
+                      ]),
+                  ].join('\n'),
+          ),
+        ],
       ),
-    ],
+    ),
   );
 }

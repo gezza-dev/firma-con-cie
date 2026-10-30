@@ -14,6 +14,11 @@ class WebComponentSetupNotice {
   final bool update;
 
   static WebComponentSetupNotice? fromStatus(JsonResult system) {
+    if (system['activationState'] == 'unknown' ||
+        system['ok'] == false ||
+        system['code'] == 'busy') {
+      return null;
+    }
     if (system['componentHostOutdated'] == true) {
       return WebComponentSetupNotice._(
         WebComponentAction.appUpdate,

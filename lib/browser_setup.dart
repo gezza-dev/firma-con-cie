@@ -80,6 +80,19 @@ class BrowserSetupCoordinator extends ChangeNotifier {
   Timer? _timer;
   DateTime? _lastSystemRead;
   final Map<String, String> _lastEvents = {};
+  bool _paused = false;
+  int _pauseGeneration = 0, _refreshGeneration = 0;
+  Completer<void>? _idle;
+  Future<void> get whenIdle => _idle?.future ?? Future<void>.value();
+  bool get _interrupted =>
+      _disposed || _paused || _refreshGeneration != _pauseGeneration;
+
+  void setPaused(bool value) {
+    if (_disposed || _paused == value) return;
+    _paused = value;
+    _pauseGeneration++;
+    if (!value && _timer != null) unawaited(refresh(forceSystem: true));
+  }
 
   Future<JsonResult> cachedSystemStatus() async => system;
   bool get hasConfiguredBrowser => configured.isNotEmpty;
@@ -87,7 +100,9 @@ class BrowserSetupCoordinator extends ChangeNotifier {
   Future<JsonResult> _readSystem() async {
     for (var attempt = 0; ; attempt++) {
       final result = await systemReader().timeout(const Duration(seconds: 40));
-      if (result['code'] != 'busy' || attempt == 4 || _disposed) return result;
+      if (result['code'] != 'busy' || attempt == 4 || _interrupted) {
+        return result;
+      }
       // The initial pairing/reader status may still own the native service.
       // Retry only this metadata query, never a card or PIN operation.
       await Future<void>.delayed(statusRetryDelay);
@@ -112,18 +127,22 @@ class BrowserSetupCoordinator extends ChangeNotifier {
   }
 
   Future<void> refresh({bool forceSystem = false}) async {
-    if (_disposed) return;
+    if (_disposed || _paused) return;
     if (running) {
       _again = true;
       _forceAgain = _forceAgain || forceSystem;
       return;
     }
     running = true;
+    _refreshGeneration = _pauseGeneration;
+    final idle = Completer<void>();
+    _idle = idle;
     final enabled = <String>{};
+    var inspected = false;
     try {
       // Native discovery has its own worker; Linux discovery uses a Dart isolate.
       final found = await inventory().timeout(const Duration(seconds: 15));
-      if (_disposed) return;
+      if (_interrupted) return;
       final installed = (found['installed'] as List? ?? [])
           .whereType<String>()
           .where(browserNames.containsKey)
@@ -143,8 +162,15 @@ class BrowserSetupCoordinator extends ChangeNotifier {
           _lastSystemRead == null ||
           DateTime.now().difference(_lastSystemRead!) >=
               const Duration(minutes: 1)) {
-        system = await _readSystem();
-        _lastSystemRead = system['code'] == 'busy' ? null : DateTime.now();
+        final next = await _readSystem();
+        if (_interrupted) return;
+        if (webStatusUncertain(next)) {
+          _lastSystemRead = null;
+          await _record('system', 'browser_setup_unavailable');
+          return;
+        }
+        system = next;
+        _lastSystemRead = DateTime.now();
         if (platform == 'macos' &&
             system['available'] != true &&
             system['canActivateComponent'] == true &&
@@ -153,20 +179,24 @@ class BrowserSetupCoordinator extends ChangeNotifier {
             activate != null) {
           _activationAttempted = true;
           final result = await activate!().timeout(const Duration(seconds: 30));
+          if (_interrupted) return;
           await _record(
             'system',
             result['ok'] == true ? 'component_activated' : _code(result),
           );
-          system = await _readSystem();
+          final after = await _readSystem();
+          if (_interrupted || webStatusUncertain(after)) return;
+          system = after;
         }
       }
+      inspected = true;
       await _record(
         'system',
         system['available'] == true ? 'component_ready' : 'component_not_ready',
         system['componentStatusCode'] as int?,
       );
       for (final id in installed) {
-        if (_disposed) break;
+        if (_interrupted) return;
         if ((id == 'edge' && platform != 'windows') ||
             (id == 'safari' && platform != 'macos')) {
           await _record(id, 'browser_not_supported');
@@ -198,7 +228,7 @@ class BrowserSetupCoordinator extends ChangeNotifier {
       // An incomplete inspection cannot certify a browser from an older snapshot.
       await _record('system', 'browser_setup_unavailable');
     } finally {
-      if (!_disposed) {
+      if (!_interrupted && inspected) {
         configured = enabled.toList()
           ..sort((a, b) {
             if (a == defaultBrowser) return -1;
@@ -208,7 +238,9 @@ class BrowserSetupCoordinator extends ChangeNotifier {
         notifyListeners();
       }
       running = false;
-      if (_again && !_disposed) {
+      idle.complete();
+      if (identical(_idle, idle)) _idle = null;
+      if (_again && !_disposed && !_paused) {
         _again = false;
         final force = _forceAgain;
         _forceAgain = false;
@@ -229,7 +261,7 @@ class BrowserSetupCoordinator extends ChangeNotifier {
         return false;
       }
       final plan = await chrome!.plan();
-      if (_disposed) return false;
+      if (_interrupted) return false;
       if (plan['ok'] != true || plan['fingerprint'] is! String) {
         await _record('chrome', _code(plan));
         return false;
@@ -252,6 +284,7 @@ class BrowserSetupCoordinator extends ChangeNotifier {
     final ready = <String>{};
     try {
       var status = await firefox!.inspect();
+      if (_interrupted) return ready;
       if (status['ok'] != true) {
         await _record('firefox', _code(status));
         return ready;
@@ -260,7 +293,7 @@ class BrowserSetupCoordinator extends ChangeNotifier {
           .whereType<Map>()
           .toList();
       for (final profile in profiles) {
-        if (_disposed) break;
+        if (_interrupted) return ready;
         final browser = profile['target'] == 'snap'
             ? 'firefox-snap'
             : 'firefox';
@@ -276,7 +309,7 @@ class BrowserSetupCoordinator extends ChangeNotifier {
         final id = profile['id'] as String;
         try {
           final plan = await firefox!.plan(id);
-          if (_disposed) break;
+          if (_interrupted) return ready;
           if (plan['ok'] != true || plan['fingerprint'] is! String) {
             await _record(browser, _code(plan));
             continue;
@@ -291,6 +324,7 @@ class BrowserSetupCoordinator extends ChangeNotifier {
         }
       }
       status = await firefox!.inspect();
+      if (_interrupted) return ready;
       final after = (status['profiles'] as List? ?? []).whereType<Map>();
       final snapConfigured = after.any(
         (p) => p['target'] == 'snap' && p['state'] == 'configured',

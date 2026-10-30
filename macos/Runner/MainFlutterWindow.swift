@@ -135,9 +135,9 @@ class MainFlutterWindow: NSWindow {
           let assessment = WebComponentActivation.assess(embedded: embedded, driverPresent: driverPresent,
             election: WebComponentActivation.election())
           let available = assessment.state == "enabled"
-          let needsSettings = ["disabled", "unavailable", "unknown"].contains(assessment.state)
+          let needsSettings = ["disabled", "unavailable"].contains(assessment.state)
           var response = assessment.diagnostics
-          response.merge(["available": available,
+          response.merge(["available": available, "componentDriverInitialized": driverPresent,
             "canActivateComponent": (needsSettings || assessment.needsUpdate) && assessment.expected != nil,
             "canOpenSystemSettings": needsSettings, "certificateHexByCard": certificates,
             "configuredCards": Array(certificates.keys).sorted(), "publishedCards": publishedIDs,

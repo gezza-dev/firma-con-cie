@@ -8,13 +8,18 @@ import 'certificate_validity.dart';
 import 'web_access.dart';
 
 typedef WebStatusReader = Future<JsonResult> Function();
+bool webStatusUncertain(JsonResult value) =>
+    value['ok'] == false ||
+    value['code'] == 'busy' ||
+    value['activationState'] == 'unknown';
 Future<JsonResult> readWebSystemStatus() async {
   if (!Platform.isMacOS) return {};
   const channel = MethodChannel('cie.prototype/web');
   try {
-    return await channel.invokeMapMethod<String, dynamic>('status') ?? {};
+    return await channel.invokeMapMethod<String, dynamic>('status') ??
+        {'ok': false, 'code': 'web_status_unavailable'};
   } on PlatformException {
-    return {'available': false};
+    return {'ok': false, 'code': 'web_status_unavailable'};
   } on MissingPluginException {
     return {'available': false};
   }
@@ -133,6 +138,14 @@ class EnrollmentController {
   final Set<String> _pendingRemovals = {};
   bool readable = false;
   String? message;
+  void _updateSystem(JsonResult native, JsonResult platform) {
+    if (webStatusUncertain(native) || webStatusUncertain(platform)) {
+      system = {...system, 'systemInspectionPending': true};
+      return;
+    }
+    system = {...native, ...platform};
+  }
+
   Future<void> refresh() async {
     final result = await service.enrollments();
     final invalidated = Set<String>.from(
@@ -141,7 +154,7 @@ class EnrollmentController {
     records.removeWhere((id, _) => invalidated.contains(id));
     final nativeSystem = await service.webStatus();
     final platform = await systemStatus();
-    system = {...nativeSystem, ...platform};
+    _updateSystem(nativeSystem, platform);
     readable = result['ok'] == true;
     if (!readable) {
       message = 'Archivio protetto non leggibile. Gli abbinamenti esistenti non vengono modificati.';
@@ -220,7 +233,7 @@ class EnrollmentController {
   Future<void> refreshSystem() async {
     final native = await service.webStatus();
     final platform = await systemStatus();
-    system = {...native, ...platform};
+    _updateSystem(native, platform);
     final waiting = records.values
         .where(
           (record) =>

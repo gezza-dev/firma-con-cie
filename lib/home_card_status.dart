@@ -14,11 +14,14 @@ String homeCardStatus({
   if (readers.any((r) => r['isCie'] == true)) {
     return 'CIE presente nel lettore.';
   }
-  final occupied = readers.any(
-    (r) => r['occupied'] == true || r['identificationCode'] == -3,
-  );
+  final occupied = readers.any((r) => r['occupied'] == true);
   if (occupied) {
     return 'Carta in uso: attendi che l’altra applicazione abbia terminato.';
+  }
+  if (readers.any(
+    (r) => r['present'] == true && r['identificationCode'] == -3,
+  )) {
+    return 'Riconoscimento della CIE in corso…';
   }
   // SCARD_W_UNPOWERED_CARD / SCARD_W_RESET_CARD. Missing Web identity,
   // absent card, unknown errors and PIN failures are not evidence for this advice.

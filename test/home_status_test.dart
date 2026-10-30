@@ -147,9 +147,10 @@ void main() {
         findsOneWidget,
       );
       system.observed.add('TEST');
-      for (var i = 0; i < 5; i++) {
-        await t.pump(const Duration(seconds: 1));
-      }
+      // CTK metadata is no longer queried on every PC/SC polling cycle.
+      // Diagnostics have an explicit refresh independent of card observation.
+      await t.ensureVisible(find.text('Aggiorna stato configurazione'));
+      await t.tap(find.text('Aggiorna stato configurazione'));
       await t.pumpAndSettle();
       expect(
         find.text('Identità esposta al sistema: osservata'),

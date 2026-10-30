@@ -91,7 +91,10 @@ enum WebComponentActivation {
     if record.marker == "-" { return outcome("disabled", selected, true, true) }
     if record.marker == "?" { return outcome("unknown", selected, true, true) }
     if record.marker == "!" || record.marker == "=" { return outcome("unavailable", selected, true, true) }
-    return outcome(driverPresent ? "enabled" : "unavailable", selected, true, true)
+    // A positively elected, matching registration stays enabled even before
+    // CTK lazily creates its runtime driver configuration. No card is required
+    // to determine whether the component is enabled.
+    return outcome(record.marker == "+" || driverPresent ? "enabled" : "unknown", selected, true, true)
   }
 
   static func activate(embedded: URL?, command: ([String]) -> String? = run) -> Bool {

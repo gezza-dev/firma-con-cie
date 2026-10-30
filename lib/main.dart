@@ -368,21 +368,33 @@ class _PrototypeHomeState extends State<PrototypeHome>
   bool unified = false, modalInteraction = false, observationSuspended = false;
   String? homeMessage;
   int notificationRevision = 0;
-  bool exiting = false;
+  bool exiting = false, pinInteraction = false;
+  void _pinInteractionChanged(bool active) {
+    if (!mounted || pinInteraction == active) return;
+    pinInteraction = active;
+    unawaited(_coordinateMonitor());
+  }
+
   Future<void> _coordinateMonitor() async {
+    final paused =
+        exiting || busy || modalInteraction || observationSuspended || !ready;
+    widget.browserSetup?.setPaused(paused || pinInteraction);
+    // Entry can begin with a busy reader. Observe until it becomes free,
+    // then freeze the target while the user completes this private form.
     await monitor?.setPaused(
-      exiting || busy || modalInteraction || observationSuspended || !ready,
+      paused || (pinInteraction && selected?['occupied'] != true),
     );
   }
 
   @override
   Future<AppExitResponse> didRequestAppExit() async {
     exiting = true;
-    await monitor?.setPaused(true);
+    final stopped = monitor?.setPaused(true);
     if (widget.service is CancellableCardObservation) {
       await (widget.service as CancellableCardObservation)
           .cancelCardObservation();
     }
+    await stopped;
     return AppExitResponse.exit;
   }
 
@@ -421,13 +433,16 @@ class _PrototypeHomeState extends State<PrototypeHome>
   }
 
   Future<void> _resumeWebStatus() async {
-    if (refreshingWebStatus || busy || modalInteraction || !unified) {
+    if (refreshingWebStatus ||
+        busy ||
+        modalInteraction ||
+        pinInteraction ||
+        !unified) {
       unawaited(_coordinateMonitor());
       return;
     }
     refreshingWebStatus = true;
     try {
-      await monitor?.setPaused(true);
       await enrollment.refreshSystem();
       if (mounted) setState(_updateWebSettingsMessage);
     } catch (_) {
@@ -473,6 +488,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
         }),
       );
     }
+    if (pinInteraction) unawaited(_coordinateMonitor());
   }
 
   final flow = AppFlowController();
@@ -724,6 +740,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
       error = null;
     });
     await _coordinateMonitor();
+    await widget.browserSetup?.whenIdle;
     try {
       await action();
     } catch (_) {
@@ -803,15 +820,10 @@ class _PrototypeHomeState extends State<PrototypeHome>
     // Start after runtime load. Observation has its own PC/SC context, performs
     // only idle identification, and never blocks verification/startup navigation.
     if (loaded['canObserveCards'] == true && monitor == null) {
-      monitor = CardMonitor(
-        service,
-        afterChange: () async {
-          if (unified) {
-            await enrollment.refreshSystem();
-            if (mounted) _updateWebSettingsMessage();
-          }
-        },
-      )..addListener(_monitorChanged);
+      // Component metadata is refreshed on resume and by the browser
+      // coordinator, independently of PC/SC polling. Querying CTK for each
+      // presence/occupancy tick can itself wake a token session.
+      monitor = CardMonitor(service)..addListener(_monitorChanged);
     }
     // Browser metadata shares the native service with load/enrollments. Start
     // only after those reads finish, including any certificate-name recovery.
@@ -1982,6 +1994,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
                               onDetect: _detect,
                               onPairingsChanged: _refreshPairings,
                               automaticDetection: unified,
+                              onInteractionChanged: _pinInteractionChanged,
                             ),
                         ],
                       ),

@@ -36,9 +36,10 @@ class CardMonitor extends ChangeNotifier {
     }
     _timer?.cancel();
     if (value) {
-      if (service is CancellableCardObservation) {
-        await (service as CancellableCardObservation).cancelCardObservation();
-      }
+      // Let an already bounded public probe finish instead of discarding the
+      // worker and its presence-epoch cache on each edit/modal/metadata pause.
+      // Process timeouts still interrupt a stuck probe; app exit/dispose use
+      // explicit cancellation, independently of this interaction pause.
       await _flight;
       return;
     }

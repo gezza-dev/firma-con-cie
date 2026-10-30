@@ -1192,3 +1192,24 @@ Build complete e collaudo visivo macOS/Windows restano da eseguire sulle
 piattaforme corrispondenti. Il `.deb` Linux già installato non viene sostituito.
 Nessuna app o prova CIE avviata e nessuna configurazione browser/permessi
 modificata. [Comportamento, test e limiti](DESKTOP_WINDOW_SIZING.md).
+
+## Stabilità dei moduli PIN/PUK e delle sessioni macOS (30 ottobre 2026)
+
+I campi di Cambio PIN e Sblocco Carta conservano il contenuto durante gli
+aggiornamenti della stessa carta; TAB e Maiusc+TAB seguono l’ordine dei campi.
+Durante la compilazione viene sospeso il rilevamento in conflitto con
+l’operazione, lasciando terminare una lettura già avviata. La chiusura dell’app
+può invece interrompere un rilevamento bloccato. Le risposte inconcludenti del
+componente Web non sostituiscono uno stato di attivazione già confermato.
+
+Verifiche software: 404 test Flutter superati, 14 saltati, analisi senza
+segnalazioni e 22 controlli Swift del componente. Sul Mac sono state eseguite
+60 osservazioni passive con carta presente e senza accessi esclusivi, oltre
+alla verifica del passaggio tra Home e moduli. L’utente ha successivamente
+confermato che i propri test funzionano correttamente; questa conferma non
+specifica singolarmente le operazioni eseguite. L’agente non ha inserito
+credenziali né eseguito operazioni di modifica sulla carta.
+
+Il pacchetto macOS aggiornato contiene queste correzioni. Gli installer Windows
+e Linux già presenti nella bozza v1.0.0 devono essere ricompilati e verificati
+con le correzioni condivise prima della pubblicazione.
