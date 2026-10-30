@@ -18,10 +18,15 @@ class BuildPrivacyTests(unittest.TestCase):
             self.assertNotIn(str(Path.home()), ' '.join(flags))
 
     def test_generic_ci_account_is_not_treated_as_a_personal_identity(self):
-        with patch('build_privacy.Path.home', return_value=Path('/home/runner')), \
+        for home in ['/home/runner', '/Users/runner', 'C:/Users/runneradmin']:
+            with self.subTest(home=home), \
+                    patch('build_privacy.Path.home', return_value=Path(home)), \
+                    patch.dict('os.environ', {'GITHUB_ACTIONS': 'true'}):
+                self.assertFalse(local_path_markers((home+'/work/upstream/library.cpp').encode()))
+                self.assertTrue(local_path_markers((home+'/source').encode(), [home]))
+        with patch('build_privacy.Path.home', return_value=Path('/Users/private-example')), \
                 patch.dict('os.environ', {'GITHUB_ACTIONS': 'true'}):
-            self.assertFalse(local_path_markers(b'/home/runner/work/upstream/library.cpp'))
-            self.assertTrue(local_path_markers(b'/home/runner/source', ['/home/runner']))
+            self.assertTrue(local_path_markers(b'/Users/private-example/work/source.cpp'))
 
     def test_encoded_uri_json_and_utf16_paths_are_detected_without_matching_identity(self):
         roots = ['/Users/example profile', 'C:\\Users\\example']

@@ -34,7 +34,7 @@ def local_path_markers(data, roots=None):
     if roots is None:
         home = Path.home()
         generic_ci_home = str(home).replace('\\', '/').lower() in {
-            '/home/runner', '/root', 'c:/users/runneradmin'}
+            '/home/runner', '/users/runner', '/root', 'c:/users/runneradmin'}
         roots = [] if os.environ.get('GITHUB_ACTIONS') == 'true' and generic_ci_home else [home]
     # Profile paths can occur in URI form, escaped JSON or UTF-16 strings.
     normalized = unquote_to_bytes(data.replace(b'\0', b''))
