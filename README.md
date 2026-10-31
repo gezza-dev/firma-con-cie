@@ -37,6 +37,46 @@ L’abbinamento permette di firmare usando le ultime quattro cifre del PIN. **Pe
 
 Le verifiche distinguono sempre le prove disponibili da quelle mancanti: quando le informazioni non bastano, il risultato rimane **indeterminato**. Il progetto non attesta la qualificazione giuridica di una firma e non sincronizza le Trusted List europee.
 
+## Screenshots
+
+Le schermate seguenti mostrano la versione Windows di Firma con CIE. Fai clic su un’immagine per visualizzarla a dimensione intera.
+
+### Home
+
+Riconoscimento automatico della carta e primo abbinamento, che prepara la firma con PIN parziale e l’accesso ai siti.
+
+![Home — Firma con CIE su Windows](docs/screenshots/windows/01-home.png)
+
+### Firma Elettronica
+
+Procedura guidata per selezionare il documento, scegliere il tipo di firma e completare la firma con la CIE.
+
+![Firma Elettronica — Firma con CIE su Windows](docs/screenshots/windows/02-firma-elettronica.png)
+
+### Verifica Firma
+
+Selezione o trascinamento di un documento PDF o P7M da verificare, senza lettore, carta o PIN.
+
+![Verifica Firma — Firma con CIE su Windows](docs/screenshots/windows/03-verifica-firma.png)
+
+### Cambia PIN
+
+Modifica del PIN della CIE, con inserimento del PIN attuale e conferma del nuovo codice.
+
+![Cambia PIN — Firma con CIE su Windows](docs/screenshots/windows/04-cambia-pin.png)
+
+### Sblocca Carta
+
+Sblocco della CIE tramite PUK e impostazione di un nuovo PIN.
+
+![Sblocca Carta — Firma con CIE su Windows](docs/screenshots/windows/05-sblocca-carta.png)
+
+### Guida
+
+Guida inclusa nell’app, consultabile anche senza connessione, con istruzioni per le principali funzionalità.
+
+![Guida — Firma con CIE su Windows](docs/screenshots/windows/06-guida.png)
+
 ## Installazione
 
 ### macOS
