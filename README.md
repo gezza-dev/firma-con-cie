@@ -51,13 +51,13 @@ Il pacchetto della release macOS è firmato **Developer ID Application**. L’es
 
 1. Scarica l’installer x64 oppure ARM64, in base all’architettura del computer.
 2. Avvia l’installer e conferma la richiesta amministrativa di Windows.
-3. Il pacchetto installa l’app, i prerequisiti inclusi e il componente per l’accesso ai siti; non occorre copiare manualmente DLL.
+3. Il pacchetto installa l’app, i prerequisiti inclusi e il componente per l’accesso ai siti.
 
 Lo stato della firma Authenticode del pacchetto è indicato nelle note della release. [Installazione e aggiornamento Windows](docs/WINDOWS_INSTALLER.md).
 
 ### Linux
 
-Scegli l’AppImage della tua architettura oppure il pacchetto nativo della distribuzione. Per usare l’AppImage, abilita l’esecuzione del file nelle sue proprietà e avvialo. PC/SC e un driver compatibile con il lettore devono essere disponibili nel sistema.
+Scegli il pacchetto nativo della distribuzione oppure l’AppImage della tua architettura. Per usare l’AppImage, abilita l’esecuzione del file nelle sue proprietà e avvialo. PC/SC e un driver compatibile con il lettore devono essere disponibili nel sistema.
 
 Per l’accesso ai siti, segui le indicazioni dell’app relative al browser. Le autorizzazioni aggiuntive di Firefox Snap vengono richieste soltanto quando necessarie. [AppImage](docs/LINUX_APPIMAGE.md) · [Pacchetti nativi](docs/LINUX_DISTRIBUTION_PACKAGES.md) · [Browser Linux](docs/LINUX_FIREFOX.md).
 
