@@ -13,4 +13,3 @@ Text, verbatim, with only these lines:
 "Windows"  "macOS"  "Linux" [three clearly separated, equally prominent platform pills in one row]
 "github.com/gezza-dev/firma-con-cie" [small, readable footer]
 Constraints: exact spelling and capitalization; retain all text inside safe margins; do not truncate the repository URL. Sharp, professional typography. No additional copy, version numbers, license claims, security certification badges, institutional emblems or operating-system logos. No mock browser window, device mockups, photography, watermark or surrounding border. Final banner should look ready to upload as a GitHub social preview, with the icon faithful to the input.
-
