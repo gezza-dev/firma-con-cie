@@ -1,4 +1,4 @@
-<p align="center"><img src="assets/branding/master/firma-con-cie.png" width="112" alt="Icona Firma con CIE"></p>
+<p align="center"><img src="assets/branding/social/firma-con-cie-social-preview.jpg" width="1280" alt="Firma con CIE — firma elettronica con la CIE italiana su Windows, macOS e Linux"></p>
 
 # Firma con CIE
 

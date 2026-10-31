@@ -1,0 +1,16 @@
+Generated with the built-in image_gen tool on 2026-10-31.
+Reference: assets/branding/master/firma-con-cie.png
+
+Use case: ads-marketing.
+Asset type: final GitHub repository social preview, wide landscape 2:1, exactly 1280 x 640 pixels, opaque PNG.
+Primary request: a polished, elegant social sharing banner for the independent desktop application "Firma con CIE", highlighting Windows, macOS and Linux.
+Input image 1: supporting compositing input, the actual current app icon. Preserve its recognizable blue folded document, mint-green fountain pen and signature stroke, proportions and rounded light base. Use this existing icon as a crisp prominent element, without redesigning it or adding the official CIE ID face/logo.
+Composition: generous safe margins of at least 64 pixels on every side. Large app icon on the left occupying roughly a third of the width; clear typography on the right, aligned left. Clean editorial spacing, calm premium desktop-software visual, excellent legibility even as a small link card.
+Backdrop: near-white #F7F8FC, subtle very pale blue and mint illumination, restrained fine curves or soft abstract shapes near edges only; no busy patterns. Navy typography #142A4E with blue and mint accents taken from the icon.
+Text, verbatim, with only these lines:
+"Firma con CIE" [largest, bold, modern sans-serif, single line]
+"Firma elettronica con la CIE italiana" [smaller supporting line, may wrap at a natural boundary]
+"Windows"  "macOS"  "Linux" [three clearly separated, equally prominent platform pills in one row]
+"github.com/gezza-dev/firma-con-cie" [small, readable footer]
+Constraints: exact spelling and capitalization; retain all text inside safe margins; do not truncate the repository URL. Sharp, professional typography. No additional copy, version numbers, license claims, security certification badges, institutional emblems or operating-system logos. No mock browser window, device mockups, photography, watermark or surrounding border. Final banner should look ready to upload as a GitHub social preview, with the icon faithful to the input.
+
