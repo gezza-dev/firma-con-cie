@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Build the pinned linux/appimage/Dockerfile as this local base first.
 FROM firma-cie-appimage-base
-RUN apt-get update && apt-get install -y --no-install-recommends bubblewrap dpkg-dev && \
+RUN apt-get update && apt-get install -y --no-install-recommends bubblewrap dpkg-dev unzip zip xz-utils && \
     touch /work/.cie-appimage-isolated-root && rm -rf /var/lib/apt/lists/*
