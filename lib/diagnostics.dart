@@ -23,6 +23,7 @@ class DiagnosticRecorder {
     'change_pin',
     'unblock_pin',
     'network_probe',
+    'tls_recovery',
     'enroll',
     'enrollments',
     'complete_enrollment',
@@ -50,7 +51,13 @@ class DiagnosticRecorder {
       'elapsedMs': elapsedMs.clamp(0, 86400000),
     };
     // Only numeric transport codes, bounded counters and known outcome enums.
-    for (final key in ['signatureCount', 'transportCode', 'httpStatus']) {
+    for (final key in [
+      'signatureCount',
+      'transportCode',
+      'httpStatus',
+      'completedEndpoints',
+      'packageManagerCode',
+    ]) {
       final n = result[key];
       if (n is int && n >= 0 && n <= 10000) event[key] = n;
     }
@@ -65,8 +72,22 @@ class DiagnosticRecorder {
       event['archivalEngineAvailable'] =
           result['longTermValidation']['ok'] == true;
     }
+    if (operation == 'tls_recovery') {
+      for (final key in ['caUpdateAttempted', 'caUpdateCompleted']) {
+        if (result[key] is bool) event[key] = result[key];
+      }
+    }
     const codes = {
       'busy',
+      'tls_system_client_unavailable',
+      'tls_ca_store_missing',
+      'tls_ca_update_failed',
+      'tls_ca_update_completed',
+      'tls_ca_update_unavailable',
+      'tls_ca_update_plan_rejected',
+      'tls_ca_update_cancelled',
+      'tls_recovery_incomplete',
+      'tls_recovery_completed',
       'network_configuration_required',
       'native_unavailable',
       'network_unavailable',

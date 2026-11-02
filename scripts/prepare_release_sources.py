@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 import tempfile
 import zipfile
+from product_identity import application_version
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -104,7 +105,7 @@ def main():
         'native/backend/scripts/dependencies.lock.json',
         'docs/BUILDING.md', 'docs/LICENSING.md', 'docs/RELEASE.md']}
     documents['README.txt'] = (
-        'Firma con CIE 1.0.0 - sorgenti delle dipendenze\n\n'
+        f'Firma con CIE {application_version()} - sorgenti delle dipendenze\n\n'
         'Usare insieme all\'archivio sorgente del progetto della stessa release.\n'
         'native/: i dodici archivi originali fissati; copiarli nella cartella\n'
         '.build/dependencies/downloads del progetto prima della compilazione.\n'

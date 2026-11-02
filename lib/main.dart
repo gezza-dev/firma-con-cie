@@ -31,6 +31,7 @@ import 'assistance_view.dart';
 import 'app_settings.dart';
 import 'settings_view.dart';
 import 'diagnostics.dart';
+import 'tls_recovery.dart';
 import 'app_flow.dart';
 import 'page_header.dart';
 import 'information_view.dart';
@@ -132,6 +133,7 @@ class CiePrototype extends StatefulWidget {
     this.firefoxSetupService,
     this.chromeSetupService,
     this.browserSetup,
+    this.tlsRecovery,
   });
   final PreferencesStore? preferences;
   final SettingsStore? settings;
@@ -147,6 +149,7 @@ class CiePrototype extends StatefulWidget {
   final FirefoxSetupService? firefoxSetupService;
   final ChromeSetupService? chromeSetupService;
   final BrowserSetupCoordinator? browserSetup;
+  final TlsRecovery? tlsRecovery;
   @override
   State<CiePrototype> createState() => _CiePrototypeState();
 }
@@ -208,6 +211,7 @@ class _CiePrototypeState extends State<CiePrototype> {
           firefoxSetupService: widget.firefoxSetupService,
           chromeSetupService: widget.chromeSetupService,
           browserSetup: widget.browserSetup,
+          tlsRecovery: widget.tlsRecovery,
         ),
       ),
     ),
@@ -231,6 +235,7 @@ class PrototypeHome extends StatefulWidget {
     this.firefoxSetupService,
     this.chromeSetupService,
     this.browserSetup,
+    this.tlsRecovery,
   });
   final PreferencesStore? preferences;
   final SettingsStore? settings;
@@ -246,6 +251,7 @@ class PrototypeHome extends StatefulWidget {
   final FirefoxSetupService? firefoxSetupService;
   final ChromeSetupService? chromeSetupService;
   final BrowserSetupCoordinator? browserSetup;
+  final TlsRecovery? tlsRecovery;
   @override
   State<PrototypeHome> createState() => _PrototypeHomeState();
 }
@@ -254,6 +260,66 @@ class _PrototypeHomeState extends State<PrototypeHome>
     with WidgetsBindingObserver {
   final diagnostics = DiagnosticRecorder();
   late final service = DiagnosticCieService(widget.service, diagnostics);
+  late final tlsRecovery = widget.tlsRecovery ?? TlsRecovery();
+  bool recoveringTls = false;
+
+  Future<JsonResult> _recoverTls(
+    JsonResult original,
+    Future<JsonResult> Function() retry,
+    bool Function() isCurrent, {
+    SessionNetworkConfig? config,
+  }) => tlsRecovery.retry(
+    original: original,
+    network: config ?? network,
+    isCurrent: () => mounted && isCurrent(),
+    consent: () async {
+      if (!mounted || !isCurrent()) return false;
+      modalInteraction = true;
+      await _coordinateMonitor();
+      try {
+        if (!mounted || !isCurrent()) return false;
+        return await confirmTlsRecovery(context);
+      } finally {
+        modalInteraction = false;
+        unawaited(_coordinateMonitor());
+      }
+    },
+    verify: retry,
+    record: (result) {
+      diagnostics.record(
+        'tls_recovery',
+        result,
+        result['elapsedMs'] as int? ?? 0,
+      );
+      if (mounted &&
+          result['caUpdateAttempted'] == true &&
+          result['caUpdateCompleted'] != true &&
+          result['code'] != 'tls_ca_update_cancelled' &&
+          result['completedEndpoints'] == 0) {
+        setState(
+          () => error = {
+            'ok': false,
+            'code': result['code'],
+            'message': 'Impossibile aggiornare automaticamente i certificati attendibili. Usa gli aggiornamenti del sistema operativo e ripeti la verifica.',
+          },
+        );
+      }
+    },
+    onRecovery: (value) async {
+      if (mounted) setState(() => recoveringTls = value);
+    },
+  );
+
+  Future<JsonResult> _probeNetwork(SessionNetworkConfig config) async {
+    final initial = await service.probeNetwork(config);
+    return _recoverTls(
+      initial,
+      () => service.probeNetwork(config),
+      () => true,
+      config: config,
+    );
+  }
+
   late final SettingsStore settingsStore =
       widget.settings ?? MemorySettingsStore();
   AppSettings settings = const AppSettings();
@@ -496,6 +562,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
   late final verifyFlow = VerificationController(
     service,
     canExtract: () => canExtract,
+    recover: (result, retry, current) => _recoverTls(result, retry, current),
   );
   void _verificationChanged() {
     if (!mounted) return;
@@ -506,7 +573,9 @@ class _PrototypeHomeState extends State<PrototypeHome>
   int get page => flow.destination.index;
   bool get busy => flow.busy || verifyFlow.running;
   set busy(bool value) => flow.busy = value;
-  String get progress => flow.busy
+  String get progress => recoveringTls
+      ? 'Aggiornamento dei certificati di sicurezza…'
+      : flow.busy
       ? flow.progress
       : verifyFlow.exporting
       ? 'Estrazione del documento…'
@@ -1628,7 +1697,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
         setState(
           () => progress = 'Firma in corso: mantieni la CIE sul lettore…',
         );
-        final result = await service.sign(
+        var result = await service.sign(
           reader: reader,
           card: card,
           input: source,
@@ -1639,6 +1708,14 @@ class _PrototypeHomeState extends State<PrototypeHome>
           appearance: appearance,
         );
         secret = '';
+        if (result['ok'] == true && result['verification'] is Map) {
+          final checked = await _recoverTls(
+            Map<String, dynamic>.from(result['verification'] as Map),
+            () => service.verify(destination),
+            () => mounted,
+          );
+          result = {...result, 'verification': checked};
+        }
         await _recordTest(result, kind);
         if (mounted) {
           signature = result;
@@ -1790,7 +1867,7 @@ class _PrototypeHomeState extends State<PrototypeHome>
                               value: settings,
                               network: network,
                               onSave: _saveSettings,
-                              onProbe: service.probeNetwork,
+                              onProbe: _probeNetwork,
                               diagnostics: diagnostics,
                               capabilities: capabilities,
                               webDiagnostics: unified

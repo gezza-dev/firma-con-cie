@@ -218,7 +218,7 @@ python3 -m venv .build/dmg-tools
   --report reports/macos-development-dmg.json
 ```
 
-Il comando usa l’app e la cartella DMG risolte dalla configurazione locale. Con `macos_output` app e DMG sono nella stessa cartella; senza questa chiave il bundle resta sotto `build_root/firma-con-cie` e il DMG sotto `build_root`. Il nome del DMG, per esempio `firma-con-cie_1.0.0_universal.dmg`, usa la versione letta dal bundle firmato. È possibile indicare un’altra app o destinazione con `--app` e `--output`.
+Il comando usa l’app e la cartella DMG risolte dalla configurazione locale. Con `macos_output` app e DMG sono nella stessa cartella; senza questa chiave il bundle resta sotto `build_root/firma-con-cie` e il DMG sotto `build_root`. Il nome del DMG, per esempio `firma-con-cie_1.0.1_universal.dmg`, usa la versione letta dal bundle firmato. È possibile indicare un’altra app o destinazione con `--app` e `--output`.
 
 Il volume **Firma con CIE** contiene soltanto l’app e il collegamento
 **Applicazioni**; la finestra Finder usa una disposizione a due icone con
@@ -343,9 +343,9 @@ installazione, aggiornamento e rimozione senza installarlo sull'host:
 python3 scripts/package_linux_deb.py \
   --bundle build/linux/x64/release/bundle \
   --output dist/linux-deb \
-  --version '1.0.0'
+  --version '1.0.1'
 python3 scripts/test_linux_deb.py \
-  'dist/linux-deb/firma-con-cie_1.0.0_amd64.deb' \
+  'dist/linux-deb/firma-con-cie_1.0.1_amd64.deb' \
   --report reports/linux-deb-validation.json
 ```
 

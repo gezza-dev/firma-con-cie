@@ -17,7 +17,7 @@ class InformationView extends StatelessWidget {
     children: [
       const SizedBox(height: 16),
       Text(tr(context, "Firma con CIE")),
-      Text(tr(context, "Versione 1.0.0")),
+      Text(tr(context, "Versione {p0}", [appVersion])),
       const SizedBox(height: 12),
       Text(
         tr(

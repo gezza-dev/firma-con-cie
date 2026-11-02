@@ -20,7 +20,7 @@ Apri la pagina dell’**[ultima release stabile](https://github.com/gezza-dev/fi
 
 I requisiti Linux dipendono dal formato: l’AppImage usa una base Ubuntu 22.04 con glibc 2.35; i pacchetti nativi hanno requisiti propri. Consulta le [istruzioni AppImage](docs/LINUX_APPIMAGE.md), i [pacchetti nativi](docs/LINUX_DISTRIBUTION_PACKAGES.md) e il [supporto ARM64](docs/LINUX_ARM64.md). La compatibilità e le prove effettivamente eseguite sono documentate in [Stato e verifiche](docs/STATUS.md).
 
-[Elenco di tutte le release](https://github.com/gezza-dev/firma-con-cie/releases) · [Note della prima release](docs/releases/v1.0.0.md)
+[Elenco di tutte le release](https://github.com/gezza-dev/firma-con-cie/releases) · [Note della prima release](docs/releases/v1.0.0.md) · [Versione 1.0.1 in preparazione](docs/releases/v1.0.1.md)
 
 ## Funzionalità
 

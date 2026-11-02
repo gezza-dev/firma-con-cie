@@ -66,12 +66,12 @@ def package(bundle, output, version):
                            *('-e' + str(p) for p in elf_files), cwd=temp)
         dep = next(s.removeprefix('shlibs:Depends=') for s in dependencies.stdout.splitlines()
                    if s.startswith('shlibs:Depends='))
-        dep += ', libegl1, libgl1, libgles2, pcscd, ca-certificates, python3, libnss3-tools'
+        dep += ', libegl1, libgl1, libgles2, pcscd, ca-certificates, curl, python3, libnss3-tools'
         installed_size = sum((p.stat().st_size + 1023) // 1024 for p in files(stage))
         (control / 'control').write_text(
             f'Package: {PACKAGE}\nVersion: {version}\nArchitecture: {arch}\n'
             'Maintainer: Gian Carlo Ezza <61827135+gezza-dev@users.noreply.github.com>\n'
-            f'Installed-Size: {installed_size}\nDepends: {dep}\nRecommends: libccid\n'
+            f'Installed-Size: {installed_size}\nDepends: {dep}\nRecommends: libccid, packagekit\n'
             'Section: utils\nPriority: optional\n'
             'Homepage: https://github.com/gezza-dev/firma-con-cie\n'
             'Description: Firma con CIE\n'

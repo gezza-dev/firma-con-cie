@@ -13,7 +13,7 @@ con CIE. L'errore di avvio 740 del controllo del componente è stato corretto.
 
 ## Collaudo confermato dall'utente (29 ottobre 2026)
 
-Pacchetto `firma-con-cie_1.0.0_windows_arm64_setup.exe`, prodotto dalla
+Pacchetto `firma-con-cie_1.0.1_windows_arm64_setup.exe`, prodotto dalla
 [build Actions 40914057599](https://github.com/gezza-dev/firma-con-cie/actions/runs/40914057599)
 sul commit `ed499088f4d8dd22444aaa7e4feb0c40a0e1854b`.
 SHA-256 dell'installer:
@@ -44,7 +44,7 @@ La build automatica ha inoltre superato 383 test Flutter (14 saltati),
 4. Scaricare l'artifact `firma-con-cie-windows-arm64-<commit>` dalla stessa
    esecuzione. Contiene:
 
-   - `firma-con-cie_1.0.0_windows_arm64_setup.exe` (versione da `pubspec.yaml`);
+   - `firma-con-cie_1.0.1_windows_arm64_setup.exe` (versione da `pubspec.yaml`);
    - checksum `.exe.sha256` e rapporto `package-result.json`;
    - `Release/`, cartella completa dell'app e delle sue dipendenze.
 

@@ -37,6 +37,14 @@ ricerca automatica di libcurl durante la compilazione incrociata. La stessa
 selezione vale per i proxy HTTPS. Non si includono radici TLS personali e non
 si disabilitano la verifica del certificato o del nome del server.
 
+Il controllo aggiuntivo con consenso usa `/usr/bin/curl` dell’host. Per
+proporre l’aggiornamento amministrativo di `ca-certificates` servono inoltre
+PackageKit, il backend della distribuzione e un agente Polkit nella sessione.
+L’AppImage non incorpora questi servizi e non li installa automaticamente.
+Se non sono disponibili, l’app conserva l’esito indeterminato e invita a
+usare gli aggiornamenti del sistema. Il piano dei pacchetti viene verificato
+prima dell’installazione: [procedura e limiti](SETTINGS_DIAGNOSTICS_PROXY.md).
+
 Questo controllo serve anche quando un indirizzo CRL inizia con `http://`:
 il servizio CIE può reindirizzarlo a HTTPS. L'assenza di radici TLS impediva
 alla prima AppImage ARM64 di consultare tali prove e produceva correttamente
@@ -137,7 +145,7 @@ CMAKE_BUILD_PARALLEL_LEVEL=2 flutter build linux --release --no-pub
 python3 scripts/package_linux_appimage.py \
   --bundle build/linux/x64/release/bundle \
   --runtime /percorso/runtime-x86_64 \
-  --version 1.0.0 --output dist/linux-appimage
+  --version 1.0.1 --output dist/linux-appimage
 ```
 
 Per ARM64 usare un ambiente Ubuntu 22.04 ARM64 nativo o emulato. La build
@@ -153,11 +161,11 @@ sistema ARM64 usa:
 python3 scripts/package_linux_appimage.py \
   --bundle build/linux/arm64/release/bundle \
   --runtime /percorso/runtime-aarch64 \
-  --version 1.0.0 --output dist/linux-appimage-arm64
+  --version 1.0.1 --output dist/linux-appimage-arm64
 ```
 
-Il risultato si chiama `firma-con-cie-1.0.0-aarch64.AppImage`; x86_64 mantiene
-`firma-con-cie-1.0.0-x86_64.AppImage`. Il packager riconosce la CPU dell’ambiente,
+Il risultato si chiama `firma-con-cie-1.0.1-aarch64.AppImage`; x86_64 mantiene
+`firma-con-cie-1.0.1-x86_64.AppImage`. Il packager riconosce la CPU dell’ambiente,
 verifica runtime AppImage e ogni ELF, seleziona i percorsi di sistema corretti
 e rifiuta un payload misto. La compatibilità di ABI è controllata anche sul
 modulo persistente dei browser; nei browser si mantiene il PIN completo.

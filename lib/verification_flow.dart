@@ -19,9 +19,19 @@ typedef VerificationSavePicker = Future<String?> Function(
 // Document-only jobs are serialized. Cancellation invalidates publication, not
 // the native worker: a late network result must never replace a newer document.
 class VerificationController extends ChangeNotifier {
-  VerificationController(this.service, {required this.canExtract});
+  VerificationController(
+    this.service, {
+    required this.canExtract,
+    this.recover,
+  });
   final CieService service;
   final bool Function() canExtract;
+  final Future<JsonResult> Function(
+    JsonResult,
+    Future<JsonResult> Function(),
+    bool Function(),
+  )?
+  recover;
   String path = '';
   JsonResult? result, extraction;
   bool checking = false, exporting = false, extractable = false;
@@ -95,6 +105,14 @@ class VerificationController extends ChangeNotifier {
         if (!_current(ticket)) return;
         var verified = await service.verify(snapshot.path);
         if (!_current(ticket)) return;
+        if (recover != null) {
+          verified = await recover!(
+            verified,
+            () => service.verify(snapshot.path),
+            () => _current(ticket),
+          );
+          if (!_current(ticket)) return;
+        }
         var readableCms = false;
         if (canExtract() && value.toLowerCase().endsWith('.p7m')) {
           // Structural extraction also works when certificate trust or signature

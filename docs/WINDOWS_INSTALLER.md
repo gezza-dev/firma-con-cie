@@ -57,7 +57,7 @@ hanno anche le proprie destinazioni di installazione.
 
 ## Installazione e aggiornamento
 
-Avviare `firma-con-cie_1.0.0_windows_x64_setup.exe` e confermare UAC. App e
+Avviare `firma-con-cie_1.0.1_windows_x64_setup.exe` e confermare UAC. App e
 componente vengono installati nella stessa sessione amministrativa. Il
 prerequisito Microsoft viene eseguito senza un'altra elevazione e senza
 riavviare automaticamente Windows. Sono disponibili italiano e inglese.
@@ -164,7 +164,7 @@ app dal gestore delle applicazioni. L'installer non contiene nomi o alias
 di migrazione della vecchia applicazione.
 
 Il sorgente è `packaging/windows/firma-con-cie.iss` e l'output predefinito è
-`firma-con-cie_1.0.0_windows_x64_setup.exe`.
+`firma-con-cie_1.0.1_windows_x64_setup.exe`.
 
 Su Windows impostazioni e preferenze di firma continuano a usare
 `%APPDATA%\gezza-dev\CIE ID`. Il percorso è risolto direttamente: il plugin
@@ -303,7 +303,7 @@ python scripts/generate_l10n.py
 flutter analyze --no-pub
 flutter test --no-pub
 flutter build windows --release --no-pub
-python scripts/package_windows_installer.py --release build/windows/x64/runner/Release --output dist/windows-installer --iscc <ISCC.exe> --vc-redist <vc_redist.x64.exe> --version 1.0.0
+python scripts/package_windows_installer.py --release build/windows/x64/runner/Release --output dist/windows-installer --iscc <ISCC.exe> --vc-redist <vc_redist.x64.exe> --version 1.0.1
 ```
 
 Il packager verifica tutti gli hash dei manifest nativo/Web, il legame fra hash

@@ -13,7 +13,7 @@ from pathlib import Path, PurePosixPath
 import re
 import shutil
 import subprocess
-from product_identity import windows_installer_name
+from product_identity import windows_installer_name, application_version
 from windows_architecture import check_release_architecture
 from windows_helper_manifest import check_helper_manifest
 from build_privacy import check_public_paths, local_path_markers
@@ -204,7 +204,9 @@ def prepare(release, output, version, vc_redist, *, test_root=None, architecture
     manifest['distribution'] = {k: v for k, v in audit.items() if k != 'excludedFiles'}
     manifest['cardCatalog'] = json.loads((ROOT / 'packaging/windows/card-catalog.json').read_text())
     source_paths = ['lib/main.dart', 'lib/windows_web_setup.dart', 'lib/guide_view.dart',
-                    'lib/browser_setup.dart', 'windows/runner/browser_inventory.h',
+                    'lib/browser_setup.dart', 'lib/tls_recovery.dart', 'lib/linux_ca_update.dart',
+                    'lib/verification_flow.dart', 'lib/diagnostics.dart',
+                    'windows/runner/browser_inventory.h',
                     'windows/runner/web_setup.h', 'macos/Runner/MainFlutterWindow.swift',
                     'lib/app_updates.dart', 'lib/certificate_validity.dart', 'lib/information_view.dart',
                     'lib/enrollment.dart', 'native/platform/linux/web/pkcs11.cpp',
@@ -279,7 +281,7 @@ def main():
     p.add_argument('--output', required=True, type=Path)
     p.add_argument('--iscc', required=True, type=Path)
     p.add_argument('--vc-redist', required=True, type=Path)
-    p.add_argument('--version', default='1.0.0')
+    p.add_argument('--version', default=application_version())
     p.add_argument('--architecture', choices=['x64', 'arm64'], default='x64')
     p.add_argument('--private-path-root', action='append', type=Path, default=[],
                    help='Additional old build/profile root to reject; repeatable, never recorded in the public manifest')

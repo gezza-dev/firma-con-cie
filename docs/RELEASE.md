@@ -1,8 +1,10 @@
 # Materiali e verifica delle release
 
-Le release di Firma con CIE sono preparate come bozze nel repository privato.
-La preparazione non cambia la visibilità e non pubblica automaticamente pacchetti.
+Le nuove release di Firma con CIE sono preparate come bozze.
+La preparazione non cambia la visibilità del repository e non pubblica automaticamente pacchetti.
 Il tag stabile viene fissato soltanto dopo la verifica dei materiali definitivi.
+La versione 1.0.0 è già pubblicata secondo la conferma dell’utente; i sorgenti
+correnti preparano la 1.0.1. Le evidenze della prima release rimangono storiche.
 
 ## Contenuti
 
@@ -20,7 +22,7 @@ non sostituiscono l'archivio separato dei sorgenti corrispondenti.
 
 I pacchetti Linux non duplicano i source JAR Java nel runtime: i sorgenti
 originali, incluse le annotazioni generate a monte, restano invariati in
-`firma-con-cie_1.0.0_dependency-sources.zip`. I JAR di produzione, i testi
+`firma-con-cie_<versione>_dependency-sources.zip`. I JAR di produzione, i testi
 di licenza e gli avvisi delle dipendenze restano inclusi nei pacchetti.
 
 ## Corrispondenza tra sorgenti e pacchetti
@@ -42,11 +44,11 @@ secondo le modalità ad hoc documentate. Non occorrono le chiavi del distributor
 ## Controlli prima della pubblicazione
 
 1. Verificare sorgenti effettivamente destinati al commit, avvisi e link con `scripts/check_repository.py`.
-2. Controllare anche la cronologia e i log/artefatti Actions: il passaggio a pubblico rende visibili i materiali conservati da GitHub.
+2. Controllare anche cronologia, log e artefatti Actions, considerando la visibilità corrente del repository.
 3. Verificare nome/versione/architettura dei pacchetti, manifest interni e corrispondenza con i materiali sorgente.
 4. Su macOS verificare firma Developer ID, Hardened Runtime e timestamp, accettazione Apple, ticket dell'app e del DMG e valutazione Gatekeeper. Calcolare gli hash dopo l'applicazione dei ticket.
 5. Provare download e hash dei file allegati alla bozza, senza confondere una compilazione incrociata con un collaudo reale.
-6. Solo al completamento dei controlli rendere pubblico il repository e pubblicare la release stabile come ultima release.
+6. Solo al completamento dei controlli pubblicare la release stabile come ultima release, preservando la visibilità corrente del repository.
 
 Il supplemento Linux conserva le versioni sorgente esatte per entrambe le architetture, compresi eventuali aggiornamenti differenti dello stesso pacchetto. I file originali e le patch Ubuntu sono verificati con SHA-256 e con i descriptor `.dsc`. Le modifiche agli strumenti Flutter sono fornite separatamente con revisioni e istruzioni di applicazione.
 

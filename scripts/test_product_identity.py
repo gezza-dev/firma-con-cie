@@ -11,7 +11,7 @@ import unittest
 
 import linux_package_common as linux
 from product_identity import (DISPLAY_NAME, PACKAGE_NAME, ARTIFACT_STEM,
-                              windows_installer_name, macos_image_name)
+                              windows_installer_name, macos_image_name, application_version)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -24,9 +24,12 @@ class ProductIdentity(unittest.TestCase):
         self.assertEqual(linux.PREFIX.as_posix(), 'opt/firma-con-cie')
 
     def test_windows_and_macos_default_artifact_names(self):
-        self.assertEqual(windows_installer_name('1.0.0') + '.exe',
-                         'firma-con-cie_1.0.0_windows_x64_setup.exe')
-        self.assertEqual(macos_image_name('1.0.0'), 'firma-con-cie_1.0.0_universal.dmg')
+        version = application_version()
+        self.assertEqual(version, '1.0.1')
+        self.assertEqual(windows_installer_name(version) + '.exe',
+                         'firma-con-cie_1.0.1_windows_x64_setup.exe')
+        self.assertEqual(macos_image_name(version), 'firma-con-cie_1.0.1_universal.dmg')
+        self.assertIn("const appVersion = '" + version + "';", (ROOT/'lib/app_updates.dart').read_text())
 
     def test_bundle_version_cannot_inject_an_output_path(self):
         for value in ['../1.0.0', '1.0.0/unsafe', 'v1.0.0', '1.0.0\nother', '']:

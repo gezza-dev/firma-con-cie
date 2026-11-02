@@ -41,7 +41,7 @@ flutter pub get --enforce-lockfile
 CMAKE_BUILD_PARALLEL_LEVEL=2 flutter build linux --release --no-pub
 python3 scripts/package_linux_deb.py \
   --bundle build/linux/arm64/release/bundle \
-  --output dist/linux-arm64-deb --version '1.0.0'
+  --output dist/linux-arm64-deb --version '1.0.1'
 ```
 
 `CIE_JAVA_HOME` indica il JDK ARM64 verificato e `CIE_MAVEN` lo strumento Maven
@@ -77,7 +77,7 @@ python3 scripts/test_linux_packaging.py
 python3 scripts/smoke_native.py --runtime native/runtime/linux \
   --report reports/linux-arm64-smoke.json
 python3 scripts/test_linux_deb.py \
-  dist/linux-arm64-deb/firma-con-cie_1.0.0_arm64.deb \
+  dist/linux-arm64-deb/firma-con-cie_1.0.1_arm64.deb \
   --report reports/linux-arm64-deb.json
 ```
 
@@ -146,7 +146,7 @@ resta locale e non firmato; si applicano i requisiti di [LICENSING.md](LICENSING
 È predisposto anche il confezionamento AppImage AArch64 su Ubuntu 22.04,
 con glibc massima 2.35 e runtime AppImage fissato per checksum. È distinto dal
 `.deb` ARM64 basato su Ubuntu 24.04: richiede un bundle ricompilato contro la
-base più vecchia. Il nome è `firma-con-cie-1.0.0-aarch64.AppImage`.
+base più vecchia. Il nome è `firma-con-cie-1.0.1-aarch64.AppImage`.
 [Preparazione, dipendenze esterne e limiti](LINUX_APPIMAGE.md).
 PC/SC rimane esterno e la configurazione dei browser richiede sempre una
 conferma esplicita nell’app. La disponibilità dei browser ARM64 e il collaudo

@@ -44,6 +44,8 @@ void main() {
       UpdateState.available,
     );
     expect(parseRelease(200, release('v1.0.0')).state, UpdateState.current);
+    expect(parseRelease(200, release('v1.0.1')).state, UpdateState.current);
+    expect(parseRelease(200, release('v1.0.2')).state, UpdateState.available);
     expect(parseRelease(200, release('0.9.9')).state, UpdateState.current);
     for (final bad in [
       release('1.1.0', pre: true),
@@ -73,8 +75,7 @@ void main() {
       ),
       release(
         '1.1.0',
-        url:
-            'https://github.com:8443/gezza-dev/firma-con-cie/releases/tag/1.1.0',
+        url: 'https://github.com:8443/gezza-dev/firma-con-cie/releases/tag/1.1.0',
       ),
       release(
         '1.1.0',

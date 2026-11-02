@@ -72,7 +72,7 @@ def rpm_package(stage, elfs, inputs, output, version, release, epoch):
     private_names = {p.name for p in elfs}
     requires = sorted({r.strip() for r in raw if r.strip()
                        and r.split('(', 1)[0] not in private_names}
-                      | {'/bin/sh', 'pcsc-lite', 'python3', 'nss-tools', 'ca-certificates'}
+                      | {'/bin/sh', 'pcsc-lite', 'python3', 'nss-tools', 'ca-certificates', 'curl'}
                       | {name + '()(64bit)' for name in GRAPHICS_SONAMES})
     top = inputs / 'rpmbuild'
     for name in ('SOURCES', 'SPECS', 'BUILD', 'BUILDROOT', 'RPMS', 'SRPMS'):
@@ -106,7 +106,7 @@ Source1: files.list
 BuildArch: x86_64
 AutoReqProv: no
 Requires: {', '.join(requires)}
-Recommends: pcsc-lite-ccid
+Recommends: pcsc-lite-ccid, PackageKit
 
 %description
 Independent CIE application with a private native/DSS runtime. Bundled license
@@ -139,7 +139,7 @@ cp -a opt usr "%{{buildroot}}/"
 
 def arch_package(stage, system_libraries, inputs, output, version, pkgrel):
     owners = {run('pacman', '-Qoq', path).stdout.strip() for path in system_libraries}
-    depends = sorted(owners | {'bash', 'pcsclite', 'python', 'nss', 'ca-certificates'})
+    depends = sorted(owners | {'bash', 'pcsclite', 'python', 'nss', 'ca-certificates', 'curl'})
     # Source tar is generated from the verified bundle. makepkg verifies its
     # checksum, metadata and dependencies, then fakeroot records root ownership.
     recipe = f'''# Generated native recipe; no install script or browser hooks.
@@ -151,7 +151,7 @@ arch=('x86_64')
 url='https://github.com/gezza-dev/firma-con-cie'
 license=('LicenseRef-FirmaConCIE-Bundled')
 depends=({' '.join(repr(n) for n in depends)})
-optdepends=('ccid: CCID smart card reader driver')
+optdepends=('ccid: CCID smart card reader driver' 'packagekit: Trusted certificate updates with system authorization')
 options=('!strip' '!debug' '!buildflags')
 source=('payload.tar.gz')
 sha256sums=('{sha(inputs / 'payload.tar.gz')}')

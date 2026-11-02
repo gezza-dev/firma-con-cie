@@ -8,14 +8,14 @@ e alle prove riportate qui, non a tutte le distribuzioni o architetture.
 Il `.deb` ARM64 ha una [procedura e verifiche separate](LINUX_ARM64.md);
 le ricette RPM e Arch di questo documento restano limitate a x86_64.
 
-## Nomi dei file della release 1.0.0
+## Nomi dei file della release 1.0.1
 
 I file distribuiti usano il nome pubblico dell’app:
 
-- `firma-con-cie_1.0.0_amd64.deb` e `firma-con-cie_1.0.0_arm64.deb`;
-- `firma-con-cie-1.0.0-1.fc44.x86_64.rpm`;
-- `firma-con-cie-1.0.0-1-x86_64.pkg.tar.zst`;
-- `firma-con-cie-1.0.0-x86_64.AppImage` e `firma-con-cie-1.0.0-aarch64.AppImage`.
+- `firma-con-cie_1.0.1_amd64.deb` e `firma-con-cie_1.0.1_arm64.deb`;
+- `firma-con-cie-1.0.1-1.fc44.x86_64.rpm`;
+- `firma-con-cie-1.0.1-1-x86_64.pkg.tar.zst`;
+- `firma-con-cie-1.0.1-x86_64.AppImage` e `firma-con-cie-1.0.1-aarch64.AppImage`.
 
 L’identificativo interno APT/RPM/pacman è `firma-con-cie`, uguale al prefisso
 dei file distribuiti. Una precedente installazione con identità diversa va
@@ -44,6 +44,13 @@ possiedono. Per RPM e Arch tutti gli ELF devono essere x86_64 e risolversi
 contro le librerie della distribuzione prima della creazione del pacchetto.
 PC/SC, Python, strumenti NSS e CA sono dichiarati esplicitamente. Il driver
 CCID è raccomandato/opzionale secondo il formato.
+Il controllo HTTPS con consenso richiede anche `curl`; PackageKit è
+raccomandato per DEB/RPM e opzionale per Arch, per proporre l’aggiornamento
+del solo insieme di pacchetti dei certificati con autorizzazione Polkit.
+L’assenza di PackageKit non impedisce l’uso normale dell’app, ma rende
+necessario aggiornare i certificati tramite gli strumenti del sistema.
+Il flusso non avvia aggiornamenti generali né importa CA dalle liste di
+revoca: [procedura e limiti](SETTINGS_DIAGNOSTICS_PROXY.md).
 EGL, OpenGL e GLES sono dipendenze esplicite: GTK/libepoxy le caricano anche
 dinamicamente, quindi non basta l'analisi delle dipendenze ELF. I driver grafici
 restano quelli del sistema; i collaudi virtuali usano Mesa software.
@@ -61,11 +68,11 @@ Esempi dalla radice dei sorgenti, all'interno dell'ambiente appropriato:
 
 ```sh
 python3 scripts/package_linux_deb.py --bundle /bundle --output /output/deb \
-  --version '1.0.0'
+  --version '1.0.1'
 python3 scripts/package_linux_distribution.py --format rpm \
-  --bundle /bundle --output /output/rpm --version '1.0.0'
+  --bundle /bundle --output /output/rpm --version '1.0.1'
 python3 scripts/package_linux_distribution.py --format arch \
-  --bundle /bundle --output /output/arch --version '1.0.0'
+  --bundle /bundle --output /output/arch --version '1.0.1'
 ```
 
 Per Fedora servono `rpm-build`, Python, binutils, gli strumenti desktop e le

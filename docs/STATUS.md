@@ -1,6 +1,93 @@
 # Stato del progetto e verifiche
 
-Situazione al 30 ottobre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
+Situazione al 2 novembre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
+
+## Versione 1.0.1 in preparazione (2 novembre)
+
+Dopo la conferma dell’utente che la versione 1.0.0 è stata pubblicata, i
+sorgenti passano a **1.0.1**, build Flutter **2**. Pagina Informazioni,
+diagnostica e controllo aggiornamenti usano la versione pubblica 1.0.1;
+gli installer Windows leggono il valore predefinito dal `pubspec.yaml`.
+macOS ricava versione e build dallo stesso file tramite Flutter, mentre le
+ricette Linux ricevono `--version 1.0.1`. I riferimenti ai collaudi e alla
+release 1.0.0 restano storici. La sola modifica locale non pubblica nuovi
+tag o pacchetti GitHub. [Note 1.0.1](releases/v1.0.1.md).
+
+Ricompilati app e installer Windows x64 1.0.1: analisi Flutter senza problemi,
+10 test Flutter mirati e 14 test Python di identità/confezionamento superati.
+Verificati metadati PE (app 1.0.1+2, installer 1.0.1), contenuto completo
+dell’installer e invarianza dei componenti nativi. Nessuna nuova pubblicazione
+eseguita. Le build macOS, Linux e Windows ARM64 restano da rigenerare.
+
+## Controllo HTTPS con consenso sulle tre piattaforme (2 novembre)
+
+Sul PC Windows 10 x86_64 l’utente segnala revoca inizialmente indeterminata,
+mentre lo stesso documento risulta verificabile su Windows 11 e macOS.
+Il Test connessione dell’app restituisce trasporto 60/HTTP 0. Dopo una richiesta
+del client Windows al sito CIE il test passa e la revoca del firmatario è buona;
+dopo il download pubblico di `cierootca.crl` con lo stesso client anche la
+revoca della catena risulta buona. La sequenza è coerente con materiale HTTPS
+locale incompleto, ma non identifica da sola quale certificato mancasse.
+
+Nel primo intervento Windows l’app propone un consenso prima di usare Schannel per
+due richieste HTTPS fisse ai servizi CIE. Il recupero asincrono non importa CA
+dalla CRL e non riduce le verifiche TLS. Ripete soltanto la verifica, mai la
+firma, e conserva l’esito originale se il tentativo non riesce. La diagnostica
+esclude identità, documenti, credenziali e messaggi nativi. Dettagli e limiti:
+[SETTINGS_DIAGNOSTICS_PROXY.md](SETTINGS_DIAGNOSTICS_PROXY.md).
+
+Il primo recupero era limitato a Windows. L’estensione successiva usa ora
+un flusso condiviso per Windows x64/ARM64, macOS e Linux, con messaggio neutro.
+Windows mantiene Schannel; macOS usa il client TLS Apple; Linux usa i percorsi
+CA della distribuzione e, dopo consenso, propone l’aggiornamento dei certificati
+tramite PackageKit/Polkit. I pacchetti candidati e il piano simulato sono
+controllati prima dell’installazione; non si accettano nuove chiavi, rimozioni,
+downgrade o aggiornamenti generali del sistema. La libreria D-Bus 0.7.15, già
+presente tra le dipendenze transitive, diventa una dipendenza diretta fissata,
+senza aggiornamenti di versione o nuove librerie native. I pacchetti Linux
+richiedono curl e raccomandano/propongono PackageKit. Il testo del dialogo e la
+simulazione sono gli stessi nelle tre piattaforme.
+
+Il caso originario Windows 10 è stato risolto con comandi manuali prima della
+modifica. L’utente conferma la successiva simulazione anche su Windows 10;
+questa conferma non attesta un recupero automatico reale su archivio incompleto.
+Il recupero reale su macOS e l’autorizzazione/aggiornamento PackageKit Linux,
+così come le relative ricompilazioni e la nuova build Windows ARM64, restano
+oggetto di collaudo sulle piattaforme native. Nessun certificato di sistema
+è stato rimosso e nessuna installazione privilegiata Linux è stata eseguita
+sul PC Windows per simulare artificialmente il problema.
+
+Prima versione Windows: analisi Flutter senza problemi; 418 test Flutter superati con 15 prove
+opzionali saltate. Eseguiti separatamente tutti i 15 test del recupero,
+compresa la richiesta reale dei due servizi pubblici. Superati i 6 controlli
+del confezionamento Windows. Nessuna operazione reale su CIE/PIN/firma.
+
+Preparato inoltre un eseguibile x64 diagnostico separato con il punto di
+ingresso `tool/tls_recovery_demo.dart`: mostra lo stesso dialogo con recupero
+interamente simulato, senza rete, middleware o modifiche all’archivio di
+Windows. La versione iniziale superava i tre scenari rifiuto/successo/errore e i 14 controlli locali
+del recupero (17 test, una prova di rete opzionale saltata). Analisi senza
+problemi; finestra e dialogo verificati anche nell’eseguibile compilato.
+L’installer di produzione già preparato non è stato sostituito da questa demo.
+
+L’utente conferma il collaudo della simulazione anche su Windows 10. Questa
+conferma riguarda dialogo e flusso simulato, senza attestare il recupero reale
+su un archivio incompleto. Il titolo del dialogo è aggiornato in
+**Aggiornamento dei certificati di sicurezza**; il testo usa **lista dei
+certificati revocati** al posto dell’acronimo, anche nella versione inglese.
+La revisione del titolo è presente nell’app e nel diagnostico. Su richiesta
+successiva dell’utente, anche il corpo del dialogo diventa indipendente dal
+sistema operativo e il controllo viene esteso a macOS/Linux come descritto sopra.
+
+Estensione alle tre piattaforme: analisi Flutter senza problemi, **434 test
+superati e 17 saltati** sul PC Windows x64. I test mirati eseguiti separatamente
+con il recupero reale Windows superano **31 casi**, con due prove del protocollo
+PackageKit riservate a Linux e non eseguite su questo host. I test simulati
+coprono selezione del client e delle CA sulle tre piattaforme, consenso,
+rifiuto/cancellazione, autorizzazione negata, piani non ammessi e mantenimento
+dell’esito indeterminato. Superati anche i 6 controlli del confezionamento
+Windows; sintassi delle ricette DEB/RPM/Arch verificata, senza generarne qui
+i pacchetti né eseguire installazioni privilegiate.
 
 ## Preparazione della release 1.0.0 (30 ottobre)
 

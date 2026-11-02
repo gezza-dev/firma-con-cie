@@ -46,7 +46,7 @@ Per creare il supplemento da una cache con cartelle `<nome-sorgente>_<versione>`
 python3 scripts/prepare_linux_release_sources.py \
   --cache /percorso/cache-sorgenti-ubuntu \
   --inventory /percorso/linux-bundled-system-sources.json \
-  --output /percorso/firma-con-cie_1.0.0_linux-dependency-sources.zip
+  --output /percorso/firma-con-cie_1.0.1_linux-dependency-sources.zip
 ```
 
 Lo script verifica inventario, versioni, dimensioni e hash prima di scrivere il nuovo archivio; verifica poi anche il contenuto dello ZIP.
