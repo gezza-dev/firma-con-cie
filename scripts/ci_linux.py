@@ -22,6 +22,11 @@ def build(kind):
     work.mkdir(parents=True)
     reports = ROOT/('reports/linux-'+architecture+'-'+kind)
     reports.mkdir(parents=True)
+    # Fail fast on source/fixture regressions before compiling dependencies.
+    for name in ('test_ltv_runtime.py', 'test_linux_packaging.py', 'test_linux_appimage_packaging.py',
+                 'test_desktop_ci.py'):
+        python(name)
+    flutter_checks()
     python('build_portable_dependencies.py', '--arch', cpu, '--jobs', '2')
     base = work/'native-base'
     python('build_native.py', '--system', 'linux', '--jobs', '2',
@@ -34,11 +39,6 @@ def build(kind):
            '--output', runtime, '--tools-cache', cache)
     python('smoke_native.py', '--runtime', runtime, '--report', reports/'native.json')
     python('test_ltv.py', '--runtime', runtime, '--report', reports/'ltv.json')
-    for name in ('test_ltv_runtime.py', 'test_linux_packaging.py', 'test_linux_appimage_packaging.py',
-                 'test_desktop_ci.py'):
-        python(name)
-    # These tests include the private D-Bus PackageKit wire fixtures on Linux.
-    flutter_checks()
     os.environ['CMAKE_BUILD_PARALLEL_LEVEL'] = '2'
     run('flutter', '--suppress-analytics', 'build', 'linux', '--release', '--no-pub')
     bundle = ROOT/('build/linux/'+architecture+'/release/bundle')

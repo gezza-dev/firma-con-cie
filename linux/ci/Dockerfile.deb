@@ -11,7 +11,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     librsvg2-common tzdata && \
     python3 -m venv /opt/ci-tools && \
     /opt/ci-tools/bin/pip install cmake==3.31.6 meson==1.11.0 && \
-    mkdir -p /work && touch /work/.cie-appimage-isolated-root && \
-    rm -rf /var/lib/apt/lists/*
+    mkdir -p /work && touch /work/.cie-appimage-isolated-root
+# Keep apt's package indexes in the CI image for the read-only dependency
+# resolver test. They are never copied into the application or DEB payload.
 ENV PATH=/opt/ci-tools/bin:$PATH
 WORKDIR /work/project
