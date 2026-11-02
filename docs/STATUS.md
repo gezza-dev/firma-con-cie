@@ -11,7 +11,7 @@ Ubuntu 24.04 e il controllo ABI core24; la GUI è compilata nella distribuzione
 di destinazione. Il runtime è trasferito soltanto con commit, CPU e checksum
 verificati, conservando gli hash originali dei sorgenti.
 
-Superati localmente 11 nuovi test delle matrici, della ricetta ARM64, delle
+Superati localmente 12 nuovi test delle matrici, della ricetta ARM64, delle
 barriere di installazione e della provenienza degli archivi, oltre ai 19 test
 desktop CI; actionlint senza segnalazioni. Sono predisposti test TLS e ciclo
 installazione/aggiornamento/rimozione con dati sintetici, più avvio Xvfb con

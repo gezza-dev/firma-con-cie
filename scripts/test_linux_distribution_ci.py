@@ -122,6 +122,26 @@ class DistributionCI(unittest.TestCase):
              self.assertRaisesRegex(RuntimeError, 'Card interfaces'):
             lifecycle.require_isolated_root(container=True)
 
+    def test_runtime_root_phase_completes_builder_receipt_without_running_git(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory);runtime = root/'runtime';runtime.mkdir()
+            (runtime/'backend-manifest.json').write_text('{}')
+            reports = root/'reports';reports.mkdir()
+            (reports/'build-result.json').write_text(json.dumps({'sourceCommit':'synthetic-commit',
+                'architecture':'x64','softwareChecksPassed':False,'tlsChecksPending':True}))
+            (reports/'tls.json').write_text(json.dumps({'passed':True}))
+            with patch.object(ci,'ROOT',root), patch.object(ci,'runtime_paths',return_value=(root/'work',runtime,reports)), \
+                 patch.object(ci.platform,'system',return_value='Linux'), \
+                 patch.object(ci.os,'geteuid',return_value=0,create=True), patch.object(Path,'is_file',return_value=True), \
+                 patch.object(ci,'host_architecture',return_value='x64'), patch.object(ci,'python'), \
+                 patch.object(ci,'source_commit',side_effect=AssertionError('Root must not run Git')), \
+                 patch.object(ci,'receipt',side_effect=AssertionError('Root must complete the existing receipt')):
+                ci.finish_runtime()
+            result = json.loads((root/'dist/linux-distribution-runtime-x64/runtime-source.json').read_text())
+            self.assertEqual(result['sourceCommit'],'synthetic-commit')
+            self.assertTrue(result['softwareChecksPassed'])
+            self.assertFalse(result['tlsChecksPending'])
+
     def test_failed_target_tls_never_produces_a_success_receipt(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory);reports = root/'reports/linux-fedora-x64';reports.mkdir(parents=True)

@@ -83,9 +83,15 @@ def finish_runtime():
     archive = output/'runtime.tar.gz'
     with tarfile.open(archive, 'w:gz') as tar:
         tar.add(runtime, arcname='runtime')
-    receipt(output/'runtime-source.json', 'linux', host_architecture(), [archive],
-            softwareChecksPassed=True, nativeTlsChecksPassed=True,
-            nativeBuildDistribution='Ubuntu 24.04', nativeManifestSha256=sha(runtime/'backend-manifest.json'))
+    # Complete the receipt recorded by the ordinary builder. Root must not run
+    # Git against another user's checkout or change Git's ownership safeguards.
+    result = json.loads((reports/'build-result.json').read_text())
+    if result['architecture'] != host_architecture():
+        raise ValueError('Runtime build receipt architecture mismatch')
+    result.update(artifacts={archive.relative_to(ROOT).as_posix():sha(archive)},
+                  softwareChecksPassed=True, tlsChecksPending=False, nativeTlsChecksPassed=True,
+                  nativeBuildDistribution='Ubuntu 24.04', nativeManifestSha256=sha(runtime/'backend-manifest.json'))
+    (output/'runtime-source.json').write_text(json.dumps(result, indent=2)+'\n')
 
 
 def extract_runtime(archive, metadata, destination, architecture):
