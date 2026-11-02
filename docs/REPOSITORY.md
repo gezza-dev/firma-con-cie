@@ -68,10 +68,10 @@ Per rendere pubblico il repository o distribuire binari eseguire una verifica di
 I download appartengono alla pagina
 [Release](https://github.com/gezza-dev/firma-con-cie/releases); il collegamento
 all’[ultima release stabile](https://github.com/gezza-dev/firma-con-cie/releases/latest)
-non incorpora un numero di versione. La prima release è preparata come bozza
-nel repository privato. I download pubblici diventano disponibili dopo il
-cambio di visibilità e la pubblicazione della release stabile, che rimangono
-azioni distinte dalla preparazione dei materiali. [Procedura](RELEASE.md).
+non incorpora un numero di versione. Il repository è pubblico e la versione
+corrente è 1.0.1. Le nuove release vengono prima verificate come bozze;
+la pubblicazione stabile è distinta dalla preparazione dei materiali e non
+modifica la visibilità del repository. [Procedura](RELEASE.md).
 
 La ricerca manuale nell’app consulta
 `https://api.github.com/repos/gezza-dev/firma-con-cie/releases/latest`, con

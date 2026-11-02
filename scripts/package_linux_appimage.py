@@ -65,6 +65,51 @@ def compile_mime_database(tree):
     run('update-mime-database',mime)
     if not (mime/'mime.cache').is_file():raise ValueError('Compiled MIME database missing')
 
+def copy_system_data(source,destination,tree,sources,*,generated=(),inputs_only=None,ignore=None):
+    """Copy data and retain the original package-owned inputs for attribution."""
+    shutil.copytree(source,destination,symlinks=False,dirs_exist_ok=True,ignore=ignore)
+    for path in files(destination):
+        relative=path.relative_to(destination)
+        if relative.as_posix() in generated:continue
+        if inputs_only and not inputs_only(relative):continue
+        original=source/relative
+        sources[path.relative_to(tree).as_posix()]=str(original.resolve())
+
+
+def system_file_owners(paths):
+    paths=sorted(set(map(str,paths)));owners={}
+    # Batch queries: icons and Python sources must not cause thousands of
+    # independent scans of dpkg's database. Account for merged-/usr aliases.
+    aliases={name:{name,name.replace('/usr/lib/','/lib/',1)} for name in paths}
+    reverse={}
+    for name,values in aliases.items():
+        for alias in values:reverse.setdefault(alias,set()).add(name)
+    candidates=sorted(reverse)
+    for start in range(0,len(candidates),100):
+        result=subprocess.run(['dpkg-query','-S',*candidates[start:start+100]],
+                              text=True,capture_output=True)
+        if result.returncode not in (0,1):raise ValueError('dpkg ownership query failed')
+        for line in result.stdout.splitlines():
+            package,separator,path=line.partition(': ')
+            if separator and path in reverse:
+                for name in reverse[path]:owners.setdefault(name,set()).add(package.split(':',1)[0])
+    missing=set(paths)-set(owners)
+    if missing:raise ValueError('Unknown source package for bundled inputs: '+', '.join(sorted(missing)[:5]))
+    return owners
+
+
+def system_package_records(packages):
+    fields='${binary:Package}\t${Version}\t${Architecture}\t${source:Package}\t${source:Version}\n'
+    rows=run('dpkg-query','-W','-f='+fields,*sorted(packages)).stdout.splitlines()
+    records=[]
+    for line in rows:
+        binary,version,arch,source,source_version=line.split('\t')
+        records.append(dict(binaryPackage=binary.split(':',1)[0],binaryVersion=version,
+                            binaryArchitecture=arch,sourcePackage=source or binary.split(':',1)[0],
+                            sourceVersion=source_version or version))
+    if {p['binaryPackage'] for p in records}!=set(packages):raise ValueError('Incomplete package source metadata')
+    return records
+
 def stage(bundle,tree,native,arch=None):
     multiarch=ARCHITECTURES[architecture(arch)]['multiarch']
     system_lib=Path('/usr/lib')/multiarch
@@ -106,13 +151,14 @@ def stage(bundle,tree,native,arch=None):
             sources[str(target.relative_to(tree))]=str(checksum.resolve())
     query=system_lib/'gdk-pixbuf-2.0/gdk-pixbuf-query-loaders'
     copy_tool(query,'gdk-pixbuf-query-loaders')
-    shutil.copytree('/usr/lib/python3.10',tree/'usr/lib/python3.10',ignore=shutil.ignore_patterns('__pycache__','test','tests','site-packages','dist-packages'))
+    copy_system_data(Path('/usr/lib/python3.10'),tree/'usr/lib/python3.10',tree,sources,
+                     ignore=shutil.ignore_patterns('__pycache__','test','tests','site-packages','dist-packages'))
     for directory,relative,pattern in [(system_lib/'gio/modules','usr/lib/gio/modules','*.so'),(system_lib/'gdk-pixbuf-2.0/2.10.0/loaders','usr/lib/gdk-pixbuf-2.0/2.10.0/loaders','*.so')]:
         dest=tree/relative;dest.mkdir(parents=True)
         for source in Path(directory).glob(pattern):
             target=dest/source.name;shutil.copy2(source,target);sources[str(target.relative_to(tree))]=str(source.resolve())
     fontconfig=tree/'usr/share/firma-con-cie/fontconfig';fontconfig.mkdir(parents=True)
-    shutil.copytree('/etc/fonts/conf.d',fontconfig/'conf.d',symlinks=False)
+    copy_system_data(Path('/etc/fonts/conf.d'),fontconfig/'conf.d',tree,sources)
     for name in ['fonts.conf','fonts.dtd']:
         source=Path('/etc/fonts/fonts.conf') if name=='fonts.conf' else Path('/usr/share/xml/fontconfig/fonts.dtd')
         shutil.copy2(source,fontconfig/name)
@@ -123,14 +169,20 @@ def stage(bundle,tree,native,arch=None):
     (fontconfig/'fonts.conf').write_text(settings)
     schemas=tree/'usr/share/glib-2.0/schemas';schemas.mkdir(parents=True)
     for p in Path('/usr/share/glib-2.0/schemas').glob('*'):
-        if p.is_file():shutil.copy2(p,schemas/p.name)
+        if p.is_file() and p.name!='gschemas.compiled':
+            shutil.copy2(p,schemas/p.name)
+            sources[(schemas/p.name).relative_to(tree).as_posix()]=str(p.resolve())
     if not (schemas/'org.gnome.desktop.interface.gschema.xml').is_file():
         raise ValueError('Install gsettings-desktop-schemas in the AppImage build environment')
     run('glib-compile-schemas',schemas)
     # Ubuntu's Adwaita theme resources and MIME metadata for the bundled GTK.
     for source in ['/usr/share/themes/Adwaita','/usr/share/icons/Adwaita','/usr/share/mime']:
         p=Path(source)
-        if p.exists():shutil.copytree(p,tree/str(p).lstrip('/'),symlinks=False,dirs_exist_ok=True)
+        if p.exists():
+            copy_system_data(p,tree/str(p).lstrip('/'),tree,sources,
+                generated=('icon-theme.cache',),
+                inputs_only=(lambda relative:relative.parts[0]=='packages' and relative.suffix=='.xml')
+                    if source=='/usr/share/mime' else None)
     compile_mime_database(tree)
     doc=tree/'usr/share/doc'/ARTIFACT_STEM;shutil.copy2(ROOT/'docs/LINUX_APPIMAGE.md',doc/'LINUX_APPIMAGE.md')
     icon=ROOT/'assets/branding/linux/hicolor/256x256/apps'/(APP_ID+'.png')
@@ -219,29 +271,25 @@ def relocate_libraries(tree, arch=None):
 
 def notices(tree,sources):
     licenses=tree/'usr/share/licenses/appimage-system-libraries';licenses.mkdir(parents=True)
-    packages={}
-    for name in sorted(set(sources.values())|{'/usr/bin/python3.10','/usr/bin/modutil'}):
-        owners=[]
-        aliases=[name,name.replace('/usr/lib/','/lib/',1)]
-        for alias in dict.fromkeys(aliases):
-            found=subprocess.run(['dpkg-query','-S',alias],capture_output=True,text=True)
-            if found.returncode==0:
-                owners=found.stdout.splitlines();break
-        if not owners:raise ValueError('Unknown source package for library: '+name)
-        for line in owners:
-            package=line.split(': ',1)[0].split(':',1)[0]
-            if package in packages:continue
-            version=run('dpkg-query','-W','-f=${Version}',package).stdout
-            notice=Path('/usr/share/doc')/package/'copyright'
-            if not notice.is_file():raise ValueError('Missing dependency license: '+package)
-            shutil.copy2(notice,licenses/(package+'-copyright'))
-            packages[package]=version
-    # Python stdlib is also governed by libpython3.10-stdlib's notices.
-    for package in ['libpython3.10-stdlib','libpython3.10-minimal']:
+    ownership=system_file_owners(set(sources.values())|{'/usr/bin/python3.10','/usr/bin/modutil'})
+    names=set().union(*ownership.values())|{'libpython3.10-stdlib','libpython3.10-minimal'}
+    records=system_package_records(names);packages={p['binaryPackage']:p['binaryVersion'] for p in records}
+    for package in sorted(packages):
         notice=Path('/usr/share/doc')/package/'copyright'
+        if not notice.is_file():raise ValueError('Missing dependency license: '+package)
         shutil.copy2(notice,licenses/(package+'-copyright'))
-        packages[package]=run('dpkg-query','-W','-f=${Version}',package).stdout
     (licenses/'packages.json').write_text(json.dumps(packages,indent=2)+'\n')
+    provenance=dict(schema=1,binaryPackages=records,
+        files={name:dict(originalPath=source,originalSha256=sha(Path(source)),
+                        bundledSha256=sha(tree/name),binaryPackages=sorted(ownership[source]))
+               for name,source in sorted(sources.items())},
+        generatedResources={'usr/share/glib-2.0/schemas/gschemas.compiled':'Compiled from the bundled schema XML and overrides',
+                            'usr/share/mime/':'Generated from bundled packages/*.xml by update-mime-database',
+                            'usr/share/icons/Adwaita/icon-theme.cache':'Theme cache from package-owned icon inputs'},
+        modifications={'ELF':'RPATH relocation, preserving the browser provider trio',
+                       'fonts.conf':'Per-user AppImage font-cache path; see the build recipe'},
+        sourceDateEpoch=source_revision()['sourceDateEpoch'])
+    (licenses/'provenance.json').write_text(json.dumps(provenance,indent=2)+'\n')
     return packages
 
 def package(bundle,output,runtime,version):
@@ -264,6 +312,8 @@ def package(bundle,output,runtime,version):
         (app/'cie_native/backend-manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
         data={p.relative_to(tree).as_posix():sha(p) for p in files(tree)}
         output.mkdir(parents=True);filesystem=temp/'payload.squashfs'
+        shutil.copy2(tree/'usr/share/licenses/appimage-system-libraries/provenance.json',
+                     output/'system-dependency-provenance.json')
         run('mksquashfs',tree,filesystem,'-noappend','-comp','zstd','-Xcompression-level','15','-processors','2','-all-root',
             '-mkfs-time',str(revision['sourceDateEpoch']),'-all-time',str(revision['sourceDateEpoch']))
         target=output/(ARTIFACT_STEM+'-'+version+'-'+arch+'.AppImage')

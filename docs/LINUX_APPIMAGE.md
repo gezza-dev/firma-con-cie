@@ -219,8 +219,9 @@ o accessi ai siti. L'agente non ha acquisito PIN o controllato sessioni
 autenticate. I rapporti restano locali, esclusi dai sorgenti pubblicati.
 
 Restano separati i collaudi reali su altre distribuzioni e desktop, Firefox
-Snap dall'AppImage, cambio PIN e sblocco carta. La versione `1.0.0` è preparata per la prima release del progetto e copre
-x86_64 e ARM64 con artefatti distinti. I collaudi reali riportati sopra
-riguardano x86_64; ARM64 richiede ancora hardware reale. La pubblicazione è un passaggio successivo, insieme ai materiali di
-distribuzione descritti in [LICENSING.md](LICENSING.md), inclusi i sorgenti
-corrispondenti delle dipendenze richiesti per il bundle effettivo.
+Snap dall'AppImage, cambio PIN e sblocco carta. La versione corrente `1.0.1`
+copre x86_64 e ARM64 con artefatti distinti. I collaudi reali riportati sopra
+riguardano x86_64; non attestano nuove operazioni con CIE nelle build CI.
+I materiali descritti in [LICENSING.md](LICENSING.md) comprendono i sorgenti
+corrispondenti alle versioni effettivamente incluse, insieme agli avvisi per
+librerie, strumenti, icone, schemi GNOME, configurazione font e dati MIME.

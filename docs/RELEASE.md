@@ -3,8 +3,9 @@
 Le nuove release di Firma con CIE sono preparate come bozze.
 La preparazione non cambia la visibilità del repository e non pubblica automaticamente pacchetti.
 Il tag stabile viene fissato soltanto dopo la verifica dei materiali definitivi.
-La versione 1.0.0 è già pubblicata secondo la conferma dell’utente; i sorgenti
-correnti preparano la 1.0.1. Le evidenze della prima release rimangono storiche.
+La versione corrente è **1.0.1** (build Flutter **2**). La 1.0.0 rimane
+documentata come prima release storica. I manifest conservano la revisione
+effettiva di ciascun pacchetto e gli esiti software distinti dai collaudi con CIE.
 
 ## Contenuti
 

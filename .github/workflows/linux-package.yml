@@ -2,7 +2,17 @@ name: Linux packages
 
 on:
   workflow_dispatch:
+    inputs:
+      format:
+        description: Linux package formats
+        type: choice
+        options: [all, deb, appimage]
+        default: all
   workflow_call:
+    inputs:
+      format:
+        type: string
+        default: all
 
 permissions:
   contents: read
@@ -18,7 +28,7 @@ jobs:
       fail-fast: false
       matrix:
         architecture: [x64, arm64]
-        format: [deb, appimage]
+        format: ${{ fromJSON(inputs.format == 'appimage' && '["appimage"]' || inputs.format == 'deb' && '["deb"]' || '["deb","appimage"]') }}
         include:
           - architecture: x64
             runner: ubuntu-24.04
@@ -81,6 +91,7 @@ jobs:
             dist/linux-${{ matrix.architecture }}-${{ matrix.format }}/*.tar.gz
             dist/linux-${{ matrix.architecture }}-${{ matrix.format }}/SHA256SUMS
             dist/linux-${{ matrix.architecture }}-${{ matrix.format }}/package-manifest.json
+            dist/linux-${{ matrix.architecture }}-${{ matrix.format }}/system-dependency-provenance.json
             dist/linux-${{ matrix.architecture }}-${{ matrix.format }}/LEGGIMI.md
           if-no-files-found: error
           retention-days: 14

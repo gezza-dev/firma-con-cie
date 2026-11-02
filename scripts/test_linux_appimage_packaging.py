@@ -13,6 +13,42 @@ import unittest
 from unittest.mock import patch
 import package_linux_appimage as image
 class Boundaries(unittest.TestCase):
+    def test_system_data_tracks_original_inputs_and_excludes_generated_caches(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary);source=root/'original';source.mkdir();tree=root/'AppDir'
+            (source/'schema.xml').write_text('original definition')
+            (source/'gschemas.compiled').write_bytes(b'generated')
+            origins={};destination=tree/'usr/share/schemas'
+            image.copy_system_data(source,destination,tree,origins,generated=('gschemas.compiled',))
+            self.assertEqual(origins,{'usr/share/schemas/schema.xml':str((source/'schema.xml').resolve())})
+            self.assertEqual((destination/'gschemas.compiled').read_bytes(),b'generated')
+            self.assertEqual((destination/'schema.xml').read_bytes(),(source/'schema.xml').read_bytes())
+
+    def test_generated_mime_data_is_attributed_to_its_package_xml_inputs(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary);source=root/'mime';(source/'packages').mkdir(parents=True)
+            (source/'packages/input.xml').write_text('XML definitions')
+            (source/'mime.cache').write_bytes(b'generated cache')
+            tree=root/'AppDir';origins={}
+            image.copy_system_data(source,tree/'usr/share/mime',tree,origins,
+                inputs_only=lambda path:path.parts[0]=='packages' and path.suffix=='.xml')
+            self.assertEqual(set(origins),{'usr/share/mime/packages/input.xml'})
+
+    def test_merged_usr_ownership_is_batched_and_unknown_inputs_are_rejected(self):
+        result=SimpleNamespace(returncode=1,stdout='library:amd64: /lib/example.so\n')
+        with patch.object(image.subprocess,'run',return_value=result) as command:
+            owners=image.system_file_owners(['/usr/lib/example.so','/lib/example.so'])
+            self.assertEqual(owners,{'/usr/lib/example.so':{'library'},'/lib/example.so':{'library'}})
+            self.assertEqual(command.call_count,1)
+            with self.assertRaisesRegex(ValueError,'Unknown source package'):
+                image.system_file_owners(['/usr/share/unowned-input'])
+
+    def test_source_package_version_and_architecture_are_not_inferred_from_binary_name(self):
+        result=SimpleNamespace(stdout='binary:arm64\t1.2-3+b1\tarm64\tsource-name\t1.2-3\n')
+        with patch.object(image,'run',return_value=result):
+            self.assertEqual(image.system_package_records({'binary'}),[dict(binaryPackage='binary',
+                binaryVersion='1.2-3+b1',binaryArchitecture='arm64',sourcePackage='source-name',sourceVersion='1.2-3')])
+
     def browser_fixture(self, tree):
         runtime=tree/'usr/lib/firma-con-cie/cie_native'
         runtime.mkdir(parents=True)

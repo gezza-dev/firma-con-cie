@@ -10,8 +10,8 @@ distribuiti, inclusi i moduli caricati dinamicamente. Il controllo ABI core24
 del provider Firefox è distinto dalla compatibilità dell'intero desktop.
 EGL/OpenGL/GLES, caricati dinamicamente all'avvio, sono dipendenze esplicite
 oltre a quelle determinate dall'analisi degli ELF.
-La versione `1.0.0` è preparata per la prima release del progetto, da
-pubblicare separatamente. I materiali sorgente/dipendenze sono descritti
+La versione corrente è `1.0.1`, con pacchetti amd64 e arm64 ricompilati su
+Ubuntu 24.04. I materiali sorgente/dipendenze sono descritti
 in [LICENSING.md](LICENSING.md).
 Il pacchetto può includere il runtime DSS/LTA Linux x86_64 con JVM privata,
 se presente nel bundle di ingresso. Il packager ne controlla architettura,
