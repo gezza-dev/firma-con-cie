@@ -11,12 +11,22 @@ Ubuntu 24.04 e il controllo ABI core24; la GUI è compilata nella distribuzione
 di destinazione. Il runtime è trasferito soltanto con commit, CPU e checksum
 verificati, conservando gli hash originali dei sorgenti.
 
-Superati localmente 12 nuovi test delle matrici, della ricetta ARM64, delle
+Superati localmente 14 nuovi test delle matrici, della ricetta ARM64, delle
 barriere di installazione e della provenienza degli archivi, oltre ai 19 test
 desktop CI; actionlint senza segnalazioni. Sono predisposti test TLS e ciclo
 installazione/aggiornamento/rimozione con dati sintetici, più avvio Xvfb con
 PC/SC bloccato, nei container di destinazione. Il collaudo completo Actions
 di questa estensione è ancora da eseguire; non è attestata una prova con CIE.
+
+Primo collaudo completo, commit `c8cb2ed`, Actions `41482974430`: entrambi i
+runtime nativi completano i test; Arch completa analisi, 446 test Flutter con
+cinque prove opzionali saltate, confezionamento di 61 ELF e test TLS. Il ciclo
+di installazione si ferma per lo strumento `gresource` assente nell’immagine.
+I job Fedora si fermano prima dell’analisi Flutter per `which` assente.
+Aggiunti esplicitamente questi strumenti, font per Xvfb e un controllo
+iniziale dei prerequisiti. La fixture TLS risolve il percorso reale dei
+certificati per supportare anche bubblewrap che rifiuta mount su symlink.
+Questi tentativi non sono dichiarati pacchetti collaudati con successo.
 
 ## Workflow desktop manuali (2 novembre)
 

@@ -13,9 +13,26 @@ from unittest.mock import patch
 import ci_linux_distribution as ci
 import package_linux_distribution as packaging
 import test_linux_distribution_package as lifecycle
+import test_linux_tls_runtime as tls
 
 
 class DistributionCI(unittest.TestCase):
+    def test_missing_build_or_inspection_tool_is_reported_before_compilation(self):
+        for missing in ('which', 'gresource'):
+            with self.subTest(tool=missing), \
+                 patch.object(ci.shutil,'which',side_effect=lambda tool:None if tool==missing else '/synthetic/tool'), \
+                 patch.object(ci,'run') as run, self.assertRaisesRegex(RuntimeError,'Missing distribution build tools: '+missing):
+                ci.require_tools('fedora')
+            run.assert_not_called()
+
+    def test_tls_mount_uses_canonical_certificates_directory(self):
+        directory=Path('/synthetic/linked-certificates');canonical=Path('/synthetic/real-certificates')
+        ca=Path('/synthetic/ca.pem')
+        with patch.object(Path,'resolve',return_value=canonical) as resolve:
+            arguments=tls.trust_mount_arguments(ca,directory)
+        resolve.assert_called_once_with(strict=True)
+        self.assertEqual(arguments,['--tmpfs',str(canonical),'--ro-bind',str(ca),str(canonical/'ca-certificates.crt')])
+
     def test_matrix_selects_only_requested_native_cpus(self):
         all_targets = ci.matrices('all')
         self.assertEqual([(p['distribution'], p['architecture']) for p in all_targets['package']['include']],

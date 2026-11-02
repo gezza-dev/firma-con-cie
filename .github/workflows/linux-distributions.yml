@@ -71,6 +71,7 @@ jobs:
         with:
           name: linux-distribution-runtime-${{ matrix.architecture }}-${{ github.sha }}
           path: dist/linux-distribution-runtime-${{ matrix.architecture }}/*
+          overwrite: true
           if-no-files-found: error
           retention-days: 14
       - uses: actions/upload-artifact@v4
@@ -111,7 +112,7 @@ jobs:
           docker run --rm --cap-add SYS_ADMIN \
             --security-opt seccomp=unconfined --security-opt apparmor=unconfined \
             firma-cie-distribution-ci bwrap --unshare-pid --unshare-ipc --unshare-uts \
-            --die-with-parent --ro-bind / / --dev /dev --tmpfs /etc/ssl/certs -- /bin/true
+            --die-with-parent --ro-bind / / --dev /dev --tmpfs /tmp -- /bin/true
       - name: Compile the app and build native packages as an ordinary user
         env:
           CIE_DISTRIBUTION: ${{ matrix.distribution }}
@@ -143,6 +144,7 @@ jobs:
         with:
           name: firma-con-cie-linux-${{ matrix.distribution }}-${{ matrix.architecture }}-${{ github.sha }}
           path: dist/linux-${{ matrix.distribution }}-${{ matrix.architecture }}/*
+          overwrite: true
           if-no-files-found: error
           retention-days: 14
       - uses: actions/upload-artifact@v4

@@ -43,6 +43,17 @@ def require_target(distribution):
     return architecture
 
 
+def require_tools(distribution):
+    tools = ['git', 'curl', 'unzip', 'xz', 'tar', 'gzip', 'which', 'clang', 'clang++', 'cmake',
+             'ninja', 'pkg-config', 'patchelf', 'readelf', 'ldd', 'Xvfb', 'bwrap',
+             'desktop-file-validate', 'gresource']
+    tools += ['rpm', 'rpmbuild'] if distribution == 'fedora' else ['pacman', 'makepkg', 'bsdtar']
+    missing = [tool for tool in tools if not shutil.which(tool)]
+    if missing:
+        raise RuntimeError('Missing distribution build tools: '+', '.join(missing))
+    run('pkg-config', '--exists', 'gtk+-3.0', 'libpcsclite')
+
+
 def runtime_paths():
     architecture = host_architecture()
     return (ROOT/'.build/ci-distribution-runtime', ROOT/'native/runtime/linux',
@@ -130,6 +141,7 @@ def extract_runtime(archive, metadata, destination, architecture):
 def build_target(distribution, runtime_input):
     require_linux_builder()
     architecture = require_target(distribution)
+    require_tools(distribution)
     work = ROOT/('.build/ci-'+distribution)
     work.mkdir(parents=True)
     reports = ROOT/('reports/linux-'+distribution+'-'+architecture)

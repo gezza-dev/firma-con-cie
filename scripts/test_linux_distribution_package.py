@@ -2,8 +2,9 @@
 # SPDX-License-Identifier: BSD-3-Clause
 """Install/upgrade/remove a test package ONLY inside an isolated build root.
 
-Requires /.cie-isolated-root, a non-identity user namespace, no PC/SC socket or
-USB device tree. Never run this against the host. Test homes are synthetic.
+Defaults to /.cie-isolated-root and a non-identity user namespace. Explicit CI
+Docker mode requires both container markers. No PC/SC socket or USB device tree
+is allowed in either mode. Never run against the host. Test homes are synthetic.
 """
 import argparse
 import ctypes as C

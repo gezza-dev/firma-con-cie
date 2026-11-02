@@ -21,6 +21,15 @@ def namespace_arguments(user_namespace=True):
     return []
 
 
+def trust_mount_arguments(ca, directory=None):
+    # Fedora/Arch may make /etc/ssl/certs a symlink. Recent bubblewrap refuses
+    # mounts onto a final symlink; mount the canonical directory in the child
+    # namespace, without replacing links or touching the distribution's store.
+    certificates = (directory or Path('/etc/ssl/certs')).resolve(strict=True)
+    return ['--tmpfs', str(certificates), '--ro-bind', str(ca),
+            str(certificates/'ca-certificates.crt')]
+
+
 def check(client, report, user_namespace=True):
     if (not Path('/work/.cie-appimage-isolated-root').is_file()
             or Path('/run/pcscd/pcscd.comm').exists() or Path('/dev/bus/usb').exists()):
@@ -57,8 +66,7 @@ def check(client, report, user_namespace=True):
             # it on every kernel. TLS does not need a separate proc filesystem.
             command = [bwrap, *namespace_arguments(user_namespace), '--unshare-pid',
                        '--unshare-ipc', '--unshare-uts', '--die-with-parent', '--ro-bind', '/', '/',
-                       '--dev', '/dev', '--tmpfs', '/etc/ssl/certs',
-                       '--ro-bind', str(root/ca), '/etc/ssl/certs/ca-certificates.crt', '--',
+                       '--dev', '/dev', *trust_mount_arguments(root/ca), '--',
                        str(client), url, '0', '0']
             wire = ('CIE-NETWORK-1\n2\nlocalhost\n'+str(server.server_port)+'\n\n\n'
                     if proxy else 'CIE-NETWORK-1\n0\n\n0\n\n\n')

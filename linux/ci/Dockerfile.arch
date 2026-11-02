@@ -5,10 +5,10 @@ ARG CI_UID=1001
 ARG CI_GID=1001
 ENV CMAKE_BUILD_PARALLEL_LEVEL=2
 RUN pacman -Syu --noconfirm --needed \
-    clang cmake ninja pkgconf gtk3 xz pcsclite nss python python-pip git curl \
-    unzip zip ca-certificates patchelf bubblewrap desktop-file-utils binutils \
+    clang cmake ninja pkgconf gtk3 glib2-devel xz pcsclite nss python python-pip git curl \
+    unzip zip tar gzip ca-certificates which patchelf bubblewrap desktop-file-utils binutils \
     mesa libglvnd libsecret alsa-lib openssl librsvg gdk-pixbuf2 \
-    xorg-server-xvfb libx11 dbus procps-ng zstd && \
+    xorg-server-xvfb libx11 dbus procps-ng zstd ttf-dejavu && \
     python -m venv /opt/ci-tools && \
     /opt/ci-tools/bin/pip install cmake==3.31.6 && \
     groupadd -g "$CI_GID" cie-ci && useradd -u "$CI_UID" -g "$CI_GID" -M cie-ci && \
