@@ -3,6 +3,13 @@
 Le nuove release di Firma con CIE sono preparate come bozze.
 La preparazione non cambia la visibilità del repository e non pubblica automaticamente pacchetti.
 Il tag stabile viene fissato soltanto dopo la verifica dei materiali definitivi.
+I workflow di confezionamento raccolgono automaticamente i pacchetti nella
+bozza della versione in `pubspec.yaml`, vincolata a un unico commit. Non
+pubblicano release e rifiutano versioni già pubblicate. I trasferimenti intermedi
+e la diagnostica restano in bozze **CI staging** separate, da non pubblicare.
+Sorgenti del progetto, archivi delle dipendenze fissate e checksum vengono
+aggiunti dal job dei metadati. Le vecchie release non vengono aggiornate.
+Vedere [DESKTOP_CI.md](DESKTOP_CI.md) per avvio, visibilità e ripetizione dei job.
 La versione corrente è **1.0.1** (build Flutter **2**). La 1.0.0 rimane
 documentata come prima release storica. I manifest conservano la revisione
 effettiva di ciascun pacchetto e gli esiti software distinti dai collaudi con CIE.

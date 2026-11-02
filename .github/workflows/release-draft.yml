@@ -1,0 +1,52 @@
+name: Release draft metadata
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      phase:
+        type: string
+        default: metadata
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Reject published versions and drafts from a different commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/ci_release.py prepare
+  metadata:
+    if: inputs.phase != 'prepare'
+    needs: prepare
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    # Only metadata assembly is serialized; target builds remain parallel.
+    # A newer pending assembly supersedes an older redundant one, and reads
+    # all completed target manifests, not only those from its caller.
+    concurrency:
+      group: release-draft-metadata-${{ github.repository }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test draft privacy and provenance boundaries
+        run: python3 scripts/test_ci_release.py
+      - name: Add corresponding project and locked dependency source archives
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/ci_release.py sources
+      - name: Assemble checksums and provenance without publishing
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/ci_release.py aggregate

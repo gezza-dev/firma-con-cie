@@ -1482,3 +1482,24 @@ il successo della disinstallazione reale su Windows ARM64 con il pacchetto
 corretto. Il collaudo non comprende nuove operazioni sulla CIE, firme o
 autenticazioni browser. La correzione riguarda il confezionamento Windows;
 GUI e runtime nativi precedentemente verificati sono riutilizzati.
+
+## Raccolta privata delle prossime build desktop — 2 novembre 2026
+
+I workflow manuali di confezionamento raccolgono i pacchetti verificati in una
+release in bozza, vincolata alla versione di `pubspec.yaml` e al commit esatto.
+Runtime intermedi e diagnostica viaggiano in bozze CI separate; non vengono
+più caricati come artefatti Actions accessibili del repository pubblico.
+L'entry point Windows ARM64 riusa il workflow Windows comune. Il job dei
+metadati prepara i sorgenti del progetto e delle dipendenze fissate, controlla
+i digest degli allegati e scrive provenienza e checksum senza pubblicare.
+
+Validazione: 98 test Python pertinenti, incluse API GitHub simulate, rotte di
+tutti i target, blocco delle release pubblicate, commit/tag incoerenti,
+trasferimenti privati, file alterati e archivi non sicuri; `actionlint` 1.7.12
+e controllo dell'inventario sorgente superati. Il rifiuto della versione già
+pubblicata 1.0.1 è stato verificato anche con un client GitHub reale limitato
+alle richieste GET. Nessuna release esistente è stata modificata e nessuna
+nuova compilazione completa o prova con CIE è stata eseguita per questa
+modifica dei workflow. La prima esecuzione completa della nuova raccolta
+richiede una versione non ancora pubblicata. Dettagli in
+[DESKTOP_CI.md](DESKTOP_CI.md).

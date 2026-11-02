@@ -24,14 +24,19 @@ on:
         required: false
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: macos-universal-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
+  prepare_draft:
+    uses: ./.github/workflows/release-draft.yml
+    with:
+      phase: prepare
   package:
+    needs: prepare_draft
     runs-on: macos-26
     timeout-minutes: 180
     env:
@@ -80,21 +85,17 @@ jobs:
       - name: Remove this job's temporary signing credentials
         if: always()
         run: python3 scripts/ci_macos.py cleanup
-      - uses: actions/upload-artifact@v4
-        with:
-          name: firma-con-cie-macos-universal-${{ github.sha }}
-          path: |
-            /private/tmp/firma-cie-source/dist/macos/*.dmg
-            /private/tmp/firma-cie-source/dist/macos/*.zip
-            /private/tmp/firma-cie-source/dist/macos/SHA256SUMS
-          if-no-files-found: error
-          retention-days: 14
-      - uses: actions/upload-artifact@v4
+      - name: Upload verified packages to the unpublished version draft
+        working-directory: ${{ env.CIE_CI_SOURCE }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/ci_release.py upload --target macos-universal --receipt reports/macos/result.json
+      - name: Keep diagnostics in a private CI staging draft
         if: always()
-        with:
-          name: macos-validation-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            /private/tmp/firma-cie-source/reports/macos
-            /private/tmp/firma-cie-source/.build/dependencies/macos-*/logs
-          if-no-files-found: ignore
-          retention-days: 14
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/ci_release.py diagnostics --name macos-universal /private/tmp/firma-cie-source/reports/macos
+  draft_metadata:
+    if: ${{ always() && !cancelled() && needs.prepare_draft.result == 'success' && github.workflow == 'macOS Universal package' }}
+    needs: [prepare_draft, package]
+    uses: ./.github/workflows/release-draft.yml

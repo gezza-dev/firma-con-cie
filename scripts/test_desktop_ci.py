@@ -259,15 +259,12 @@ class DesktopCI(unittest.TestCase):
             text = (common.ROOT/'.github/workflows'/name).read_text()
             self.assertIn('  workflow_dispatch:', text)
             self.assertNotRegex(text, r'(?m)^  (push|pull_request|pull_request_target):')
-            self.assertIn('contents: read', text)
-            self.assertNotIn('contents: write', text)
+            self.assertIn('contents: write', text)
+            self.assertNotIn('upload-artifact@', text)
         workflow = (common.ROOT/'.github/workflows/macos-package.yml').read_text()
-        uploads = workflow.split('uses: actions/upload-artifact@v4')[1:]
-        self.assertTrue(uploads)
-        for upload in uploads:
-            self.assertNotIn('RUNNER_TEMP', upload)
-            self.assertNotIn('keychain', upload)
-            self.assertNotIn('*.p12', upload)
+        self.assertIn('ci_release.py upload --target macos-universal', workflow)
+        self.assertIn('ci_release.py diagnostics', workflow)
+        self.assertNotIn('*.p12', workflow)
         self.assertIn('if: always()\n        run: python3 scripts/ci_macos.py cleanup', workflow)
 
 

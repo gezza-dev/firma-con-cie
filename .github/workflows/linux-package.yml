@@ -15,14 +15,19 @@ on:
         default: all
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: linux-packages-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
+  prepare_draft:
+    uses: ./.github/workflows/release-draft.yml
+    with:
+      phase: prepare
   package:
+    needs: prepare_draft
     name: Linux ${{ matrix.architecture }} / ${{ matrix.format }}
     strategy:
       fail-fast: false
@@ -82,25 +87,16 @@ jobs:
             --env CIE_LINUX_FORMAT --volume "$GITHUB_WORKSPACE:/work/project" \
             --workdir /work/project firma-cie-linux-ci \
             python3 scripts/ci_linux.py "$CIE_LINUX_FORMAT" --tls-check
-      - uses: actions/upload-artifact@v4
-        with:
-          name: firma-con-cie-linux-${{ matrix.architecture }}-${{ matrix.format }}-${{ github.sha }}
-          path: |
-            dist/linux-${{ matrix.architecture }}-${{ matrix.format }}/*.deb
-            dist/linux-${{ matrix.architecture }}-${{ matrix.format }}/*.AppImage
-            dist/linux-${{ matrix.architecture }}-${{ matrix.format }}/*.tar.gz
-            dist/linux-${{ matrix.architecture }}-${{ matrix.format }}/SHA256SUMS
-            dist/linux-${{ matrix.architecture }}-${{ matrix.format }}/package-manifest.json
-            dist/linux-${{ matrix.architecture }}-${{ matrix.format }}/system-dependency-provenance.json
-            dist/linux-${{ matrix.architecture }}-${{ matrix.format }}/LEGGIMI.md
-          if-no-files-found: error
-          retention-days: 14
-      - uses: actions/upload-artifact@v4
+      - name: Upload verified package to the unpublished version draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/ci_release.py upload --target linux-${{ matrix.architecture }}-${{ matrix.format }} --receipt reports/linux-${{ matrix.architecture }}-${{ matrix.format }}/result.json
+      - name: Keep diagnostics in a private CI staging draft
         if: always()
-        with:
-          name: linux-${{ matrix.architecture }}-${{ matrix.format }}-validation-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            reports
-            .build/dependencies/linux-*/logs
-          if-no-files-found: ignore
-          retention-days: 14
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/ci_release.py diagnostics --name linux-${{ matrix.architecture }}-${{ matrix.format }} reports
+  draft_metadata:
+    if: ${{ always() && !cancelled() && needs.prepare_draft.result == 'success' && github.workflow == 'Linux packages' }}
+    needs: [prepare_draft, package]
+    uses: ./.github/workflows/release-draft.yml

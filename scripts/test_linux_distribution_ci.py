@@ -178,11 +178,13 @@ class DistributionCI(unittest.TestCase):
         self.assertIn('  workflow_dispatch:', text)
         self.assertIn('  workflow_call:', text)
         self.assertNotRegex(text, r'(?m)^  (push|pull_request|pull_request_target):')
-        self.assertIn('contents: read', text)
+        self.assertIn('contents: write', text)
         self.assertNotIn('--privileged', text)
         self.assertNotIn('/var/run/docker.sock', text)
-        for upload in text.split('uses: actions/upload-artifact@v4')[1:]:
-            self.assertNotIn('upgrade', upload.split('          retention-days:', 1)[0])
+        self.assertNotIn('upload-artifact@', text)
+        self.assertIn('ci_release.py upload --target linux-', text)
+        self.assertNotIn('--directory .build/ci-', text)
+
 
 
 if __name__ == '__main__':

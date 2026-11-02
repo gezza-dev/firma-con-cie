@@ -39,26 +39,27 @@ La build automatica ha inoltre superato 383 test Flutter (14 saltati),
    presente anche sul ramo predefinito perché GitHub mostri il comando manuale.
 2. Nel repository `gezza-dev/firma-con-cie`, aprire **Actions → Windows ARM64
    package → Run workflow**, selezionare il ramo e avviare.
-3. Attendere il completamento di entrambi i job. In caso di errore leggere i log
-   del passaggio e gli artifact diagnostici; non usare un payload incompleto.
-4. Scaricare l'artifact `firma-con-cie-windows-arm64-<commit>` dalla stessa
-   esecuzione. Contiene:
+3. Attendere il completamento dei job. In caso di errore leggere i log e la
+   diagnostica nella bozza **CI staging <run ID>**; non usare payload incompleti.
+4. Aprire la bozza non pubblicata `v<versione>` in **Releases**. Contiene
+   l'installer `firma-con-cie_<versione>_windows_arm64_setup.exe`, i checksum
+   per target e, dopo il job dei metadati, i sorgenti e il checksum complessivo.
 
-   - `firma-con-cie_1.0.1_windows_arm64_setup.exe` (versione da `pubspec.yaml`);
-   - checksum `.exe.sha256` e rapporto `package-result.json`;
-   - `Release/`, cartella completa dell'app e delle sue dipendenze.
-
-Il workflow non crea release, non pubblica pacchetti, non firma Authenticode
-il prodotto e non modifica il repository. Gli artifact finali e i report sono
-conservati per 14 giorni; il trasferimento nativo intermedio per 7 giorni.
-Per un'installazione nuova usare l'installer: avviare il solo eseguibile da
-`Release` non installa il componente di sistema.
+La versione deriva da `pubspec.yaml`: una versione già pubblicata viene
+rifiutata prima della compilazione. Il workflow crea o aggiorna soltanto bozze,
+non pubblica release e non applica una firma Authenticode al prodotto.
+Il runtime nativo e i rapporti sono conservati in una bozza CI separata,
+non in artefatti Actions accessibili del repository pubblico. I file della
+cartella `Release` non sono allegati alla release utente: per installare anche
+il componente di sistema usare l'installer. Dettagli e gestione delle bozze
+sono in [DESKTOP_CI.md](DESKTOP_CI.md).
 
 Il runner predefinito è `windows-11-arm`; disponibilità e fatturazione dipendono
 dal piano e dalle impostazioni Actions del repository. Consultare la
 [tabella aggiornata GitHub](https://docs.github.com/en/actions/how-tos/write-workflows/choose-where-workflows-run/choose-the-runner-for-a-job).
 Non sono necessari PAT, credenziali della CIE, certificati personali o secret
-per i job di compilazione. I permessi del token sono `contents: read`.
+per i job di compilazione. I permessi del token temporaneo sono `contents: write`, necessari per
+le bozze e i trasferimenti privati; non è richiesto un PAT personale.
 
 ## Compilazione completa
 

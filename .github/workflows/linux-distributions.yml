@@ -15,14 +15,19 @@ on:
         default: all
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: linux-distributions-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
+  prepare_draft:
+    uses: ./.github/workflows/release-draft.yml
+    with:
+      phase: prepare
   select:
+    needs: prepare_draft
     runs-on: ubuntu-24.04
     outputs:
       runtime: ${{ steps.matrix.outputs.runtime }}
@@ -67,22 +72,15 @@ jobs:
             --security-opt seccomp=unconfined --security-opt apparmor=unconfined \
             --volume "$GITHUB_WORKSPACE:/work/project" --workdir /work/project \
             firma-cie-native-ci python3 scripts/ci_linux_distribution.py runtime-tls
-      - uses: actions/upload-artifact@v4
-        with:
-          name: linux-distribution-runtime-${{ matrix.architecture }}-${{ github.sha }}
-          path: dist/linux-distribution-runtime-${{ matrix.architecture }}/*
-          overwrite: true
-          if-no-files-found: error
-          retention-days: 14
-      - uses: actions/upload-artifact@v4
+      - name: Transfer runtime privately to distribution runners
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/ci_release.py send --name linux-distribution-runtime-${{ matrix.architecture }} --directory dist/linux-distribution-runtime-${{ matrix.architecture }}
+      - name: Keep runtime diagnostics in a private CI staging draft
         if: always()
-        with:
-          name: linux-distribution-runtime-${{ matrix.architecture }}-validation-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            reports
-            .build/dependencies/linux-*/logs
-          if-no-files-found: ignore
-          retention-days: 14
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/ci_release.py diagnostics --name linux-distribution-runtime-${{ matrix.architecture }} reports
   package:
     needs: [select, runtime]
     if: ${{ always() && !cancelled() && needs.select.result == 'success' }}
@@ -96,10 +94,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - uses: actions/download-artifact@v4
-        with:
-          name: linux-distribution-runtime-${{ matrix.architecture }}-${{ github.sha }}
-          path: .build/distribution-runtime-input
+      - name: Receive the CPU-matched private runtime
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/ci_release.py receive --name linux-distribution-runtime-${{ matrix.architecture }} --directory .build/distribution-runtime-input
       - name: Prepare the destination distribution container
         env:
           CIE_DISTRIBUTION: ${{ matrix.distribution }}
@@ -140,17 +138,16 @@ jobs:
             --env CIE_DISTRIBUTION --volume "$GITHUB_WORKSPACE:/work/project" \
             --workdir /work/project firma-cie-distribution-ci \
             bash -euo pipefail -c 'python3 scripts/ci_linux_distribution.py validate --distribution "$CIE_DISTRIBUTION"'
-      - uses: actions/upload-artifact@v4
-        with:
-          name: firma-con-cie-linux-${{ matrix.distribution }}-${{ matrix.architecture }}-${{ github.sha }}
-          path: dist/linux-${{ matrix.distribution }}-${{ matrix.architecture }}/*
-          overwrite: true
-          if-no-files-found: error
-          retention-days: 14
-      - uses: actions/upload-artifact@v4
+      - name: Upload verified distribution package to the unpublished version draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/ci_release.py upload --target linux-${{ matrix.distribution }}-${{ matrix.architecture }} --receipt reports/linux-${{ matrix.distribution }}-${{ matrix.architecture }}/result.json
+      - name: Keep diagnostics in a private CI staging draft
         if: always()
-        with:
-          name: linux-${{ matrix.distribution }}-${{ matrix.architecture }}-validation-${{ github.run_id }}-${{ github.run_attempt }}
-          path: reports
-          if-no-files-found: ignore
-          retention-days: 14
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/ci_release.py diagnostics --name linux-${{ matrix.distribution }}-${{ matrix.architecture }} reports
+  draft_metadata:
+    if: ${{ always() && !cancelled() && needs.prepare_draft.result == 'success' && github.workflow == 'Linux distribution packages' }}
+    needs: [prepare_draft, select, runtime, package]
+    uses: ./.github/workflows/release-draft.yml

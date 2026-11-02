@@ -10,34 +10,43 @@ on:
         default: all
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: desktop-packages-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
+  prepare_draft:
+    uses: ./.github/workflows/release-draft.yml
+    with:
+      phase: prepare
   windows_x64:
+    needs: prepare_draft
     if: inputs.platform == 'all' || inputs.platform == 'windows'
     uses: ./.github/workflows/windows-package.yml
     with:
       architecture: x64
   windows_arm64:
+    needs: prepare_draft
     if: inputs.platform == 'all' || inputs.platform == 'windows'
     uses: ./.github/workflows/windows-arm64.yml
   macos:
+    needs: prepare_draft
     if: inputs.platform == 'all' || inputs.platform == 'macos'
     uses: ./.github/workflows/macos-package.yml
     secrets: inherit
   linux:
+    needs: prepare_draft
     if: inputs.platform == 'all' || inputs.platform == 'linux'
     uses: ./.github/workflows/linux-package.yml
   linux_distributions:
+    needs: prepare_draft
     if: inputs.platform == 'all' || inputs.platform == 'linux' || inputs.platform == 'linux-distributions'
     uses: ./.github/workflows/linux-distributions.yml
   summary:
     if: always()
-    needs: [windows_x64, windows_arm64, macos, linux, linux_distributions]
+    needs: [prepare_draft, windows_x64, windows_arm64, macos, linux, linux_distributions]
     runs-on: ubuntu-24.04
     env:
       CIE_RESULTS: ${{ toJSON(needs) }}
@@ -51,6 +60,10 @@ jobs:
               report.write('| Target | Result |\n| --- | --- |\n')
               for name, value in json.loads(os.environ['CIE_RESULTS']).items():
                   report.write('| ' + name + ' | ' + value['result'] + ' |\n')
-              report.write('\nDownload packages and validation reports from this run’s artifacts. '
-                           'No GitHub release was published. Hardware/card tests are separate.\n')
+              report.write('\nPackages are in the unpublished version draft; diagnostics are in the run’s CI staging draft. '
+                           'Publication is manual. Hardware/card tests are separate.\n')
           PY
+  draft_metadata:
+    if: ${{ always() && !cancelled() && needs.prepare_draft.result == 'success' }}
+    needs: [prepare_draft, windows_x64, windows_arm64, macos, linux, linux_distributions]
+    uses: ./.github/workflows/release-draft.yml

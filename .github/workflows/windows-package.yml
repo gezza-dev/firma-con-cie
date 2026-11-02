@@ -18,14 +18,19 @@ env:
   CIE_WINDOWS_ARCH: ${{ inputs.architecture }}
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: windows-package-${{ inputs.architecture }}-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
+  prepare_draft:
+    uses: ./.github/workflows/release-draft.yml
+    with:
+      phase: prepare
   native:
+    needs: prepare_draft
     name: Cross-compile Windows middleware and private JVM
     runs-on: ubuntu-24.04
     timeout-minutes: 120
@@ -46,22 +51,15 @@ jobs:
           python3 scripts/test_desktop_ci.py
       - name: Build all native Windows components from the locked sources
         run: python scripts/ci_windows_arm64.py native --architecture "$CIE_WINDOWS_ARCH"
-      - uses: actions/upload-artifact@v4
-        with:
-          name: windows-${{ inputs.architecture }}-native-${{ github.sha }}
-          path: .build/windows-${{ inputs.architecture }}-transfer
-          include-hidden-files: true
-          if-no-files-found: error
-          retention-days: 7
-      - uses: actions/upload-artifact@v4
+      - name: Transfer middleware privately to the Windows runner
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/ci_release.py send --name windows-${{ inputs.architecture }}-native --directory .build/windows-${{ inputs.architecture }}-transfer
+      - name: Keep native diagnostics in a private CI staging draft
         if: always()
-        with:
-          name: windows-${{ inputs.architecture }}-native-logs-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            .build/dependencies/windows-arm64/logs
-            .build/windows-${{ inputs.architecture }}-ci/**/CMakeConfigureLog.yaml
-          if-no-files-found: ignore
-          retention-days: 14
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/ci_release.py diagnostics --name windows-${{ inputs.architecture }}-native .build/dependencies/windows-${{ inputs.architecture }}/logs
 
   package:
     name: Test and package on native Windows
@@ -75,10 +73,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - uses: actions/download-artifact@v4
-        with:
-          name: windows-${{ inputs.architecture }}-native-${{ github.sha }}
-          path: .build/windows-${{ inputs.architecture }}-transfer
+      - name: Receive middleware from this run's private staging draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python scripts/ci_release.py receive --name windows-${{ inputs.architecture }}-native --directory .build/windows-${{ inputs.architecture }}-transfer
+          if ($LASTEXITCODE -ne 0) { throw 'Private runtime transfer failed' }
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -123,24 +123,20 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'ARM64 packaging regression failed' }
           python scripts/ci_windows_arm64.py windows --architecture $env:CIE_WINDOWS_ARCH
           if ($LASTEXITCODE -ne 0) { throw 'Windows build or tests failed' }
-      - uses: actions/upload-artifact@v4
-        with:
-          name: firma-con-cie-windows-${{ inputs.architecture }}-${{ github.sha }}
-          path: |
-            dist/windows-${{ inputs.architecture }}/Setup/*.exe
-            dist/windows-${{ inputs.architecture }}/Setup/*.sha256
-            dist/windows-${{ inputs.architecture }}/Setup/package-result.json
-            dist/windows-${{ inputs.architecture }}/Setup/Release
-          if-no-files-found: error
-          retention-days: 14
-      - uses: actions/upload-artifact@v4
+      - name: Upload verified installer to the unpublished version draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python scripts/ci_release.py upload --target windows-${{ inputs.architecture }} --receipt reports/windows-${{ inputs.architecture }}/result.json
+          if ($LASTEXITCODE -ne 0) { throw 'Private draft upload failed' }
+      - name: Keep diagnostics in a private CI staging draft
         if: always()
-        with:
-          name: windows-${{ inputs.architecture }}-validation-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            reports/windows-${{ inputs.architecture }}
-            dist/windows-${{ inputs.architecture }}/Setup/build
-            dist/windows-${{ inputs.architecture }}/Setup/build.log
-            .build/windows-${{ inputs.architecture }}-ci/**/CMakeConfigureLog.yaml
-          if-no-files-found: ignore
-          retention-days: 14
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python scripts/ci_release.py diagnostics --name windows-${{ inputs.architecture }} reports/windows-${{ inputs.architecture }}
+          if ($LASTEXITCODE -ne 0) { throw 'Private diagnostic upload failed' }
+  draft_metadata:
+    if: ${{ always() && !cancelled() && needs.prepare_draft.result == 'success' && (github.workflow == 'Windows package' || github.workflow == 'Windows ARM64 package') }}
+    needs: [prepare_draft, native, package]
+    uses: ./.github/workflows/release-draft.yml

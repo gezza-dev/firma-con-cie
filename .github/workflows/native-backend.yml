@@ -2,9 +2,20 @@ name: Firma con CIE shared native backend
 on:
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 jobs:
+  staging:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Prepare unpublished transfers for backend-only checks
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/ci_release.py stage
   backend:
+    needs: staging
     strategy:
       fail-fast: false
       matrix:
@@ -21,6 +32,8 @@ jobs:
         shell: bash
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Linux toolchain
         if: runner.os == 'Linux'
         run: |
@@ -34,10 +47,6 @@ jobs:
           python3 -m venv .build/tools
           .build/tools/bin/pip install meson==1.11.0
           echo "$PWD/.build/tools/bin" >> "$GITHUB_PATH"
-      - uses: actions/cache@v4
-        with:
-          path: .build/dependencies
-          key: native-${{ runner.os }}-${{ runner.arch }}-${{ matrix.system }}-${{ hashFiles('scripts/build_portable_dependencies.py', 'native/backend/scripts/dependencies.lock.json') }}
       - name: Dependencies and real backend
         env:
           TARGET_SYSTEM: ${{ matrix.system }}
@@ -50,23 +59,31 @@ jobs:
             python3 scripts/build_native.py --dependency-prefix "$PWD/.build/dependencies/$TARGET_SYSTEM-$(uname -m)/prefix"
             python3 scripts/smoke_native.py --runtime "native/runtime/$TARGET_SYSTEM" --report "reports/$TARGET_SYSTEM-native.json"
           fi
-      - uses: actions/upload-artifact@v4
-        with:
-          name: native-${{ matrix.system }}-${{ runner.arch }}
-          path: native/runtime/${{ matrix.system }}
+      - name: Keep native test runtimes in this run's private staging draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/ci_release.py send --name native-${{ matrix.system }}-${{ runner.arch }} --directory native/runtime/${{ matrix.system }}
   windows-runtime:
     needs: backend
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
         with:
-          name: native-windows-X64
-          path: .build/windows-runtime
+          persist-credentials: false
+      - name: Receive the private Windows test runtime
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          python scripts/ci_release.py receive --name native-windows-X64 --directory .build/windows-runtime
+          if ($LASTEXITCODE -ne 0) { throw 'Private test runtime transfer failed' }
       - name: Execute the cross-compiled backend on Windows, without a card
         shell: pwsh
         run: python scripts/smoke_native.py --runtime .build/windows-runtime --report reports/windows-native.json
-      - uses: actions/upload-artifact@v4
-        with:
-          name: windows-runtime-report
-          path: reports/windows-native.json
+      - name: Keep backend diagnostics in the private staging draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          python scripts/ci_release.py diagnostics --name windows-native reports
+          if ($LASTEXITCODE -ne 0) { throw 'Private diagnostic upload failed' }
