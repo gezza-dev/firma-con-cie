@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: BSD-3-Clause
-"""Native Fedora/Arch x86_64 packages from a validated Linux bundle.
+"""Native Fedora x86_64/aarch64 and Arch x86_64 packages from a validated bundle.
 
 Run inside the destination distribution. Never installs packages, runs the GUI,
 loads PKCS#11 or connects to PC/SC. No application-specific install scriptlets.
@@ -9,6 +9,7 @@ import argparse
 import gzip
 import json
 import os
+import platform
 from pathlib import Path
 import re
 import shutil
@@ -21,9 +22,18 @@ from linux_package_common import (ROOT, PACKAGE, ARTIFACT_STEM, PREFIX, files, r
                                   validate_release_version)
 
 
+def package_architecture(kind, machine=None):
+    machine = (machine or platform.machine()).lower()
+    architecture = {'amd64': 'x86_64', 'x64': 'x86_64',
+                    'arm64': 'aarch64', 'aarch64': 'aarch64', 'x86_64': 'x86_64'}.get(machine)
+    if kind not in ('rpm', 'arch') or architecture is None or (kind == 'arch' and architecture != 'x86_64'):
+        raise ValueError('Unsupported distribution/architecture: ' + kind + '/' + machine)
+    return architecture
+
+
 def elf_files(stage, architecture='x86_64'):
     machines = {'amd64': 'Advanced Micro Devices X86-64',
-                'x86_64': 'Advanced Micro Devices X86-64', 'arm64': 'AArch64'}
+                'x86_64': 'Advanced Micro Devices X86-64', 'arm64': 'AArch64', 'aarch64': 'AArch64'}
     if architecture not in machines:
         raise ValueError('Unsupported ELF architecture: ' + architecture)
     result = [p for p in files(stage) if p.read_bytes()[:4] == b'\x7fELF']
@@ -66,7 +76,7 @@ def payload_tar(stage, path, epoch):
                 archive.add(stage / name, arcname=name, filter=normalized)
 
 
-def rpm_package(stage, elfs, inputs, output, version, release, epoch):
+def rpm_package(stage, elfs, inputs, output, version, release, epoch, architecture='x86_64'):
     configdir = run('rpm', '-E', '%{_rpmconfigdir}').stdout.strip()
     raw = run(Path(configdir) / 'rpmdeps', '--requires', *elfs).stdout.splitlines()
     private_names = {p.name for p in elfs}
@@ -103,14 +113,14 @@ License: LicenseRef-FirmaConCIE-Bundled
 URL: https://github.com/gezza-dev/firma-con-cie
 Source0: payload.tar.gz
 Source1: files.list
-BuildArch: x86_64
+BuildArch: {architecture}
 AutoReqProv: no
 Requires: {', '.join(requires)}
 Recommends: pcsc-lite-ccid, PackageKit
 
 %description
 Independent CIE application with a private native/DSS runtime. Bundled license
-texts are included. Browser setup is explicitly initiated by the user in Home.
+texts are included. Browser setup runs automatically in the application.
 This package does not configure browsers during installation.
 
 %prep
@@ -127,7 +137,7 @@ cp -a opt usr "%{{buildroot}}/"
     specpath.write_text(spec)
     run('rpmbuild', '-bb', '--define', '_topdir ' + str(top), '--define', '_smp_mflags -j2',
         '--define', '_smp_build_ncpus 2', '--define', '_binary_payload w6.xzdio', specpath)
-    built, = (top / 'RPMS/x86_64').glob('*.rpm')
+    built, = (top / 'RPMS' / architecture).glob('*.rpm')
     target = output / (ARTIFACT_STEM + built.name[len(PACKAGE):])
     shutil.copy2(built, target)
     if run('rpm', '-qp', '--queryformat', '%{NAME}', target).stdout.strip() != PACKAGE:
@@ -179,7 +189,8 @@ package() {{
 def package(bundle, output, kind, version, pkgrel='1'):
     validate_release_version(version)
     if not re.fullmatch(r'[1-9]\d*(?:\.\d+)?', pkgrel):
-        raise ValueError('Numeric Arch pkgrel required')
+        raise ValueError('Numeric package release required')
+    architecture = package_architecture(kind)
     bundle, output = bundle.resolve(), output.resolve()
     if output.exists() or output.is_relative_to(bundle):
         raise ValueError('Use a new output directory outside the bundle')
@@ -197,19 +208,19 @@ def package(bundle, output, kind, version, pkgrel='1'):
         stage, inputs = temp / 'stage', temp / 'inputs'
         inputs.mkdir()
         stage_payload(bundle, stage, native, package_type=kind)
-        elfs = elf_files(stage)
+        elfs = elf_files(stage, architecture)
         system = target_libraries(stage, elfs)
         payload = {p.relative_to(stage).as_posix(): sha(p) for p in files(stage)}
         payload_tar(stage, inputs / 'payload.tar.gz', revision['sourceDateEpoch'])
         output.mkdir(parents=True)
         if kind == 'rpm':
-            release = '1.fc' + osrelease['VERSION_ID'].strip('"')
+            release = pkgrel + '.fc' + osrelease['VERSION_ID'].strip('"')
             target, version = rpm_package(stage, elfs, inputs, output, version, release,
-                                          revision['sourceDateEpoch'])
+                                          revision['sourceDateEpoch'], architecture)
         else:
             target, version = arch_package(stage, system, inputs, output,
                                             version, pkgrel)
-        manifest = dict(revision, package=PACKAGE, version=version, architecture='x86_64',
+        manifest = dict(revision, package=PACKAGE, version=version, architecture=architecture,
                         format=kind, targetDistribution=expected, file=target.name,
                         sha256=sha(target), bytes=target.stat().st_size,
                         inputBundle=str(bundle), applicationPrefix='/' + str(PREFIX),

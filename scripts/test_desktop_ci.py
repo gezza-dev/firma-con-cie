@@ -255,7 +255,7 @@ class DesktopCI(unittest.TestCase):
             self.assertFalse(second['releasePublished'])
 
     def test_ci_only_starts_manually_and_uploads_no_keychain(self):
-        for name in ('desktop-packages.yml','macos-package.yml','linux-package.yml','windows-package.yml','windows-arm64.yml'):
+        for name in ('desktop-packages.yml','macos-package.yml','linux-package.yml','linux-distributions.yml','windows-package.yml','windows-arm64.yml'):
             text = (common.ROOT/'.github/workflows'/name).read_text()
             self.assertIn('  workflow_dispatch:', text)
             self.assertNotRegex(text, r'(?m)^  (push|pull_request|pull_request_target):')

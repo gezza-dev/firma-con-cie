@@ -6,7 +6,7 @@ on:
       platform:
         description: Platforms to build (no automatic release publication)
         type: choice
-        options: [all, windows, macos, linux]
+        options: [all, windows, macos, linux, linux-distributions]
         default: all
 
 permissions:
@@ -32,9 +32,12 @@ jobs:
   linux:
     if: inputs.platform == 'all' || inputs.platform == 'linux'
     uses: ./.github/workflows/linux-package.yml
+  linux_distributions:
+    if: inputs.platform == 'all' || inputs.platform == 'linux' || inputs.platform == 'linux-distributions'
+    uses: ./.github/workflows/linux-distributions.yml
   summary:
     if: always()
-    needs: [windows_x64, windows_arm64, macos, linux]
+    needs: [windows_x64, windows_arm64, macos, linux, linux_distributions]
     runs-on: ubuntu-24.04
     env:
       CIE_RESULTS: ${{ toJSON(needs) }}

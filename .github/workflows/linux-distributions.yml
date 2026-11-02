@@ -1,0 +1,154 @@
+name: Linux distribution packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      distribution:
+        description: Native distribution packages to build
+        type: choice
+        options: [all, fedora, arch]
+        default: all
+  workflow_call:
+    inputs:
+      distribution:
+        type: string
+        default: all
+
+permissions:
+  contents: read
+
+concurrency:
+  group: linux-distributions-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  select:
+    runs-on: ubuntu-24.04
+    outputs:
+      runtime: ${{ steps.matrix.outputs.runtime }}
+      package: ${{ steps.matrix.outputs.package }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - id: matrix
+        env:
+          CIE_DISTRIBUTION: ${{ inputs.distribution }}
+        run: python3 scripts/ci_linux_distribution.py matrix --distribution "$CIE_DISTRIBUTION"
+  runtime:
+    needs: select
+    name: Compatible native runtime / ${{ matrix.architecture }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.select.outputs.runtime) }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Prepare the audited native build base
+        run: |
+          set -euo pipefail
+          docker build -t firma-cie-native-ci -f linux/ci/Dockerfile.deb .
+          mkdir -p reports
+          docker image inspect firma-cie-native-ci > reports/native-ci-image.json
+      - name: Compile and test the CPU-matched middleware and private DSS
+        run: |
+          set -euo pipefail
+          docker run --rm --user "$(id -u):$(id -g)" --env HOME=/tmp/firma-cie-ci-home \
+            --volume "$GITHUB_WORKSPACE:/work/project" --workdir /work/project \
+            firma-cie-native-ci bash -euo pipefail -c '
+              mkdir -p "$HOME"
+              python3 scripts/check_repository.py --report reports/native-source-audit.json
+              python3 scripts/ci_linux_distribution.py runtime
+            '
+          docker run --rm --cap-add SYS_ADMIN \
+            --security-opt seccomp=unconfined --security-opt apparmor=unconfined \
+            --volume "$GITHUB_WORKSPACE:/work/project" --workdir /work/project \
+            firma-cie-native-ci python3 scripts/ci_linux_distribution.py runtime-tls
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-distribution-runtime-${{ matrix.architecture }}-${{ github.sha }}
+          path: dist/linux-distribution-runtime-${{ matrix.architecture }}/*
+          if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: linux-distribution-runtime-${{ matrix.architecture }}-validation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            reports
+            .build/dependencies/linux-*/logs
+          if-no-files-found: ignore
+          retention-days: 14
+  package:
+    needs: [select, runtime]
+    if: ${{ always() && !cancelled() && needs.select.result == 'success' }}
+    name: ${{ matrix.distribution }} / ${{ matrix.architecture }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.select.outputs.package) }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: linux-distribution-runtime-${{ matrix.architecture }}-${{ github.sha }}
+          path: .build/distribution-runtime-input
+      - name: Prepare the destination distribution container
+        env:
+          CIE_DISTRIBUTION: ${{ matrix.distribution }}
+        run: |
+          set -euo pipefail
+          docker build --build-arg CI_UID="$(id -u)" --build-arg CI_GID="$(id -g)" \
+            -t firma-cie-distribution-ci -f "linux/ci/Dockerfile.$CIE_DISTRIBUTION" .
+          mkdir -p reports
+          docker image inspect firma-cie-distribution-ci > reports/distribution-ci-image.json
+          docker run --rm --cap-add SYS_ADMIN \
+            --security-opt seccomp=unconfined --security-opt apparmor=unconfined \
+            firma-cie-distribution-ci bwrap --unshare-pid --unshare-ipc --unshare-uts \
+            --die-with-parent --ro-bind / / --dev /dev --tmpfs /etc/ssl/certs -- /bin/true
+      - name: Compile the app and build native packages as an ordinary user
+        env:
+          CIE_DISTRIBUTION: ${{ matrix.distribution }}
+        run: |
+          set -euo pipefail
+          docker run --rm --user "$(id -u):$(id -g)" \
+            --env HOME=/tmp/firma-cie-ci-home --env PUB_CACHE=/tmp/firma-cie-ci-pub-cache \
+            --env CIE_DISTRIBUTION --env GITHUB_PATH=/tmp/firma-cie-github-path \
+            --volume "$GITHUB_WORKSPACE:/work/project" --workdir /work/project \
+            firma-cie-distribution-ci bash -euo pipefail -c '
+              mkdir -p "$HOME"
+              python3 scripts/check_repository.py --report reports/distribution-source-audit.json
+              python3 scripts/ci_desktop_common.py --install-flutter /tmp/firma-cie-flutter
+              export PATH="/tmp/firma-cie-flutter/bin:$PATH"
+              python3 scripts/ci_linux_distribution.py build --distribution "$CIE_DISTRIBUTION" \
+                --runtime-input .build/distribution-runtime-input
+            '
+      - name: Test native TLS and install, upgrade, render and remove in the disposable container
+        env:
+          CIE_DISTRIBUTION: ${{ matrix.distribution }}
+        run: |
+          set -euo pipefail
+          docker run --rm --cap-add SYS_ADMIN \
+            --security-opt seccomp=unconfined --security-opt apparmor=unconfined \
+            --env CIE_DISTRIBUTION --volume "$GITHUB_WORKSPACE:/work/project" \
+            --workdir /work/project firma-cie-distribution-ci \
+            bash -euo pipefail -c 'python3 scripts/ci_linux_distribution.py validate --distribution "$CIE_DISTRIBUTION"'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firma-con-cie-linux-${{ matrix.distribution }}-${{ matrix.architecture }}-${{ github.sha }}
+          path: dist/linux-${{ matrix.distribution }}-${{ matrix.architecture }}/*
+          if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: linux-${{ matrix.distribution }}-${{ matrix.architecture }}-validation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: reports
+          if-no-files-found: ignore
+          retention-days: 14

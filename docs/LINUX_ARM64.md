@@ -17,7 +17,8 @@ il confronto degli hash con la build già verificata e con il lock delle dipende
 La selezione della JVM riconosce Linux ARM64 sia in Dart sia negli strumenti
 Python. L'assemblaggio DSS confronta la CPU richiesta con quella del runtime
 nativo; il confezionamento controlla inoltre gli ELF e rifiuta una JVM x86_64
-in un bundle ARM64. RPM e Arch restano, per ora, ricette x86_64.
+in un bundle ARM64. È disponibile anche la ricetta Fedora RPM aarch64 tramite
+[CI delle distribuzioni](LINUX_DISTRIBUTION_PACKAGES.md); Arch resta x86_64.
 
 ## Compilazione in un ambiente ARM64
 

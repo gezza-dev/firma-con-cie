@@ -21,7 +21,14 @@ from package_linux_distribution import elf_files, target_libraries
 from ltv_runtime import runtime_architecture
 
 
-def require_isolated_root():
+def require_isolated_root(container=False):
+    if container:
+        if (os.geteuid() != 0 or not Path('/.dockerenv').is_file()
+                or not Path('/work/.cie-distribution-ci-root').is_file()):
+            raise RuntimeError('Use root only inside the marked disposable Docker CI container')
+        if Path('/run/pcscd').exists() or Path('/dev/bus/usb').exists():
+            raise RuntimeError('Card interfaces must not be available to this test')
+        return
     if not Path('/.cie-isolated-root').is_file():
         raise RuntimeError('Refusing installation outside the marked disposable root')
     mapping = Path('/proc/self/uid_map').read_text().split()
@@ -31,8 +38,8 @@ def require_isolated_root():
         raise RuntimeError('Card interfaces must not be available to this test')
 
 
-def manager(kind, operation, package=None):
-    require_isolated_root()
+def manager(kind, operation, package=None, *, container=False):
+    require_isolated_root(container)
     if kind == 'deb':
         args = ['apt-get', '-y', '--no-install-recommends', '-o', 'Dpkg::Options::=--path-include=/usr/share/doc/*', '-o', 'Dpkg::Options::=--path-include=/usr/share/licenses/*', 'install', package] if operation != 'remove' else ['dpkg', '--remove', PACKAGE]
     elif kind == 'rpm':
@@ -175,8 +182,8 @@ def headless_gui(report_dir, guard, executable='/opt/firma-con-cie/Firma con CIE
             server.terminate(); server.wait(timeout=5)
 
 
-def check(package, upgrade, kind, report, guard):
-    require_isolated_root()
+def check(package, upgrade, kind, report, guard, *, container=False):
+    require_isolated_root(container)
     package, upgrade = package.resolve(), upgrade.resolve()
     manifest = json.loads((package.parent / 'package-manifest.json').read_text())
     upgraded = json.loads((upgrade.parent / 'package-manifest.json').read_text())
@@ -195,18 +202,18 @@ def check(package, upgrade, kind, report, guard):
     steps = {}
     try:
         if Path('/opt/firma-con-cie/Firma con CIE').exists():
-            manager(kind, 'remove')
-        result = manager(kind, 'install', package)
+            manager(kind, 'remove', container=container)
+        result = manager(kind, 'install', package, container=container)
         (report.parent / 'install.log').write_text(result.stdout + result.stderr)
         count = verify_installed(manifest, kind)
         steps['install'] = True
         gui = headless_gui(report.parent, guard)
-        result = manager(kind, 'upgrade', upgrade)
+        result = manager(kind, 'upgrade', upgrade, container=container)
         (report.parent / 'upgrade.log').write_text(result.stdout + result.stderr)
         verify_installed(upgraded, kind)
         assert sentinel.read_bytes() == b'synthetic user data - preserve'
         steps['upgrade'] = True
-        result = manager(kind, 'remove')
+        result = manager(kind, 'remove', container=container)
         (report.parent / 'remove.log').write_text(result.stdout + result.stderr)
         assert not Path('/opt/firma-con-cie/Firma con CIE').exists()
         assert not Path('/usr/bin/Firma con CIE').exists()
@@ -233,5 +240,8 @@ if __name__ == '__main__':
     parser.add_argument('--format', choices=['deb', 'rpm', 'arch'], required=True)
     parser.add_argument('--report', type=Path, required=True)
     parser.add_argument('--no-card-guard', type=Path, required=True)
+    parser.add_argument('--container-root', action='store_true',
+                        help='Explicit root mode for the marked disposable Docker CI image only')
     args = parser.parse_args()
-    check(args.package, args.upgrade_package, args.format, args.report, args.no_card_guard)
+    check(args.package, args.upgrade_package, args.format, args.report, args.no_card_guard,
+          container=args.container_root)

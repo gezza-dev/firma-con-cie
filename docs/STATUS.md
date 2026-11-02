@@ -2,6 +2,22 @@
 
 Situazione al 2 novembre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
 
+## CI Fedora e Arch (2 novembre)
+
+Preparato il workflow manuale **Linux distribution packages**: Fedora 44
+x86_64/aarch64 e Arch Linux x86_64, con immagini ufficiali fissate tramite
+digest e inventario delle dipendenze. Il middleware/DSS conserva la base
+Ubuntu 24.04 e il controllo ABI core24; la GUI è compilata nella distribuzione
+di destinazione. Il runtime è trasferito soltanto con commit, CPU e checksum
+verificati, conservando gli hash originali dei sorgenti.
+
+Superati localmente 11 nuovi test delle matrici, della ricetta ARM64, delle
+barriere di installazione e della provenienza degli archivi, oltre ai 19 test
+desktop CI; actionlint senza segnalazioni. Sono predisposti test TLS e ciclo
+installazione/aggiornamento/rimozione con dati sintetici, più avvio Xvfb con
+PC/SC bloccato, nei container di destinazione. Il collaudo completo Actions
+di questa estensione è ancora da eseguire; non è attestata una prova con CIE.
+
 ## Workflow desktop manuali (2 novembre)
 
 Predisposto **Desktop packages**, avviabile soltanto con Run workflow, per

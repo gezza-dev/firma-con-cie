@@ -9,7 +9,7 @@ avviano compilazioni e non pubblicano release.
 
 1. Aprire [Actions → Desktop packages](https://github.com/gezza-dev/firma-con-cie/actions/workflows/desktop-packages.yml).
 2. Premere **Run workflow**, scegliere il ramo e `all`, `windows`, `macos`
-   oppure `linux`.
+   oppure `linux`. La scelta `linux-distributions` esegue soltanto Fedora e Arch.
 3. Al termine scaricare gli artefatti dalla pagina dell’esecuzione. Il riepilogo
    distingue gli esiti dei sistemi: un errore macOS non annulla le build Windows
    o Linux già riuscite.
@@ -27,9 +27,19 @@ e i checksum, senza mescolare build di revisioni differenti.
 | macOS Universal | macOS 26 Apple Silicon, Xcode 26+; due architetture native nel bundle | DMG e ZIP dell’app, firmati Developer ID e notarizzati |
 | Linux x86_64 | Runner Ubuntu x64, contenitori Ubuntu 24.04 / 22.04 | DEB, bundle e AppImage |
 | Linux ARM64 | Runner Ubuntu ARM64, contenitori Ubuntu 24.04 / 22.04 | DEB, bundle e AppImage |
+| Fedora 44 x86_64 | Runner Ubuntu x64, container ufficiale Fedora 44 | RPM |
+| Fedora 44 aarch64 | Runner Ubuntu ARM64, container ufficiale Fedora 44 aarch64 | RPM |
+| Arch Linux x86_64 | Runner Ubuntu x64, container ufficiale Arch base-devel | `.pkg.tar.zst` |
 
-RPM Fedora e pacchetto Arch mantengono le ricette separate già documentate:
-questo workflow automatizza DEB e AppImage per entrambe le CPU Linux.
+Fedora e Arch sono richiamati anche dalle scelte `all` e `linux`. Il workflow
+separato **Linux distribution packages** permette di scegliere `all`, `fedora`
+o `arch`, sempre manualmente. Compila la GUI nella distribuzione di destinazione;
+il middleware e DSS vengono compilati dallo stesso commit in Ubuntu 24.04,
+separatamente per CPU, per conservare il limite ABI dei provider browser core24.
+Il runtime trasferito è verificato per commit, CPU, checksum e hash dei sorgenti,
+poi nuovamente caricato e provato nella distribuzione di destinazione.
+Le immagini di base sono fissate per digest; il rapporto include il loro
+inventario dei pacchetti. Dettagli: [LINUX_DISTRIBUTION_PACKAGES.md](LINUX_DISTRIBUTION_PACKAGES.md).
 Il bundle tar Linux è un artefatto per sviluppo e riconfezionamento; per gli
 utenti scegliere DEB o AppImage. Il bundle tar Linux e lo ZIP macOS conservano
 i permessi Unix; non distribuire
@@ -114,6 +124,12 @@ il DMG controlla le architetture Universal dell’app e del componente CTK.
 Si eseguono analisi Flutter, test della GUI, test nativi con fixture, verifiche
 DSS e controlli dei pacchetti. Windows usa installer isolati con helper finto;
 Linux usa un database dpkg temporaneo e namespace privati per le CA sintetiche.
+Fedora e Arch eseguono installazione, aggiornamento di sola release del pacchetto,
+avvio su Xvfb con PC/SC bloccato e rimozione in un secondo container Docker
+marcato, conservando dati utente sintetici. L’artefatto per l’aggiornamento è
+una fixture privata e non viene caricato tra i pacchetti utente. Lo script
+mantiene anche il precedente modo rootless con namespace utente; il modo Docker
+richiede un’opzione esplicita, i marcatori dell’immagine e l’assenza di interfacce CIE.
 La compilazione e il confezionamento Linux girano come utente ordinario; il
 solo test TLS usa un secondo contenitore root con capacità di creare namespace
 di mount. Non usa una mappatura UID annidata, non modifica sysctl del runner e

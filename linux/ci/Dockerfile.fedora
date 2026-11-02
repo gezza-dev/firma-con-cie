@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# Official Fedora 44 multiarch OCI index, including amd64 and arm64.
+FROM registry.fedoraproject.org/fedora:44@sha256:9b53c238bb4e9f6221b4820bbdfa61c1bd8273d386dacaaed429a81dd7362085
+ARG CI_UID=1001
+ARG CI_GID=1001
+ENV CMAKE_BUILD_PARALLEL_LEVEL=2
+RUN dnf -y --setopt=install_weak_deps=False install \
+    gcc gcc-c++ clang cmake ninja-build pkgconf-pkg-config gtk3-devel xz-devel \
+    pcsc-lite pcsc-lite-devel nss-tools python3 python3-pip git curl unzip zip xz \
+    ca-certificates patchelf rpm-build binutils bubblewrap desktop-file-utils \
+    mesa-dri-drivers mesa-libEGL mesa-libGL mesa-libGLES libsecret alsa-lib \
+    openssl-devel librsvg2 gdk-pixbuf2-modules xorg-x11-server-Xvfb libX11 \
+    dbus-x11 procps-ng shadow-utils && \
+    python3 -m venv /opt/ci-tools && \
+    /opt/ci-tools/bin/pip install cmake==3.31.6 && \
+    groupadd -g "$CI_GID" cie-ci && useradd -u "$CI_UID" -g "$CI_GID" -M cie-ci && \
+    mkdir -p /work && touch /work/.cie-appimage-isolated-root /work/.cie-distribution-ci-root && \
+    rpm -qa --qf '%{NAME} %{VERSION}-%{RELEASE} %{ARCH}\n' | sort > /work/ci-system-packages.txt && \
+    dnf clean all
+ENV PATH=/opt/ci-tools/bin:$PATH
+WORKDIR /work/project

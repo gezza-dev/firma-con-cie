@@ -16,7 +16,7 @@ Apri la pagina dell’**[ultima release stabile](https://github.com/gezza-dev/fi
 | Windows 10 o successivo | x64 | Installer `.exe` x64 |
 | Windows 11 | ARM64 | Installer `.exe` ARM64 |
 | Linux | x86_64 | AppImage, `.deb`, `.rpm`, `.pkg.tar.zst` |
-| Linux | ARM64 / AArch64 | AppImage e `.deb` |
+| Linux | ARM64 / AArch64 | AppImage, `.deb` e `.rpm` Fedora |
 
 I requisiti Linux dipendono dal formato: l’AppImage usa una base Ubuntu 22.04 con glibc 2.35; i pacchetti nativi hanno requisiti propri. Consulta le [istruzioni AppImage](docs/LINUX_APPIMAGE.md), i [pacchetti nativi](docs/LINUX_DISTRIBUTION_PACKAGES.md) e il [supporto ARM64](docs/LINUX_ARM64.md). La compatibilità e le prove effettivamente eseguite sono documentate in [Stato e verifiche](docs/STATUS.md).
 

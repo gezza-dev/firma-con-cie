@@ -1,19 +1,19 @@
-# Pacchetti Linux per distribuzione — x86_64
+# Pacchetti Linux per distribuzione
 
 I formati previsti sono `.deb` per Ubuntu/Debian, `.rpm` per Fedora e
 `.pkg.tar.zst` per Arch Linux. Non sono pubblicazioni nei repository delle
 distribuzioni. Ogni dichiarazione di compatibilità si riferisce alle versioni
 e alle prove riportate qui, non a tutte le distribuzioni o architetture.
 
-Il `.deb` ARM64 ha una [procedura e verifiche separate](LINUX_ARM64.md);
-le ricette RPM e Arch di questo documento restano limitate a x86_64.
+Il `.deb` ARM64 ha una [procedura e verifiche separate](LINUX_ARM64.md).
+La ricetta RPM supporta x86_64 e aarch64; Arch resta limitato a x86_64.
 
 ## Nomi dei file della release 1.0.1
 
 I file distribuiti usano il nome pubblico dell’app:
 
 - `firma-con-cie_1.0.1_amd64.deb` e `firma-con-cie_1.0.1_arm64.deb`;
-- `firma-con-cie-1.0.1-1.fc44.x86_64.rpm`;
+- `firma-con-cie-1.0.1-1.fc44.x86_64.rpm` e `firma-con-cie-1.0.1-1.fc44.aarch64.rpm`;
 - `firma-con-cie-1.0.1-1-x86_64.pkg.tar.zst`;
 - `firma-con-cie-1.0.1-x86_64.AppImage` e `firma-con-cie-1.0.1-aarch64.AppImage`.
 
@@ -32,15 +32,15 @@ Restano i percorsi `/opt/firma-con-cie`, `/usr/bin/Firma con CIE` e
 `/usr/share/doc/firma-con-cie`. I programmi di test sono esclusi.
 
 L'installazione non avvia l'app, non registra moduli nei browser, non collega
-permessi Snap e non legge la CIE. Le configurazioni browser restano attivabili
-dall'utente nella Home. Nessuno script di installazione o rimozione modifica
+permessi Snap e non legge la CIE. La configurazione automatica dei browser
+avviene nell’app, secondo le politiche condivise. Nessuno script di installazione o rimozione modifica
 gli abbinamenti, le preferenze o i documenti dell'utente. I normali hook delle
 distribuzioni aggiornano le cache di menu e icone.
 
 Le dipendenze sono determinate nell'ambiente della distribuzione: il `.deb`
 usa `dpkg-shlibdeps`; l'RPM usa le dipendenze ELF di RPM, escludendo le librerie
 private già incluse; Arch risolve le librerie di sistema nei pacchetti che le
-possiedono. Per RPM e Arch tutti gli ELF devono essere x86_64 e risolversi
+possiedono. Tutti gli ELF devono corrispondere alla CPU del pacchetto e risolversi
 contro le librerie della distribuzione prima della creazione del pacchetto.
 PC/SC, Python, strumenti NSS e CA sono dichiarati esplicitamente. Il driver
 CCID è raccomandato/opzionale secondo il formato.
@@ -56,6 +56,31 @@ dinamicamente, quindi non basta l'analisi delle dipendenze ELF. I driver grafici
 restano quelli del sistema; i collaudi virtuali usano Mesa software.
 
 ## Costruzione
+
+È disponibile anche [Actions → Linux distribution packages](https://github.com/gezza-dev/firma-con-cie/actions/workflows/linux-distributions.yml),
+ad avvio manuale. La selezione `all` prepara Fedora 44 x86_64/aarch64 e Arch
+x86_64; `fedora` o `arch` limitano i job alla distribuzione richiesta. Il workflow
+principale Desktop packages li include nelle selezioni `all`, `linux` e
+`linux-distributions`. [Guida CI](DESKTOP_CI.md).
+
+Il middleware compatibile core24 e DSS sono compilati su Ubuntu 24.04, nelle
+due CPU native. Sono trasferiti come archivio con checksum e provenienza del
+commit esatto. Non si ricompilano i provider browser con la glibc più recente
+di Fedora/Arch e non si disabilita il controllo ABI esistente. La GUI Flutter
+viene compilata nel container di destinazione, insieme al confezionamento.
+Fedora usa l’immagine ufficiale 44 multiarch, Arch quella ufficiale base-devel,
+entrambe fissate tramite digest nei Dockerfile. Le versioni effettive dei
+pacchetti installati nel container sono conservate nei rapporti.
+
+Compilazione e makepkg girano come utente ordinario. I test privilegiati usano
+un secondo container usa e getta, senza home, dispositivi o sessione grafica
+dell’host. Il test del ciclo installazione/aggiornamento/rimozione controlla
+proprietari, hash, risoluzione ELF, DSS e conservazione di dati sintetici;
+avvia anche la GUI su Xvfb con guardia PC/SC. Il secondo pacchetto ha solo
+release `2` invece di `1`, è una fixture e non viene distribuito. I test TLS
+usano CA sintetiche in namespace privati e il risultato finale è positivo
+soltanto dopo tutte queste verifiche. Il desktop completo, SELinux e la CIE
+reale restano collaudi distinti.
 
 Usare ambienti puliti delle distribuzioni di destinazione, senza montare
 home reale, profili browser, `/run/pcscd`, USB o socket della sessione grafica.
@@ -163,3 +188,7 @@ di invocare qualsiasi gestore pacchetti. Riceve un artefatto e un secondo
 artefatto di versione maggiore tramite `--upgrade-package`, oltre al formato,
 al percorso del rapporto e alla guardia PC/SC di test. Non creare il marcatore
 sull'host e non usare questa procedura sulla propria installazione desktop.
+La nuova opzione `--container-root` è riservata al container Docker CI marcato:
+richiede root, `/.dockerenv`, `/work/.cie-distribution-ci-root` e nessuna
+interfaccia PC/SC o USB. Senza l’opzione rimane obbligatorio il namespace
+rootless descritto sopra.

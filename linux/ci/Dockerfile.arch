@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# Official Arch Linux base-devel OCI index; x86_64 only.
+FROM archlinux:base-devel@sha256:624bdc7fc6615155d67bc34cf7146c0c9fd0e3c92943977da63a630e4ca49c30
+ARG CI_UID=1001
+ARG CI_GID=1001
+ENV CMAKE_BUILD_PARALLEL_LEVEL=2
+RUN pacman -Syu --noconfirm --needed \
+    clang cmake ninja pkgconf gtk3 xz pcsclite nss python python-pip git curl \
+    unzip zip ca-certificates patchelf bubblewrap desktop-file-utils binutils \
+    mesa libglvnd libsecret alsa-lib openssl librsvg gdk-pixbuf2 \
+    xorg-server-xvfb libx11 dbus procps-ng zstd && \
+    python -m venv /opt/ci-tools && \
+    /opt/ci-tools/bin/pip install cmake==3.31.6 && \
+    groupadd -g "$CI_GID" cie-ci && useradd -u "$CI_UID" -g "$CI_GID" -M cie-ci && \
+    mkdir -p /work && touch /work/.cie-appimage-isolated-root /work/.cie-distribution-ci-root && \
+    pacman -Q > /work/ci-system-packages.txt
+ENV PATH=/opt/ci-tools/bin:$PATH
+WORKDIR /work/project
