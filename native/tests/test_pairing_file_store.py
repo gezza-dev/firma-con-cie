@@ -13,7 +13,8 @@ from pathlib import Path
 binary = Path(sys.argv[1]).resolve()
 with tempfile.TemporaryDirectory(prefix='cie-file-cache-') as folder:
     root = Path(folder)
-    env = dict(os.environ, CIE_PAIRING_TEST_CACHE=str(root))
+    state = root / 'invalidated-v1'
+    env = dict(os.environ, CIE_PAIRING_TEST_CACHE=str(root), CIE_PAIRING_TEST_STATE=str(state))
     extension = '.exe' if os.name == 'nt' else ''
     writer, remover = [root / (name + extension) for name in ['CIE-Old-Name', 'CIE-New-Name']]
     for target in [writer, remover]:
@@ -33,6 +34,12 @@ with tempfile.TemporaryDirectory(prefix='cie-file-cache-') as folder:
     assert b'1234' not in before and b'12345678' not in before
     assert (cache / '.key').stat().st_size == 64
     run(remover, 'present')  # another process/name, same per-user format
+    run(remover, 'invalidate')
+    assert (state / 'TESTMIGA').is_dir()
+    run(remover, 'present', succeeds=False)
+    run(writer, 'restore')
+    assert not (state / 'TESTMIGA').exists()
+    run(remover, 'present')
     run(remover, 'remove')
     run(remover, 'remove')
     run(remover, 'present', 'TESTMIGB')

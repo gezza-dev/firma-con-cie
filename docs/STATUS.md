@@ -30,6 +30,25 @@ con successo: Actions `41445562948`, 434 test Flutter superati e 17 saltati,
 payload e contenuto estratto dell’installer senza rilievi. Il pacchetto è
 stato scaricato, senza installazione o nuovo collaudo reale della CIE.
 
+### Primo collaudo dei workflow desktop
+
+Sul commit `4d5f5b7`, Actions `41455038363` completa con successo tutti i job
+Windows ARM64. Il nuovo job GCC x64 compila il runtime ma trova nel solo test
+del minidriver un include `<cstdint>` mancante, ora esplicitato. I quattro job
+Linux di `41455042102` compilano il backend e passano 39 test nativi su 40;
+il test rimasto usa ancora la ricerca della home per lo stato di invalidazione,
+non disponibile con l’UID senza voce passwd del contenitore.
+
+Il target di test ora definisce anche `CIE_PAIRING_TEST_STATE`, e sia il test
+C++ sia quello Python confinano cache e marcatori nella stessa fixture privata.
+Sono aggiunti invalidazione/ripristino fra processi con nomi diversi. Nessun
+cambiamento ai target o ai percorsi degli abbinamenti di produzione.
+Verificati localmente i 20 controlli C++ della cache, la fixture di persistenza
+e tutti i 161 controlli del minidriver compilato con GCC. Il collaudo completo
+viene ripetuto dal commit corretto, includendo macOS dopo la conferma dell’utente
+che i secret Apple sono configurati. Gli esiti in corso non sono ancora
+attestazioni di build o notarizzazione riuscite.
+
 ## Versione 1.0.1 in preparazione (2 novembre)
 
 Dopo la conferma dell’utente che la versione 1.0.0 è stata pubblicata, i

@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <cstdint>
 static unsigned checks=0;
 static void check(bool value){++checks;if(!value)throw std::runtime_error("minidriver regression at check "+std::to_string(checks));}
 static LPVOID WINAPI allocate(SIZE_T size){return malloc(size);}

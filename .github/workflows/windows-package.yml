@@ -44,7 +44,7 @@ jobs:
         run: |
           python3 scripts/test_windows_arm64.py
           python3 scripts/test_desktop_ci.py
-      - name: Build all native ARM64 components from the locked sources
+      - name: Build all native Windows components from the locked sources
         run: python scripts/ci_windows_arm64.py native --architecture "$CIE_WINDOWS_ARCH"
       - uses: actions/upload-artifact@v4
         with:

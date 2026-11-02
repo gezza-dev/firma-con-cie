@@ -7,6 +7,9 @@
 #ifndef CIE_PAIRING_TEST_SERVICE
 #error "File cache tests require the isolated test service"
 #endif
+#ifndef CIE_PAIRING_TEST_STATE
+#error "File cache tests require isolated invalidation state"
+#endif
 #include <filesystem>
 #include <cstdlib>
 // Explicit subprocess persistence tests use only the test cache override.
@@ -14,6 +17,10 @@ int persistent(const std::string& mode,const std::string& id){
  if(id.rfind("TESTMIG",0)||!cie_pairing::validId(id))return 21;
  if(mode=="seed"){
   cie_pairing::prepare();cie_pairing::write(id,"1234");cie_pairing::writePublic(id,{1,2,3});
+ }else if(mode=="invalidate"){
+  cie_pairing::invalidate(id);
+ }else if(mode=="restore"){
+  cie_pairing::acceptFreshPairing(id);
  }else if(mode=="remove"||mode=="present"){
   if(mode=="remove")cie_pairing::eraseRecord(id);
   auto publicIds=cie_pairing::listPublic(),ids=cie_pairing::list();
@@ -30,8 +37,10 @@ int main(int argc,char** argv){
  struct DirectoryCleanup{std::filesystem::path p;~DirectoryCleanup(){std::error_code ec;std::filesystem::remove_all(p,ec);}} directoryCleanup{isolated};
 #ifdef _WIN32
  if(_wputenv_s(L"CIE_PAIRING_TEST_CACHE",isolated.c_str()))return 27;
+ if(_wputenv_s(L"CIE_PAIRING_TEST_STATE",(isolated/L"invalidated-v1").c_str()))return 27;
 #else
  if(setenv("CIE_PAIRING_TEST_CACHE",isolated.c_str(),1))return 27;
+ if(setenv("CIE_PAIRING_TEST_STATE",(isolated/"invalidated-v1").c_str(),1))return 27;
 #endif
  if(!cie_pairing::supported())return 77;
  const auto id="TEST"+std::to_string(std::chrono::steady_clock::now().time_since_epoch().count());
