@@ -1,0 +1,53 @@
+name: Desktop packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Platforms to build (no automatic release publication)
+        type: choice
+        options: [all, windows, macos, linux]
+        default: all
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-packages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  windows_x64:
+    if: inputs.platform == 'all' || inputs.platform == 'windows'
+    uses: ./.github/workflows/windows-package.yml
+    with:
+      architecture: x64
+  windows_arm64:
+    if: inputs.platform == 'all' || inputs.platform == 'windows'
+    uses: ./.github/workflows/windows-arm64.yml
+  macos:
+    if: inputs.platform == 'all' || inputs.platform == 'macos'
+    uses: ./.github/workflows/macos-package.yml
+    secrets: inherit
+  linux:
+    if: inputs.platform == 'all' || inputs.platform == 'linux'
+    uses: ./.github/workflows/linux-package.yml
+  summary:
+    if: always()
+    needs: [windows_x64, windows_arm64, macos, linux]
+    runs-on: ubuntu-24.04
+    env:
+      CIE_RESULTS: ${{ toJSON(needs) }}
+    steps:
+      - name: Record the independent platform results
+        run: |
+          python3 - <<'PY'
+          import json, os
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as report:
+              report.write('## Desktop packages\n\nCommit: `' + os.environ['GITHUB_SHA'] + '`\n\n')
+              report.write('| Target | Result |\n| --- | --- |\n')
+              for name, value in json.loads(os.environ['CIE_RESULTS']).items():
+                  report.write('| ' + name + ' | ' + value['result'] + ' |\n')
+              report.write('\nDownload packages and validation reports from this run’s artifacts. '
+                           'No GitHub release was published. Hardware/card tests are separate.\n')
+          PY

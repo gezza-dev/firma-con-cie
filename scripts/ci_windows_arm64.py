@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: BSD-3-Clause
-"""Build the complete Windows ARM64 artifact on disposable GitHub runners.
+"""Build complete Windows x64/ARM64 artifacts (ARM64 remains the default) on disposable GitHub runners.
 
 Linux builds the pinned native dependencies/backend. Windows ARM64 executes
 regressions and builds Flutter and Inno. Never installs the production component,
@@ -29,6 +29,20 @@ WORK = ROOT/'.build/windows-arm64-ci'
 TRANSFER = ROOT/'.build/windows-arm64-transfer'
 REPORTS = ROOT/'reports/windows-arm64'
 ENV = os.environ.copy()
+ARCHITECTURE = 'arm64'
+CPU = 'arm64'
+
+
+def select_architecture(architecture):
+    global ARCHITECTURE, CPU, WORK, TRANSFER, REPORTS
+    if architecture not in ('x64', 'arm64'):
+        raise ValueError('Unsupported Windows architecture')
+    ARCHITECTURE = architecture
+    CPU = 'x86_64' if architecture == 'x64' else 'arm64'
+    WORK = ROOT / ('.build/windows-' + architecture + '-ci')
+    TRANSFER = ROOT / ('.build/windows-' + architecture + '-transfer')
+    REPORTS = ROOT / ('reports/windows-' + architecture)
+
 
 
 def sha(path):
@@ -77,30 +91,38 @@ def native():
     if TRANSFER.exists():
         raise ValueError('Use a fresh CI checkout; transfer output already exists')
     tools = json.loads((ROOT/'packaging/windows/arm64-toolchain.lock.json').read_text())
-    llvm = WORK/'llvm'
-    llvm.mkdir(parents=True, exist_ok=True)
-    home = unpack(download(tools['llvm-mingw'], WORK/'downloads'), llvm)
-    ENV['PATH'] = str(home/'bin')+os.pathsep+ENV['PATH']
-    python('build_portable_dependencies.py', '--target', 'windows-arm64', '--arch', 'arm64')
-    deps = ROOT/'.build/dependencies/windows-arm64'
+    home = None
+    if ARCHITECTURE == 'arm64':
+        llvm = WORK/'llvm'
+        llvm.mkdir(parents=True, exist_ok=True)
+        home = unpack(download(tools['llvm-mingw'], WORK/'downloads'), llvm)
+        ENV['PATH'] = str(home/'bin')+os.pathsep+ENV['PATH']
+    python('build_portable_dependencies.py', '--target', 'windows-'+ARCHITECTURE, '--arch', CPU)
+    deps = ROOT/('.build/dependencies/windows-'+ARCHITECTURE)
     toolchain = '-DCMAKE_TOOLCHAIN_FILE='+str(deps/'mingw.cmake')
     runtime = WORK/'native-base'
-    python('build_native.py', '--system', 'windows', '--windows-architecture', 'arm64',
+    python('build_native.py', '--system', 'windows', '--windows-architecture', CPU,
            '--dependency-prefix', deps/'prefix', '--toolchain', deps/'mingw.cmake',
            '--build-dir', WORK/'native-build', '--output', runtime)
-    # Static LLVM/libc++ and MinGW runtime attribution travels with the app.
-    notices = runtime/'licenses/llvm-mingw'
-    notices.mkdir(parents=True)
-    count = 0
-    for p in home.rglob('*'):
-        if p.is_file() and any(s in p.name.lower() for s in ('license', 'copying', 'copyright', 'notice')):
-            target = notices/p.relative_to(home)
-            target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(p, target)
-            count += 1
-    if not count:
-        raise ValueError('LLVM-MinGW runtime license material missing')
-    (notices/'toolchain.json').write_text(json.dumps(tools['llvm-mingw'],indent=2)+'\n')
+    if home is not None:
+        # Static LLVM/libc++ and MinGW runtime attribution travels with the app.
+        notices = runtime/'licenses/llvm-mingw'
+        notices.mkdir(parents=True)
+        count = 0
+        for p in home.rglob('*'):
+            if p.is_file() and any(s in p.name.lower() for s in ('license', 'copying', 'copyright', 'notice')):
+                target = notices/p.relative_to(home)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(p, target)
+                count += 1
+        if not count:
+            raise ValueError('LLVM-MinGW runtime license material missing')
+        (notices/'toolchain.json').write_text(json.dumps(tools['llvm-mingw'],indent=2)+'\n')
+    else:
+        notices = runtime/'licenses/mingw-runtime'
+        notices.mkdir(parents=True)
+        for package in ('gcc-mingw-w64-base', 'mingw-w64-common'):
+            shutil.copy2(Path('/usr/share/doc')/package/'copyright', notices/(package+'-copyright'))
     manifest_refresh(runtime)
     ltv = json.loads((ROOT/'native/ltv/toolchain.lock.json').read_text())
     cache = WORK/'java-tools'
@@ -113,7 +135,7 @@ def native():
     maven = unpack(download(ltv['maven'], cache), maven_root)/'bin/mvn'
     TRANSFER.mkdir(parents=True)
     full_runtime = TRANSFER/'runtime'
-    python('build_ltv.py', '--system', 'windows', '--architecture', 'arm64',
+    python('build_ltv.py', '--system', 'windows', '--architecture', CPU,
            '--java-home', java, '--maven', maven, '--base-runtime', runtime,
            '--output', full_runtime, '--tools-cache', cache)
     # Reuse the same OpenSSL headers, archives and C ABI throughout this build.
@@ -140,29 +162,30 @@ def native():
     # Regression binaries are CI-only; never merge these into the system payload.
     test_tools = TRANSFER/'test-tools'
     shutil.copytree(provider/'tests', test_tools/'provider-fixtures')
-    shutil.copy2(deps/'build/podofo/podofo_charconv_probe.exe',test_tools/'podofo_charconv_probe.exe')
+    if ARCHITECTURE == 'arm64':
+        shutil.copy2(deps/'build/podofo/podofo_charconv_probe.exe',test_tools/'podofo_charconv_probe.exe')
     for build, target in ((provider,test_tools/'web'), (pkcs,test_tools/'pkcs11')):
         target.mkdir(parents=True)
         for p in build.iterdir():
             if p.is_file() and p.suffix in ('.exe','.dll'):
                 shutil.copy2(p,target/p.name)
-    check_pe_tree(TRANSFER,'arm64')
+    check_pe_tree(TRANSFER,ARCHITECTURE)
     files = {p.relative_to(TRANSFER).as_posix():sha(p) for p in sorted(TRANSFER.rglob('*')) if p.is_file()}
-    (TRANSFER/'transfer-manifest.json').write_text(json.dumps({'architecture':'arm64','files':files},indent=2)+'\n')
+    (TRANSFER/'transfer-manifest.json').write_text(json.dumps({'architecture':ARCHITECTURE,'files':files},indent=2)+'\n')
 
 
 def windows():
     # Native Python is essential: ctypes cannot load ARM64 DLLs into x64 Python.
-    if platform.system() != 'Windows' or pe_machine(Path(sys.executable)) != MACHINES['arm64']:
-        raise ValueError('The app phase requires native ARM64 Windows and Python')
+    if platform.system() != 'Windows' or pe_machine(Path(sys.executable)) != MACHINES[ARCHITECTURE]:
+        raise ValueError('The app phase requires matching native Windows and Python')
     receipt = json.loads((TRANSFER/'transfer-manifest.json').read_text())
-    if receipt['architecture'] != 'arm64':
+    if receipt['architecture'] != ARCHITECTURE:
         raise ValueError('Wrong transfer architecture')
     for name,digest in receipt['files'].items():
         path = (TRANSFER/name).resolve()
         if not path.is_relative_to(TRANSFER.resolve()) or sha(path)!=digest:
             raise ValueError('Transfer checksum mismatch: '+name)
-    check_pe_tree(TRANSFER,'arm64')
+    check_pe_tree(TRANSFER,ARCHITECTURE)
     runtime = ROOT/'native/runtime/windows'
     web = ROOT/'native/runtime/windows-web-component'
     shutil.copytree(TRANSFER/'runtime',runtime)
@@ -172,7 +195,8 @@ def windows():
     python('smoke_native.py','--runtime',runtime,'--report',REPORTS/'native.json')
     python('test_ltv.py','--runtime',runtime,'--report',REPORTS/'ltv.json')
     test_tools = TRANSFER/'test-tools'
-    run(test_tools/'podofo_charconv_probe.exe')
+    if ARCHITECTURE == 'arm64':
+        run(test_tools/'podofo_charconv_probe.exe')
     python('test_windows_installer_helper.py','--helper',test_tools/'web/cie_installer_fake.exe',
            '--report',REPORTS/'installer-helper.json')
     for name in ('cie_web_package_status_tests','cie_web_catalog_tests','cie_web_setup_policy_tests'):
@@ -187,18 +211,18 @@ def windows():
         raise ValueError('Pinned Flutter SDK missing from PATH')
     dart = Path(flutter).parent/'cache/dart-sdk/bin/dart.exe'
     run(flutter,'--suppress-analytics','pub','get','--enforce-lockfile')
-    if pe_machine(dart) != MACHINES['arm64']:
-        raise ValueError('Flutter selected an x64 Dart SDK; ARM64 fallback is forbidden')
+    if pe_machine(dart) != MACHINES[ARCHITECTURE]:
+        raise ValueError('Flutter Dart SDK does not match the requested Windows architecture')
     run(flutter,'--suppress-analytics','analyze','--no-pub')
     run(flutter,'--suppress-analytics','test','--no-pub')
     # Uses the native host architecture. Flutter 3.47.7 has no --target-platform
     # option for build windows; a native ARM64 Dart SDK selects windows-arm64.
     run(flutter,'--suppress-analytics','build','windows','--release','--no-pub')
-    release = ROOT/'build/windows/arm64/runner/Release'
-    check_release_architecture(release,'arm64')
+    release = ROOT/('build/windows/'+ARCHITECTURE+'/runner/Release')
+    check_release_architecture(release,ARCHITECTURE)
     # The package's native-assets hook downloads PDFium; compare its bytes to
     # the independently checksum-locked publisher archive before packaging.
-    preview = json.loads((ROOT/'native/preview/pdfium.lock.json').read_text())['artifacts']['windows-arm64']
+    preview = json.loads((ROOT/'native/preview/pdfium.lock.json').read_text())['artifacts']['windows-'+ARCHITECTURE]
     with tarfile.open(download(preview, WORK/'downloads')) as archive:
         member = next(m for m in archive.getmembers() if m.name.lstrip('./')=='bin/pdfium.dll')
         if hashlib.sha256(archive.extractfile(member).read()).hexdigest()!=sha(release/'pdfium.dll'):
@@ -215,22 +239,24 @@ def windows():
     inno = WORK/'inno'
     run(installer,'/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-','/CURRENTUSER','/DIR='+str(inno))
     # This installs only the compiler on the disposable runner, never the app.
-    vc = Path(os.environ['CIE_CI_VC_REDIST_ARM64'])
+    vc = Path(os.environ['CIE_CI_VC_REDIST_'+ARCHITECTURE.upper()])
     version = re.search(r'^version:\s*(\d+\.\d+\.\d+)\+', (ROOT/'pubspec.yaml').read_text(),re.M).group(1)
-    python('package_windows_installer.py','--release',release,'--output',ROOT/'dist/windows-arm64/Setup',
-           '--iscc',inno/'ISCC.exe','--vc-redist',vc,'--version',version,'--architecture','arm64')
+    python('package_windows_installer.py','--release',release,'--output',ROOT/('dist/windows-'+ARCHITECTURE+'/Setup'),
+           '--iscc',inno/'ISCC.exe','--vc-redist',vc,'--version',version,'--architecture',ARCHITECTURE)
     # Same real Inno engine; synthetic payload and fake helper only. No UAC.
     python('test_windows_installer.py','--iscc',inno/'ISCC.exe',
-           '--fake-helper',test_tools/'web/cie_installer_fake.exe','--architecture','arm64',
+           '--fake-helper',test_tools/'web/cie_installer_fake.exe','--architecture',ARCHITECTURE,
            '--output',REPORTS/'isolated-installer')
     (REPORTS/'result.json').write_text(json.dumps({'softwareChecksPassed':True,
-        'architecture':'arm64','sourceCommit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
+        'architecture':ARCHITECTURE,'sourceCommit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
         'realCardOperations':0,'productionInstallations':0,'hardwareValidated':False},indent=2)+'\n')
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('phase',choices=['native','windows'])
+    parser.add_argument('--architecture', choices=['x64','arm64'], default='arm64')
     args = parser.parse_args()
+    select_architecture(args.architecture)
     WORK.mkdir(parents=True,exist_ok=True)
     {'native':native,'windows':windows}[args.phase]()

@@ -1,0 +1,98 @@
+name: macOS Universal package
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+      MACOS_CERTIFICATE_P12_BASE64:
+        required: false
+      MACOS_CERTIFICATE_PASSWORD:
+        required: false
+      MACOS_SIGNING_IDENTITY:
+        required: false
+      MACOS_TEAM_ID:
+        required: false
+      MACOS_NOTARY_KEY_P8_BASE64:
+        required: false
+      MACOS_NOTARY_KEY_ID:
+        required: false
+      MACOS_NOTARY_ISSUER_ID:
+        required: false
+      MACOS_NOTARY_APPLE_ID:
+        required: false
+      MACOS_NOTARY_PASSWORD:
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-universal-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  package:
+    runs-on: macos-26
+    timeout-minutes: 180
+    env:
+      MACOS_CERTIFICATE_P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 }}
+      MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+      MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+      MACOS_TEAM_ID: ${{ secrets.MACOS_TEAM_ID }}
+      MACOS_NOTARY_KEY_P8_BASE64: ${{ secrets.MACOS_NOTARY_KEY_P8_BASE64 }}
+      MACOS_NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
+      MACOS_NOTARY_ISSUER_ID: ${{ secrets.MACOS_NOTARY_ISSUER_ID }}
+      MACOS_NOTARY_APPLE_ID: ${{ secrets.MACOS_NOTARY_APPLE_ID }}
+      MACOS_NOTARY_PASSWORD: ${{ secrets.MACOS_NOTARY_PASSWORD }}
+      PUB_CACHE: /private/tmp/firma-cie-tools/pub-cache
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          architecture: arm64
+      - name: Check required signing configuration before compiling
+        run: python3 scripts/ci_macos.py check-secrets
+      - name: Use a neutral source and tool directory
+        run: |
+          set -euo pipefail
+          git clone --no-hardlinks "$GITHUB_WORKSPACE" /private/tmp/firma-cie-source
+          echo 'CIE_CI_SOURCE=/private/tmp/firma-cie-source' >> "$GITHUB_ENV"
+          brew install cmake ninja pkg-config autoconf automake libtool
+          python3 -m venv /private/tmp/firma-cie-tools
+          /private/tmp/firma-cie-tools/bin/pip install meson==1.11.0 ds_store==1.3.1
+          echo '/private/tmp/firma-cie-tools/bin' >> "$GITHUB_PATH"
+      - name: Install the pinned Flutter SDK
+        working-directory: ${{ env.CIE_CI_SOURCE }}
+        run: python3 scripts/ci_desktop_common.py --install-flutter /private/tmp/firma-cie-flutter
+      - name: Build Universal middleware, app and CTK; sign and notarize
+        working-directory: ${{ env.CIE_CI_SOURCE }}
+        run: |
+          set -euo pipefail
+          python3 scripts/check_repository.py --report reports/macos/source-audit.json
+          python3 scripts/test_desktop_ci.py
+          python3 scripts/test_macos_signing.py
+          python3 scripts/ci_macos.py build
+      - name: Remove this job's temporary signing credentials
+        if: always()
+        run: python3 scripts/ci_macos.py cleanup
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firma-con-cie-macos-universal-${{ github.sha }}
+          path: |
+            /private/tmp/firma-cie-source/dist/macos/*.dmg
+            /private/tmp/firma-cie-source/dist/macos/*.zip
+            /private/tmp/firma-cie-source/dist/macos/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macos-validation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            /private/tmp/firma-cie-source/reports/macos
+            /private/tmp/firma-cie-source/.build/dependencies/macos-*/logs
+          if-no-files-found: ignore
+          retention-days: 14

@@ -1,9 +1,13 @@
 # Compilare Firma con CIE
 
+Per avviare manualmente le compilazioni di tutte le piattaforme con un unico
+workflow, vedere [DESKTOP_CI.md](DESKTOP_CI.md), inclusa la configurazione dei
+secret Apple per firma Developer ID e notarizzazione.
+
 Per il pacchetto completo **Windows ARM64** tramite GitHub Actions, senza
 installare l'ambiente di sviluppo nella VM, vedere [WINDOWS_ARM64.md](WINDOWS_ARM64.md).
-La pipeline è predisposta; esecuzione completa e collaudo hardware ARM64 restano
-da effettuare.
+Le evidenze delle esecuzioni e dei collaudi ARM64 sono riportate nella relativa
+guida e in [STATUS.md](STATUS.md); ogni nuova build mantiene il proprio commit.
 
 L'adattamento delle finestre macOS/Windows usa il modulo C in
 `native/desktop`, da conservare insieme agli altri sorgenti. Test eseguibili

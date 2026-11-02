@@ -125,7 +125,7 @@ flutter analyze --no-pub
 flutter test --no-pub
 ```
 
-La compilazione completa richiede anche backend nativo, anteprima PDF, componenti Web e runtime DSS/JVM privati. Il solo comando `flutter build` non genera questi elementi. Consulta **[Compilazione](docs/BUILDING.md)** per prerequisiti e comandi di ciascuna piattaforma.
+La compilazione completa richiede anche backend nativo, anteprima PDF, componenti Web e runtime DSS/JVM privati. Il solo comando `flutter build` non genera questi elementi. Consulta **[Compilazione](docs/BUILDING.md)** per prerequisiti e comandi di ciascuna piattaforma. È disponibile anche un [workflow manuale per tutte le piattaforme](docs/DESKTOP_CI.md).
 
 Percorsi e impostazioni personali si conservano in `local-build.json` e `LOCAL_SETUP.md`, esclusi da Git. Le chiavi di firma non appartengono al repository.
 

@@ -2,6 +2,34 @@
 
 Situazione al 2 novembre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
 
+## Workflow desktop manuali (2 novembre)
+
+Predisposto **Desktop packages**, avviabile soltanto con Run workflow, per
+Windows x64/ARM64, macOS Universal e Linux x86_64/ARM64 (DEB e AppImage).
+La scelta manuale e la firma Developer ID con notarizzazione macOS sono state
+confermate dall’utente. Non sono introdotti trigger su push o pull request,
+né pubblicazioni automatiche di release. Gli installer conservano le politiche
+esistenti per abbinamenti e impostazioni.
+
+Il builder Windows già usato da ARM64 è parametrizzato anche per x64, con
+percorsi separati e gli stessi controlli architetturali. Il default ARM64
+rimane compatibile con il workflow esistente. macOS ricompila il runtime
+Universal/CTK e usa un portachiavi temporaneo e due notarizzazioni accettate;
+Linux usa contenitori senza home personali o interfacce della carta.
+
+Verifiche locali: 16 test nuovi dell’automazione, 30 regressioni Windows,
+8 test dell’identità, 3 della firma macOS e 6 del confezionamento Windows
+superati; actionlint senza segnalazioni. Questi esiti non attestano ancora
+l’esecuzione completa dei nuovi workflow. I secret Apple vanno configurati
+prima della prima build macOS firmata. Istruzioni e limiti:
+[DESKTOP_CI.md](DESKTOP_CI.md).
+
+La build ARM64 precedente della **1.0.1**, commit `ec3e425`, è invece conclusa
+con successo: Actions `41445562948`, 434 test Flutter superati e 17 saltati,
+60 controlli dell’installer; verifica locale di CPU, metadati, 877 hash del
+payload e contenuto estratto dell’installer senza rilievi. Il pacchetto è
+stato scaricato, senza installazione o nuovo collaudo reale della CIE.
+
 ## Versione 1.0.1 in preparazione (2 novembre)
 
 Dopo la conferma dell’utente che la versione 1.0.0 è stata pubblicata, i

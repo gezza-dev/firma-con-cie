@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# Multiarch Ubuntu 24.04 OCI index; apt versions are recorded by the package scan.
+FROM ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
+ENV DEBIAN_FRONTEND=noninteractive CMAKE_BUILD_PARALLEL_LEVEL=2
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev \
+    libpcsclite-dev libnss3-tools python3 python3-venv python3-pip git curl \
+    ca-certificates autoconf automake libtool gettext gperf patchelf dpkg-dev \
+    desktop-file-utils binutils bubblewrap dbus-x11 libgl1-mesa-dri libegl1 \
+    libgl1 libgles2 libsecret-1-0 libasound2t64 libssl-dev libayatana-appindicator3-dev \
+    librsvg2-common tzdata && \
+    python3 -m venv /opt/ci-tools && \
+    /opt/ci-tools/bin/pip install cmake==3.31.6 meson==1.11.0 && \
+    mkdir -p /work && touch /work/.cie-appimage-isolated-root && \
+    rm -rf /var/lib/apt/lists/*
+ENV PATH=/opt/ci-tools/bin:$PATH
+WORKDIR /work/project

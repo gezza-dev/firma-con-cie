@@ -2,6 +2,7 @@ name: Windows ARM64 package
 
 on:
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
@@ -27,7 +28,9 @@ jobs:
           "$RUNNER_TEMP/cie-python/bin/pip" install meson==1.11.0
           echo "$RUNNER_TEMP/cie-python/bin" >> "$GITHUB_PATH"
       - name: Check packaging regressions
-        run: python3 scripts/test_windows_arm64.py
+        run: |
+          python3 scripts/test_windows_arm64.py
+          python3 scripts/test_desktop_ci.py
       - name: Build all native ARM64 components from the locked sources
         run: python scripts/ci_windows_arm64.py native
       - uses: actions/upload-artifact@v4

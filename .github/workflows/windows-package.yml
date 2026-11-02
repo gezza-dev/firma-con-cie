@@ -1,0 +1,146 @@
+name: Windows package
+
+on:
+  workflow_dispatch:
+    inputs:
+      architecture:
+        description: Windows architecture
+        type: choice
+        options: [x64, arm64]
+        default: x64
+  workflow_call:
+    inputs:
+      architecture:
+        type: string
+        default: x64
+
+env:
+  CIE_WINDOWS_ARCH: ${{ inputs.architecture }}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-package-${{ inputs.architecture }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  native:
+    name: Cross-compile Windows middleware and private JVM
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install build tools on the disposable runner
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake ninja-build pkg-config g++-mingw-w64-x86-64-posix gcc-mingw-w64-x86-64-posix perl autoconf automake libtool gettext p7zip-full msitools python3-venv
+          python3 -m venv "$RUNNER_TEMP/cie-python"
+          "$RUNNER_TEMP/cie-python/bin/pip" install meson==1.11.0
+          echo "$RUNNER_TEMP/cie-python/bin" >> "$GITHUB_PATH"
+      - name: Check packaging regressions
+        run: |
+          python3 scripts/test_windows_arm64.py
+          python3 scripts/test_desktop_ci.py
+      - name: Build all native ARM64 components from the locked sources
+        run: python scripts/ci_windows_arm64.py native --architecture "$CIE_WINDOWS_ARCH"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-${{ inputs.architecture }}-native-${{ github.sha }}
+          path: .build/windows-${{ inputs.architecture }}-transfer
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-${{ inputs.architecture }}-native-logs-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .build/dependencies/windows-arm64/logs
+            .build/windows-${{ inputs.architecture }}-ci/**/CMakeConfigureLog.yaml
+          if-no-files-found: ignore
+          retention-days: 14
+
+  package:
+    name: Test and package on native Windows
+    needs: native
+    runs-on: ${{ inputs.architecture == 'arm64' && 'windows-11-arm' || 'windows-2022' }}
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-${{ inputs.architecture }}-native-${{ github.sha }}
+          path: .build/windows-${{ inputs.architecture }}-transfer
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          architecture: ${{ inputs.architecture }}
+      - name: Select the matching Visual Studio tools
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $cpu = $env:CIE_WINDOWS_ARCH
+          $component = if ($cpu -eq 'arm64') { 'ARM64' } else { 'x86.x64' }
+          $nativeCpu = if ($cpu -eq 'arm64') { 'arm64' } else { 'amd64' }
+          $vs = & $vswhere -latest -products '*' -requires "Microsoft.VisualStudio.Component.VC.Tools.$component" -property installationPath
+          if (!$vs) { throw 'Matching Visual Studio C++ tools missing from this runner image' }
+          $devcmd = Join-Path $vs 'Common7\Tools\VsDevCmd.bat'
+          $nativeEnv = & cmd.exe /d /s /c "`"$devcmd`" -no_logo -host_arch=$nativeCpu -arch=$nativeCpu >nul && set"
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot select the matching MSVC environment' }
+          foreach ($line in $nativeEnv) {
+            if ($line -match '^(PATH|INCLUDE|LIB|LIBPATH|VisualStudioVersion|VSINSTALLDIR|VCINSTALLDIR|VCToolsInstallDir|WindowsSdkDir|WindowsSDKVersion|UniversalCRTSdkDir|UCRTVersion)=(.*)$') {
+              "$($Matches[1])=$($Matches[2])" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+            }
+          }
+          $vc = Get-ChildItem -LiteralPath (Join-Path $vs 'VC\Redist\MSVC') -Filter "vc_redist.$cpu.exe" -Recurse -File | Sort-Object FullName -Descending | Select-Object -First 1 -ExpandProperty FullName
+          if (!$vc) { throw 'Signed matching VC redistributable missing' }
+          "CIE_CI_VC_REDIST_$($cpu.ToUpper())=$vc" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Install the pinned Flutter SDK from its official repository
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $lock = Get-Content toolchain.lock.json -Raw | ConvertFrom-Json
+          $sdk = Join-Path $env:RUNNER_TEMP 'flutter'
+          git clone --depth 1 --branch $lock.flutter.version https://github.com/flutter/flutter.git $sdk
+          if ($LASTEXITCODE -ne 0) { throw 'Flutter checkout failed' }
+          $actual = git -C $sdk rev-parse HEAD
+          if ($actual -ne $lock.flutter.hash) { throw 'Flutter commit differs from toolchain.lock.json' }
+          (Join-Path $sdk 'bin') | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          # Bootstrap's native ARM64 Dart SDK determines the Windows target.
+          if ($env:PROCESSOR_ARCHITECTURE -ne $(if ($env:CIE_WINDOWS_ARCH -eq 'arm64') { 'ARM64' } else { 'AMD64' })) { throw 'Matching native Windows shell required' }
+      - name: Verify source inventory, regressions, binaries and installer
+        run: |
+          python scripts/check_repository.py --report reports/windows-${{ inputs.architecture }}/source-audit.json
+          if ($LASTEXITCODE -ne 0) { throw 'Source audit failed' }
+          python scripts/test_windows_arm64.py
+          if ($LASTEXITCODE -ne 0) { throw 'ARM64 packaging regression failed' }
+          python scripts/ci_windows_arm64.py windows --architecture $env:CIE_WINDOWS_ARCH
+          if ($LASTEXITCODE -ne 0) { throw 'Windows build or tests failed' }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firma-con-cie-windows-${{ inputs.architecture }}-${{ github.sha }}
+          path: |
+            dist/windows-${{ inputs.architecture }}/Setup/*.exe
+            dist/windows-${{ inputs.architecture }}/Setup/*.sha256
+            dist/windows-${{ inputs.architecture }}/Setup/package-result.json
+            dist/windows-${{ inputs.architecture }}/Setup/Release
+          if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-${{ inputs.architecture }}-validation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            reports/windows-${{ inputs.architecture }}
+            dist/windows-${{ inputs.architecture }}/Setup/build
+            dist/windows-${{ inputs.architecture }}/Setup/build.log
+            .build/windows-${{ inputs.architecture }}-ci/**/CMakeConfigureLog.yaml
+          if-no-files-found: ignore
+          retention-days: 14
