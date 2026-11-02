@@ -14,6 +14,12 @@ avviano compilazioni e non pubblicano release.
    distingue gli esiti dei sistemi: un errore macOS non annulla le build Windows
    o Linux già riuscite.
 
+Se un job fallisce per un errore temporaneo di rete, la pagina dell’esecuzione
+consente di ripetere il solo job fallito dopo il completamento del workflow.
+La ripetizione usa lo stesso commit; gli artefatti degli altri target riusciti
+rimangono disponibili. Per confrontare i pacchetti usare il commit nei rapporti
+e i checksum, senza mescolare build di revisioni differenti.
+
 | Piattaforma | Ambiente di compilazione | Prodotti |
 | --- | --- | --- |
 | Windows x86_64 | Dipendenze su Ubuntu 24.04; test e app su Windows 2022 x64 | Installer EXE e cartella Release |
@@ -24,7 +30,9 @@ avviano compilazioni e non pubblicano release.
 
 RPM Fedora e pacchetto Arch mantengono le ricette separate già documentate:
 questo workflow automatizza DEB e AppImage per entrambe le CPU Linux.
-Il bundle tar Linux e lo ZIP macOS conservano i permessi Unix; non distribuire
+Il bundle tar Linux è un artefatto per sviluppo e riconfezionamento; per gli
+utenti scegliere DEB o AppImage. Il bundle tar Linux e lo ZIP macOS conservano
+i permessi Unix; non distribuire
 un `.app` o un bundle Linux ottenuto caricando i singoli file come artefatto ZIP
 generico, che potrebbe perdere tali permessi.
 
@@ -136,9 +144,11 @@ actionlint
 Questi test verificano selezione CPU, percorsi indipendenti, gestione riservata
 delle credenziali, ripristino del portachiavi, rifiuto di notarizzazioni non
 accettate e checksum successivi allo stapling. Le build complete dei nuovi
-workflow richiedono i rispettivi runner; la prima build macOS firmata richiede
-prima la configurazione dei secret Apple. Non sono dichiarate collaudate dalla
-sola validazione YAML sul PC Windows.
+workflow richiedono i rispettivi runner e i secret Apple per macOS. Il collaudo
+ha eseguito realmente i target Windows, macOS e Linux, incluse firma Developer ID
+e notarizzazione: esiti, commit e limiti sono registrati in
+[DESKTOP_CI_VALIDATION.md](DESKTOP_CI_VALIDATION.md). I test locali e la sola
+validazione YAML non sostituiscono queste esecuzioni complete.
 
 Riferimenti: [runner GitHub](https://docs.github.com/en/actions/how-tos/write-workflows/choose-where-workflows-run/choose-the-runner-for-a-job),
 [workflow riutilizzabili](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows),

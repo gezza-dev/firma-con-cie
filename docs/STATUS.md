@@ -17,12 +17,21 @@ rimane compatibile con il workflow esistente. macOS ricompila il runtime
 Universal/CTK e usa un portachiavi temporaneo e due notarizzazioni accettate;
 Linux usa contenitori senza home personali o interfacce della carta.
 
-Verifiche locali: 16 test nuovi dell’automazione, 30 regressioni Windows,
+Verifiche locali: 19 test dell’automazione, 30 regressioni Windows,
 8 test dell’identità, 3 della firma macOS e 6 del confezionamento Windows
-superati; actionlint senza segnalazioni. Questi esiti non attestano ancora
-l’esecuzione completa dei nuovi workflow. I secret Apple vanno configurati
-prima della prima build macOS firmata. Istruzioni e limiti:
-[DESKTOP_CI.md](DESKTOP_CI.md).
+superati; actionlint senza segnalazioni. Sono riuscite anche le esecuzioni
+complete dei target Windows x64/ARM64, macOS Universal firmato e notarizzato,
+Linux DEB/AppImage x64/ARM64. I secret Apple configurati dall’utente sono stati
+verificati sul runner macOS. Istruzioni: [DESKTOP_CI.md](DESKTOP_CI.md);
+esecuzioni, commit e limiti: [DESKTOP_CI_VALIDATION.md](DESKTOP_CI_VALIDATION.md).
+
+La prova unica **Desktop packages 41468237696**, commit `d43d3d7`, si conclude
+con successo per tutti i target e produce sette pacchetti utente 1.0.1.
+Ripetuto soltanto AppImage x86_64 dopo un errore temporaneo di rete nel primo
+tentativo. Verificati realmente firma Developer ID e notarizzazione Apple;
+i pacchetti sono scaricati e controllati, senza installazione di produzione
+né nuove operazioni sulla CIE. Questo aggiornamento documentale non cambia
+il commit dei binari già prodotti e non pubblica una release.
 
 La build ARM64 precedente della **1.0.1**, commit `ec3e425`, è invece conclusa
 con successo: Actions `41445562948`, 434 test Flutter superati e 17 saltati,
@@ -45,9 +54,9 @@ Sono aggiunti invalidazione/ripristino fra processi con nomi diversi. Nessun
 cambiamento ai target o ai percorsi degli abbinamenti di produzione.
 Verificati localmente i 20 controlli C++ della cache, la fixture di persistenza
 e tutti i 161 controlli del minidriver compilato con GCC. Il collaudo completo
-viene ripetuto dal commit corretto, includendo macOS dopo la conferma dell’utente
-che i secret Apple sono configurati. Gli esiti in corso non sono ancora
-attestazioni di build o notarizzazione riuscite.
+è stato poi ripetuto dai commit corretti, includendo macOS dopo la conferma
+dell’utente che i secret Apple sono configurati. Il rapporto collegato sopra
+registra gli esiti finali, distinti da questi primi tentativi.
 
 ## Versione 1.0.1 in preparazione (2 novembre)
 
@@ -64,7 +73,8 @@ Ricompilati app e installer Windows x64 1.0.1: analisi Flutter senza problemi,
 10 test Flutter mirati e 14 test Python di identità/confezionamento superati.
 Verificati metadati PE (app 1.0.1+2, installer 1.0.1), contenuto completo
 dell’installer e invarianza dei componenti nativi. Nessuna nuova pubblicazione
-eseguita. Le build macOS, Linux e Windows ARM64 restano da rigenerare.
+eseguita. In questa fase iniziale macOS, Linux e Windows ARM64 restavano da
+rigenerare; le successive build CI sono registrate all’inizio di questa pagina.
 
 ## Controllo HTTPS con consenso sulle tre piattaforme (2 novembre)
 
