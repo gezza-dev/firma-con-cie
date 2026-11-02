@@ -18,6 +18,7 @@ import ci_desktop_common as common
 import ci_linux
 import ci_macos as mac
 import ci_windows_arm64 as windows
+import test_linux_tls_runtime as linux_tls
 
 
 def configuration():
@@ -78,6 +79,26 @@ class DesktopCI(unittest.TestCase):
             with self.assertRaises(ValueError):
                 ci_linux.build('deb')
             run.assert_not_called()
+
+    def test_linux_tls_keeps_user_namespace_by_default_and_requires_root_to_omit_it(self):
+        self.assertIn('--unshare-user', linux_tls.namespace_arguments())
+        with patch.object(linux_tls.os, 'geteuid', return_value=1001, create=True):
+            with self.assertRaises(RuntimeError):
+                linux_tls.namespace_arguments(False)
+        with patch.object(linux_tls.os, 'geteuid', return_value=0, create=True):
+            self.assertEqual(linux_tls.namespace_arguments(False), [])
+
+    def test_failed_tls_cannot_promote_an_incomplete_linux_build_receipt(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            reports = root/'reports/linux-x64-deb'
+            reports.mkdir(parents=True)
+            (reports/'build-result.json').write_text(json.dumps({'softwareChecksPassed':False,'tlsChecksPending':True}))
+            (reports/'tls.json').write_text(json.dumps({'passed':False}))
+            with patch.object(ci_linux, 'ROOT', root), patch.object(ci_linux.platform, 'system', return_value='Linux'), patch.object(ci_linux.os, 'geteuid', return_value=0, create=True), patch.object(ci_linux, 'host_architecture', return_value='x64'), patch.object(ci_linux, 'python'):
+                with self.assertRaises(ValueError):
+                    ci_linux.finish_tls('deb')
+            self.assertFalse((reports/'result.json').exists())
 
     def test_mac_missing_secrets_fail_without_echoing_present_values(self):
         with self.assertRaises(ValueError) as error:

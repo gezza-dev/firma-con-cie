@@ -4,6 +4,7 @@
 import argparse
 import http.server
 import json
+import os
 from pathlib import Path
 import shutil
 import ssl
@@ -12,7 +13,15 @@ import tempfile
 import threading
 
 
-def check(client, report):
+def namespace_arguments(user_namespace=True):
+    if user_namespace:
+        return ['--unshare-user', '--uid', '0', '--gid', '0']
+    if os.geteuid() != 0:
+        raise RuntimeError('The mount-only namespace requires root inside the isolated container')
+    return []
+
+
+def check(client, report, user_namespace=True):
     if (not Path('/work/.cie-appimage-isolated-root').is_file()
             or Path('/run/pcscd/pcscd.comm').exists() or Path('/dev/bus/usb').exists()):
         raise RuntimeError('Use the private AppImage test root without card interfaces')
@@ -46,7 +55,7 @@ def check(client, report):
             # namespace sees the synthetic CA, with no other hashed roots.
             # Reuse the outer private /proc: nested namespaces cannot remount
             # it on every kernel. TLS does not need a separate proc filesystem.
-            command = [bwrap, '--unshare-user', '--uid', '0', '--gid', '0', '--unshare-pid',
+            command = [bwrap, *namespace_arguments(user_namespace), '--unshare-pid',
                        '--unshare-ipc', '--unshare-uts', '--die-with-parent', '--ro-bind', '/', '/',
                        '--dev', '/dev', '--tmpfs', '/etc/ssl/certs',
                        '--ro-bind', str(root/ca), '/etc/ssl/certs/ca-certificates.crt', '--',
@@ -85,5 +94,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--client', type=Path, required=True)
     parser.add_argument('--report', type=Path, required=True)
+    parser.add_argument('--no-user-namespace', action='store_true',
+                        help='Root-only CI container: retain mount isolation without nested UID mapping')
     args = parser.parse_args()
-    check(args.client.resolve(), args.report.resolve())
+    check(args.client.resolve(), args.report.resolve(), not args.no_user_namespace)

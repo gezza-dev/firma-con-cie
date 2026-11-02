@@ -41,16 +41,19 @@ jobs:
           docker build -t firma-cie-linux-ci -f "linux/ci/Dockerfile.$CIE_LINUX_FORMAT" .
           mkdir -p reports
           docker image inspect firma-cie-linux-ci > reports/linux-ci-image.json
+          # Check namespace support before spending time on native compilation.
+          docker run --rm --cap-add SYS_ADMIN \
+            --security-opt seccomp=unconfined --security-opt apparmor=unconfined \
+            firma-cie-linux-ci bwrap --unshare-pid --unshare-ipc --unshare-uts \
+            --die-with-parent --ro-bind / / --dev /dev --tmpfs /etc/ssl/certs -- /bin/true
       - name: Build, test and package without host devices or profiles
         env:
           CIE_LINUX_FORMAT: ${{ matrix.format }}
         run: |
           set -euo pipefail
-          # The namespace permissions are used only for synthetic HTTPS trust
-          # tests inside this disposable container; no host home, USB or PC/SC
-          # socket is mounted. Compilation runs as the checkout's ordinary user.
+          # No host home, USB or PC/SC socket is mounted. Compilation and
+          # packaging run as the checkout's ordinary user, without extra caps.
           docker run --rm --user "$(id -u):$(id -g)" \
-            --cap-add SYS_ADMIN --security-opt seccomp=unconfined --security-opt apparmor=unconfined \
             --env HOME=/tmp/firma-cie-ci-home --env PUB_CACHE=/tmp/firma-cie-ci-pub-cache \
             --env CIE_LINUX_FORMAT --env GITHUB_PATH=/tmp/firma-cie-github-path \
             --volume "$GITHUB_WORKSPACE:/work/project" --workdir /work/project \
@@ -61,6 +64,14 @@ jobs:
               export PATH="/tmp/firma-cie-flutter/bin:$PATH"
               python3 scripts/ci_linux.py "$CIE_LINUX_FORMAT"
             '
+          # Root is confined to this second disposable container. The TLS
+          # fixture mounts synthetic CAs only in its child mount namespace;
+          # no nested UID map or host trust-store write is required.
+          docker run --rm --cap-add SYS_ADMIN \
+            --security-opt seccomp=unconfined --security-opt apparmor=unconfined \
+            --env CIE_LINUX_FORMAT --volume "$GITHUB_WORKSPACE:/work/project" \
+            --workdir /work/project firma-cie-linux-ci \
+            python3 scripts/ci_linux.py "$CIE_LINUX_FORMAT" --tls-check
       - uses: actions/upload-artifact@v4
         with:
           name: firma-con-cie-linux-${{ matrix.architecture }}-${{ matrix.format }}-${{ github.sha }}

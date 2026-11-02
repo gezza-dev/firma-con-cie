@@ -34,8 +34,6 @@ def build(kind):
            '--output', runtime, '--tools-cache', cache)
     python('smoke_native.py', '--runtime', runtime, '--report', reports/'native.json')
     python('test_ltv.py', '--runtime', runtime, '--report', reports/'ltv.json')
-    python('test_linux_tls_runtime.py', '--client',
-           work/'native-build/cie_network_test_client', '--report', reports/'tls.json')
     for name in ('test_ltv_runtime.py', 'test_linux_packaging.py', 'test_linux_appimage_packaging.py',
                  'test_desktop_ci.py'):
         python(name)
@@ -79,11 +77,28 @@ def build(kind):
         for name, digest in manifest['files'].items():
             if sha(output/'AppDir'/name) != digest:
                 raise ValueError('AppImage payload checksum mismatch')
-    receipt(reports/'result.json', 'linux', architecture, artifacts,
-            packageFormat=kind, softwareChecksPassed=True)
+    receipt(reports/'build-result.json', 'linux', architecture, artifacts,
+            packageFormat=kind, softwareChecksPassed=False, tlsChecksPending=True)
+
+
+def finish_tls(kind):
+    if platform.system() != 'Linux' or os.geteuid() != 0:
+        raise ValueError('The TLS phase requires root in the isolated CI container')
+    architecture = host_architecture()
+    reports = ROOT/('reports/linux-'+architecture+'-'+kind)
+    work = ROOT/('.build/ci-linux-'+kind)
+    python('test_linux_tls_runtime.py', '--client', work/'native-build/cie_network_test_client',
+           '--report', reports/'tls.json', '--no-user-namespace')
+    if not json.loads((reports/'tls.json').read_text())['passed']:
+        raise ValueError('Native HTTPS trust checks did not pass')
+    result = json.loads((reports/'build-result.json').read_text())
+    result.update(softwareChecksPassed=True, tlsChecksPending=False, nativeTlsChecksPassed=True)
+    (reports/'result.json').write_text(json.dumps(result, indent=2)+'\n')
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('format', choices=['deb', 'appimage'])
-    build(parser.parse_args().format)
+    parser.add_argument('--tls-check', action='store_true')
+    args = parser.parse_args()
+    (finish_tls if args.tls_check else build)(args.format)

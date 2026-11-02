@@ -106,6 +106,12 @@ il DMG controlla le architetture Universal dell’app e del componente CTK.
 Si eseguono analisi Flutter, test della GUI, test nativi con fixture, verifiche
 DSS e controlli dei pacchetti. Windows usa installer isolati con helper finto;
 Linux usa un database dpkg temporaneo e namespace privati per le CA sintetiche.
+La compilazione e il confezionamento Linux girano come utente ordinario; il
+solo test TLS usa un secondo contenitore root con capacità di creare namespace
+di mount. Non usa una mappatura UID annidata, non modifica sysctl del runner e
+non scrive nell’archivio CA dell’host. Il supporto ai namespace viene controllato
+prima della compilazione. Il rapporto finale viene dichiarato riuscito soltanto
+dopo il superamento anche di questa fase TLS.
 I contenitori non ricevono home personali, USB o socket PC/SC del runner.
 Non si installa il componente di produzione sul computer dell’utente, né si
 leggono carte o si modificano abbinamenti, preferenze o profili browser reali.
