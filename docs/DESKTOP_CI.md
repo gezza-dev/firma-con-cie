@@ -40,6 +40,13 @@ Il runtime trasferito è verificato per commit, CPU, checksum e hash dei sorgent
 poi nuovamente caricato e provato nella distribuzione di destinazione.
 Le immagini di base sono fissate per digest; il rapporto include il loro
 inventario dei pacchetti. Dettagli: [LINUX_DISTRIBUTION_PACKAGES.md](LINUX_DISTRIBUTION_PACKAGES.md).
+Gli artefatti `linux-distribution-runtime-*` sono intermedi di compilazione,
+con strumenti di test e materiali per lo sviluppo. Per installare l’app
+scaricare gli artefatti `firma-con-cie-linux-fedora-*` o
+`firma-con-cie-linux-arch-*`: contengono il pacchetto utente, checksum,
+manifesto e ricetta, con test e sorgenti delle dipendenze esclusi dal payload.
+Il collaudo completo di Fedora e Arch è riuscito, incluse le prove dei pacchetti
+nelle due CPU Fedora: [esiti e checksum](LINUX_DISTRIBUTION_CI_VALIDATION.md).
 Il bundle tar Linux è un artefatto per sviluppo e riconfezionamento; per gli
 utenti scegliere DEB o AppImage. Il bundle tar Linux e lo ZIP macOS conservano
 i permessi Unix; non distribuire

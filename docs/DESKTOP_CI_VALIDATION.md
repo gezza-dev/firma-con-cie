@@ -113,6 +113,8 @@ senza sostituire il collaudo hardware degli accessi ai siti, delle firme e
 dell’abbinamento su ciascun sistema. I dati utente, gli archivi CA dell’host e
 i profili browser reali non sono stati modificati. Gli archivi Linux del bundle
 sono artefatti per sviluppo e riconfezionamento; DEB e AppImage sono i pacchetti
-destinati agli utenti. RPM e Arch conservano le ricette manuali separate.
+destinati agli utenti. Questo primo collaudo non includeva RPM e Arch,
+automatizzati e verificati successivamente nel
+[collaudo delle distribuzioni](LINUX_DISTRIBUTION_CI_VALIDATION.md).
 
 Non sono stati creati tag né pubblicate o aggiornate release GitHub.

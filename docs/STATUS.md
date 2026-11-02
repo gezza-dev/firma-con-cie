@@ -4,6 +4,18 @@ Situazione al 2 novembre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario
 
 ## CI Fedora e Arch (2 novembre)
 
+**Collaudo completo riuscito**: Actions
+[41490103835](https://github.com/gezza-dev/firma-con-cie/actions/runs/41490103835),
+commit `818e954`, produce i pacchetti 1.0.1 Fedora 44 x86_64/aarch64 e Arch
+x86_64. Superati 40 test nativi per CPU; nei tre container analisi Flutter,
+446 test con cinque prove opzionali saltate, DSS, ABI, TLS e ciclo completo
+installazione/aggiornamento/avvio Xvfb/rimozione. Dopo il download verificati
+737 file e 61 ELF per ciascun x86_64, 736 file e 60 ELF per aarch64.
+[Rapporto e checksum](LINUX_DISTRIBUTION_CI_VALIDATION.md). Nessuna operazione
+reale sulla CIE, nessuna installazione sull’host né pubblicazione di release.
+
+### Preparazione e primi tentativi
+
 Preparato il workflow manuale **Linux distribution packages**: Fedora 44
 x86_64/aarch64 e Arch Linux x86_64, con immagini ufficiali fissate tramite
 digest e inventario delle dipendenze. Il middleware/DSS conserva la base
@@ -16,7 +28,8 @@ barriere di installazione e della provenienza degli archivi, oltre ai 19 test
 desktop CI; actionlint senza segnalazioni. Sono predisposti test TLS e ciclo
 installazione/aggiornamento/rimozione con dati sintetici, più avvio Xvfb con
 PC/SC bloccato, nei container di destinazione. Il collaudo completo Actions
-di questa estensione è ancora da eseguire; non è attestata una prova con CIE.
+di questa estensione era ancora da eseguire in questa fase; l’esito finale è
+registrato all’inizio della sezione. Non è attestata una prova con CIE.
 
 Primo collaudo completo, commit `c8cb2ed`, Actions `41482974430`: entrambi i
 runtime nativi completano i test; Arch completa analisi, 446 test Flutter con
@@ -33,8 +46,8 @@ ciclo completo, l’avvio Xvfb e la conservazione dei dati sintetici; dopo il
 download sono verificati 737 hash del payload e 61 ELF. Fedora completa GUI
 e RPM per entrambe le CPU, ma la fixture TLS richiede il comando `openssl`,
 non fornito dal solo pacchetto `openssl-devel`. Aggiunto il CLI all’immagine
-e al controllo preventivo. Il risultato complessivo resta negativo fino
-al completamento del nuovo collaudo Fedora.
+e al controllo preventivo. Il risultato complessivo di questo tentativo resta
+negativo; il successivo collaudo `818e954` completa anche Fedora con successo.
 
 ## Workflow desktop manuali (2 novembre)
 
