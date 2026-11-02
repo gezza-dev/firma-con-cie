@@ -36,9 +36,9 @@ SDK Apple/Microsoft da ottenere separatamente non vengono redistribuiti.
 
 ## Supplemento Linux
 
-`linux-system-sources.lock.json` fissa i pacchetti sorgente Ubuntu delle librerie e degli strumenti inclusi nelle due AppImage, distinti dai componenti forniti dal sistema ospite. Ogni voce conserva la versione sorgente esatta, la pubblicazione Launchpad e i file originali con SHA-256, verificati contro il descriptor `.dsc`. Le due versioni di systemd presenti nei pacchetti x86_64 e AArch64 restano entrambe registrate.
+`linux-system-sources.lock.json` fissa i pacchetti sorgente Ubuntu delle librerie, degli strumenti e dei dati inclusi nelle due AppImage, distinti dai componenti forniti dal sistema ospite. Ogni voce conserva la versione sorgente esatta, la pubblicazione Launchpad e i file originali con SHA-256, verificati contro il descriptor `.dsc`. Le versioni effettive sono raccolte separatamente per architettura: sono compresi anche icone, schemi GNOME, configurazione font, dati MIME e libreria standard Python. Le cache generate sono ricondotte ai rispettivi input originali.
 
-L’inventario completo binario/sorgente è allegato alla release come `linux-bundled-system-sources.json`; `linux-build-materials.zip` conserva separatamente patch agli strumenti Flutter, revisioni e istruzioni di ricostruzione senza impostazioni locali. Il supplemento dei sorgenti Ubuntu si usa insieme agli altri due archivi del progetto e delle dipendenze comuni.
+L’inventario completo binario/sorgente è allegato alla release come `linux-bundled-system-sources.json`; `linux-build-materials.zip` conserva separatamente ricette, workflow, revisioni e istruzioni di ricostruzione senza impostazioni locali. La CI corrente usa Flutter fissato a revisione su runner nativi, senza le vecchie patch SDK o wrapper QEMU della 1.0.0. Il supplemento dei sorgenti Ubuntu si usa insieme agli altri due archivi del progetto e delle dipendenze comuni.
 
 Per creare il supplemento da una cache con cartelle `<nome-sorgente>_<versione>` (l’eventuale `:` dell’epoca è sostituito da `_epoch_`):
 

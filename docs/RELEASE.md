@@ -14,7 +14,7 @@ effettiva di ciascun pacchetto e gli esiti software distinti dai collaudi con CI
 - AppImage Linux x86_64/AArch64 e pacchetti nativi disponibili per le distribuzioni documentate.
 - Archivio dei sorgenti del progetto, esportato da uno snapshot controllato.
 - Archivio separato dei sorgenti delle dipendenze: archivi nativi fissati, sorgenti OpenJDK completi e source JAR corrispondenti.
-- Supplemento Linux con i sorgenti Ubuntu delle librerie effettivamente incluse nelle AppImage e materiali di compilazione ARM64. Le librerie fornite dal sistema restano distinte da quelle distribuite.
+- Supplemento Linux con i sorgenti Ubuntu delle librerie e dei dati effettivamente inclusi nelle AppImage, più materiali di compilazione per entrambe le architetture. Le librerie fornite dal sistema restano distinte da quelle distribuite.
 - `SHA256SUMS.txt` e manifest pubblico di provenienza con nomi, dimensioni, architetture, revisioni di compilazione ed esiti verificati.
 
 I binari sono allegati alla release, non committati nei sorgenti. I file ZIP/tar
@@ -51,7 +51,7 @@ secondo le modalità ad hoc documentate. Non occorrono le chiavi del distributor
 5. Provare download e hash dei file allegati alla bozza, senza confondere una compilazione incrociata con un collaudo reale.
 6. Solo al completamento dei controlli pubblicare la release stabile come ultima release, preservando la visibilità corrente del repository.
 
-Il supplemento Linux conserva le versioni sorgente esatte per entrambe le architetture, compresi eventuali aggiornamenti differenti dello stesso pacchetto. I file originali e le patch Ubuntu sono verificati con SHA-256 e con i descriptor `.dsc`. Le modifiche agli strumenti Flutter sono fornite separatamente con revisioni e istruzioni di applicazione.
+Il supplemento Linux conserva le versioni sorgente esatte per entrambe le architetture, compresi eventuali aggiornamenti differenti dello stesso pacchetto. I file originali e le patch Ubuntu sono verificati con SHA-256 e con i descriptor `.dsc`. I materiali di compilazione riportano le revisioni e le ricette realmente utilizzate: la CI corrente usa Flutter fissato su runner nativi, senza le vecchie patch SDK o wrapper QEMU della 1.0.0. L’archivio del progetto comprende anche gli snapshot delle revisioni effettive dei binari riutilizzati.
 
 Le verifiche automatiche non vengono descritte come prove di accesso reali con
 CIE. I dati personali, i documenti e i rapporti diagnostici locali non sono

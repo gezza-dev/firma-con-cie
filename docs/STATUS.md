@@ -2,6 +2,32 @@
 
 Situazione al 2 novembre 2026. [VALIDATION.md](VALIDATION.md) conserva il diario storico: le attività da svolgere nelle voci precedenti descrivono lo stato di quel momento.
 
+## Distribuzione 1.0.1
+
+La release corrente è [1.0.1](https://github.com/gezza-dev/firma-con-cie/releases/tag/v1.0.1),
+build Flutter `1.0.1+2`: undici pacchetti utente per Windows x64/ARM64,
+macOS Universal (DMG e ZIP), Linux DEB/AppImage x86_64/ARM64, Fedora 44 RPM
+x86_64/aarch64 e Arch x86_64. I nove installer della 1.0.0 sono ritirati;
+tag, note storiche e materiali sorgente vengono conservati.
+
+Windows, macOS e DEB provengono dalla CI riuscita `41468237696` (`d43d3d7`);
+Fedora e Arch da `41490103835` (`818e954`). Le AppImage sono state rigenerate
+da `295dd12`, CI [41497381831](https://github.com/gezza-dev/firma-con-cie/actions/runs/41497381831)
+riuscita per entrambe le CPU, con attribuzione anche dei dati e degli input
+delle cache generate. Verificati i checksum degli artefatti scaricati,
+le prove native/TLS e la corrispondenza del manifest di provenienza con i
+file inclusi. Il supplemento Linux contiene 295 file originali di 91 versioni
+sorgente Ubuntu, verificati con SHA-256 e descriptor `.dsc`.
+
+I manifest pubblici riportano la revisione reale di ogni build. Gli snapshot
+dei tre commit di compilazione sono inclusi nell’archivio sorgente completo;
+il confronto degli input applicativi consente di riutilizzare gli altri
+pacchetti già verificati senza attribuire loro una nuova compilazione.
+macOS conserva firma Developer ID, notarizzazione e controlli Gatekeeper;
+gli installer Windows del progetto sono privi di firma Authenticode.
+Le verifiche di pubblicazione non eseguono operazioni con CIE e non attestano
+nuovi collaudi hardware o il recupero reale degli archivi certificati.
+
 ## CI Fedora e Arch (2 novembre)
 
 **Collaudo completo riuscito**: Actions
