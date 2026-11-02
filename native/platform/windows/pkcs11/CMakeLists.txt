@@ -42,7 +42,8 @@ if(BUILD_TESTING)
   target_sources(cie_windows_pkcs11_fake PRIVATE pkcs11.def)
   configure_provider(cie_windows_pkcs11_fake)
   # All PC/SC and Web engine functions are local test doubles. No winscard link.
-  target_compile_definitions(cie_windows_pkcs11_fake PRIVATE CIE_PAIRING_TEST_SERVICE _WINSCARD_)
+  # MinGW declares the protocol constants through a separate dllimport macro.
+  target_compile_definitions(cie_windows_pkcs11_fake PRIVATE CIE_PAIRING_TEST_SERVICE _WINSCARD_ WINSCARDDATA=)
   add_executable(cie_windows_pkcs11_tests ${WEB}/tests/pkcs11_tests.cpp)
   configure_provider(cie_windows_pkcs11_tests)
   add_test(NAME windows_pkcs11_isolated COMMAND cie_windows_pkcs11_tests "$<TARGET_FILE:cie_windows_pkcs11_fake>")
