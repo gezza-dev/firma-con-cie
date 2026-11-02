@@ -46,8 +46,8 @@ def require_target(distribution):
 def require_tools(distribution):
     tools = ['git', 'curl', 'unzip', 'xz', 'tar', 'gzip', 'which', 'clang', 'clang++', 'cmake',
              'ninja', 'pkg-config', 'patchelf', 'readelf', 'ldd', 'Xvfb', 'bwrap',
-             'desktop-file-validate', 'gresource']
-    tools += ['rpm', 'rpmbuild'] if distribution == 'fedora' else ['pacman', 'makepkg', 'bsdtar']
+             'desktop-file-validate', 'gresource', 'openssl', 'ldconfig', 'dbus-daemon']
+    tools += ['rpm', 'rpmbuild', 'dnf'] if distribution == 'fedora' else ['pacman', 'makepkg', 'bsdtar', 'zstd', 'fakeroot']
     missing = [tool for tool in tools if not shutil.which(tool)]
     if missing:
         raise RuntimeError('Missing distribution build tools: '+', '.join(missing))

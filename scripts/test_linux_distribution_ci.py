@@ -18,7 +18,7 @@ import test_linux_tls_runtime as tls
 
 class DistributionCI(unittest.TestCase):
     def test_missing_build_or_inspection_tool_is_reported_before_compilation(self):
-        for missing in ('which', 'gresource'):
+        for missing in ('which', 'gresource', 'openssl'):
             with self.subTest(tool=missing), \
                  patch.object(ci.shutil,'which',side_effect=lambda tool:None if tool==missing else '/synthetic/tool'), \
                  patch.object(ci,'run') as run, self.assertRaisesRegex(RuntimeError,'Missing distribution build tools: '+missing):

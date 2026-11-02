@@ -28,6 +28,14 @@ iniziale dei prerequisiti. La fixture TLS risolve il percorso reale dei
 certificati per supportare anche bubblewrap che rifiuta mount su symlink.
 Questi tentativi non sono dichiarati pacchetti collaudati con successo.
 
+Seconda prova, commit `2a5b2b6`, Actions `41486363584`: Arch supera anche il
+ciclo completo, l’avvio Xvfb e la conservazione dei dati sintetici; dopo il
+download sono verificati 737 hash del payload e 61 ELF. Fedora completa GUI
+e RPM per entrambe le CPU, ma la fixture TLS richiede il comando `openssl`,
+non fornito dal solo pacchetto `openssl-devel`. Aggiunto il CLI all’immagine
+e al controllo preventivo. Il risultato complessivo resta negativo fino
+al completamento del nuovo collaudo Fedora.
+
 ## Workflow desktop manuali (2 novembre)
 
 Predisposto **Desktop packages**, avviabile soltanto con Run workflow, per
