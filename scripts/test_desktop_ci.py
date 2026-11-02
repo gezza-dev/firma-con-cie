@@ -123,6 +123,19 @@ class DesktopCI(unittest.TestCase):
         with self.assertRaises(ValueError):
             mac.signing_configuration(values)
 
+    def test_mac_build_preserves_reports_created_by_the_source_audit(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            reports = root/'reports/macos'
+            reports.mkdir(parents=True)
+            audit = reports/'source-audit.json'
+            audit.write_text('synthetic source audit')
+            with patch.object(mac, 'ROOT', root), patch.object(mac, 'signing_configuration', return_value=configuration()), patch.object(mac.platform, 'system', return_value='Darwin'), patch.object(mac.platform, 'machine', return_value='arm64'), patch.object(mac.subprocess, 'check_output', return_value='Xcode 26.6\n'), patch.object(mac, 'flutter_checks', side_effect=RuntimeError('stop before toolchain')) as checks:
+                with self.assertRaisesRegex(RuntimeError, 'stop before toolchain'):
+                    mac.build()
+            checks.assert_called_once()
+            self.assertEqual(audit.read_text(), 'synthetic source audit')
+
     def test_credential_command_failure_never_echoes_argv_or_stderr(self):
         output = io.StringIO()
         with patch.object(mac.subprocess, 'run', return_value=SimpleNamespace(returncode=1,stdout='',stderr='secret-from-tool')):

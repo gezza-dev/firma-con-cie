@@ -55,6 +55,8 @@ jobs:
           architecture: arm64
       - name: Check required signing configuration before compiling
         run: python3 scripts/ci_macos.py check-secrets
+      - name: Verify Developer ID import and notarization credentials before compiling
+        run: python3 scripts/ci_macos.py check-credentials
       - name: Use a neutral source and tool directory
         run: |
           set -euo pipefail

@@ -15,6 +15,7 @@ import tempfile
 
 from ci_desktop_common import ROOT, flutter_checks, java_tools, python, receipt, run
 from product_identity import application_version, macos_image_name
+from macos_signing import MacCodeSigner
 
 SECRET_NAMES = ('MACOS_CERTIFICATE_P12_BASE64', 'MACOS_CERTIFICATE_PASSWORD',
                 'MACOS_SIGNING_IDENTITY', 'MACOS_TEAM_ID',
@@ -163,7 +164,7 @@ def build():
     work = ROOT/'.build/ci-macos'
     work.mkdir(parents=True)
     reports = ROOT/'reports/macos'
-    reports.mkdir(parents=True)
+    reports.mkdir(parents=True, exist_ok=True)
     flutter_checks()
     for cpu in ('arm64', 'x86_64'):
         python('build_portable_dependencies.py', '--arch', cpu, '--jobs', '2')
@@ -219,12 +220,17 @@ def build():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=['check-secrets', 'build', 'cleanup'])
+    parser.add_argument('action', choices=['check-secrets', 'check-credentials', 'build', 'cleanup'])
     action = parser.parse_args().action
     if action == 'check-secrets':
         signing_configuration(os.environ)
         print('Required macOS signing and notarization secrets are configured.')
     elif action == 'cleanup':
         cleanup(os.environ['RUNNER_TEMP'])
+    elif action == 'check-credentials':
+        configuration = signing_configuration(os.environ)
+        with SigningSession(configuration, os.environ['RUNNER_TEMP']):
+            MacCodeSigner(configuration['MACOS_SIGNING_IDENTITY'], developer_id=True)
+        print('Developer ID identity and notarization credentials verified; temporary keychain removed.')
     else:
         build()
