@@ -69,6 +69,14 @@ class DraftReleaseTests(unittest.TestCase):
         self.assertEqual(first['target_commitish'], CTX['commit'])
         self.assertEqual(len(gh.items), 1)
 
+    def test_creation_succeeds_even_if_list_visibility_lags_behind_post(self):
+        gh=FakeGitHub()
+        with patch.object(gh,'releases',return_value=[]):
+            release=ci.ensure_draft(gh,CTX)
+        self.assertTrue(release['draft'])
+        self.assertEqual(release['id'],gh.items[0]['id'])
+        self.assertEqual(len(gh.items),1)
+
     def test_published_release_is_never_modified(self):
         gh = FakeGitHub()
         ci.ensure_draft(gh, CTX)

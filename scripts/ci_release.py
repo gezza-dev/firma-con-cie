@@ -48,6 +48,8 @@ class GitHub:
 
     def api(self, path, method='GET', data=None, upload=None, download=None):
         args = ['gh', 'api', path, '--method', method]
+        if method == 'GET':
+            args += ['-H', 'Cache-Control: no-cache']
         if data is not None:
             args += ['--input', '-']
         if upload is not None:
@@ -162,7 +164,7 @@ def ensure_draft(gh, ctx, staging=False, create=True):
     # GitHub may reject simultaneous creation by another platform. Re-read the
     # winner and validate its binding; never silently adopt a different commit.
     try:
-        gh.api(gh.base + '/releases', 'POST', data=data)
+        created = gh.api(gh.base + '/releases', 'POST', data=data)
     except RuntimeError:
         for delay in (1, 2, 4):
             time.sleep(delay)
@@ -170,7 +172,9 @@ def ensure_draft(gh, ctx, staging=False, create=True):
             if len(matches) == 1:
                 return check_release(matches[0], ctx, staging)
         raise
-    return ensure_draft(gh, ctx, staging, create=False)
+    # The POST response is authoritative. The releases list can lag behind a
+    # successful create, so do not immediately rediscover the new draft there.
+    return check_release(created, ctx, staging)
 
 
 def check_tag(gh, ctx):
