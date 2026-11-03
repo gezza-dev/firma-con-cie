@@ -12,11 +12,13 @@ anch’essa da non pubblicare, e non sono allegati alla release utente.
 Sorgenti del progetto, archivi delle dipendenze fissate e checksum vengono
 aggiunti dal job dei metadati. Le vecchie release non vengono aggiornate.
 Vedere [DESKTOP_CI.md](DESKTOP_CI.md) per avvio, visibilità e ripetizione dei job.
-La versione in preparazione è **1.0.2** (build interna Flutter **3**). La 1.0.1
-rimane l’ultima release pubblicata fino alla pubblicazione manuale della nuova
-versione. La 1.0.0 rimane
-documentata come prima release storica. I manifest conservano la revisione
-effettiva di ciascun pacchetto e gli esiti software distinti dai collaudi con CIE.
+La release [**1.0.2**](https://github.com/gezza-dev/firma-con-cie/releases/tag/v1.0.2)
+(build interna Flutter **3**) è stata pubblicata il **3 novembre 2026** come
+versione stabile. Per la versione corrente consultare
+[l’ultima release stabile](https://github.com/gezza-dev/firma-con-cie/releases/latest).
+Le versioni precedenti restano documentate come release storiche. I manifest
+conservano la revisione effettiva di ciascun pacchetto e gli esiti software
+distinti dai collaudi con CIE.
 
 ## Contenuti
 
