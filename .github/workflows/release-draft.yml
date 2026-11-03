@@ -46,7 +46,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: python3 scripts/ci_release.py sources
-      - name: Assemble checksums and provenance without publishing
+      - name: Assemble public checksums and private CI provenance
         env:
           GH_TOKEN: ${{ github.token }}
         run: python3 scripts/ci_release.py aggregate

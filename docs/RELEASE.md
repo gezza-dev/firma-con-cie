@@ -7,6 +7,8 @@ I workflow di confezionamento raccolgono automaticamente i pacchetti nella
 bozza della versione in `pubspec.yaml`, vincolata a un unico commit. Non
 pubblicano release e rifiutano versioni già pubblicate. I trasferimenti intermedi
 e la diagnostica restano in bozze **CI staging** separate, da non pubblicare.
+I rapporti JSON di provenienza restano nella bozza `CI metadata <versione>`,
+anch’essa da non pubblicare, e non sono allegati alla release utente.
 Sorgenti del progetto, archivi delle dipendenze fissate e checksum vengono
 aggiunti dal job dei metadati. Le vecchie release non vengono aggiornate.
 Vedere [DESKTOP_CI.md](DESKTOP_CI.md) per avvio, visibilità e ripetizione dei job.
@@ -24,7 +26,9 @@ effettiva di ciascun pacchetto e gli esiti software distinti dai collaudi con CI
 - Archivio dei sorgenti del progetto, esportato da uno snapshot controllato.
 - Archivio separato dei sorgenti delle dipendenze: archivi nativi fissati, sorgenti OpenJDK completi e source JAR corrispondenti.
 - Supplemento Linux con i sorgenti Ubuntu delle librerie e dei dati effettivamente inclusi nelle AppImage, più materiali di compilazione per entrambe le architetture. Le librerie fornite dal sistema restano distinte da quelle distribuite.
-- `SHA256SUMS.txt` e manifest pubblico di provenienza con nomi, dimensioni, architetture, revisioni di compilazione ed esiti verificati.
+- `SHA256SUMS.txt` e checksum `.txt` per ciascun target e per i sorgenti.
+  I manifest JSON con nomi, dimensioni, architetture, revisioni ed esiti verificati
+  sono conservati soltanto nella bozza tecnica privata dei metadati.
 
 I binari sono allegati alla release, non committati nei sorgenti. I file ZIP/tar
 creati automaticamente da GitHub dal tag non contengono le dipendenze esterne:

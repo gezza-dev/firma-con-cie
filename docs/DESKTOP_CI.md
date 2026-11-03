@@ -17,8 +17,10 @@ avviano compilazioni e non pubblicano release.
 4. Ogni target riuscito carica i pacchetti direttamente nella bozza. Un errore
    macOS non annulla i pacchetti Windows o Linux già verificati.
 5. Al termine, il job dei metadati aggiunge i sorgenti del progetto, gli archivi
-   delle dipendenze comuni e del supplemento Linux, i manifest per target e
-   `SHA256SUMS.txt`. La pubblicazione resta un'azione manuale dalla pagina
+   delle dipendenze comuni e del supplemento Linux e i checksum `.txt`.
+   I rapporti JSON restano nella bozza tecnica privata `CI metadata <versione>`,
+   vincolata allo stesso commit e da non pubblicare. La pubblicazione resta
+   un'azione manuale dalla pagina
    **Releases**: non occorre scaricare e ricaricare gli allegati dal computer.
 
 Se un job fallisce per un errore temporaneo di rete, la pagina dell’esecuzione

@@ -23,7 +23,11 @@ from product_identity import application_version
 
 ROOT = Path(__file__).resolve().parents[1]
 MARKER = '<!-- firma-con-cie-ci: '
-AGGREGATES = {'SHA256SUMS.txt', 'release-provenance.json'}
+AGGREGATES = {'SHA256SUMS.txt'}
+
+
+def is_provenance(name):
+    return name == 'release-provenance.json' or bool(re.fullmatch(r'provenance-[A-Za-z0-9_-]+\.json', name))
 
 
 def sha(path):
@@ -124,42 +128,47 @@ def binding(ctx, staging):
     return value
 
 
-def tag_for(ctx, staging=False):
+def tag_for(ctx, staging=False, metadata=False):
+    if staging and metadata:
+        raise ValueError('Choose either runtime staging or metadata storage')
+    if metadata:
+        return 'ci-metadata-v' + ctx['version']
     return 'ci-staging-' + ctx['run'] if staging else 'v' + ctx['version']
 
 
-def check_release(release, ctx, staging=False):
+def check_release(release, ctx, staging=False, metadata=False):
     if not release.get('draft'):
         raise ValueError('Version already published: existing releases are never changed; increment pubspec.yaml')
     markers = re.findall(re.escape(MARKER) + r'(.+?) -->', release.get('body') or '')
     if (len(markers) != 1 or json.loads(markers[0]) != binding(ctx, staging)
-            or release['tag_name'] != tag_for(ctx, staging)
+            or release['tag_name'] != tag_for(ctx, staging, metadata)
             or release['target_commitish'] != ctx['commit']):
         raise ValueError('Draft belongs to another commit or is not managed by desktop CI')
     return release
 
 
-def ensure_draft(gh, ctx, staging=False, create=True):
-    tag = tag_for(ctx, staging)
+def ensure_draft(gh, ctx, staging=False, create=True, metadata=False):
+    tag = tag_for(ctx, staging, metadata)
     matches = [r for r in gh.releases() if r['tag_name'] == tag]
     if len(matches) > 1:
         raise ValueError('Duplicate drafts for this version: resolve them before compiling')
     if matches:
-        release = check_release(matches[0], ctx, staging)
-        if not staging:
+        release = check_release(matches[0], ctx, staging, metadata)
+        if not staging and not metadata:
             check_tag(gh, ctx)
         return release
     if not create:
         raise ValueError('Expected CI draft is missing')
-    if not staging:
+    if not staging and not metadata:
         check_tag(gh, ctx)
-    note = ('Temporary private CI transfers and diagnostics. Do not publish this staging release.'
+    note = ('Internal CI provenance. Do not publish this metadata release.' if metadata else
+            'Temporary private CI transfers and diagnostics. Do not publish this staging release.'
             if staging else 'Builds are being collected. Publication is manual. Verify all targets, '
             'corresponding sources, checksums and hardware test results before publishing.')
     body = note + '\n\nSource commit: `' + ctx['commit'] + '`\n\n' + MARKER + \
         json.dumps(binding(ctx, staging), sort_keys=True) + ' -->\n'
     data = dict(tag_name=tag, target_commitish=ctx['commit'], draft=True, prerelease=False,
-                make_latest='false', name=('CI staging ' + ctx['run'] if staging else
+                make_latest='false', name=('CI metadata ' + ctx['version'] if metadata else 'CI staging ' + ctx['run'] if staging else
                                           'Firma con CIE ' + ctx['version']), body=body)
     # GitHub may reject simultaneous creation by another platform. Re-read the
     # winner and validate its binding; never silently adopt a different commit.
@@ -170,11 +179,11 @@ def ensure_draft(gh, ctx, staging=False, create=True):
             time.sleep(delay)
             matches = [r for r in gh.releases() if r['tag_name'] == tag]
             if len(matches) == 1:
-                return check_release(matches[0], ctx, staging)
+                return check_release(matches[0], ctx, staging, metadata)
         raise
     # The POST response is authoritative. The releases list can lag behind a
     # successful create, so do not immediately rediscover the new draft there.
-    return check_release(created, ctx, staging)
+    return check_release(created, ctx, staging, metadata)
 
 
 def check_tag(gh, ctx):
@@ -196,9 +205,11 @@ def check_tag(gh, ctx):
     raise ValueError('Version tag does not resolve to a commit')
 
 
-def put_asset(gh, release, ctx, name, path, staging=False):
+def put_asset(gh, release, ctx, name, path, staging=False, metadata=False):
     safe_name(name)
-    check_release(gh.fresh(release), ctx, staging)
+    if is_provenance(name) and not metadata:
+        raise ValueError('Provenance JSON belongs only in private CI metadata storage')
+    check_release(gh.fresh(release), ctx, staging, metadata)
     digest = sha(path)
     previous = [a for a in gh.assets(release) if a['name'] == name]
     if len(previous) > 1:
@@ -206,9 +217,9 @@ def put_asset(gh, release, ctx, name, path, staging=False):
     if previous and previous[0].get('digest') == 'sha256:' + digest:
         return previous[0]
     if previous:
-        check_release(gh.fresh(release), ctx, staging)
+        check_release(gh.fresh(release), ctx, staging, metadata)
         gh.delete_asset(previous[0])
-    check_release(gh.fresh(release), ctx, staging)
+    check_release(gh.fresh(release), ctx, staging, metadata)
     try:
         asset = gh.upload(release, name, path)
     except RuntimeError:
@@ -343,12 +354,13 @@ def upload_target(gh, ctx, target, receipt, root=ROOT):
         if digest != sha(path):
             raise ValueError('Package bytes differ from the validated build receipt')
     release = ensure_draft(gh, ctx, create=False)
+    internal = ensure_draft(gh, ctx, metadata=True)
     # Invalidate old completion evidence before updating any bytes. Each target
     # has its own names; aggregate metadata is written only by the serialized job.
     manifest_name = 'provenance-' + target + '.json'
-    for asset in gh.assets(release):
+    for asset in gh.assets(internal):
         if asset['name'] == manifest_name:
-            check_release(gh.fresh(release), ctx)
+            check_release(gh.fresh(internal), ctx, metadata=True)
             gh.delete_asset(asset)
     records = {}
     for path in paths:
@@ -364,20 +376,24 @@ def upload_target(gh, ctx, target, receipt, root=ROOT):
         metadata = folder/manifest_name
         metadata.write_text(json.dumps(manifest, indent=2)+'\n')
         put_asset(gh, release, ctx, checksums.name, checksums)
-        put_asset(gh, release, ctx, manifest_name, metadata)
+        put_asset(gh, internal, ctx, manifest_name, metadata, metadata=True)
     print('Packages uploaded to unpublished draft: ' + release['html_url'])
 
 
 def upload_sources(gh, ctx):
     from ci_release_sources import prepare
     release = ensure_draft(gh, ctx, create=False)
+    internal = ensure_draft(gh, ctx, metadata=True)
     manifest_name = 'provenance-sources.json'
+    with tempfile.TemporaryDirectory() as temporary:
+        migrate_provenance(gh, ctx, release, internal, Path(temporary))
+    private_inventory = {a['name']: a for a in gh.assets(internal)}
     inventory = {a['name']:a for a in gh.assets(release)}
-    if manifest_name in inventory:
+    if manifest_name in private_inventory:
         with tempfile.TemporaryDirectory() as temporary:
             path = Path(temporary)/manifest_name
-            gh.download(inventory[manifest_name], path)
-            if inventory[manifest_name].get('digest') != 'sha256:' + sha(path):
+            gh.download(private_inventory[manifest_name], path)
+            if private_inventory[manifest_name].get('digest') != 'sha256:' + sha(path):
                 raise ValueError('Source metadata checksum mismatch')
             value = json.loads(path.read_text())
         if (all(value.get(k) == v for k,v in binding(ctx, False).items())
@@ -402,18 +418,40 @@ def upload_sources(gh, ctx):
         sums = folder/'SHA256SUMS-sources.txt'
         sums.write_text(''.join(v['sha256']+'  '+k+'\n' for k,v in sorted(records.items())))
         put_asset(gh, release, ctx, sums.name, sums)
-        put_asset(gh, release, ctx, manifest_name, metadata)
+        put_asset(gh, internal, ctx, manifest_name, metadata, metadata=True)
+
+
+def migrate_provenance(gh, ctx, release, internal, folder):
+    """Preserve old draft metadata privately before removing public-facing copies."""
+    legacy = [a for a in gh.assets(release) if is_provenance(a['name'])]
+    for asset in legacy:
+        path = folder/safe_name(asset['name'])
+        gh.download(asset, path)
+        if asset.get('digest') != 'sha256:' + sha(path):
+            raise ValueError('Legacy metadata checksum mismatch')
+        data = json.loads(path.read_text())
+        if any(data.get(k) != v for k,v in binding(ctx, False).items()):
+            raise ValueError('Legacy metadata belongs to another commit')
+        previous = [a for a in gh.assets(internal) if a['name'] == asset['name']]
+        if previous and asset['name'] == 'release-provenance.json':
+            continue  # The aggregate is regenerated from checked target manifests.
+        if previous and previous[0].get('digest') != asset.get('digest'):
+            raise ValueError('Conflicting private and legacy metadata')
+        put_asset(gh, internal, ctx, asset['name'], path, metadata=True)
+    return legacy
 
 
 def aggregate(gh, ctx):
     release = ensure_draft(gh, ctx, create=False)
-    assets = gh.assets(release)
-    inventory = {a['name']:a for a in assets}
+    internal = ensure_draft(gh, ctx, metadata=True)
     manifests, records = [], {}
     with tempfile.TemporaryDirectory() as temporary:
         folder = Path(temporary)
-        for asset in assets:
-            if not asset['name'].startswith('provenance-') or not asset['name'].endswith('.json'):
+        legacy = migrate_provenance(gh, ctx, release, internal, folder)
+        assets = [a for a in gh.assets(release) if not is_provenance(a['name'])]
+        inventory = {a['name']:a for a in assets}
+        for asset in gh.assets(internal):
+            if not asset['name'].startswith('provenance-') or not is_provenance(asset['name']):
                 continue
             path = folder/safe_name(asset['name'])
             gh.download(asset, path)
@@ -424,6 +462,8 @@ def aggregate(gh, ctx):
                 raise ValueError('Target metadata belongs to another commit')
             if not data.get('softwareChecksPassed'):
                 raise ValueError('Incomplete target metadata')
+            if asset['name'] != 'provenance-' + safe_name(data['target']) + '.json':
+                raise ValueError('Target metadata filename mismatch')
             for name, value in data['artifacts'].items():
                 remote = inventory.get(name, {})
                 if (remote.get('digest') != 'sha256:' + value['sha256'] or remote.get('size') != value['bytes']
@@ -431,9 +471,10 @@ def aggregate(gh, ctx):
                     raise ValueError('Incomplete, conflicting or outdated target inventory')
                 records[name] = value
             manifests.append(data)
-        # Never issue a complete-looking manifest for a partially uploaded batch.
-        covered = set(records) | {a['name'] for a in assets if a['name'].startswith(('provenance-', 'SHA256SUMS-'))} | AGGREGATES
-        if set(inventory) - covered or not manifests:
+        # Every public-facing file must be a validated package, source or checksum.
+        expected_sums = {'SHA256SUMS-' + data['target'] + '.txt' for data in manifests}
+        covered = set(records) | expected_sums | AGGREGATES
+        if set(inventory) - covered or not manifests or not expected_sums <= set(inventory):
             raise ValueError('Unfinished target upload; re-run draft metadata after producers finish')
         for asset in assets:
             if asset['name'] not in AGGREGATES:
@@ -444,12 +485,14 @@ def aggregate(gh, ctx):
         metadata = folder/'release-provenance.json'
         metadata.write_text(json.dumps(dict(binding(ctx, False), targets=manifests,
             artifacts=records, releasePublished=False, manualReviewRequired=True), indent=2)+'\n')
-        put_asset(gh, release, ctx, metadata.name, metadata)
-        records[metadata.name] = dict(sha256=sha(metadata))
+        put_asset(gh, internal, ctx, metadata.name, metadata, metadata=True)
+        for asset in legacy:
+            check_release(gh.fresh(release), ctx)
+            gh.delete_asset(asset)
         sums = folder/'SHA256SUMS.txt'
         sums.write_text(''.join(v['sha256']+'  '+k+'\n' for k,v in sorted(records.items())))
         put_asset(gh, release, ctx, sums.name, sums)
-    print('Unpublished draft metadata updated: ' + release['html_url'])
+    print('Unpublished draft checksums updated; JSON metadata kept private: ' + release['html_url'])
 
 
 def diagnostics(gh, ctx, name, paths):

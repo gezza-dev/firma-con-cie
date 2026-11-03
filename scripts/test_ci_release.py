@@ -210,7 +210,11 @@ class DraftReleaseTests(unittest.TestCase):
                 ci.upload_target(gh, CTX, 'windows-'+arch, receipt, root=root)
             ci.aggregate(gh, CTX)
             assets = {a['name']:a for a in gh.assets(release)}
-            metadata = root/'metadata';gh.download(assets['release-provenance.json'], metadata)
+            internal=ci.ensure_draft(gh,CTX,metadata=True)
+            private_assets={a['name']:a for a in gh.assets(internal)}
+            metadata = root/'metadata';gh.download(private_assets['release-provenance.json'], metadata)
+            self.assertFalse(any(name.endswith('.json') for name in assets))
+            self.assertEqual(len(private_assets),3)
             data = json.loads(metadata.read_text())
             self.assertEqual(len(data['targets']), 2)
             self.assertFalse(data['releasePublished'])
@@ -265,7 +269,8 @@ class DraftReleaseTests(unittest.TestCase):
                 with self.subTest(target=target):ci.upload_target(gh,CTX,target,receipt,root)
             ci.aggregate(gh,CTX)
             metadata=root/'all.json'
-            asset=next(a for a in gh.assets(release) if a['name']=='release-provenance.json')
+            internal=ci.ensure_draft(gh,CTX,metadata=True)
+            asset=next(a for a in gh.assets(internal) if a['name']=='release-provenance.json')
             gh.download(asset,metadata)
             self.assertEqual(len(json.loads(metadata.read_text())['targets']),len(cases))
 
@@ -277,12 +282,72 @@ class DraftReleaseTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'Unfinished'):
                 ci.aggregate(gh, CTX)
             ci.upload_target(gh, CTX, 'windows-x64', receipt,root)
-            asset=next(a for a in gh.assets(release) if a['name']=='provenance-windows-x64.json')
+            internal=ci.ensure_draft(gh,CTX,metadata=True)
+            asset=next(a for a in gh.assets(internal) if a['name']=='provenance-windows-x64.json')
             data=json.loads(gh.payloads[asset['id']][1]);data['commit']='b'*40
             path=root/'wrong.json';path.write_text(json.dumps(data))
-            ci.put_asset(gh,release,CTX,asset['name'],path)
+            ci.put_asset(gh,internal,CTX,asset['name'],path,metadata=True)
             with self.assertRaisesRegex(ValueError, 'another commit'):
                 ci.aggregate(gh,CTX)
+
+    def test_legacy_json_moves_privately_without_changing_packages_and_rerun_is_safe(self):
+        gh=FakeGitHub();release=ci.ensure_draft(gh,CTX)
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);receipt,binary=self.make_windows(root,'x64')
+            ci.upload_target(gh,CTX,'windows-x64',receipt,root)
+            internal=ci.ensure_draft(gh,CTX,metadata=True)
+            asset=next(a for a in gh.assets(internal) if a['name'].startswith('provenance-'))
+            path=root/'legacy.json';gh.download(asset,path)
+            gh.upload(release,asset['name'],path);gh.delete_asset(asset)
+            legacy_summary=root/'release-provenance.json'
+            legacy_summary.write_text(json.dumps(dict(ci.binding(CTX,False),artifacts={})))
+            gh.upload(release,legacy_summary.name,legacy_summary)
+            before=next(a for a in gh.assets(release) if a['name']==binary.name)
+            ci.aggregate(gh,dict(CTX,run='456'))
+            ci.aggregate(gh,dict(CTX,run='789'))
+            assets={a['name']:a for a in gh.assets(release)}
+            self.assertFalse(any(name.endswith('.json') for name in assets))
+            self.assertEqual(assets[binary.name],before)
+            self.assertEqual(len(gh.items),2)
+            private_assets={a['name']:a for a in gh.assets(internal)}
+            self.assertIn(asset['name'],private_assets)
+            self.assertIn('release-provenance.json',private_assets)
+            sums=root/'sums';gh.download(assets['SHA256SUMS.txt'],sums)
+            self.assertNotIn('.json',sums.read_text())
+            self.assertEqual(len(sums.read_text().splitlines()),len(assets)-1)
+
+    def test_failed_legacy_backup_does_not_remove_draft_assets(self):
+        gh=FakeGitHub();release=ci.ensure_draft(gh,CTX)
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);receipt,_=self.make_windows(root,'x64')
+            ci.upload_target(gh,CTX,'windows-x64',receipt,root)
+            internal=ci.ensure_draft(gh,CTX,metadata=True)
+            asset=next(a for a in gh.assets(internal) if a['name'].startswith('provenance-'))
+            path=root/'legacy.json';gh.download(asset,path)
+            legacy=gh.upload(release,asset['name'],path);gh.delete_asset(asset)
+            before=gh.assets(release)
+            with patch.object(gh,'upload',side_effect=RuntimeError('temporary network error')):
+                with self.assertRaises(RuntimeError):ci.aggregate(gh,CTX)
+            self.assertEqual(gh.assets(release),before)
+            self.assertNotIn(legacy['id'],gh.deleted)
+
+    def test_provenance_cannot_be_uploaded_to_final_draft(self):
+        gh=FakeGitHub();release=ci.ensure_draft(gh,CTX)
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'report.json';path.write_text('{}')
+            with self.assertRaisesRegex(ValueError,'private CI metadata'):
+                ci.put_asset(gh,release,CTX,'release-provenance.json',path)
+        self.assertFalse(gh.payloads)
+
+    def test_metadata_storage_refuses_published_and_wrong_commit_drafts(self):
+        gh=FakeGitHub();internal=ci.ensure_draft(gh,CTX,metadata=True)
+        self.assertEqual(internal['tag_name'],'ci-metadata-v9.8.7')
+        self.assertTrue(internal['draft'])
+        with self.assertRaises(ValueError):
+            ci.ensure_draft(gh,dict(CTX,commit='b'*40),metadata=True)
+        gh.items[0]['draft']=False
+        with self.assertRaisesRegex(ValueError,'already published'):
+            ci.ensure_draft(gh,CTX,metadata=True)
 
     def test_corresponding_sources_use_all_checked_in_common_and_linux_locks(self):
         common,linux=sources.source_inputs(ci.ROOT)
