@@ -1503,3 +1503,30 @@ nuova compilazione completa o prova con CIE è stata eseguita per questa
 modifica dei workflow. La prima esecuzione completa della nuova raccolta
 richiede una versione non ancora pubblicata. Dettagli in
 [DESKTOP_CI.md](DESKTOP_CI.md).
+
+## Preparazione 1.0.2 e prova locale macOS — 3 novembre 2026
+
+Versione aggiornata a 1.0.2 con build interna 3. La finestra Informazioni di
+macOS omette il numero interno tra parentesi, senza rimuoverlo dai metadati.
+La pagina Informazioni offre il pulsante del progetto prima delle licenze;
+la voce duplicata in fondo alla Guida è rimossa. Testi italiano/inglese aggiornati.
+
+I workflow allegano soltanto il DMG macOS e rifiutano installer il cui nome
+non indica il sistema di destinazione. I file Linux aggiungono `linux` al nome
+da scaricare, conservando gli identificativi dpkg/RPM/pacman già installati.
+I pacchetti Windows mantengono `windows` e CPU nel nome. Gli allegati delle
+release precedenti restano invariati.
+
+App e DMG Universal locali compilati e firmati Developer ID Application,
+senza inviare richieste di notarizzazione. Il runtime nativo e CryptoTokenKit
+provengono dal DMG 1.0.1 verificato per firma e SHA-256; i sorgenti nativi
+corrispondono, normalizzando i soli fine riga CRLF/LF. La GUI è ricompilata con
+i sorgenti 1.0.2. Verificati architetture ARM64/Intel, firme, assenza dei percorsi
+del profilo locale e integrità dopo montaggio/copia dal DMG.
+
+Analisi Flutter senza problemi e 435 test Flutter superati, 17 saltati.
+Il pannello AppKit è stato verificato con build interna 3: mostra «Version 1.0.2»
+senza parentesi. I controlli nativi di installazione Linux richiedono i runner
+Linux e non sono attestati dal collaudo sul Mac. Nessuna operazione reale con
+CIE, PIN o PUK eseguita. Nessuna nuova Action di compilazione avviata e nessuna
+release 1.0.2 pubblicata. Note in [releases/v1.0.2.md](releases/v1.0.2.md).

@@ -291,7 +291,7 @@ def package_files(target, root=ROOT):
     """Explicit publishable outputs; raw app trees/upgrade fixtures stay private."""
     safe_name(target)
     if target == 'macos-universal':
-        folder, patterns = root/'dist/macos', ('*.dmg', '*_universal_app.zip')
+        folder, patterns = root/'dist/macos', ('*.dmg',)
     elif target in ('windows-x64', 'windows-arm64'):
         folder, patterns = root/('dist/' + target + '/Setup'), ('*_setup.exe',)
     elif re.fullmatch('linux-(x64|arm64)-(deb|appimage)', target):
@@ -324,6 +324,9 @@ def upload_target(gh, ctx, target, receipt, root=ROOT):
     if evidence.get('architecture') != architecture or evidence.get('version', ctx['version']) != ctx['version']:
         raise ValueError('Build receipt architecture/version mismatch')
     for path in paths:
+        system = 'macOS' if target == 'macos-universal' else target.split('-')[0]
+        if not re.search(r'(^|[_-])' + system + r'([_.-]|$)', path.name):
+            raise ValueError('Package filename must identify its destination operating system')
         if not re.search(r'[_-]' + re.escape(ctx['version']) + r'[_-]', path.name):
             raise ValueError('Package filename does not match this application version')
         if target.startswith('windows-'):

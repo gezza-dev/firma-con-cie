@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cie_flutter_prototype/app_updates.dart';
 import 'package:cie_flutter_prototype/certificate_validity.dart';
@@ -45,7 +46,8 @@ void main() {
     );
     expect(parseRelease(200, release('v1.0.0')).state, UpdateState.current);
     expect(parseRelease(200, release('v1.0.1')).state, UpdateState.current);
-    expect(parseRelease(200, release('v1.0.2')).state, UpdateState.available);
+    expect(parseRelease(200, release('v1.0.2')).state, UpdateState.current);
+    expect(parseRelease(200, release('v1.0.3')).state, UpdateState.available);
     expect(parseRelease(200, release('0.9.9')).state, UpdateState.current);
     for (final bad in [
       release('1.1.0', pre: true),
@@ -139,6 +141,44 @@ void main() {
       expect(CertificateValidity.fromHex(bad), isNull);
     }
   });
+  testWidgets(
+    'project page precedes licenses and opens the project in the external browser',
+    (t) async {
+      const channel = MethodChannel('plugins.flutter.io/url_launcher');
+      final calls = <MethodCall>[];
+      t.binding.defaultBinaryMessenger.setMockMethodCallHandler(channel, (
+        call,
+      ) async {
+        calls.add(call);
+        return true;
+      });
+      addTearDown(
+        () => t.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          channel,
+          null,
+        ),
+      );
+      await t.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(child: InformationView(ready: true)),
+          ),
+        ),
+      );
+      final project = find.text('Pagina del progetto Firma con CIE');
+      final licenses = find.text('Licenze e riconoscimenti');
+      expect(t.getTopLeft(project).dy, lessThan(t.getTopLeft(licenses).dy));
+      await t.tap(project);
+      await t.pumpAndSettle();
+      expect(calls.single.method, 'launch');
+      expect(
+        calls.single.arguments['url'],
+        'https://github.com/gezza-dev/firma-con-cie',
+      );
+      expect(calls.single.arguments['useSafariVC'], false);
+      expect(calls.single.arguments['useWebView'], false);
+    },
+  );
   testWidgets(
     'an inaccessible release is explained without claiming the app is current',
     (t) async {

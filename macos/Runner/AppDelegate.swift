@@ -26,8 +26,10 @@ class AppDelegate: FlutterAppDelegate {
     for item in applicationMenu.items {
       if item.isAlternate {
         applicationMenu.removeItem(item)
-      } else if item.action == #selector(NSApplication.orderFrontStandardAboutPanel(_:)) {
+      } else if item.action == #selector(NSApplication.orderFrontStandardAboutPanel(_:)) || item.action == #selector(showCieAbout(_:)) {
         item.title = language == "it" ? "Informazioni su Firma con CIE" : "About Firma con CIE"
+        item.action = #selector(showCieAbout(_:))
+        item.target = self
       } else if item.action == #selector(NSApplication.terminate(_:)) || item.action == #selector(quitCie(_:)) {
         item.title = language == "it" ? "Esci da Firma con CIE" : "Quit Firma con CIE"
         // A dedicated action avoids AppKit inserting the alternate "Quit and
@@ -36,6 +38,13 @@ class AppDelegate: FlutterAppDelegate {
         item.target = self
       } else { applicationMenu.removeItem(item) }
     }
+  }
+  @objc private func showCieAbout(_ sender: Any?) {
+    // Keep CFBundleVersion for signing/update tools; omit it only from this UI.
+    NSApp.orderFrontStandardAboutPanel(options: [
+      .applicationVersion: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "",
+      .version: ""
+    ])
   }
   @objc private func quitCie(_ sender: Any?) { NSApp.terminate(sender) }
   override func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }

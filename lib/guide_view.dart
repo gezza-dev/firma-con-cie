@@ -4,8 +4,6 @@ import 'app_notification.dart';
 
 import 'package:flutter/material.dart';
 
-import 'license_information.dart';
-
 import 'package:url_launcher/url_launcher.dart';
 
 const assistanceFaq =
@@ -129,12 +127,6 @@ class _GuideViewState extends State<GuideView> {
           icon: const Icon(Icons.open_in_new),
           label: Text(tr(context, entry.key)),
         ),
-      const SizedBox(height: 20),
-      TextButton.icon(
-        onPressed: () => showCieLicenses(context),
-        icon: const Icon(Icons.description_outlined),
-        label: Text(tr(context, "Informazioni e licenze")),
-      ),
     ],
   );
 }

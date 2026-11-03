@@ -85,7 +85,7 @@ jobs:
       - name: Remove this job's temporary signing credentials
         if: always()
         run: python3 scripts/ci_macos.py cleanup
-      - name: Upload verified packages to the unpublished version draft
+      - name: Upload only the verified macOS DMG to the unpublished version draft
         working-directory: ${{ env.CIE_CI_SOURCE }}
         env:
           GH_TOKEN: ${{ github.token }}

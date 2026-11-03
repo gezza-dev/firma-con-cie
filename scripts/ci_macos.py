@@ -208,9 +208,7 @@ def build():
         run('xcrun', 'stapler', 'staple', dmg)
         run('xcrun', 'stapler', 'validate', dmg)
         run('spctl', '--assess', '--type', 'open', '--context', 'context:primary-signature', dmg)
-        archive = output/('firma-con-cie_'+application_version()+'_universal_app.zip')
-        run('ditto', '-c', '-k', '--keepParent', app, archive)
-        result = receipt(reports/'result.json', 'macos', 'universal', [dmg, archive],
+        result = receipt(reports/'result.json', 'macos', 'universal', [dmg],
                          softwareChecksPassed=True, developerIdSigned=True,
                          appNotarization=app_notary, dmgNotarization=dmg_notary,
                          notarized=True)

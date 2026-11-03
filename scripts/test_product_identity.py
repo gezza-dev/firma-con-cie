@@ -11,24 +11,25 @@ import unittest
 
 import linux_package_common as linux
 from product_identity import (DISPLAY_NAME, PACKAGE_NAME, ARTIFACT_STEM,
-                              windows_installer_name, macos_image_name, application_version)
+                              windows_installer_name, macos_image_name, application_version, LINUX_ARTIFACT_STEM)
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 class ProductIdentity(unittest.TestCase):
-    def test_linux_manager_identity_matches_distributed_filename_stem(self):
+    def test_linux_manager_identity_stays_stable_when_download_names_include_os(self):
         self.assertEqual(PACKAGE_NAME, 'firma-con-cie')
+        self.assertEqual(LINUX_ARTIFACT_STEM, 'firma-con-cie-linux')
         self.assertEqual(linux.PACKAGE, ARTIFACT_STEM)
         self.assertEqual(linux.PACKAGE, PACKAGE_NAME)
         self.assertEqual(linux.PREFIX.as_posix(), 'opt/firma-con-cie')
 
     def test_windows_and_macos_default_artifact_names(self):
         version = application_version()
-        self.assertEqual(version, '1.0.1')
+        self.assertEqual(version, '1.0.2')
         self.assertEqual(windows_installer_name(version) + '.exe',
-                         'firma-con-cie_1.0.1_windows_x64_setup.exe')
-        self.assertEqual(macos_image_name(version), 'firma-con-cie_1.0.1_universal.dmg')
+                         'firma-con-cie_1.0.2_windows_x64_setup.exe')
+        self.assertEqual(macos_image_name(version), 'firma-con-cie_1.0.2_macOS_universal.dmg')
         self.assertIn("const appVersion = '" + version + "';", (ROOT/'lib/app_updates.dart').read_text())
 
     def test_bundle_version_cannot_inject_an_output_path(self):

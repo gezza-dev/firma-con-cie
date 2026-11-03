@@ -7,6 +7,7 @@ from pathlib import Path
 DISPLAY_NAME = 'Firma con CIE'
 PACKAGE_NAME = 'firma-con-cie'
 ARTIFACT_STEM = PACKAGE_NAME
+LINUX_ARTIFACT_STEM = ARTIFACT_STEM + '-linux'
 
 
 def application_version(root=None):
@@ -29,4 +30,4 @@ def windows_installer_name(version, architecture='x64'):
 def macos_image_name(version):
     if not re.fullmatch(r'\d+\.\d+\.\d+', version):
         raise ValueError('Invalid application release version')
-    return f'{ARTIFACT_STEM}_{version}_universal.dmg'
+    return f'{ARTIFACT_STEM}_{version}_macOS_universal.dmg'

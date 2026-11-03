@@ -15,8 +15,9 @@ import re
 import shutil
 import subprocess
 import tempfile
+from product_identity import LINUX_ARTIFACT_STEM
 
-from linux_package_common import (ROOT, PACKAGE, ARTIFACT_STEM, PREFIX, run, sha, files,
+from linux_package_common import (ROOT, PACKAGE, PREFIX, run, sha, files,
                                   validate_bundle, stage_payload, source_revision, graphics_libraries,
                                   validate_release_version)
 
@@ -92,7 +93,7 @@ def package(bundle, output, version):
         environment = dict(os.environ)
         environment.setdefault('SOURCE_DATE_EPOCH', str(revision['sourceDateEpoch']))
         output.mkdir(parents=True)
-        target = output / f'{ARTIFACT_STEM}_{version}_{arch}.deb'
+        target = output / f'{LINUX_ARTIFACT_STEM}_{version}_{arch}.deb'
         built = subprocess.run(['dpkg-deb', '--root-owner-group', '-Zxz', '-z6',
                                 '--threads-max=2', '--build', str(stage), str(target)],
                                env=environment, capture_output=True, text=True, check=True)

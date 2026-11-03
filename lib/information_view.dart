@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 import 'app_localizations.dart';
+import 'app_notification.dart';
 
 import 'package:flutter/material.dart';
 
@@ -11,6 +12,28 @@ import 'package:url_launcher/url_launcher.dart';
 class InformationView extends StatelessWidget {
   const InformationView({super.key, required this.ready});
   final bool ready;
+
+  Future<void> openProject(BuildContext context) async {
+    final page = Uri.parse('https://github.com/gezza-dev/firma-con-cie');
+    var opened = false;
+    try {
+      opened = await launchUrl(page, mode: LaunchMode.externalApplication);
+    } on Object {
+      // Retain a readable link if the operating system cannot open a browser.
+    }
+    if (!opened && context.mounted) {
+      await showAppNotification(
+        context,
+        message: tr(
+          context,
+          'Impossibile aprire il browser. Copia questo collegamento: {p0}',
+          [page.toString()],
+        ),
+        error: true,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -26,6 +49,12 @@ class InformationView extends StatelessWidget {
         ),
       ),
       const SizedBox(height: 16),
+      OutlinedButton.icon(
+        onPressed: () => openProject(context),
+        icon: const Icon(Icons.open_in_new),
+        label: Text(tr(context, "Pagina del progetto Firma con CIE")),
+      ),
+      const SizedBox(height: 12),
       OutlinedButton.icon(
         onPressed: () => showCieLicenses(context),
         icon: const Icon(Icons.description_outlined),

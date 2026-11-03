@@ -589,6 +589,7 @@
   "PUK completo · 8 cifre": "Full PUK · 8 digits",
   "PUK errato. Nessun nuovo tentativo automatico.": "Incorrect PUK. No automatic retry.",
   "PUK non accettato. Tentativi residui non comunicati dalla carta. Nessun nuovo tentativo automatico.": "PUK not accepted. Remaining attempts not reported by the card. No automatic retry.",
+  "Pagina del progetto Firma con CIE": "Firma con CIE project page",
   "Pagina precedente": "Previous page",
   "Pagina successiva": "Next page",
   "Pagina {p0} di {p1}": "Page {p0} of {p1}",

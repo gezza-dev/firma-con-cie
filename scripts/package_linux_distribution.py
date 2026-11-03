@@ -16,8 +16,9 @@ import shutil
 import subprocess
 import tarfile
 import tempfile
+from product_identity import LINUX_ARTIFACT_STEM
 
-from linux_package_common import (ROOT, PACKAGE, ARTIFACT_STEM, PREFIX, files, run, sha,
+from linux_package_common import (ROOT, PACKAGE, PREFIX, files, run, sha,
                                   source_revision, stage_payload, validate_bundle, graphics_libraries, GRAPHICS_SONAMES,
                                   validate_release_version)
 
@@ -138,7 +139,7 @@ cp -a opt usr "%{{buildroot}}/"
     run('rpmbuild', '-bb', '--define', '_topdir ' + str(top), '--define', '_smp_mflags -j2',
         '--define', '_smp_build_ncpus 2', '--define', '_binary_payload w6.xzdio', specpath)
     built, = (top / 'RPMS' / architecture).glob('*.rpm')
-    target = output / (ARTIFACT_STEM + built.name[len(PACKAGE):])
+    target = output / (LINUX_ARTIFACT_STEM + built.name[len(PACKAGE):])
     shutil.copy2(built, target)
     if run('rpm', '-qp', '--queryformat', '%{NAME}', target).stdout.strip() != PACKAGE:
         raise ValueError('RPM manager identity differs from the product name')
@@ -177,7 +178,7 @@ package() {{
     config.write_text('source /etc/makepkg.conf\nCOMPRESSZST=(zstd -c -T2 -10 -)\nMAKEFLAGS=-j2\n')
     run('makepkg', '--config', config, '--cleanbuild', '--noconfirm', cwd=inputs)
     built, = inputs.glob('*.pkg.tar.zst')
-    target = output / (ARTIFACT_STEM + built.name[len(PACKAGE):])
+    target = output / (LINUX_ARTIFACT_STEM + built.name[len(PACKAGE):])
     shutil.copy2(built, target)
     if run('pacman', '-Qp', target).stdout.split()[0] != PACKAGE:
         raise ValueError('Arch manager identity differs from the product name')

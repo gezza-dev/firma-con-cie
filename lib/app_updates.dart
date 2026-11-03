@@ -3,7 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-const appVersion = '1.0.1';
+const appVersion = '1.0.2';
 const _repository = 'gezza-dev/firma-con-cie';
 final releaseEndpoint = Uri.https(
   'api.github.com',

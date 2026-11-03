@@ -10,15 +10,17 @@ e la diagnostica restano in bozze **CI staging** separate, da non pubblicare.
 Sorgenti del progetto, archivi delle dipendenze fissate e checksum vengono
 aggiunti dal job dei metadati. Le vecchie release non vengono aggiornate.
 Vedere [DESKTOP_CI.md](DESKTOP_CI.md) per avvio, visibilità e ripetizione dei job.
-La versione corrente è **1.0.1** (build Flutter **2**). La 1.0.0 rimane
+La versione in preparazione è **1.0.2** (build interna Flutter **3**). La 1.0.1
+rimane l’ultima release pubblicata fino alla pubblicazione manuale della nuova
+versione. La 1.0.0 rimane
 documentata come prima release storica. I manifest conservano la revisione
 effettiva di ciascun pacchetto e gli esiti software distinti dai collaudi con CIE.
 
 ## Contenuti
 
-- DMG Universal macOS firmato Developer ID Application, con app e contenitore notarizzati e ticket applicati.
-- Installer Windows x64 e ARM64, con stato Authenticode dichiarato separatamente dalla firma Microsoft dei prerequisiti.
-- AppImage Linux x86_64/AArch64 e pacchetti nativi disponibili per le distribuzioni documentate.
+- Solo DMG Universal macOS, con `macOS` nel nome, firmato Developer ID Application, con app e contenitore notarizzati e ticket applicati. Lo ZIP dell’app non è un allegato da pubblicare.
+- Installer Windows x64 e ARM64, con `windows` nel nome, con stato Authenticode dichiarato separatamente dalla firma Microsoft dei prerequisiti.
+- AppImage Linux x86_64/AArch64 e pacchetti nativi disponibili per le distribuzioni documentate, con `linux` nel nome.
 - Archivio dei sorgenti del progetto, esportato da uno snapshot controllato.
 - Archivio separato dei sorgenti delle dipendenze: archivi nativi fissati, sorgenti OpenJDK completi e source JAR corrispondenti.
 - Supplemento Linux con i sorgenti Ubuntu delle librerie e dei dati effettivamente inclusi nelle AppImage, più materiali di compilazione per entrambe le architetture. Le librerie fornite dal sistema restano distinte da quelle distribuite.

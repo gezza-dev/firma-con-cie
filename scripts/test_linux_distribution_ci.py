@@ -68,6 +68,7 @@ class DistributionCI(unittest.TestCase):
             with patch.object(packaging, 'run', side_effect=command):
                 artifact, version = packaging.rpm_package(stage, [elf], inputs, output, '1.0.1', '2.fc44', 0, 'aarch64')
             self.assertTrue(artifact.name.endswith('.aarch64.rpm'))
+            self.assertTrue(artifact.name.startswith('firma-con-cie-linux-'))
             self.assertEqual(version, '1.0.1-2.fc44')
             self.assertIn('BuildArch: aarch64', (output/'firma-con-cie.spec').read_text())
             self.assertNotIn('libprivate.so', (output/'requires.txt').read_text())

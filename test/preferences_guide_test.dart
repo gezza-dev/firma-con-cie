@@ -214,7 +214,11 @@ void main() {
     await tester.ensureVisible(project);
     await tester.tap(project);
     await tester.pumpAndSettle();
-    expect(opened.last.toString(), 'https://github.com/gezza-dev/firma-con-cie');
+    expect(
+      opened.last.toString(),
+      'https://github.com/gezza-dev/firma-con-cie',
+    );
+    expect(find.text('Informazioni e licenze'), findsNothing);
   });
   testWidgets(
     'browser failure remains readable with the correct fallback URL',

@@ -31,7 +31,7 @@ e i checksum, senza mescolare build di revisioni differenti.
 | --- | --- | --- |
 | Windows x86_64 | Dipendenze su Ubuntu 24.04; test e app su Windows 2022 x64 | Installer EXE |
 | Windows ARM64 | Dipendenze su Ubuntu 24.04; test e app su Windows 11 ARM64 | Installer EXE |
-| macOS Universal | macOS 26 Apple Silicon, Xcode 26+; due architetture native nel bundle | DMG e ZIP dell’app, firmati Developer ID e notarizzati |
+| macOS Universal | macOS 26 Apple Silicon, Xcode 26+; due architetture native nel bundle | Solo DMG Universal, firmato Developer ID e notarizzato |
 | Linux x86_64 | Runner Ubuntu x64, contenitori Ubuntu 24.04 / 22.04 | DEB e AppImage |
 | Linux ARM64 | Runner Ubuntu ARM64, contenitori Ubuntu 24.04 / 22.04 | DEB e AppImage |
 | Fedora 44 x86_64 | Runner Ubuntu x64, container ufficiale Fedora 44 | RPM |
@@ -53,14 +53,35 @@ Non sono pacchetti installabili e non vanno pubblicati. I pacchetti finali
 RPM e Arch sono allegati direttamente alla bozza della versione.
 Il collaudo completo precedente di Fedora e Arch è documentato negli
 [esiti e checksum](LINUX_DISTRIBUTION_CI_VALIDATION.md).
-Lo ZIP macOS mantiene permessi e collegamenti del bundle grazie a `ditto`;
-non caricare i singoli file di un `.app` come ZIP generico. Le cartelle di
+Dalla versione 1.0.2 il solo pacchetto macOS allegato è il DMG; lo ZIP
+dell’app non viene prodotto tra gli allegati finali. Lo ZIP temporaneo usato
+per inviare l’app ad Apple resta un input interno di notarizzazione. Le cartelle di
 lavoro Windows, i bundle tar Linux e le fixture di aggiornamento non vengono
 allegati alla release utente.
 
 Sono disponibili anche gli avvii manuali separati **Windows package**,
 **Windows ARM64 package**, **macOS Universal package** e **Linux packages**.
 I workflow richiamati non aggiungono trigger automatici.
+
+## Nomi dei pacchetti dalla versione 1.0.2
+
+Ogni file di installazione indica anche il sistema operativo di destinazione.
+Gli identificativi usati da dpkg, RPM e pacman e il nome dell’app installata
+rimangono invariati: cambia il nome del file da scaricare.
+
+| Destinazione | Esempio |
+| --- | --- |
+| macOS Universal | `firma-con-cie_1.0.2_macOS_universal.dmg` |
+| Windows x64 | `firma-con-cie_1.0.2_windows_x64_setup.exe` |
+| Windows ARM64 | `firma-con-cie_1.0.2_windows_arm64_setup.exe` |
+| Linux DEB | `firma-con-cie-linux_1.0.2_amd64.deb` / `firma-con-cie-linux_1.0.2_arm64.deb` |
+| Linux AppImage | `firma-con-cie-linux-1.0.2-x86_64.AppImage` / `firma-con-cie-linux-1.0.2-aarch64.AppImage` |
+| Linux Fedora | `firma-con-cie-linux-1.0.2-1.fc44.x86_64.rpm` / `firma-con-cie-linux-1.0.2-1.fc44.aarch64.rpm` |
+| Linux Arch | `firma-con-cie-linux-1.0.2-1-x86_64.pkg.tar.zst` |
+
+Il controllo di upload rifiuta un installer senza l’indicazione del sistema.
+Gli archivi dei sorgenti e delle dipendenze sono materiali separati, non
+pacchetti di installazione. Le release precedenti conservano i loro allegati.
 
 ## Configurazione iniziale Apple
 
@@ -122,7 +143,7 @@ Si firma tutto il codice incorporato con Developer ID/Hardened Runtime secondo
 gli script esistenti. La notarizzazione deve restituire `Accepted` per l’app,
 poi per il DMG. Seguono applicazione e validazione dei ticket e valutazione
 Gatekeeper. I checksum finali sono calcolati **dopo** lo stapling del DMG.
-L’archivio ZIP conserva l’app già notarizzata e il componente di accesso ai siti.
+Il DMG contiene l’app già notarizzata e il componente di accesso ai siti.
 
 ## Test, versioni e conservazione dei dati
 

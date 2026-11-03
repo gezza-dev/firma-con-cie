@@ -232,14 +232,14 @@ class DraftReleaseTests(unittest.TestCase):
 
     def test_all_macos_and_linux_target_routes_use_their_validated_receipt(self):
         cases = {
-            'macos-universal': ('dist/macos', ['firma-con-cie_9.8.7_universal.dmg', 'firma-con-cie_9.8.7_universal_app.zip']),
-            'linux-x64-deb': ('dist/linux-x64-deb', ['firma-con-cie_9.8.7_amd64.deb']),
-            'linux-arm64-deb': ('dist/linux-arm64-deb', ['firma-con-cie_9.8.7_arm64.deb']),
-            'linux-x64-appimage': ('dist/linux-x64-appimage', ['firma-con-cie-9.8.7-x86_64.AppImage']),
-            'linux-arm64-appimage': ('dist/linux-arm64-appimage', ['firma-con-cie-9.8.7-aarch64.AppImage']),
-            'linux-fedora-x64': ('dist/linux-fedora-x64', ['firma-con-cie-9.8.7-1.fc44.x86_64.rpm']),
-            'linux-fedora-arm64': ('dist/linux-fedora-arm64', ['firma-con-cie-9.8.7-1.fc44.aarch64.rpm']),
-            'linux-arch-x64': ('dist/linux-arch-x64', ['firma-con-cie-9.8.7-1-x86_64.pkg.tar.zst']),
+            'macos-universal': ('dist/macos', ['firma-con-cie_9.8.7_macOS_universal.dmg']),
+            'linux-x64-deb': ('dist/linux-x64-deb', ['firma-con-cie-linux_9.8.7_amd64.deb']),
+            'linux-arm64-deb': ('dist/linux-arm64-deb', ['firma-con-cie-linux_9.8.7_arm64.deb']),
+            'linux-x64-appimage': ('dist/linux-x64-appimage', ['firma-con-cie-linux-9.8.7-x86_64.AppImage']),
+            'linux-arm64-appimage': ('dist/linux-arm64-appimage', ['firma-con-cie-linux-9.8.7-aarch64.AppImage']),
+            'linux-fedora-x64': ('dist/linux-fedora-x64', ['firma-con-cie-linux-9.8.7-1.fc44.x86_64.rpm']),
+            'linux-fedora-arm64': ('dist/linux-fedora-arm64', ['firma-con-cie-linux-9.8.7-1.fc44.aarch64.rpm']),
+            'linux-arch-x64': ('dist/linux-arch-x64', ['firma-con-cie-linux-9.8.7-1-x86_64.pkg.tar.zst']),
         }
         gh=FakeGitHub();release=ci.ensure_draft(gh,CTX)
         with tempfile.TemporaryDirectory() as directory:
@@ -309,6 +309,22 @@ class DraftReleaseTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'packaging receipt'):
                 ci.upload_target(gh,CTX,'windows-x64',receipt,root)
         self.assertFalse(gh.payloads)
+
+    def test_macos_upload_ignores_app_zip_and_rejects_packages_without_os_name(self):
+        gh=FakeGitHub();release=ci.ensure_draft(gh,CTX)
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);folder=root/'dist/macos';folder.mkdir(parents=True)
+            dmg=folder/'firma-con-cie_9.8.7_macOS_universal.dmg';dmg.write_bytes(b'synthetic DMG')
+            (folder/'firma-con-cie_9.8.7_universal_app.zip').write_bytes(b'do not publish')
+            receipt=root/'result.json'
+            receipt.write_text(json.dumps(dict(sourceCommit=CTX['commit'],softwareChecksPassed=True,
+                architecture='universal',version=CTX['version'],developerIdSigned=True,notarized=True,
+                artifacts={dmg.relative_to(root).as_posix():ci.sha(dmg)})))
+            ci.upload_target(gh,CTX,'macos-universal',receipt,root)
+            self.assertEqual([a['name'] for a in gh.assets(release) if a['name'].endswith(('.dmg','.zip'))],[dmg.name])
+            old=dmg.with_name('firma-con-cie_9.8.7_universal.dmg');dmg.rename(old)
+            with self.assertRaisesRegex(ValueError,'destination operating system'):
+                ci.upload_target(gh,CTX,'macos-universal',receipt,root)
 
     def test_source_upload_can_resume_and_verify_existing_batch(self):
         gh=FakeGitHub();ci.ensure_draft(gh,CTX)
