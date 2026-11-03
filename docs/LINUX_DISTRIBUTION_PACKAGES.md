@@ -1,7 +1,8 @@
 # Pacchetti Linux per distribuzione
 
-Dalla versione 1.0.2 i nomi dei download includono sistema, distribuzione e
-architettura, senza la revisione di confezionamento. Le identità e le revisioni
+Dalla versione 1.0.2 i nomi dei pacchetti nativi includono sistema, distribuzione
+e architettura, senza la revisione di confezionamento. Le AppImage includono
+sistema e architettura, senza distribuzione. Le identità e le revisioni
 interne dei pacchetti nativi restano invariate.
 
 I formati previsti sono `.deb` per Ubuntu/Debian, `.rpm` per Fedora e
@@ -19,7 +20,7 @@ I file distribuiti usano il nome pubblico dell’app:
 - `firma-con-cie_1.0.2_linux_ubuntu_amd64.deb` e `firma-con-cie_1.0.2_linux_ubuntu_arm64.deb`;
 - `firma-con-cie_1.0.2_linux_fedora_x86_64.rpm` e `firma-con-cie_1.0.2_linux_fedora_aarch64.rpm`;
 - `firma-con-cie_1.0.2_linux_arch_x86_64.pkg.tar.zst`;
-- `firma-con-cie_1.0.2_linux_ubuntu_x86_64.AppImage` e `firma-con-cie_1.0.2_linux_ubuntu_aarch64.AppImage`.
+- `firma-con-cie_1.0.2_linux_x86_64.AppImage` e `firma-con-cie_1.0.2_linux_aarch64.AppImage`.
 
 L’identificativo interno APT/RPM/pacman è `firma-con-cie`, uguale al prefisso
 dei file distribuiti. Una precedente installazione con identità diversa va

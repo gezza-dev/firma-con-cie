@@ -22,7 +22,7 @@ effettiva di ciascun pacchetto e gli esiti software distinti dai collaudi con CI
 
 - Solo DMG Universal macOS, con `macOS` nel nome, firmato Developer ID Application, con app e contenitore notarizzati e ticket applicati. Lo ZIP dell’app non è un allegato da pubblicare.
 - Installer Windows x64 e ARM64, con `windows` nel nome, con stato Authenticode dichiarato separatamente dalla firma Microsoft dei prerequisiti.
-- AppImage Linux x86_64/AArch64 e pacchetti nativi disponibili per le distribuzioni documentate, con versione, `linux`, distribuzione e architettura nel nome, senza la revisione di confezionamento Fedora/Arch.
+- AppImage Linux x86_64/AArch64 e pacchetti nativi disponibili per le distribuzioni documentate, con versione, `linux` e architettura nel nome. I pacchetti nativi indicano anche la distribuzione, senza la revisione di confezionamento Fedora/Arch; le AppImage non indicano una distribuzione.
 - Archivio dei sorgenti del progetto, esportato da uno snapshot controllato.
 - Archivio separato dei sorgenti delle dipendenze: archivi nativi fissati, sorgenti OpenJDK completi e source JAR corrispondenti.
 - Supplemento Linux con i sorgenti Ubuntu delle librerie e dei dati effettivamente inclusi nelle AppImage, più materiali di compilazione per entrambe le architetture. Le librerie fornite dal sistema restano distinte da quelle distribuite.

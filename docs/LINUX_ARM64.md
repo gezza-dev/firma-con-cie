@@ -147,7 +147,7 @@ resta locale e non firmato; si applicano i requisiti di [LICENSING.md](LICENSING
 È predisposto anche il confezionamento AppImage AArch64 su Ubuntu 22.04,
 con glibc massima 2.35 e runtime AppImage fissato per checksum. È distinto dal
 `.deb` ARM64 basato su Ubuntu 24.04: richiede un bundle ricompilato contro la
-base più vecchia. Il nome è `firma-con-cie_1.0.2_linux_ubuntu_aarch64.AppImage`.
+base più vecchia. Il nome è `firma-con-cie_1.0.2_linux_aarch64.AppImage`.
 [Preparazione, dipendenze esterne e limiti](LINUX_APPIMAGE.md).
 PC/SC rimane esterno e la configurazione dei browser richiede sempre una
 conferma esplicita nell’app. La disponibilità dei browser ARM64 e il collaudo

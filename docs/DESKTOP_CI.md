@@ -77,21 +77,22 @@ rimangono invariati: cambia il nome del file da scaricare.
 | Windows x64 | `firma-con-cie_1.0.2_windows_x64_setup.exe` |
 | Windows ARM64 | `firma-con-cie_1.0.2_windows_arm64_setup.exe` |
 | Linux DEB | `firma-con-cie_1.0.2_linux_ubuntu_amd64.deb` / `firma-con-cie_1.0.2_linux_ubuntu_arm64.deb` |
-| Linux AppImage | `firma-con-cie_1.0.2_linux_ubuntu_x86_64.AppImage` / `firma-con-cie_1.0.2_linux_ubuntu_aarch64.AppImage` |
+| Linux AppImage | `firma-con-cie_1.0.2_linux_x86_64.AppImage` / `firma-con-cie_1.0.2_linux_aarch64.AppImage` |
 | Linux Fedora | `firma-con-cie_1.0.2_linux_fedora_x86_64.rpm` / `firma-con-cie_1.0.2_linux_fedora_aarch64.rpm` |
 | Linux Arch | `firma-con-cie_1.0.2_linux_arch_x86_64.pkg.tar.zst` |
 
-I nomi Linux seguono `firma-con-cie_<versione>_linux_<distribuzione>_<architettura>.<formato>`.
+I nomi dei pacchetti Linux nativi seguono `firma-con-cie_<versione>_linux_<distribuzione>_<architettura>.<formato>`.
 La distribuzione è `ubuntu`, `fedora` oppure `arch`; le sigle CPU seguono
 il formato: `amd64`/`arm64` per DEB e `x86_64`/`aarch64` per AppImage e RPM.
-Arch è disponibile per `x86_64`. La dicitura `ubuntu` nelle AppImage indica
-la base di compilazione e non esclude la compatibilità con altre distribuzioni
-che soddisfano i requisiti documentati.
+Arch è disponibile per `x86_64`. Le AppImage seguono invece
+`firma-con-cie_<versione>_linux_<architettura>.AppImage`, senza distribuzione
+nel nome. La base di compilazione resta Ubuntu 22.04; i requisiti di compatibilità
+sono descritti nella documentazione AppImage.
 
 La revisione di confezionamento RPM/Arch resta nei metadati nativi e non compare
 nel nome del download: sono esclusi i suffissi `-1`, `.fc44` e simili.
-Il controllo di upload rifiuta i nomi Linux privi della distribuzione o con
-un’architettura non corrispondente al target.
+Il controllo di upload verifica la distribuzione per i pacchetti nativi e
+l’architettura corrispondente al target per tutti i formati.
 Gli archivi dei sorgenti e delle dipendenze sono materiali separati, non
 pacchetti di installazione. Le release precedenti conservano i loro allegati.
 

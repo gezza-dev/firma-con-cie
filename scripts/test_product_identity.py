@@ -40,8 +40,9 @@ class ProductIdentity(unittest.TestCase):
         ]
         for distro, cpu, kind in cases:
             with self.subTest(distribution=distro, architecture=cpu, format=kind):
+                destination = 'linux' if kind == 'AppImage' else 'linux_' + distro
                 self.assertEqual(linux_package_name('1.0.2', distro, cpu, kind),
-                    f'firma-con-cie_1.0.2_linux_{distro}_{cpu}.{kind}')
+                    f'firma-con-cie_1.0.2_{destination}_{cpu}.{kind}')
         for version in ('1.0.2-1', '1.0.2-1.fc44', '../1.0.2', '1.0.2+3'):
             with self.assertRaises(ValueError):linux_package_name(version,'fedora','x86_64','rpm')
         for args in [('fedora','amd64','rpm'), ('arch','aarch64','pkg.tar.zst'),

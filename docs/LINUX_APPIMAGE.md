@@ -164,8 +164,8 @@ python3 scripts/package_linux_appimage.py \
   --version 1.0.1 --output dist/linux-appimage-arm64
 ```
 
-Il risultato si chiama `firma-con-cie_1.0.2_linux_ubuntu_aarch64.AppImage`; x86_64 mantiene
-`firma-con-cie_1.0.2_linux_ubuntu_x86_64.AppImage`. Il packager riconosce la CPU dell’ambiente,
+Il risultato si chiama `firma-con-cie_1.0.2_linux_aarch64.AppImage`; x86_64 mantiene
+`firma-con-cie_1.0.2_linux_x86_64.AppImage`. Il packager riconosce la CPU dell’ambiente,
 verifica runtime AppImage e ogni ELF, seleziona i percorsi di sistema corretti
 e rifiuta un payload misto. La compatibilità di ABI è controllata anche sul
 modulo persistente dei browser; nei browser si mantiene il PIN completo.

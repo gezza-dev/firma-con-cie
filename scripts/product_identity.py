@@ -44,4 +44,5 @@ def linux_package_name(version, distribution, architecture, package_format):
     }
     if architecture not in supported.get((distribution, package_format), ()):
         raise ValueError('Invalid Linux distribution, package format or architecture')
-    return f'{ARTIFACT_STEM}_{version}_linux_{distribution}_{architecture}.{package_format}'
+    destination = 'linux' if package_format == 'AppImage' else 'linux_' + distribution
+    return f'{ARTIFACT_STEM}_{version}_{destination}_{architecture}.{package_format}'
