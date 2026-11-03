@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: BSD-3-Clause
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:cie_flutter_prototype/app_localizations.dart';
 import 'package:cie_flutter_prototype/app_updates.dart';
 import 'package:cie_flutter_prototype/certificate_validity.dart';
 import 'package:cie_flutter_prototype/enrollment.dart';
@@ -199,8 +202,147 @@ void main() {
       await t.tap(find.text('Verifica aggiornamenti'));
       await t.pumpAndSettle();
       expect(calls, 1);
-      expect(find.textContaining('Impossibile verificare'), findsOneWidget);
+      expect(find.byType(AlertDialog), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.textContaining('Impossibile verificare'),
+        ),
+        findsOneWidget,
+      );
       expect(find.text('La versione installata è aggiornata.'), findsNothing);
+      await t.tap(find.text('Chiudi'));
+      await t.pumpAndSettle();
+      expect(find.textContaining('Impossibile verificare'), findsNothing);
     },
   );
+  testWidgets('current version appears only in a dismissible result dialog', (
+    t,
+  ) async {
+    final response = Completer<AppUpdate>();
+    var calls = 0;
+    await t.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: AppUpdatesView(
+            checker: () {
+              calls++;
+              return response.future;
+            },
+          ),
+        ),
+      ),
+    );
+    await t.tap(find.text('Verifica aggiornamenti'));
+    await t.pump();
+    expect(calls, 1);
+    expect(
+      t.widget<OutlinedButton>(find.byType(OutlinedButton)).onPressed,
+      isNull,
+    );
+    expect(find.byType(AlertDialog), findsNothing);
+    response.complete(const AppUpdate(UpdateState.current));
+    await t.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.text('La versione installata è aggiornata.'),
+      ),
+      findsOneWidget,
+    );
+    await t.tap(find.text('Chiudi'));
+    await t.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.text('La versione installata è aggiornata.'), findsNothing);
+    expect(calls, 1);
+  });
+
+  for (final opens in [true, false]) {
+    testWidgets(
+      'available update dialog opens the browser or offers a copyable link ($opens)',
+      (t) async {
+        const channel = MethodChannel('plugins.flutter.io/url_launcher');
+        final calls = <MethodCall>[];
+        t.binding.defaultBinaryMessenger.setMockMethodCallHandler(channel, (
+          call,
+        ) async {
+          calls.add(call);
+          return opens;
+        });
+        addTearDown(
+          () => t.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+            channel,
+            null,
+          ),
+        );
+        final language = opens ? 'en' : 'it';
+        final page = Uri.parse(
+          'https://github.com/gezza-dev/firma-con-cie/releases/tag/v1.0.3',
+        );
+        await t.pumpWidget(
+          MaterialApp(
+            locale: Locale(language),
+            supportedLocales: CieLocalizations.supportedLocales,
+            localizationsDelegates: const [
+              CieLocalizations.delegate,
+              ...GlobalMaterialLocalizations.delegates,
+            ],
+            home: Scaffold(
+              body: AppUpdatesView(
+                checker: () async => AppUpdate(
+                  UpdateState.available,
+                  version: 'v1.0.3',
+                  page: page,
+                ),
+              ),
+            ),
+          ),
+        );
+        await t.tap(
+          find.text(opens ? 'Check for updates' : 'Verifica aggiornamenti'),
+        );
+        await t.pumpAndSettle();
+        expect(find.byType(AlertDialog), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(AlertDialog),
+            matching: find.textContaining('v1.0.3'),
+          ),
+          findsOneWidget,
+        );
+        expect(
+          find.widgetWithText(TextButton, opens ? 'OK' : 'Chiudi'),
+          findsOneWidget,
+        );
+        await t.tap(
+          find.text(
+            opens ? 'Open the update page' : 'Apri la pagina di aggiornamento',
+          ),
+        );
+        await t.pumpAndSettle();
+        expect(calls.single.method, 'launch');
+        expect(calls.single.arguments['url'], page.toString());
+        expect(calls.single.arguments['useSafariVC'], false);
+        expect(calls.single.arguments['useWebView'], false);
+        if (opens) {
+          expect(find.byType(AlertDialog), findsNothing);
+        } else {
+          expect(find.byType(AlertDialog), findsOneWidget);
+          expect(
+            find.textContaining('Impossibile aprire il browser'),
+            findsOneWidget,
+          );
+          expect(
+            find.widgetWithText(SelectableText, page.toString()),
+            findsOneWidget,
+          );
+          await t.tap(find.text('Chiudi'));
+          await t.pumpAndSettle();
+          expect(find.byType(AlertDialog), findsNothing);
+          expect(find.text(page.toString()), findsNothing);
+        }
+      },
+    );
+  }
 }

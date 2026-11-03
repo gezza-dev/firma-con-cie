@@ -29,6 +29,8 @@ Future<void> showAppNotification(
   String? details,
   bool error = false,
   String buttonLabel = 'Chiudi',
+  String? actionLabel,
+  VoidCallback? onAction,
   bool Function()? isCurrent,
 }) {
   final navigator = Navigator.of(context, rootNavigator: true);
@@ -40,7 +42,7 @@ Future<void> showAppNotification(
     if (!context.mounted || isCurrent?.call() == false) return;
     visibility?.call(true);
     try {
-      await showDialog<void>(
+      final actionSelected = await showDialog<bool>(
         context: context,
         builder: (dialogContext) => AlertDialog(
           title: Row(
@@ -75,6 +77,11 @@ Future<void> showAppNotification(
             ),
           ),
           actions: [
+            if (actionLabel != null && onAction != null)
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: Text(tr(dialogContext, actionLabel)),
+              ),
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
               child: Text(tr(dialogContext, buttonLabel)),
@@ -82,6 +89,7 @@ Future<void> showAppNotification(
           ],
         ),
       );
+      if (actionSelected == true && context.mounted) onAction?.call();
     } finally {
       visibility?.call(false);
     }

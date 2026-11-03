@@ -94,77 +94,73 @@ class AppUpdatesView extends StatefulWidget {
 
 class _AppUpdatesViewState extends State<AppUpdatesView> {
   bool checking = false;
-  AppUpdate? result;
-  String? error;
+
   Future<void> check() async {
     if (checking) return;
-    setState(() {
-      checking = true;
-      error = null;
-    });
+    setState(() => checking = true);
     AppUpdate value;
     try {
       value = await widget.checker();
     } on Object {
       value = const AppUpdate(UpdateState.unavailable);
     }
-    if (mounted) {
-      setState(() {
-        result = value;
-        checking = false;
-      });
-    }
+    if (!mounted) return;
+    setState(() => checking = false);
+    final message = switch (value.state) {
+      UpdateState.current => tr(
+        context,
+        'La versione installata è aggiornata.',
+      ),
+      UpdateState.unavailable => tr(
+        context,
+        'Impossibile verificare gli aggiornamenti. Controlla la connessione; il repository o una release potrebbero non essere accessibili.',
+      ),
+      UpdateState.available => tr(context, 'È disponibile la versione {p0}.', [
+        value.version ?? '',
+      ]),
+    };
+    final page = value.state == UpdateState.available ? value.page : null;
+    await showAppNotification(
+      context,
+      title: 'Verifica aggiornamenti',
+      message: message,
+      error: value.state == UpdateState.unavailable,
+      actionLabel: page == null ? null : 'Apri la pagina di aggiornamento',
+      onAction: page == null ? null : () => openRelease(page),
+    );
   }
 
-  Future<void> openRelease() async {
-    final page = result?.page;
-    if (page == null) return;
+  Future<void> openRelease(Uri page) async {
+    if (!mounted) return;
     var opened = false;
     try {
       opened = await launchUrl(page, mode: LaunchMode.externalApplication);
     } on Object {
-      /* Show the URL below. */
+      // Keep the link available if the default browser cannot be opened.
     }
     if (!opened && mounted) {
-      setState(() {
-        error = page.toString();
-      });
+      await showAppNotification(
+        context,
+        message: tr(
+          context,
+          'Impossibile aprire il browser. Copia questo collegamento: {p0}',
+          [''],
+        ),
+        details: page.toString(),
+        error: true,
+      );
     }
   }
 
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      OutlinedButton.icon(
-        onPressed: checking ? null : check,
-        icon: const Icon(Icons.system_update_alt),
-        label: Text(
-          tr(
-            context,
-            checking ? 'Ricerca aggiornamenti…' : 'Verifica aggiornamenti',
-          ),
-        ),
+  Widget build(BuildContext context) => OutlinedButton.icon(
+    onPressed: checking ? null : check,
+    icon: const Icon(Icons.system_update_alt),
+    label: Text(
+      tr(
+        context,
+        checking ? 'Ricerca aggiornamenti…' : 'Verifica aggiornamenti',
       ),
-      if (result?.state == UpdateState.current)
-        Text(tr(context, 'La versione installata è aggiornata.')),
-      if (result?.state == UpdateState.unavailable)
-        Text(
-          tr(
-            context,
-            'Impossibile verificare gli aggiornamenti. Controlla la connessione; il repository o una release potrebbero non essere accessibili.',
-          ),
-        ),
-      if (result?.state == UpdateState.available) ...[
-        Text(
-          tr(context, 'È disponibile la versione {p0}.', [result!.version!]),
-        ),
-        TextButton(
-          onPressed: openRelease,
-          child: Text(tr(context, 'Apri la pagina di aggiornamento')),
-        ),
-      ],
-      if (error != null) SelectableText(error!),
-    ],
+    ),
   );
 }
