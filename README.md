@@ -97,7 +97,7 @@ Lo stato della firma Authenticode del pacchetto è indicato nelle note della rel
 
 ### Linux
 
-Scegli il pacchetto nativo della distribuzione oppure l’AppImage della tua architettura. Per usare l’AppImage, abilita l’esecuzione del file nelle sue proprietà e avvialo. PC/SC e un driver compatibile con il lettore devono essere disponibili nel sistema.
+Scegli il pacchetto nativo della distribuzione oppure l’AppImage della tua architettura. I nomi dei pacchetti Linux indicano versione, distribuzione e architettura; per le AppImage, `ubuntu` identifica la base di compilazione, mentre i requisiti di compatibilità sono descritti nella documentazione. Per usare l’AppImage, abilita l’esecuzione del file nelle sue proprietà e avvialo. PC/SC e un driver compatibile con il lettore devono essere disponibili nel sistema.
 
 Per l’accesso ai siti, segui le indicazioni dell’app relative al browser. Le autorizzazioni aggiuntive di Firefox Snap vengono richieste soltanto quando necessarie. [AppImage](docs/LINUX_APPIMAGE.md) · [Pacchetti nativi](docs/LINUX_DISTRIBUTION_PACKAGES.md) · [Browser Linux](docs/LINUX_FIREFOX.md).
 

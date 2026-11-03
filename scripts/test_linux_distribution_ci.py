@@ -67,12 +67,28 @@ class DistributionCI(unittest.TestCase):
                 return SimpleNamespace(stdout='firma-con-cie')
             with patch.object(packaging, 'run', side_effect=command):
                 artifact, version = packaging.rpm_package(stage, [elf], inputs, output, '1.0.1', '2.fc44', 0, 'aarch64')
-            self.assertTrue(artifact.name.endswith('.aarch64.rpm'))
-            self.assertTrue(artifact.name.startswith('firma-con-cie-linux-'))
+            self.assertEqual(artifact.name, 'firma-con-cie_1.0.1_linux_fedora_aarch64.rpm')
             self.assertEqual(version, '1.0.1-2.fc44')
             self.assertIn('BuildArch: aarch64', (output/'firma-con-cie.spec').read_text())
             self.assertNotIn('libprivate.so', (output/'requires.txt').read_text())
             self.assertIn('GLIBC_2.39', (output/'requires.txt').read_text())
+
+    def test_arch_download_name_omits_pkgrel_while_recipe_keeps_it(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);stage=root/'stage';inputs=root/'inputs';output=root/'output'
+            for folder in (stage,inputs,output):folder.mkdir()
+            (inputs/'payload.tar.gz').write_bytes(b'synthetic payload')
+            def command(*args,**kwargs):
+                if args[0]=='makepkg':
+                    (inputs/'firma-con-cie-1.0.2-7-x86_64.pkg.tar.zst').write_bytes(b'synthetic Arch package')
+                if args[:2]==('pacman','-Qp'):return SimpleNamespace(stdout='firma-con-cie 1.0.2-7')
+                return SimpleNamespace(stdout='glibc')
+            with patch.object(packaging,'run',side_effect=command), patch.object(packaging.os,'geteuid',return_value=1000):
+                artifact,version=packaging.arch_package(stage,[],inputs,output,'1.0.2','7')
+            self.assertEqual(artifact.name,'firma-con-cie_1.0.2_linux_arch_x86_64.pkg.tar.zst')
+            self.assertEqual(version,'1.0.2-7')
+            self.assertIn('pkgrel=7', (output/'PKGBUILD').read_text())
+            self.assertEqual(artifact.read_bytes(),b'synthetic Arch package')
 
     def archive_fixture(self, root, member='runtime/backend-manifest.json', source_files=None):
         manifest = json.dumps({'source_files':source_files or {}}).encode()

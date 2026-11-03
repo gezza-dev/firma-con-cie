@@ -245,13 +245,13 @@ class DraftReleaseTests(unittest.TestCase):
     def test_all_macos_and_linux_target_routes_use_their_validated_receipt(self):
         cases = {
             'macos-universal': ('dist/macos', ['firma-con-cie_9.8.7_macOS_universal.dmg']),
-            'linux-x64-deb': ('dist/linux-x64-deb', ['firma-con-cie-linux_9.8.7_amd64.deb']),
-            'linux-arm64-deb': ('dist/linux-arm64-deb', ['firma-con-cie-linux_9.8.7_arm64.deb']),
-            'linux-x64-appimage': ('dist/linux-x64-appimage', ['firma-con-cie-linux-9.8.7-x86_64.AppImage']),
-            'linux-arm64-appimage': ('dist/linux-arm64-appimage', ['firma-con-cie-linux-9.8.7-aarch64.AppImage']),
-            'linux-fedora-x64': ('dist/linux-fedora-x64', ['firma-con-cie-linux-9.8.7-1.fc44.x86_64.rpm']),
-            'linux-fedora-arm64': ('dist/linux-fedora-arm64', ['firma-con-cie-linux-9.8.7-1.fc44.aarch64.rpm']),
-            'linux-arch-x64': ('dist/linux-arch-x64', ['firma-con-cie-linux-9.8.7-1-x86_64.pkg.tar.zst']),
+            'linux-x64-deb': ('dist/linux-x64-deb', ['firma-con-cie_9.8.7_linux_ubuntu_amd64.deb']),
+            'linux-arm64-deb': ('dist/linux-arm64-deb', ['firma-con-cie_9.8.7_linux_ubuntu_arm64.deb']),
+            'linux-x64-appimage': ('dist/linux-x64-appimage', ['firma-con-cie_9.8.7_linux_ubuntu_x86_64.AppImage']),
+            'linux-arm64-appimage': ('dist/linux-arm64-appimage', ['firma-con-cie_9.8.7_linux_ubuntu_aarch64.AppImage']),
+            'linux-fedora-x64': ('dist/linux-fedora-x64', ['firma-con-cie_9.8.7_linux_fedora_x86_64.rpm']),
+            'linux-fedora-arm64': ('dist/linux-fedora-arm64', ['firma-con-cie_9.8.7_linux_fedora_aarch64.rpm']),
+            'linux-arch-x64': ('dist/linux-arch-x64', ['firma-con-cie_9.8.7_linux_arch_x86_64.pkg.tar.zst']),
         }
         gh=FakeGitHub();release=ci.ensure_draft(gh,CTX)
         with tempfile.TemporaryDirectory() as directory:
@@ -289,6 +289,20 @@ class DraftReleaseTests(unittest.TestCase):
             ci.put_asset(gh,internal,CTX,asset['name'],path,metadata=True)
             with self.assertRaisesRegex(ValueError, 'another commit'):
                 ci.aggregate(gh,CTX)
+
+    def test_linux_upload_rejects_wrong_distribution_before_writing(self):
+        gh=FakeGitHub();ci.ensure_draft(gh,CTX)
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);folder=root/'dist/linux-fedora-x64';folder.mkdir(parents=True)
+            artifact=folder/'firma-con-cie_9.8.7_linux_ubuntu_x86_64.rpm'
+            artifact.write_bytes(b'synthetic RPM')
+            receipt=root/'receipt.json'
+            receipt.write_text(json.dumps(dict(sourceCommit=CTX['commit'],softwareChecksPassed=True,
+                version=CTX['version'],architecture='x64',
+                artifacts={artifact.relative_to(root).as_posix():ci.sha(artifact)})))
+            with self.assertRaisesRegex(ValueError,'distribution and architecture'):
+                ci.upload_target(gh,CTX,'linux-fedora-x64',receipt,root)
+        self.assertFalse(gh.payloads)
 
     def test_legacy_json_moves_privately_without_changing_packages_and_rerun_is_safe(self):
         gh=FakeGitHub();release=ci.ensure_draft(gh,CTX)

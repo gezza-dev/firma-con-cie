@@ -23,7 +23,7 @@ La build ARM64 usa una JVM privata e binari AArch64; il `.deb` amd64
 rimane separato. [Preparazione e collaudi ARM64](LINUX_ARM64.md).
 
 I file `.deb` usano il nome pubblico `firma-con-cie`, per esempio
-`firma-con-cie_1.0.1_arm64.deb`. L’identificativo interno del pacchetto è
+`firma-con-cie_1.0.2_linux_ubuntu_arm64.deb`. L’identificativo interno del pacchetto è
 `firma-con-cie`, usato da APT/dpkg per gestire gli aggiornamenti.
 La prima installazione con questo identificativo è pulita: rimuovere dal
 gestore pacchetti l'eventuale precedente versione dell'app prima di installare
@@ -52,7 +52,7 @@ manifest del contenuto e log delle dipendenze. Le versioni seguono il formato
 Per il successivo collaudo manuale, nella directory del `.deb`:
 
 ```sh
-sudo apt install ./firma-con-cie_1.0.1_amd64.deb
+sudo apt install ./firma-con-cie_1.0.2_linux_ubuntu_amd64.deb
 ```
 
 - App e librerie private: `/opt/firma-con-cie`.

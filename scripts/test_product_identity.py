@@ -11,7 +11,7 @@ import unittest
 
 import linux_package_common as linux
 from product_identity import (DISPLAY_NAME, PACKAGE_NAME, ARTIFACT_STEM,
-                              windows_installer_name, macos_image_name, application_version, LINUX_ARTIFACT_STEM)
+                              windows_installer_name, macos_image_name, application_version, linux_package_name)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -19,7 +19,6 @@ ROOT = Path(__file__).resolve().parents[1]
 class ProductIdentity(unittest.TestCase):
     def test_linux_manager_identity_stays_stable_when_download_names_include_os(self):
         self.assertEqual(PACKAGE_NAME, 'firma-con-cie')
-        self.assertEqual(LINUX_ARTIFACT_STEM, 'firma-con-cie-linux')
         self.assertEqual(linux.PACKAGE, ARTIFACT_STEM)
         self.assertEqual(linux.PACKAGE, PACKAGE_NAME)
         self.assertEqual(linux.PREFIX.as_posix(), 'opt/firma-con-cie')
@@ -31,6 +30,24 @@ class ProductIdentity(unittest.TestCase):
                          'firma-con-cie_1.0.2_windows_x64_setup.exe')
         self.assertEqual(macos_image_name(version), 'firma-con-cie_1.0.2_macOS_universal.dmg')
         self.assertIn("const appVersion = '" + version + "';", (ROOT/'lib/app_updates.dart').read_text())
+
+    def test_linux_download_names_include_distribution_and_cpu_without_package_revision(self):
+        cases = [
+            ('ubuntu', 'amd64', 'deb'), ('ubuntu', 'arm64', 'deb'),
+            ('ubuntu', 'x86_64', 'AppImage'), ('ubuntu', 'aarch64', 'AppImage'),
+            ('fedora', 'x86_64', 'rpm'), ('fedora', 'aarch64', 'rpm'),
+            ('arch', 'x86_64', 'pkg.tar.zst'),
+        ]
+        for distro, cpu, kind in cases:
+            with self.subTest(distribution=distro, architecture=cpu, format=kind):
+                self.assertEqual(linux_package_name('1.0.2', distro, cpu, kind),
+                    f'firma-con-cie_1.0.2_linux_{distro}_{cpu}.{kind}')
+        for version in ('1.0.2-1', '1.0.2-1.fc44', '../1.0.2', '1.0.2+3'):
+            with self.assertRaises(ValueError):linux_package_name(version,'fedora','x86_64','rpm')
+        for args in [('fedora','amd64','rpm'), ('arch','aarch64','pkg.tar.zst'),
+                     ('ubuntu','x86_64','deb'), ('../ubuntu','arm64','deb'),
+                     ('ubuntu','arm64','../deb')]:
+            with self.assertRaises(ValueError):linux_package_name('1.0.2',*args)
 
     def test_bundle_version_cannot_inject_an_output_path(self):
         for value in ['../1.0.0', '1.0.0/unsafe', 'v1.0.0', '1.0.0\nother', '']:

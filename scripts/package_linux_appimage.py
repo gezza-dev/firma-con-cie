@@ -10,7 +10,7 @@ import re
 import shutil
 import subprocess
 import tempfile
-from product_identity import LINUX_ARTIFACT_STEM
+from product_identity import linux_package_name
 from linux_package_common import ROOT, APP_ID, ARTIFACT_STEM, PREFIX, files, run, sha, source_revision, stage_payload, validate_bundle, validate_release_version
 from package_linux_distribution import elf_files
 from check_linux_firefox_abi import check as check_firefox_abi, LIBRARIES as BROWSER_LIBRARIES
@@ -317,7 +317,7 @@ def package(bundle,output,runtime,version):
                      output/'system-dependency-provenance.json')
         run('mksquashfs',tree,filesystem,'-noappend','-comp','zstd','-Xcompression-level','15','-processors','2','-all-root',
             '-mkfs-time',str(revision['sourceDateEpoch']),'-all-time',str(revision['sourceDateEpoch']))
-        target=output/(LINUX_ARTIFACT_STEM+'-'+version+'-'+arch+'.AppImage')
+        target=output/linux_package_name(version, 'ubuntu', arch, 'AppImage')
         with target.open('wb') as out:
             for source in [runtime,filesystem]:
                 with source.open('rb') as src:shutil.copyfileobj(src,out)

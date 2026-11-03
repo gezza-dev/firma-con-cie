@@ -349,7 +349,7 @@ python3 scripts/package_linux_deb.py \
   --output dist/linux-deb \
   --version '1.0.2'
 python3 scripts/test_linux_deb.py \
-  'dist/linux-deb/firma-con-cie-linux_1.0.2_amd64.deb' \
+  'dist/linux-deb/firma-con-cie_1.0.2_linux_ubuntu_amd64.deb' \
   --report reports/linux-deb-validation.json
 ```
 

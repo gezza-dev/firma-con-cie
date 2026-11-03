@@ -13,6 +13,7 @@ import json
 import os
 from pathlib import Path
 from ltv_runtime import runtime_architecture
+from product_identity import linux_package_name
 import re
 import subprocess
 import tempfile
@@ -32,7 +33,7 @@ def check(package, report, upgrade_from=None):
     from linux_package_common import validate_release_version
     assert manifest['package'] == 'firma-con-cie'
     assert run('dpkg-deb', '-f', package, 'Package').stdout.strip() == 'firma-con-cie'
-    assert package.name == f"firma-con-cie-linux_{manifest['version']}_{manifest['architecture']}.deb"
+    assert package.name == linux_package_name(manifest['version'], 'ubuntu', manifest['architecture'], 'deb')
     validate_release_version(manifest['version'])
     work = ROOT / '.build/linux-deb'
     work.mkdir(parents=True, exist_ok=True)

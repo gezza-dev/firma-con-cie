@@ -19,7 +19,7 @@ import time
 from urllib.parse import quote
 import zipfile
 
-from product_identity import application_version
+from product_identity import application_version, linux_package_name
 
 ROOT = Path(__file__).resolve().parents[1]
 MARKER = '<!-- firma-con-cie-ci: '
@@ -326,6 +326,18 @@ def package_files(target, root=ROOT):
     return paths
 
 
+def linux_target_name(target, version):
+    if target in ('linux-x64-deb', 'linux-arm64-deb'):
+        return linux_package_name(version, 'ubuntu', 'amd64' if '-x64-' in target else 'arm64', 'deb')
+    if target in ('linux-x64-appimage', 'linux-arm64-appimage'):
+        return linux_package_name(version, 'ubuntu', 'x86_64' if '-x64-' in target else 'aarch64', 'AppImage')
+    if target in ('linux-fedora-x64', 'linux-fedora-arm64'):
+        return linux_package_name(version, 'fedora', 'x86_64' if target.endswith('-x64') else 'aarch64', 'rpm')
+    if target == 'linux-arch-x64':
+        return linux_package_name(version, 'arch', 'x86_64', 'pkg.tar.zst')
+    raise ValueError('Unknown Linux package target')
+
+
 def upload_target(gh, ctx, target, receipt, root=ROOT):
     paths = package_files(target, root)
     evidence = json.loads(receipt.read_text())
@@ -339,6 +351,8 @@ def upload_target(gh, ctx, target, receipt, root=ROOT):
     if evidence.get('architecture') != architecture or evidence.get('version', ctx['version']) != ctx['version']:
         raise ValueError('Build receipt architecture/version mismatch')
     for path in paths:
+        if target.startswith('linux-') and path.name != linux_target_name(target, ctx['version']):
+            raise ValueError('Linux package filename must identify its distribution and architecture')
         system = 'macOS' if target == 'macos-universal' else target.split('-')[0]
         if not re.search(r'(^|[_-])' + system + r'([_.-]|$)', path.name):
             raise ValueError('Package filename must identify its destination operating system')

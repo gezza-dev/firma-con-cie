@@ -7,7 +7,6 @@ from pathlib import Path
 DISPLAY_NAME = 'Firma con CIE'
 PACKAGE_NAME = 'firma-con-cie'
 ARTIFACT_STEM = PACKAGE_NAME
-LINUX_ARTIFACT_STEM = ARTIFACT_STEM + '-linux'
 
 
 def application_version(root=None):
@@ -31,3 +30,18 @@ def macos_image_name(version):
     if not re.fullmatch(r'\d+\.\d+\.\d+', version):
         raise ValueError('Invalid application release version')
     return f'{ARTIFACT_STEM}_{version}_macOS_universal.dmg'
+
+
+def linux_package_name(version, distribution, architecture, package_format):
+    """Download filename; native package identities and release fields stay unchanged."""
+    if not re.fullmatch(r'\d+\.\d+\.\d+', version):
+        raise ValueError('Invalid application release version')
+    supported = {
+        ('ubuntu', 'deb'): ('amd64', 'arm64'),
+        ('ubuntu', 'AppImage'): ('x86_64', 'aarch64'),
+        ('fedora', 'rpm'): ('x86_64', 'aarch64'),
+        ('arch', 'pkg.tar.zst'): ('x86_64',),
+    }
+    if architecture not in supported.get((distribution, package_format), ()):
+        raise ValueError('Invalid Linux distribution, package format or architecture')
+    return f'{ARTIFACT_STEM}_{version}_linux_{distribution}_{architecture}.{package_format}'
